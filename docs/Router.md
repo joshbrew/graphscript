@@ -1,6 +1,6 @@
 # Routers
 
-Routers are used to quickly collect services into one unified framework used to quickly define which outputs from which functions you want to pipe through remote or internal services in a unified fashion. You can simply call services by name or access their class methods directly, and run functions on the router the same way they function in the node and graph, just with a higher level way to allow services to have awareness of each other. 
+Routers are used to quickly collect services into one unified framework in order to quickly define which outputs from which functions you want to pipe through remote or internal services in a unified fashion. You can simply call services by name or access their class methods directly, and run functions on the router the same way they function in the node and graph, just with a higher level way to allow services to have awareness of each other. 
 
 Additionally, it includes ways to select the fastest available endpoints from selected services and automatically stream updates from watched objects through whatever routes or endpoints you desire e.g. for linking game and server state across many clients or simplifying frontend business logic down to a few object and function calls.
 
@@ -158,7 +158,7 @@ console.log("Router:",router);
 
 # User Router
 
-This is where the router really shines. You can create users and shared remote data sessions in just a few lines, where every user is automatically associated with their endpoints and then efficient checks are used to only update data as necessary over private or async or sync group sessions (i.e. where only one user or all users share data).
+This is where the router really shines. You can create users and shared remote data sessions in just a few lines, where every user is automatically associated with their endpoints and then persistent user sessions can be created with efficient checks are used to only update users with new data as necessary over one-on-one, or async/sync group sessions (i.e. where only one user or all users share data to other connected users).
 
 
 Backend:

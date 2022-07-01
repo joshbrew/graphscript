@@ -50,9 +50,9 @@ graph.run('sequence',21,23).then((res) => {
 
 The Graph handles synchronous and asynchronous programming approaches as you need them, including flowgraph execution and inbuilt loops, animations, recursion, forward and backprop, and dynamic node generation with simple objects or straight functions with minimal specification and any properties and arguments you want.
 
-If that sounds like a lot, we took this a few steps further with the higher level Service and Router implementations to enable interoperable programming and one-liner pipes through networking protocols, web workers, peer 2 peer connections. This let's you focus more on creating mroe robust, performant, and dynamic application and computation pipelines. This even includes unified end 2 end encryption pipes to simplify app security with common accepted standards like AES and SHA256 (WIP). 
+If that sounds like a lot, we took this a few steps further with the higher level Service and Router implementations to enable interoperable programming and one-liner pipes through networking protocols, web workers, peer 2 peer connections. This let's you focus more on creating mroe robust, performant, and dynamic application and computation pipelines. This even includes unified end 2 end encryption pipes to simplify app security with common accepted standards like AES. 
 
-To make the best use of this API it's important to have strong internal concepts of scoping, sync/async/promises, threading, and basic javascript object usage and referencing. However, it ought to make learning these concepts easier.
+To make the best use of this API it's important to have strong concepts of scoping, sync/async/promises, threading, and basic javascript object usage and referencing. This adds up to a minimal [finite state machine](https://en.wikipedia.org/wiki/Finite-state_machine) architecture optimized for performance and minimal abstraction for automating your javascript workflow.
 
 ### GraphNode class
 
