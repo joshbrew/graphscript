@@ -3,7 +3,6 @@ import { GraphNode } from "../../Graph";
 import { Routes, Service } from "../Service";
 
 export type DOMElementProps = {
-    route:string|GraphNode,
     template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
     parentNode?:string|HTMLElement,
     styles?:string, //will use the shadow DOM automatically in this case
@@ -11,7 +10,8 @@ export type DOMElementProps = {
     onresize?:(props:any,self:DOMElement)=>void,
     ondelete?:(props:any,self:DOMElement)=>void,
     onchanged?:(props:any,self:DOMElement)=>void,
-    renderonchanged?:boolean|((props:any,self:DOMElement)=>void)
+    renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
+    route?:string|GraphNode
 }
 
 export type DOMElementInfo = {
@@ -47,7 +47,6 @@ export class DOMService extends Service {
     // with the node
     routeElement=(
         options:{
-            route:string|GraphNode,
             template:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
             parentNode?:string|HTMLElement,
             styles?:string, //will use the shadow DOM automatically in this case
@@ -56,11 +55,15 @@ export class DOMService extends Service {
             ondelete?:(props:any,self:DOMElement)=>void,
             onchanged?:(props:any,self:DOMElement)=>void,
             renderonchanged?:boolean|((props:any,self:DOMElement)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
+            route?:string|GraphNode,
             _id?:string
         }
     )=>{
         if(typeof options.route === 'string') {
             options.route = this.nodes.get(options.route);
+        }
+        if(!options.route) {
+            options.route = new GraphNode();
         }
         if(options.route instanceof GraphNode) {
             let elm = new DOMElement();
@@ -71,7 +74,6 @@ export class DOMService extends Service {
             if(options.ondelete) elm.ondelete = options.ondelete;
             if(options.onchanged) elm.onchanged = options.onchanged;
             if(options.renderonchanged) elm.renderonchanged = options.renderonchanged;
-
 
             if(!options._id) options._id = `element${Math.floor(Math.random()*1000000000000000)}`
 
@@ -94,7 +96,6 @@ export class DOMService extends Service {
     //create a canvas with a draw loop that can respond to props
     routeCanvas=(
         options:{
-            route:string|GraphNode,
             context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent', //
             draw:((props:any,self:DOMElement)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
             width?:string,
@@ -107,11 +108,16 @@ export class DOMService extends Service {
             ondelete?:(props:any,self:DOMElement)=>void,
             onchanged?:(props:any,self:DOMElement)=>void,
             renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
+            route?:string|GraphNode,
             _id?:string
         } 
     ) => {
         if(typeof options.route === 'string') {
             options.route = this.nodes.get(options.route);
+            if(options.route instanceof GraphNode) Object.assign(options.route, options);
+        }
+        if(!options.route) {
+            options.route = new GraphNode();
         }
         if(options.route instanceof GraphNode) {
             let elm = new DOMElement();
