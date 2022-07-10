@@ -11,7 +11,6 @@ export type DOMElementProps = {
     ondelete?:(props:any,self:DOMElement)=>void,
     onchanged?:(props:any,self:DOMElement)=>void,
     renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
-    route?:string|GraphNode,
     divs?:any[]
 }
 
