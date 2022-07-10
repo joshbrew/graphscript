@@ -71,9 +71,19 @@ export class DOMService extends Service {
             operator:(node,origin,props:{[key:string]:any})=>{ 
                 if(typeof props === 'object') 
                     for(const key in props) { 
-                        if(node.element) node.element[key] = props[key]; 
+                        if(node.element) {
+                            if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
+                                { //attempt to execute a function with arguments
+                                    if(Array.isArray(props[key]))
+                                        node.element[key](props[key]);
+                                    else node.element[key](props[key]);
+                                } 
+                            else node.element[key] = props[key]; 
+                        }
                     }
-                }
+                    
+                return props;
+            }
         });
 
         this.elements[id] = {element:elm, node, parentNode};
@@ -124,9 +134,19 @@ export class DOMService extends Service {
             operator:(node,origin,props:{[key:string]:any})=>{ 
                 if(typeof props === 'object') 
                     for(const key in props) { 
-                        if(node.element) node.element[key] = props[key]; 
+                        if(node.element) {
+                            if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
+                                { //attempt to execute a function with arguments
+                                    if(Array.isArray(props[key]))
+                                        node.element[key](props[key]);
+                                    else node.element[key](props[key]);
+                                } 
+                            else node.element[key] = props[key]; 
+                        }
                     }
-                }
+                    
+                return props;
+            }
         });
 
         this.components[options.id] = {
@@ -186,7 +206,7 @@ export class DOMService extends Service {
         }
 
         this.templates[options.id] = options;
-        
+
         elm.divs = elm.querySelectorAll('*');
                 
         let node = new GraphNode({
@@ -194,9 +214,18 @@ export class DOMService extends Service {
             operator:(node,origin,props:{[key:string]:any})=>{ 
                 if(typeof props === 'object') 
                     for(const key in props) { 
-                        if(node.element) node.element[key] = props[key]; 
+                        if(node.element) {
+                            if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
+                                { //attempt to execute a function with arguments
+                                    if(Array.isArray(props[key]))
+                                        node.element[key](props[key]);
+                                    else node.element[key](props[key]);
+                                } 
+                            else node.element[key] = props[key]; 
+                        }
                     }
-                }
+                return props;
+            }
         });
 
 
