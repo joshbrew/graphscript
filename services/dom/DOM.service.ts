@@ -1,5 +1,5 @@
 import { DOMElement } from "fragelement"; //https://github.com/joshbrew/DOMElement <---- this is the special sauce
-import { GraphNode } from "../../Graph";
+import { GraphNode, Graph } from '../../Graph';
 import { Routes, Service } from "../Service";
 
 export type DOMElementProps = {
@@ -11,11 +11,13 @@ export type DOMElementProps = {
     ondelete?:(props:any,self:DOMElement)=>void,
     onchanged?:(props:any,self:DOMElement)=>void,
     renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
-    route?:string|GraphNode
+    route?:string|GraphNode,
+    divs?:any[]
 }
 
 export type DOMElementInfo = {
-    element:DOMElement
+    element:DOMElement,
+    node:GraphNode
 } & DOMElementProps
 
 export type CanvasElementProps = {
@@ -23,7 +25,8 @@ export type CanvasElementProps = {
     context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent',
     width?:string,
     height?:string,
-    style?:string
+    style?:string,
+    divs?:any[]
 } & DOMElementProps
 
 export type CanvasElementInfo = {
@@ -31,11 +34,16 @@ export type CanvasElementInfo = {
     context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent',
     animating:boolean,
     animation:any,
+    node:GraphNode
 } & CanvasElementProps
 
 export class DOMService extends Service {
-
+    
     elements:{
+        [key:string]:any
+    }
+
+    components:{
         [key:string]:DOMElementInfo|CanvasElementInfo
     } = {}
 
@@ -43,9 +51,41 @@ export class DOMService extends Service {
         [key:string]:DOMElementProps|CanvasElementProps
     }
 
+    routeElement=(
+        tagName:string, //e.g. 'div', 'canvas'
+        styles:CSSStyleDeclaration,
+        parentNode:string|HTMLElement,
+        id?:string
+    )=>{
+        let elm = document.createElement(tagName);
+        Object.assign(elm.style,styles);
+
+        if(!id) id = `element${Math.floor(Math.random()*1000000000000000)}`;
+        elm.id = id;
+
+        if(typeof parentNode === 'string') parentNode = document.body;
+        if(!parentNode) parentNode = document.body;
+        parentNode.appendChild(elm);
+
+        let node = new GraphNode({
+            element:elm,   
+            operator:(node,origin,props:{[key:string]:any})=>{ 
+                if(typeof props === 'object') 
+                    for(const key in props) { 
+                        if(node.element) node.element[key] = props[key]; 
+                    }
+                }
+        });
+
+        this.elements[id] = {element:elm, node, parentNode};
+
+        return node;
+
+    }
+
     //create an element that is tied to a specific node, multiple elements can aggregate
     // with the node
-    routeElement=(
+    routeComponent=(
         options:{
             template:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
             parentNode?:string|HTMLElement,
@@ -55,46 +95,52 @@ export class DOMService extends Service {
             ondelete?:(props:any,self:DOMElement)=>void,
             onchanged?:(props:any,self:DOMElement)=>void,
             renderonchanged?:boolean|((props:any,self:DOMElement)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
-            route?:string|GraphNode,
-            _id?:string
+            props?:{[key:string]:any},
+            id?:string
         }
     )=>{
-        if(typeof options.route === 'string') {
-            options.route = this.nodes.get(options.route);
-        }
-        if(!options.route) {
-            options.route = new GraphNode();
-        }
-        if(options.route instanceof GraphNode) {
-            let elm = new DOMElement();
-            elm.props = options.route;
-            if(options.template) elm.template = options.template;
-            if(options.oncreate) elm.oncreate = options.oncreate;
-            if(options.onresize) elm.onresize = options.onresize;
-            if(options.ondelete) elm.ondelete = options.ondelete;
-            if(options.onchanged) elm.onchanged = options.onchanged;
-            if(options.renderonchanged) elm.renderonchanged = options.renderonchanged;
+        
 
-            if(!options._id) options._id = `element${Math.floor(Math.random()*1000000000000000)}`
+        let elm = new DOMElement();
+        if(options.props) elm.props = options.props;
+        if(options.template) elm.template = options.template;
+        if(options.oncreate) elm.oncreate = options.oncreate;
+        if(options.onresize) elm.onresize = options.onresize;
+        if(options.ondelete) elm.ondelete = options.ondelete;
+        if(options.onchanged) elm.onchanged = options.onchanged;
+        if(options.renderonchanged) elm.renderonchanged = options.renderonchanged;
 
-            if(typeof options.parentNode === 'string') options.parentNode = document.body;
-            if(!options.parentNode) options.parentNode = document.body;
-            options.parentNode.appendChild(elm);
+        if(!options.id) options.id = `element${Math.floor(Math.random()*1000000000000000)}`
 
-            this.templates[options._id] = options;
+        if(typeof options.parentNode === 'string') options.parentNode = document.body;
+        if(!options.parentNode) options.parentNode = document.body;
+        options.parentNode.appendChild(elm);
 
-            this.elements[options._id] = {
-                element:elm,
-                ...options
-            };
+        this.templates[options.id] = options;
 
-            return this.elements[options._id];
-        }
-        return false;
+        this.components[options.id].divs = elm.querySelectorAll('*');
+     
+        let node = new GraphNode({
+            element:elm,   
+            operator:(node,origin,props:{[key:string]:any})=>{ 
+                if(typeof props === 'object') 
+                    for(const key in props) { 
+                        if(node.element) node.element[key] = props[key]; 
+                    }
+                }
+        });
+
+        this.components[options.id] = {
+            element:elm,
+            node,
+            ...options
+        };
+
+        return this.components[options.id];
     }
 
     //create a canvas with a draw loop that can respond to props
-    routeCanvas=(
+    routeCanvasComponent=(
         options:{
             context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent', //
             draw:((props:any,self:DOMElement)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
@@ -108,60 +154,66 @@ export class DOMService extends Service {
             ondelete?:(props:any,self:DOMElement)=>void,
             onchanged?:(props:any,self:DOMElement)=>void,
             renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
-            route?:string|GraphNode,
-            _id?:string
-        } 
+            props?:{[key:string]:any}
+            id?:string
+        }
     ) => {
-        if(typeof options.route === 'string') {
-            options.route = this.nodes.get(options.route);
-            if(options.route instanceof GraphNode) Object.assign(options.route, options);
-        }
-        if(!options.route) {
-            options.route = new GraphNode();
-        }
-        if(options.route instanceof GraphNode) {
-            let elm = new DOMElement();
-            elm.props = options.route;
-            elm.template = `<canvas `;
-            if(options.width) elm.template += `width="${options.width}"`;
-            if(options.height) elm.template += `height="${options.height}"`;
-            if(options.style) elm.template += `style="${options.style}"`;
-            elm.template+=` ></canvas>`;
 
-            if(options.oncreate) elm.oncreate = options.oncreate;
-            if(options.onresize) elm.onresize = options.onresize;
-            if(options.ondelete) elm.ondelete = options.ondelete;
-            if(options.onchanged) elm.onchanged = options.onchanged;
-            if(options.renderonchanged) elm.renderonchanged = options.renderonchanged;
+        let elm = new DOMElement();
+        if(options.props) elm.props = options.props;
+        elm.template = `<canvas `;
+        if(options.width) elm.template += `width="${options.width}"`;
+        if(options.height) elm.template += `height="${options.height}"`;
+        if(options.style) elm.template += `style="${options.style}"`;
+        elm.template+=` ></canvas>`;
 
-            if(!options._id) options._id = `element${Math.floor(Math.random()*1000000000000000)}`
+        if(options.oncreate) elm.oncreate = options.oncreate;
+        if(options.onresize) elm.onresize = options.onresize;
+        if(options.ondelete) elm.ondelete = options.ondelete;
+        if(options.onchanged) elm.onchanged = options.onchanged;
+        if(options.renderonchanged) elm.renderonchanged = options.renderonchanged;
 
-            if(typeof options.parentNode === 'string') options.parentNode = document.body;
-            if(!options.parentNode) options.parentNode = document.body;
-            options.parentNode.appendChild(elm);
+        if(!options.id) options.id = `element${Math.floor(Math.random()*1000000000000000)}`
 
-            let animation = () => {
-                if((this.elements[options._id as string] as CanvasElementInfo)?.animating) {
-                    (this.elements[options._id as string] as CanvasElementInfo).draw(this.elements[options._id as string].route,this.elements[options._id as string].element);
-                    requestAnimationFrame(animation);
-                }
+        if(typeof options.parentNode === 'string') options.parentNode = document.body;
+        if(!options.parentNode) options.parentNode = document.body;
+        options.parentNode.appendChild(elm);
+
+        let animation = () => {
+            if((this.elements[options.id as string] as CanvasElementInfo)?.animating) {
+                (this.elements[options.id as string] as CanvasElementInfo).draw(this.elements[options.id as string].route,this.elements[options.id as string].element);
+                requestAnimationFrame(animation);
             }
-
-            this.templates[options._id] = options;
-
-            this.elements[options._id] = {
-                element:elm,
-                template:elm.template,
-                animating:true,
-                animation,
-                ...options
-            };
-
-            (this.elements[options._id] as CanvasElementInfo).animation();
-
-            return this.elements[options._id];
         }
-        return false;
+
+        this.templates[options.id] = options;
+                
+        let node = new GraphNode({
+            element:elm,   
+            operator:(node,origin,props:{[key:string]:any})=>{ 
+                if(typeof props === 'object') 
+                    for(const key in props) { 
+                        if(node.element) node.element[key] = props[key]; 
+                    }
+                }
+        });
+
+
+        this.components[options.id] = {
+            element:elm,
+            template:elm.template,
+            animating:true,
+            animation,
+            node,
+            ...options
+        };
+
+        this.components[options.id].divs = elm.querySelectorAll('*'); //get all child divs, this can include other component divs fyi since the scoped stylesheets will apply
+
+        (this.components[options.id] as CanvasElementInfo).animation(); //start the animation loop
+
+        return this.components[options.id];
+
     }
 
     terminate=(element:string|DOMElement|HTMLElement|DOMElementInfo|CanvasElementInfo)=>{
@@ -187,7 +239,8 @@ export class DOMService extends Service {
 
     routes:Routes = {
         routeElement:this.routeElement,
-        routeCanvas:this.routeCanvas,
+        routeComponent:this.routeComponent,
+        routeCanvasComponent:this.routeCanvasComponent,
         terminate:this.terminate
     }
 }

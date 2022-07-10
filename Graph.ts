@@ -1114,6 +1114,7 @@ export class Graph {
                 }
             }
         }
+        return node;
     }
 
     append = (node:GraphNode, parentNode:GraphNode) => {
