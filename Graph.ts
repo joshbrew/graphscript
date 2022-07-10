@@ -1095,6 +1095,7 @@ export class Graph {
                 recursivelyRemove(node as GraphNode);
             }
         }
+        return node;
     }
 
     remove = (node:string|GraphNode) => {
