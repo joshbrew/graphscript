@@ -117,7 +117,7 @@ export class DOMService extends Service {
 
         this.templates[options.id] = options;
 
-        this.components[options.id].divs = elm.querySelectorAll('*');
+        elm.divs = elm.querySelectorAll('*');
      
         let node = new GraphNode({
             element:elm,   
@@ -186,6 +186,8 @@ export class DOMService extends Service {
         }
 
         this.templates[options.id] = options;
+        
+        elm.divs = elm.querySelectorAll('*');
                 
         let node = new GraphNode({
             element:elm,   
