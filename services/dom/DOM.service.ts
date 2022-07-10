@@ -88,7 +88,7 @@ export class DOMService extends Service {
 
         this.elements[id] = {element:elm, node, parentNode};
 
-        return node;
+        return this.elements[id];
 
     }
 
