@@ -78,6 +78,7 @@ export class DOMService extends Service {
                                         node.element[key](props[key]);
                                     else node.element[key](props[key]);
                                 } 
+                            else if (key === 'style') { Object.assign(node.element[key],props[key])}
                             else node.element[key] = props[key]; 
                         }
                     }
@@ -141,7 +142,6 @@ export class DOMService extends Service {
                                         node.element[key](props[key]);
                                     else node.element[key](props[key]);
                                 } 
-                            else if (key === 'style') { Object.assign(node.element[key],props[key])}
                             else node.element[key] = props[key]; 
                         }
                     }
