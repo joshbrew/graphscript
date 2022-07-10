@@ -25,3 +25,24 @@ This is kind of a bloated example right now but this is actively being used to t
 Joshua Brewster and Garrett Flynn
 
 AGPL v3.0 License (copyleft)
+
+### Library Usage
+#### Node.js
+```bash
+npm install graphscript
+``` 
+
+##### ES Modules
+```javascript
+import * as graphscript from 'brainsatplay'
+```
+
+##### CommonJS
+```javascript
+const graphscript = require('graphscript')
+``` 
+
+#### Browser
+```html
+<script src="https://cdn.jsdelivr.net/npm/graphscript@latest"></script>
+```
