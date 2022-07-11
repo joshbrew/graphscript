@@ -297,9 +297,11 @@ export class DOMService extends Service {
             if((this.components[element] as CanvasElementInfo).node.isAnimating)
                 (this.components[element] as CanvasElementInfo).node.stopNode();
             element = this.components[element].element;
+            delete this.components[element]
         }
         else if(typeof element === 'string' && this.elements[element]) {
             element = this.elements[element].element;
+            delete this.elements[element]
         }
         
         if(this.nodes.get(element.id)) {
