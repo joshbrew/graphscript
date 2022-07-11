@@ -35,7 +35,7 @@ export declare type CanvasElementInfo = {
         canvas: HTMLCanvasElement;
         context: RenderingContext;
     };
-    draw: ((props: any, self: DOMElement) => string);
+    draw: ((props: any, self: DOMElement) => void);
     canvas: HTMLCanvasElement;
     context: RenderingContext;
     animating: boolean;

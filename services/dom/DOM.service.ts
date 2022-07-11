@@ -2,7 +2,7 @@ import { DOMElement } from "fragelement"; //https://github.com/joshbrew/DOMEleme
 import { GraphNode } from '../../Graph';
 import { Routes, Service } from "../Service";
 
-export type ElementInfo = {
+export type ElementInfo = { //returned from addElement
     element:HTMLElement,
     node:GraphNode,
     parentNode:HTMLElement,
@@ -21,7 +21,7 @@ export type DOMElementProps = {
     id?:string
 }
 
-export type DOMElementInfo = {
+export type DOMElementInfo = { //returned from addComponent
     element:DOMElement,
     node:GraphNode,
     divs:any[]
@@ -35,9 +35,9 @@ export type CanvasElementProps = {
     style?:string
 } & DOMElementProps
 
-export type CanvasElementInfo = {
+export type CanvasElementInfo = { //returned from addCanvasComponent
     element:DOMElement & {canvas:HTMLCanvasElement, context:RenderingContext},
-    draw:((props:any,self:DOMElement)=>string),
+    draw:((props:any,self:DOMElement)=>void),
     canvas:HTMLCanvasElement,
     context:RenderingContext,
     animating:boolean,
@@ -214,7 +214,7 @@ export class DOMService extends Service {
             height?:string, //e.g. '300px'
             style?:CSSStyleDeclaration, //canvas inline style string
             parentNode?:string|HTMLElement,
-            styles?:string, //will use the shadow DOM automatically in this case
+            styles?:string, //stylesheet text, goes inside a <style> tag. This will use the shadow DOM automatically in this case
             oncreate?:(props:any,self:DOMElement)=>void,
             onresize?:(props:any,self:DOMElement)=>void,
             ondelete?:(props:any,self:DOMElement)=>void,
@@ -286,9 +286,10 @@ export class DOMService extends Service {
             canvas,
             node,
             ...options
-        };
+        } as any;
 
         (this.components[options.id] as CanvasElementInfo).context = context;
+
         elm.canvas = canvas; //make sure everything is accessible;
         elm.context = context; 
         node.canvas = canvas; //make sure everything is accessible;
