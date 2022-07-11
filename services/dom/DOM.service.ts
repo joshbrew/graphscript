@@ -24,19 +24,26 @@ export type CanvasElementProps = {
     context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent',
     width?:string,
     height?:string,
-    style?:string,
-    divs?:any[]
+    style?:string
 } & DOMElementProps
 
 export type CanvasElementInfo = {
     element:DOMElement,
-    context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent',
+    draw:((props:any,self:DOMElement)=>string),
+    canvas:HTMLCanvasElement,
+    context:RenderingContext,
     animating:boolean,
     animation:any,
+    width?:string,
+    height?:string,
+    style?:string,
+    divs?:any[],
     node:GraphNode
-} & CanvasElementProps
+} & DOMElementProps
 
 export class DOMService extends Service {
+
+    name='html'
     
     elements:{
         [key:string]:any
@@ -50,11 +57,11 @@ export class DOMService extends Service {
         [key:string]:DOMElementProps|CanvasElementProps
     }
 
-    routeElement=(
+    addElement=(
         options:{
             tagName:string, //e.g. 'div', 'canvas'
             element?:HTMLElement, //alternatively set an element
-            styles:CSSStyleDeclaration,
+            style:CSSStyleDeclaration,
             parentNode:string|HTMLElement,
             id?:string
         }
@@ -72,7 +79,7 @@ export class DOMService extends Service {
 
         if(!elm) return undefined;
 
-        if(options.styles) Object.assign(elm.style,options.styles);
+        if(options.style) Object.assign(elm.style,options.style);
 
         if(!options.id) options.id = `element${Math.floor(Math.random()*1000000000000000)}`;
         elm.id = options.id;
@@ -103,7 +110,7 @@ export class DOMService extends Service {
         });
 
         this.add(node);
-        
+
         this.elements[options.id] = {element:elm, node, parentNode:options.parentNode};
 
         return this.elements[options.id];
@@ -112,7 +119,7 @@ export class DOMService extends Service {
 
     //create an element that is tied to a specific node, multiple elements can aggregate
     // with the node
-    routeComponent=(
+    addComponent=(
         options:{
             template:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
             parentNode?:string|HTMLElement,
@@ -141,7 +148,8 @@ export class DOMService extends Service {
 
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
-        options.parentNode.appendChild(elm);
+
+        options.parentNode.appendChild(elm);  //this instantiates the DOMElement
 
         this.templates[options.id] = options;
 
@@ -179,13 +187,13 @@ export class DOMService extends Service {
     }
 
     //create a canvas with a draw loop that can respond to props
-    routeCanvasComponent=(
+    addCanvasComponent=(
         options:{
             context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent', //
-            draw:((props:any,self:DOMElement)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
-            width?:string,
-            height?:string,
-            style?:string,
+            draw:((props:any,self:DOMElement)=>void), //string or function that passes the modifiable props on the element (the graph node properties)
+            width?:string, //e.g. '300px'
+            height?:string, //e.g. '300px'
+            style?:CSSStyleDeclaration, //canvas inline style string
             parentNode?:string|HTMLElement,
             styles?:string, //will use the shadow DOM automatically in this case
             oncreate?:(props:any,self:DOMElement)=>void,
@@ -203,7 +211,6 @@ export class DOMService extends Service {
         elm.template = `<canvas `;
         if(options.width) elm.template += `width="${options.width}"`;
         if(options.height) elm.template += `height="${options.height}"`;
-        if(options.style) elm.template += `style="${options.style}"`;
         elm.template+=` ></canvas>`;
 
         if(options.oncreate) elm.oncreate = options.oncreate;
@@ -216,11 +223,12 @@ export class DOMService extends Service {
 
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
-        options.parentNode.appendChild(elm);
+        
+        options.parentNode.appendChild(elm); //this instantiates the DOMElement
 
-        let animation = () => {
-            if((this.elements[options.id as string] as CanvasElementInfo)?.animating) {
-                (this.elements[options.id as string] as CanvasElementInfo).draw(this.elements[options.id as string].route,this.elements[options.id as string].element);
+        let animation = () => { //default animation
+            if((this.components[options.id as string] as CanvasElementInfo)?.animating) {
+                (this.components[options.id as string] as CanvasElementInfo).draw(this.components[options.id as string].element.props,this.components[options.id as string].element);
                 requestAnimationFrame(animation);
             }
         }
@@ -250,18 +258,28 @@ export class DOMService extends Service {
 
         this.add(node);
 
+        let canvas = elm.querySelector('canvas');
+        if(options.style) Object.assign(canvas.style,options.style); //assign the style object
+
+        let context = (canvas as HTMLCanvasElement).getContext(options.context);
+
         this.components[options.id] = {
             element:elm,
             template:elm.template,
-            animating:true,
-            animation,
+            canvas,
             node,
             ...options
         };
 
+        (this.components[options.id] as CanvasElementInfo).context = context;
+        elm.canvas = canvas; //make sure everything is accessible;
+        elm.context = context; 
+        node.canvas = canvas; //make sure everything is accessible;
+        node.context = context;
+
         this.components[options.id].divs = elm.querySelectorAll('*'); //get all child divs, this can include other component divs fyi since the scoped stylesheets will apply
 
-        (this.components[options.id] as CanvasElementInfo).animation(); //start the animation loop
+        node.runAnimation(animation); //update the animation by calling this function again or setting node.animation manually
 
         return this.components[options.id];
 
@@ -275,8 +293,8 @@ export class DOMService extends Service {
             if((element as DOMElementInfo|CanvasElementInfo).element) element = (element as DOMElementInfo|CanvasElementInfo).element;
          }
         else if(typeof element === 'string' && this.components[element]) {
-            if((this.components[element] as CanvasElementInfo).animating)
-            (this.components[element] as CanvasElementInfo).animating = false; //quits the anim
+            if((this.components[element] as CanvasElementInfo).node.isAnimating)
+                (this.components[element] as CanvasElementInfo).node.stopNode();
             element = this.components[element].element;
         }
         else if(typeof element === 'string' && this.elements[element]) {
@@ -297,19 +315,80 @@ export class DOMService extends Service {
     }
 
     routes:Routes = {
-        routeElement:this.routeElement,
-        routeComponent:this.routeComponent,
-        routeCanvasComponent:this.routeCanvasComponent,
+        addElement:this.addElement,
+        addComponent:this.addComponent,
+        addCanvasComponent:this.addCanvasComponent,
         terminate:this.terminate
     }
 }
 
 /**
  * Usage
- * 
- * let router = new Router([
- *      DOMService
- * ]);
- * 
- * 
  */
+
+import {Router} from '../../routers/Router'
+
+let router = new Router([
+    DOMService
+]);
+
+let elem = router.addElement(
+{
+    tagName:'div', //for an existing element, just pass the element object e.g. document.getElementById('testdiv')
+    style:{backgroundColor:'black', width:'100px', height:'100px' },
+    parentNode:document.body,
+    id:'testdiv'
+}
+); //this adds the element and creates a node that allows you to modify the HTMLElement properties or run functions e.g. click()
+
+let node = elem.node;
+let div = elem.element; //or node.element 
+
+setTimeout(()=>{
+    node.run('testdiv',{style:{backgroundColor:'red'}}) //now we can modify properties on the element via node trees, function names can be called to pass an argument or array of arguments (wrap arrays in an array if its a single argument requiring an array)
+    setTimeout(()=>{
+        router.html.run('testdiv',{style:{backgroundColor:'black'}}) //equivalent call via the service stack
+    },1000);
+},1000);
+
+
+let comp = router.addComponent({
+    template:` 
+        <div>
+            <button>Hello World!</button>
+        </div>
+    `, //or load an html file (if bundling)
+    parentNode:document.body,
+    styles:`
+        div {
+            background-color:black;
+            width:100px;
+            height:100px;
+        }
+
+        button {
+            background-color: green;
+            color: red;
+        }
+    `, //or load a css file (if bundling, scss also supported natively in esbuild)
+    oncreate:(props:any,self:DOMElement) => { 
+        let button = self.querySelector('button');
+        button.onclick = (ev) => { alert('Hello World!'); }
+    }
+});
+
+let ccomp = router.addCanvasComponent({
+    context:'2d',
+    draw:(props:any,self:DOMElement)=>{
+        let canvas = self.canvas as HTMLCanvasElement;
+        let context = self.context as CanvasRenderingContext2D;
+
+        context.clearRect(0,0,canvas.width,canvas.height);
+
+        context.fillStyle = `rgb(0,0,${Math.sin(performance.now()*0.001)*255})`;
+        context.fillRect(0,0,canvas.width,canvas.height);
+    },
+    width:'300px',
+    height:'300px',
+    style:{width:'300px', height:'300px'}
+});
