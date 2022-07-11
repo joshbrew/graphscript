@@ -1,8 +1,7 @@
 import { DOMElement } from "fragelement";
-import { GraphNode } from "../../Graph";
+import { GraphNode } from '../../Graph';
 import { Routes, Service } from "../Service";
 export declare type DOMElementProps = {
-    route: string | GraphNode;
     template?: string | ((props: any) => string);
     parentNode?: string | HTMLElement;
     styles?: string;
@@ -14,6 +13,8 @@ export declare type DOMElementProps = {
 };
 export declare type DOMElementInfo = {
     element: DOMElement;
+    node: GraphNode;
+    divs?: any[];
 } & DOMElementProps;
 export declare type CanvasElementProps = {
     draw: ((props: any, self: DOMElement) => string);
@@ -23,20 +24,40 @@ export declare type CanvasElementProps = {
     style?: string;
 } & DOMElementProps;
 export declare type CanvasElementInfo = {
-    element: DOMElement;
-    context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent';
+    element: DOMElement & {
+        canvas: HTMLCanvasElement;
+        context: RenderingContext;
+    };
+    draw: ((props: any, self: DOMElement) => string);
+    canvas: HTMLCanvasElement;
+    context: RenderingContext;
     animating: boolean;
     animation: any;
-} & CanvasElementProps;
+    width?: string;
+    height?: string;
+    style?: string;
+    divs?: any[];
+    node: GraphNode;
+} & DOMElementProps;
 export declare class DOMService extends Service {
+    name: string;
     elements: {
+        [key: string]: any;
+    };
+    components: {
         [key: string]: DOMElementInfo | CanvasElementInfo;
     };
     templates: {
         [key: string]: DOMElementProps | CanvasElementProps;
     };
-    routeElement: (options: {
-        route: string | GraphNode;
+    addElement: (options: {
+        tagName: string;
+        element?: HTMLElement;
+        style: CSSStyleDeclaration;
+        parentNode: string | HTMLElement;
+        id?: string;
+    }) => any;
+    addComponent: (options: {
         template: string | ((props: any) => string);
         parentNode?: string | HTMLElement;
         styles?: string;
@@ -45,15 +66,17 @@ export declare class DOMService extends Service {
         ondelete?: (props: any, self: DOMElement) => void;
         onchanged?: (props: any, self: DOMElement) => void;
         renderonchanged?: boolean | ((props: any, self: DOMElement) => void);
-        _id?: string;
-    }) => false | DOMElementInfo;
-    routeCanvas: (options: {
-        route: string | GraphNode;
+        props?: {
+            [key: string]: any;
+        };
+        id?: string;
+    }) => DOMElementInfo | CanvasElementInfo;
+    addCanvasComponent: (options: {
         context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent';
-        draw: (props: any, self: DOMElement) => string;
+        draw: (props: any, self: DOMElement) => void;
         width?: string;
         height?: string;
-        style?: string;
+        style?: CSSStyleDeclaration;
         parentNode?: string | HTMLElement;
         styles?: string;
         oncreate?: (props: any, self: DOMElement) => void;
@@ -61,8 +84,14 @@ export declare class DOMService extends Service {
         ondelete?: (props: any, self: DOMElement) => void;
         onchanged?: (props: any, self: DOMElement) => void;
         renderonchanged?: boolean | ((props: any, self: DOMElement) => void);
-        _id?: string;
-    }) => false | DOMElementInfo;
+        props?: {
+            [key: string]: any;
+        };
+        id?: string;
+    }) => DOMElementInfo | CanvasElementInfo;
     terminate: (element: string | DOMElement | HTMLElement | DOMElementInfo | CanvasElementInfo) => boolean;
     routes: Routes;
 }
+/**
+ * Usage
+ */
