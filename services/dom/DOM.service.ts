@@ -326,69 +326,69 @@ export class DOMService extends Service {
  * Usage
  */
 
-import {Router} from '../../routers/Router'
+// import {Router} from '../../routers/Router'
 
-let router = new Router([
-    DOMService
-]);
+// let router = new Router([
+//     DOMService
+// ]);
 
-let elem = router.addElement(
-{
-    tagName:'div', //for an existing element, just pass the element object e.g. document.getElementById('testdiv')
-    style:{backgroundColor:'black', width:'100px', height:'100px' },
-    parentNode:document.body,
-    id:'testdiv'
-}
-); //this adds the element and creates a node that allows you to modify the HTMLElement properties or run functions e.g. click()
+// let elem = router.html.addElement(
+// {
+//     tagName:'div', //for an existing element, just pass the element object e.g. document.getElementById('testdiv')
+//     style:{backgroundColor:'black', width:'100px', height:'100px' },
+//     parentNode:document.body,
+//     id:'testdiv'
+// }
+// ); //this adds the element and creates a node that allows you to modify the HTMLElement properties or run functions e.g. click()
 
-let node = elem.node;
-let div = elem.element; //or node.element 
+// let node = elem.node;
+// let div = elem.element; //or node.element 
 
-setTimeout(()=>{
-    node.run('testdiv',{style:{backgroundColor:'red'}}) //now we can modify properties on the element via node trees, function names can be called to pass an argument or array of arguments (wrap arrays in an array if its a single argument requiring an array)
-    setTimeout(()=>{
-        router.html.run('testdiv',{style:{backgroundColor:'black'}}) //equivalent call via the service stack
-    },1000);
-},1000);
+// setTimeout(()=>{
+//     node.run('testdiv',{style:{backgroundColor:'red'}}) //now we can modify properties on the element via node trees, function names can be called to pass an argument or array of arguments (wrap arrays in an array if its a single argument requiring an array)
+//     setTimeout(()=>{
+//         router.html.run('testdiv',{style:{backgroundColor:'black'}}) //equivalent call via the service stack
+//     },1000);
+// },1000);
 
 
-let comp = router.addComponent({
-    template:` 
-        <div>
-            <button>Hello World!</button>
-        </div>
-    `, //or load an html file (if bundling)
-    parentNode:document.body,
-    styles:`
-        div {
-            background-color:black;
-            width:100px;
-            height:100px;
-        }
+// let comp = router.html.addComponent({
+//     template:` 
+//         <div>
+//             <button>Hello World!</button>
+//         </div>
+//     `, //or load an html file (if bundling)
+//     parentNode:document.body,
+//     styles:`
+//         div {
+//             background-color:black;
+//             width:100px;
+//             height:100px;
+//         }
 
-        button {
-            background-color: green;
-            color: red;
-        }
-    `, //or load a css file (if bundling, scss also supported natively in esbuild)
-    oncreate:(props:any,self:DOMElement) => { 
-        let button = self.querySelector('button');
-        button.onclick = (ev) => { alert('Hello World!'); }
-    }
-});
+//         button {
+//             background-color: green;
+//             color: red;
+//         }
+//     `, //or load a css file (if bundling, scss also supported natively in esbuild)
+//     oncreate:(props:any,self:DOMElement) => { 
+//         let button = self.querySelector('button');
+//         button.onclick = (ev) => { alert('Hello World!'); }
+//     }
+// });
 
-let ccomp = router.addCanvasComponent({
-    context:'2d',
-    draw:(props:any,self:DOMElement)=>{
-        let canvas = self.canvas as HTMLCanvasElement;
-        let context = self.context as CanvasRenderingContext2D;
+// let ccomp = router.html.addCanvasComponent({
+//     context:'2d',
+//     draw:(props:any,self:DOMElement)=>{
+//         let canvas = self.canvas as HTMLCanvasElement;
+//         let context = self.context as CanvasRenderingContext2D;
 
-        context.clearRect(0,0,canvas.width,canvas.height);
+//         context.clearRect(0,0,canvas.width,canvas.height);
 
-        context.fillStyle = `rgb(0,0,${Math.sin(performance.now()*0.001)*255})`;
-        context.fillRect(0,0,canvas.width,canvas.height);
-    },
-    width:'300px',
-    height:'300px',
-    style:{width:'300px', height:'300px'}
-});
+//         context.fillStyle = `rgb(0,0,${Math.sin(performance.now()*0.001)*255})`;
+//         context.fillRect(0,0,canvas.width,canvas.height);
+//     },
+//     width:'300px',
+//     height:'300px',
+//     style:{width:'300px', height:'300px'}
+// });
