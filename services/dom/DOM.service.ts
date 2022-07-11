@@ -2,6 +2,13 @@ import { DOMElement } from "fragelement"; //https://github.com/joshbrew/DOMEleme
 import { GraphNode } from '../../Graph';
 import { Routes, Service } from "../Service";
 
+export type ElementInfo = {
+    element:HTMLElement,
+    node:GraphNode,
+    parentNode:HTMLElement,
+    divs:any[]
+}
+
 export type DOMElementProps = {
     template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
     parentNode?:string|HTMLElement,
@@ -11,12 +18,13 @@ export type DOMElementProps = {
     ondelete?:(props:any,self:DOMElement)=>void,
     onchanged?:(props:any,self:DOMElement)=>void,
     renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
+    id?:string
 }
 
 export type DOMElementInfo = {
     element:DOMElement,
     node:GraphNode,
-    divs?:any[]
+    divs:any[]
 } & DOMElementProps
 
 export type CanvasElementProps = {
@@ -37,7 +45,6 @@ export type CanvasElementInfo = {
     width?:string,
     height?:string,
     style?:string,
-    divs?:any[],
     node:GraphNode
 } & DOMElementProps
 
@@ -59,12 +66,13 @@ export class DOMService extends Service {
 
     addElement=(
         options:{
-            tagName:string, //e.g. 'div', 'canvas'
+            tagName?:string, //e.g. 'div', 'canvas'
             element?:HTMLElement, //alternatively set an element
-            style:CSSStyleDeclaration,
-            parentNode:string|HTMLElement,
+            style?:CSSStyleDeclaration,
+            parentNode?:string|HTMLElement,
             id?:string
-        }
+        },
+        generateChildElementNodes=false
         
     )=>{
 
@@ -87,7 +95,7 @@ export class DOMService extends Service {
 
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
-        options.parentNode.appendChild(elm);
+        if(!document.getElementById(elm.id)) options.parentNode.appendChild(elm);
 
         let node = new GraphNode({
             element:elm,   
@@ -112,7 +120,13 @@ export class DOMService extends Service {
 
         this.add(node);
 
-        this.elements[options.id] = {element:elm, node, parentNode:options.parentNode};
+        
+        let divs = elm.querySelectorAll('*');
+        if(generateChildElementNodes) { //convert all child divs to additional nodes
+            divs = divs.map((d:HTMLElement) => this.addElement({element:d}));
+        }
+
+        this.elements[options.id] = {element:elm, node, parentNode:options.parentNode, divs};
 
         return this.elements[options.id];
 
@@ -122,7 +136,7 @@ export class DOMService extends Service {
     // with the node
     addComponent=(
         options:{
-            template:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
+            template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
             parentNode?:string|HTMLElement,
             styles?:string, //will use the shadow DOM automatically in this case
             oncreate?:(props:any,self:DOMElement)=>void,
@@ -132,7 +146,8 @@ export class DOMService extends Service {
             renderonchanged?:boolean|((props:any,self:DOMElement)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
             props?:{[key:string]:any},
             id?:string
-        }
+        },
+        generateChildElementNodes=false
     )=>{
         
         let elm = new DOMElement();
@@ -149,11 +164,14 @@ export class DOMService extends Service {
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
 
-        options.parentNode.appendChild(elm);  //this instantiates the DOMElement
+        if(!document.getElementById(elm.id)) options.parentNode.appendChild(elm);  //this instantiates the DOMElement
 
         this.templates[options.id] = options;
 
         let divs = elm.querySelectorAll('*');
+        if(generateChildElementNodes) { //convert all child divs to additional nodes
+            divs = divs.map((d:HTMLElement) => this.addElement({element:d}));
+        }
      
         let node = new GraphNode({
             element:elm,   
@@ -225,7 +243,7 @@ export class DOMService extends Service {
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
         
-        options.parentNode.appendChild(elm); //this instantiates the DOMElement
+        if(!document.getElementById(elm.id)) options.parentNode.appendChild(elm); //this instantiates the DOMElement
 
         let animation = () => { //default animation
             if((this.components[options.id as string] as CanvasElementInfo)?.animating) {
@@ -235,8 +253,6 @@ export class DOMService extends Service {
         }
 
         this.templates[options.id] = options;
-
-        let divs = elm.querySelectorAll('*');
                 
         let node = new GraphNode({
             element:elm,   
@@ -269,7 +285,6 @@ export class DOMService extends Service {
             template:elm.template,
             canvas,
             node,
-            divs,
             ...options
         };
 

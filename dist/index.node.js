@@ -57,13 +57,13 @@ var require_sjcl = __commonJS({
       var b, c, d, e, f = this.s[0][4], g = this.s[1];
       b = a.length;
       var h = 1;
-      if (b !== 4 && b !== 6 && b !== 8)
+      if (4 !== b && 6 !== b && 8 !== b)
         throw new sjcl2.exception.invalid("invalid aes key size");
       this.b = [d = a.slice(0), e = []];
       for (a = b; a < 4 * b + 28; a++) {
         c = d[a - 1];
-        if (a % b === 0 || b === 8 && a % b === 4)
-          c = f[c >>> 24] << 24 ^ f[c >> 16 & 255] << 16 ^ f[c >> 8 & 255] << 8 ^ f[c & 255], a % b === 0 && (c = c << 8 ^ c >>> 24 ^ h << 24, h = h << 1 ^ 283 * (h >> 7));
+        if (0 === a % b || 8 === b && 4 === a % b)
+          c = f[c >>> 24] << 24 ^ f[c >> 16 & 255] << 16 ^ f[c >> 8 & 255] << 8 ^ f[c & 255], 0 === a % b && (c = c << 8 ^ c >>> 24 ^ h << 24, h = h << 1 ^ 283 * (h >> 7));
         d[a] = d[a - b] ^ c;
       }
       for (b = 0; a; b++, a--)
@@ -84,7 +84,7 @@ var require_sjcl = __commonJS({
         a[e] = a[e].slice(0), b[e] = b[e].slice(0);
     } };
     function t(a, b, c) {
-      if (b.length !== 4)
+      if (4 !== b.length)
         throw new sjcl2.exception.invalid("invalid aes block size");
       var d = a.b[c], e = b[0] ^ d[0], f = b[c ? 3 : 1] ^ d[1], g = b[2] ^ d[2];
       b = b[c ? 1 : 3] ^ d[3];
@@ -100,18 +100,18 @@ var require_sjcl = __commonJS({
     }
     sjcl2.bitArray = { bitSlice: function(a, b, c) {
       a = sjcl2.bitArray.$(a.slice(b / 32), 32 - (b & 31)).slice(1);
-      return c === void 0 ? a : sjcl2.bitArray.clamp(a, c - b);
+      return void 0 === c ? a : sjcl2.bitArray.clamp(a, c - b);
     }, extract: function(a, b, c) {
       var d = Math.floor(-b - c & 31);
       return ((b + c - 1 ^ b) & -32 ? a[b / 32 | 0] << 32 - d ^ a[b / 32 + 1 | 0] >>> d : a[b / 32 | 0] >>> d) & (1 << c) - 1;
     }, concat: function(a, b) {
-      if (a.length === 0 || b.length === 0)
+      if (0 === a.length || 0 === b.length)
         return a.concat(b);
       var c = a[a.length - 1], d = sjcl2.bitArray.getPartial(c);
-      return d === 32 ? a.concat(b) : sjcl2.bitArray.$(b, d, c | 0, a.slice(0, a.length - 1));
+      return 32 === d ? a.concat(b) : sjcl2.bitArray.$(b, d, c | 0, a.slice(0, a.length - 1));
     }, bitLength: function(a) {
       var b = a.length;
-      return b === 0 ? 0 : 32 * (b - 1) + sjcl2.bitArray.getPartial(a[b - 1]);
+      return 0 === b ? 0 : 32 * (b - 1) + sjcl2.bitArray.getPartial(a[b - 1]);
     }, clamp: function(a, b) {
       if (32 * a.length < b)
         return a;
@@ -121,7 +121,7 @@ var require_sjcl = __commonJS({
       0 < c && b && (a[c - 1] = sjcl2.bitArray.partial(b, a[c - 1] & 2147483648 >> b - 1, 1));
       return a;
     }, partial: function(a, b, c) {
-      return a === 32 ? b : (c ? b | 0 : b << 32 - a) + 1099511627776 * a;
+      return 32 === a ? b : (c ? b | 0 : b << 32 - a) + 1099511627776 * a;
     }, getPartial: function(a) {
       return Math.round(a / 1099511627776) || 32;
     }, equal: function(a, b) {
@@ -130,13 +130,13 @@ var require_sjcl = __commonJS({
       var c = 0, d;
       for (d = 0; d < a.length; d++)
         c |= a[d] ^ b[d];
-      return c === 0;
+      return 0 === c;
     }, $: function(a, b, c, d) {
       var e;
       e = 0;
-      for (d === void 0 && (d = []); 32 <= b; b -= 32)
+      for (void 0 === d && (d = []); 32 <= b; b -= 32)
         d.push(c), c = 0;
-      if (b === 0)
+      if (0 === b)
         return d.concat(a);
       for (e = 0; e < a.length; e++)
         d.push(c | a[e] >>> b), c = a[e] << 32 - b;
@@ -155,13 +155,13 @@ var require_sjcl = __commonJS({
     sjcl2.codec.utf8String = { fromBits: function(a) {
       var b = "", c = sjcl2.bitArray.bitLength(a), d, e;
       for (d = 0; d < c / 8; d++)
-        (d & 3) === 0 && (e = a[d / 4]), b += String.fromCharCode(e >>> 8 >>> 8 >>> 8), e <<= 8;
+        0 === (d & 3) && (e = a[d / 4]), b += String.fromCharCode(e >>> 8 >>> 8 >>> 8), e <<= 8;
       return decodeURIComponent(escape(b));
     }, toBits: function(a) {
       a = unescape(encodeURIComponent(a));
       var b = [], c, d = 0;
       for (c = 0; c < a.length; c++)
-        d = d << 8 | a.charCodeAt(c), (c & 3) === 3 && (b.push(d), d = 0);
+        d = d << 8 | a.charCodeAt(c), 3 === (c & 3) && (b.push(d), d = 0);
       c & 3 && b.push(sjcl2.bitArray.partial(8 * (c & 3), d));
       return b;
     } };
@@ -250,13 +250,13 @@ var require_sjcl = __commonJS({
       this.l = 0;
       return this;
     }, update: function(a) {
-      typeof a === "string" && (a = sjcl2.codec.utf8String.toBits(a));
+      "string" === typeof a && (a = sjcl2.codec.utf8String.toBits(a));
       var b, c = this.A = sjcl2.bitArray.concat(this.A, a);
       b = this.l;
       a = this.l = b + sjcl2.bitArray.bitLength(a);
       if (9007199254740991 < a)
         throw new sjcl2.exception.invalid("Cannot hash more than 2^53 - 1 bits");
-      if (typeof Uint32Array !== "undefined") {
+      if ("undefined" !== typeof Uint32Array) {
         var d = new Uint32Array(c), e = 0;
         for (b = 512 + b - (512 + b & 511); b <= a; b += 512)
           u(this, d.subarray(16 * e, 16 * (e + 1))), e += 1;
@@ -281,7 +281,7 @@ var require_sjcl = __commonJS({
       for (var b = 0, c = 2, d, e; 64 > b; c++) {
         e = true;
         for (d = 2; d * d <= c; d++)
-          if (c % d === 0) {
+          if (0 === c % d) {
             e = false;
             break;
           }
@@ -372,7 +372,7 @@ var require_sjcl = __commonJS({
       return { tag: d, data: h.clamp(b, l) };
     } };
     sjcl2.mode.ocb2 = { name: "ocb2", encrypt: function(a, b, c, d, e, f) {
-      if (sjcl2.bitArray.bitLength(c) !== 128)
+      if (128 !== sjcl2.bitArray.bitLength(c))
         throw new sjcl2.exception.invalid("ocb iv must be 128 bits");
       var g, h = sjcl2.mode.ocb2.S, k = sjcl2.bitArray, l = k.i, n = [0, 0, 0, 0];
       c = h(a.encrypt(c));
@@ -390,7 +390,7 @@ var require_sjcl = __commonJS({
       d.length && (n = l(n, f ? d : sjcl2.mode.ocb2.pmac(a, d)));
       return p.concat(k.concat(m, k.clamp(n, e)));
     }, decrypt: function(a, b, c, d, e, f) {
-      if (sjcl2.bitArray.bitLength(c) !== 128)
+      if (128 !== sjcl2.bitArray.bitLength(c))
         throw new sjcl2.exception.invalid("ocb iv must be 128 bits");
       e = e || 64;
       var g = sjcl2.mode.ocb2.S, h = sjcl2.bitArray, k = h.i, l = [0, 0, 0, 0], n = g(a.encrypt(c)), m, p, r = sjcl2.bitArray.bitLength(b) - e, q = [];
@@ -446,8 +446,8 @@ var require_sjcl = __commonJS({
       ];
       f = b.slice(0);
       for (c = 0; 128 > c; c++) {
-        (d = (a[Math.floor(c / 32)] & 1 << 31 - c % 32) !== 0) && (e = h(e, f));
-        g = (f[3] & 1) !== 0;
+        (d = 0 !== (a[Math.floor(c / 32)] & 1 << 31 - c % 32)) && (e = h(e, f));
+        g = 0 !== (f[3] & 1);
         for (d = 3; 0 < d; d--)
           f[d] = f[d] >>> 1 | (f[d - 1] & 1) << 31;
         f[0] >>>= 1;
@@ -467,7 +467,7 @@ var require_sjcl = __commonJS({
       r = q.bitLength(d);
       h = q.bitLength(e);
       g = b.encrypt([0, 0, 0, 0]);
-      h === 96 ? (e = e.slice(0), e = q.concat(e, [1])) : (e = sjcl2.mode.gcm.j(g, [0, 0, 0, 0], e), e = sjcl2.mode.gcm.j(g, e, [0, 0, Math.floor(h / 4294967296), h & 4294967295]));
+      96 === h ? (e = e.slice(0), e = q.concat(e, [1])) : (e = sjcl2.mode.gcm.j(g, [0, 0, 0, 0], e), e = sjcl2.mode.gcm.j(g, e, [0, 0, Math.floor(h / 4294967296), h & 4294967295]));
       h = sjcl2.mode.gcm.j(g, [0, 0, 0, 0], d);
       n = e.slice(0);
       d = h.slice(0);
@@ -519,8 +519,8 @@ var require_sjcl = __commonJS({
       c = c || 1e4;
       if (0 > d || 0 > c)
         throw new sjcl2.exception.invalid("invalid params to pbkdf2");
-      typeof a === "string" && (a = sjcl2.codec.utf8String.toBits(a));
-      typeof b === "string" && (b = sjcl2.codec.utf8String.toBits(b));
+      "string" === typeof a && (a = sjcl2.codec.utf8String.toBits(a));
+      "string" === typeof b && (b = sjcl2.codec.utf8String.toBits(b));
       e = e || sjcl2.misc.hmac;
       a = new e(a);
       var f, g, h, k, l = [], n = sjcl2.bitArray;
@@ -582,12 +582,12 @@ var require_sjcl = __commonJS({
             ;
         }
         for (d = 0; d < a; d += 4)
-          (d + 1) % this.ca === 0 && y(this), e = z(this), c.push(e[0], e[1], e[2], e[3]);
+          0 === (d + 1) % this.ca && y(this), e = z(this), c.push(e[0], e[1], e[2], e[3]);
         y(this);
         return c.slice(0, a);
       },
       setDefaultParanoia: function(a, b) {
-        if (a === 0 && b !== "Setting paranoia=0 will ruin your security; use it only for testing")
+        if (0 === a && "Setting paranoia=0 will ruin your security; use it only for testing" !== b)
           throw new sjcl2.exception.invalid("Setting paranoia=0 will ruin your security; use it only for testing");
         this.M = a;
       },
@@ -595,26 +595,26 @@ var require_sjcl = __commonJS({
         c = c || "user";
         var d, e, f = new Date().valueOf(), g = this.H[c], h = this.isReady(), k = 0;
         d = this.U[c];
-        d === void 0 && (d = this.U[c] = this.ha++);
-        g === void 0 && (g = this.H[c] = 0);
+        void 0 === d && (d = this.U[c] = this.ha++);
+        void 0 === g && (g = this.H[c] = 0);
         this.H[c] = (this.H[c] + 1) % this.c.length;
         switch (typeof a) {
           case "number":
-            b === void 0 && (b = 1);
+            void 0 === b && (b = 1);
             this.c[g].update([d, this.N++, 1, b, f, 1, a | 0]);
             break;
           case "object":
             c = Object.prototype.toString.call(a);
-            if (c === "[object Uint32Array]") {
+            if ("[object Uint32Array]" === c) {
               e = [];
               for (c = 0; c < a.length; c++)
                 e.push(a[c]);
               a = e;
             } else
-              for (c !== "[object Array]" && (k = 1), c = 0; c < a.length && !k; c++)
-                typeof a[c] !== "number" && (k = 1);
+              for ("[object Array]" !== c && (k = 1), c = 0; c < a.length && !k; c++)
+                "number" !== typeof a[c] && (k = 1);
             if (!k) {
-              if (b === void 0)
+              if (void 0 === b)
                 for (c = b = 0; c < a.length; c++)
                   for (e = a[c]; 0 < e; )
                     b++, e = e >>> 1;
@@ -622,7 +622,7 @@ var require_sjcl = __commonJS({
             }
             break;
           case "string":
-            b === void 0 && (b = a.length);
+            void 0 === b && (b = a.length);
             this.c[g].update([d, this.N++, 3, b, f, a.length]);
             this.c[g].update(a);
             break;
@@ -636,7 +636,7 @@ var require_sjcl = __commonJS({
         h === this.u && (this.isReady() !== this.u && A("seeded", Math.max(this.o, this.f)), A("progress", this.getProgress()));
       },
       isReady: function(a) {
-        a = this.T[a !== void 0 ? a : this.M];
+        a = this.T[void 0 !== a ? a : this.M];
         return this.o && this.o >= a ? this.m[0] > this.ba && new Date().valueOf() > this.Z ? this.J | this.I : this.I : this.f >= a ? this.J | this.u : this.u;
       },
       getProgress: function(a) {
@@ -678,7 +678,7 @@ var require_sjcl = __commonJS({
         } catch (d) {
           c = b = 0;
         }
-        b != 0 && c != 0 && this.addEntropy([b, c], 2, "mouse");
+        0 != b && 0 != c && this.addEntropy([b, c], 2, "mouse");
         C(this, 0);
       },
       qa: function(a) {
@@ -693,7 +693,7 @@ var require_sjcl = __commonJS({
         a = a.accelerationIncludingGravity.x || a.accelerationIncludingGravity.y || a.accelerationIncludingGravity.z;
         if (window.orientation) {
           var b = window.orientation;
-          typeof b === "number" && this.addEntropy(b, 1, "accelerometer");
+          "number" === typeof b && this.addEntropy(b, 1, "accelerometer");
         }
         a && this.addEntropy(a, 2, "accelerometer");
         C(this, 0);
@@ -707,7 +707,7 @@ var require_sjcl = __commonJS({
         e[c](b);
     }
     function C(a, b) {
-      typeof window !== "undefined" && window.performance && typeof window.performance.now === "function" ? a.addEntropy(window.performance.now(), b, "loadtime") : a.addEntropy(new Date().valueOf(), b, "loadtime");
+      "undefined" !== typeof window && window.performance && "function" === typeof window.performance.now ? a.addEntropy(window.performance.now(), b, "loadtime") : a.addEntropy(new Date().valueOf(), b, "loadtime");
     }
     function y(a) {
       a.b = z(a).concat(z(a));
@@ -726,7 +726,7 @@ var require_sjcl = __commonJS({
     sjcl2.random = new sjcl2.prng(6);
     a:
       try {
-        if (G = typeof module2 !== "undefined" && module2.exports) {
+        if (G = "undefined" !== typeof module2 && module2.exports) {
           try {
             H = require("crypto");
           } catch (a) {
@@ -736,7 +736,7 @@ var require_sjcl = __commonJS({
         }
         if (G && E.randomBytes)
           D = E.randomBytes(128), D = new Uint32Array(new Uint8Array(D).buffer), sjcl2.random.addEntropy(D, 1024, "crypto['randomBytes']");
-        else if (typeof window !== "undefined" && typeof Uint32Array !== "undefined") {
+        else if ("undefined" !== typeof window && "undefined" !== typeof Uint32Array) {
           F = new Uint32Array(32);
           if (window.crypto && window.crypto.getRandomValues)
             window.crypto.getRandomValues(F);
@@ -747,7 +747,7 @@ var require_sjcl = __commonJS({
           sjcl2.random.addEntropy(F, 1024, "crypto['getRandomValues']");
         }
       } catch (a) {
-        typeof window !== "undefined" && window.console && (console.log("There was an error collecting entropy from the browser:"), console.log(a));
+        "undefined" !== typeof window && window.console && (console.log("There was an error collecting entropy from the browser:"), console.log(a));
       }
     var D;
     var E;
@@ -760,17 +760,17 @@ var require_sjcl = __commonJS({
       var e = sjcl2.json, f = e.g({ iv: sjcl2.random.randomWords(4, 0) }, e.defaults), g;
       e.g(f, c);
       c = f.adata;
-      typeof f.salt === "string" && (f.salt = sjcl2.codec.base64.toBits(f.salt));
-      typeof f.iv === "string" && (f.iv = sjcl2.codec.base64.toBits(f.iv));
-      if (!sjcl2.mode[f.mode] || !sjcl2.cipher[f.cipher] || typeof a === "string" && 100 >= f.iter || f.ts !== 64 && f.ts !== 96 && f.ts !== 128 || f.ks !== 128 && f.ks !== 192 && f.ks !== 256 || 2 > f.iv.length || 4 < f.iv.length)
+      "string" === typeof f.salt && (f.salt = sjcl2.codec.base64.toBits(f.salt));
+      "string" === typeof f.iv && (f.iv = sjcl2.codec.base64.toBits(f.iv));
+      if (!sjcl2.mode[f.mode] || !sjcl2.cipher[f.cipher] || "string" === typeof a && 100 >= f.iter || 64 !== f.ts && 96 !== f.ts && 128 !== f.ts || 128 !== f.ks && 192 !== f.ks && 256 !== f.ks || 2 > f.iv.length || 4 < f.iv.length)
         throw new sjcl2.exception.invalid("json encrypt: invalid parameters");
-      typeof a === "string" ? (g = sjcl2.misc.cachedPbkdf2(a, f), a = g.key.slice(0, f.ks / 32), f.salt = g.salt) : sjcl2.ecc && a instanceof sjcl2.ecc.elGamal.publicKey && (g = a.kem(), f.kemtag = g.tag, a = g.key.slice(0, f.ks / 32));
-      typeof b === "string" && (b = sjcl2.codec.utf8String.toBits(b));
-      typeof c === "string" && (f.adata = c = sjcl2.codec.utf8String.toBits(c));
+      "string" === typeof a ? (g = sjcl2.misc.cachedPbkdf2(a, f), a = g.key.slice(0, f.ks / 32), f.salt = g.salt) : sjcl2.ecc && a instanceof sjcl2.ecc.elGamal.publicKey && (g = a.kem(), f.kemtag = g.tag, a = g.key.slice(0, f.ks / 32));
+      "string" === typeof b && (b = sjcl2.codec.utf8String.toBits(b));
+      "string" === typeof c && (f.adata = c = sjcl2.codec.utf8String.toBits(c));
       g = new sjcl2.cipher[f.cipher](a);
       e.g(d, f);
       d.key = a;
-      f.ct = f.mode === "ccm" && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.encrypt(g, b, f.iv, c, f.ts) : sjcl2.mode[f.mode].encrypt(g, b, f.iv, c, f.ts);
+      f.ct = "ccm" === f.mode && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.encrypt(g, b, f.iv, c, f.ts) : sjcl2.mode[f.mode].encrypt(g, b, f.iv, c, f.ts);
       return f;
     }, encrypt: function(a, b, c, d) {
       var e = sjcl2.json, f = e.ja.apply(e, arguments);
@@ -782,17 +782,17 @@ var require_sjcl = __commonJS({
       b = e.g(e.g(e.g({}, e.defaults), b), c, true);
       var f, g;
       f = b.adata;
-      typeof b.salt === "string" && (b.salt = sjcl2.codec.base64.toBits(b.salt));
-      typeof b.iv === "string" && (b.iv = sjcl2.codec.base64.toBits(b.iv));
-      if (!sjcl2.mode[b.mode] || !sjcl2.cipher[b.cipher] || typeof a === "string" && 100 >= b.iter || b.ts !== 64 && b.ts !== 96 && b.ts !== 128 || b.ks !== 128 && b.ks !== 192 && b.ks !== 256 || !b.iv || 2 > b.iv.length || 4 < b.iv.length)
+      "string" === typeof b.salt && (b.salt = sjcl2.codec.base64.toBits(b.salt));
+      "string" === typeof b.iv && (b.iv = sjcl2.codec.base64.toBits(b.iv));
+      if (!sjcl2.mode[b.mode] || !sjcl2.cipher[b.cipher] || "string" === typeof a && 100 >= b.iter || 64 !== b.ts && 96 !== b.ts && 128 !== b.ts || 128 !== b.ks && 192 !== b.ks && 256 !== b.ks || !b.iv || 2 > b.iv.length || 4 < b.iv.length)
         throw new sjcl2.exception.invalid("json decrypt: invalid parameters");
-      typeof a === "string" ? (g = sjcl2.misc.cachedPbkdf2(a, b), a = g.key.slice(0, b.ks / 32), b.salt = g.salt) : sjcl2.ecc && a instanceof sjcl2.ecc.elGamal.secretKey && (a = a.unkem(sjcl2.codec.base64.toBits(b.kemtag)).slice(0, b.ks / 32));
-      typeof f === "string" && (f = sjcl2.codec.utf8String.toBits(f));
+      "string" === typeof a ? (g = sjcl2.misc.cachedPbkdf2(a, b), a = g.key.slice(0, b.ks / 32), b.salt = g.salt) : sjcl2.ecc && a instanceof sjcl2.ecc.elGamal.secretKey && (a = a.unkem(sjcl2.codec.base64.toBits(b.kemtag)).slice(0, b.ks / 32));
+      "string" === typeof f && (f = sjcl2.codec.utf8String.toBits(f));
       g = new sjcl2.cipher[b.cipher](a);
-      f = b.mode === "ccm" && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b.ct instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.decrypt(g, b.ct, b.iv, b.tag, f, b.ts) : sjcl2.mode[b.mode].decrypt(g, b.ct, b.iv, f, b.ts);
+      f = "ccm" === b.mode && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b.ct instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.decrypt(g, b.ct, b.iv, b.tag, f, b.ts) : sjcl2.mode[b.mode].decrypt(g, b.ct, b.iv, f, b.ts);
       e.g(d, b);
       d.key = a;
-      return c.raw === 1 ? f : sjcl2.codec.utf8String.fromBits(f);
+      return 1 === c.raw ? f : sjcl2.codec.utf8String.fromBits(f);
     }, decrypt: function(a, b, c, d) {
       var e = sjcl2.json;
       return e.ia(a, e.decode(b), c, d);
@@ -829,16 +829,16 @@ var require_sjcl = __commonJS({
       for (c = 0; c < a.length; c++) {
         if (!(d = a[c].match(/^\s*(?:(["']?)([a-z][a-z0-9]*)\1)\s*:\s*(?:(-?\d+)|"([a-z0-9+\/%*_.@=\-]*)"|(true|false))$/i)))
           throw new sjcl2.exception.invalid("json decode: this isn't json!");
-        d[3] != null ? b[d[2]] = parseInt(d[3], 10) : d[4] != null ? b[d[2]] = d[2].match(/^(ct|adata|salt|iv)$/) ? sjcl2.codec.base64.toBits(d[4]) : unescape(d[4]) : d[5] != null && (b[d[2]] = d[5] === "true");
+        null != d[3] ? b[d[2]] = parseInt(d[3], 10) : null != d[4] ? b[d[2]] = d[2].match(/^(ct|adata|salt|iv)$/) ? sjcl2.codec.base64.toBits(d[4]) : unescape(d[4]) : null != d[5] && (b[d[2]] = "true" === d[5]);
       }
       return b;
     }, g: function(a, b, c) {
-      a === void 0 && (a = {});
-      if (b === void 0)
+      void 0 === a && (a = {});
+      if (void 0 === b)
         return a;
       for (var d in b)
         if (b.hasOwnProperty(d)) {
-          if (c && a[d] !== void 0 && a[d] !== b[d])
+          if (c && void 0 !== a[d] && a[d] !== b[d])
             throw new sjcl2.exception.invalid("required parameter overridden");
           a[d] = b[d];
         }
@@ -851,7 +851,7 @@ var require_sjcl = __commonJS({
     }, ra: function(a, b) {
       var c = {}, d;
       for (d = 0; d < b.length; d++)
-        a[b[d]] !== void 0 && (c[b[d]] = a[b[d]]);
+        void 0 !== a[b[d]] && (c[b[d]] = a[b[d]]);
       return c;
     } };
     sjcl2.encrypt = sjcl2.json.encrypt;
@@ -863,12 +863,12 @@ var require_sjcl = __commonJS({
       d = b.iter || 1e3;
       c = c[a] = c[a] || {};
       d = c[d] = c[d] || { firstSalt: b.salt && b.salt.length ? b.salt.slice(0) : sjcl2.random.randomWords(2, 0) };
-      c = b.salt === void 0 ? d.firstSalt : b.salt;
+      c = void 0 === b.salt ? d.firstSalt : b.salt;
       d[c] = d[c] || sjcl2.misc.pbkdf2(a, c, b.iter);
       return { key: d[c].slice(0), salt: c.slice(0) };
     };
-    typeof module2 !== "undefined" && module2.exports && (module2.exports = sjcl2);
-    typeof define === "function" && define([], function() {
+    "undefined" !== typeof module2 && module2.exports && (module2.exports = sjcl2);
+    "function" === typeof define && define([], function() {
       return sjcl2;
     });
   }
@@ -878,14 +878,14 @@ var require_sjcl = __commonJS({
 var require_build = __commonJS({
   "node_modules/better-sse/build/index.js"(exports, module2) {
     !function(e, t) {
-      if (typeof exports == "object" && typeof module2 == "object")
+      if ("object" == typeof exports && "object" == typeof module2)
         module2.exports = t();
-      else if (typeof define == "function" && define.amd)
+      else if ("function" == typeof define && define.amd)
         define([], t);
       else {
         var s = t();
         for (var i in s)
-          (typeof exports == "object" ? exports : e)[i] = s[i];
+          ("object" == typeof exports ? exports : e)[i] = s[i];
       }
     }(global, function() {
       return (() => {
@@ -897,7 +897,7 @@ var require_build = __commonJS({
           for (var i2 in s2)
             e.o(s2, i2) && !e.o(t2, i2) && Object.defineProperty(t2, i2, { enumerable: true, get: s2[i2] });
         }, o: (e2, t2) => Object.prototype.hasOwnProperty.call(e2, t2), r: (e2) => {
-          typeof Symbol != "undefined" && Symbol.toStringTag && Object.defineProperty(e2, Symbol.toStringTag, { value: "Module" }), Object.defineProperty(e2, "__esModule", { value: true });
+          "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(e2, Symbol.toStringTag, { value: "Module" }), Object.defineProperty(e2, "__esModule", { value: true });
         } }, t = {};
         e.r(t), e.d(t, { Channel: () => d, Session: () => a, createChannel: () => c, createSession: () => l });
         const s = require("crypto"), i = require("events");
@@ -939,12 +939,12 @@ var require_build = __commonJS({
               var e3, t3, s2;
               const i3 = `http://${this.req.headers.host}${this.req.url}`, n3 = new URL(i3).searchParams;
               if (this.trustClientEventId) {
-                const i4 = (s2 = (t3 = (e3 = this.req.headers["last-event-id"]) !== null && e3 !== void 0 ? e3 : n3.get("lastEventId")) !== null && t3 !== void 0 ? t3 : n3.get("evs_last_event_id")) !== null && s2 !== void 0 ? s2 : "";
+                const i4 = null !== (s2 = null !== (t3 = null !== (e3 = this.req.headers["last-event-id"]) && void 0 !== e3 ? e3 : n3.get("lastEventId")) && void 0 !== t3 ? t3 : n3.get("evs_last_event_id")) && void 0 !== s2 ? s2 : "";
                 this.lastId = i4;
               }
               Object.entries(this.headers).forEach(([e4, t4]) => {
-                this.res.setHeader(e4, t4 != null ? t4 : "");
-              }), this.res.statusCode = this.statusCode, this.res.setHeader("Content-Type", "text/event-stream"), this.res.setHeader("Cache-Control", "no-cache, no-transform"), this.res.setHeader("Connection", "keep-alive"), this.res.flushHeaders(), n3.has("padding") && this.comment(" ".repeat(2049)).dispatch(), n3.has("evs_preamble") && this.comment(" ".repeat(2056)).dispatch(), this.initialRetry !== null && this.retry(this.initialRetry).dispatch(), this.keepAliveInterval !== null && (this.keepAliveTimer = setInterval(this.keepAlive, this.keepAliveInterval)), this.isConnected = true, this.emit("connected");
+                this.res.setHeader(e4, null != t4 ? t4 : "");
+              }), this.res.statusCode = this.statusCode, this.res.setHeader("Content-Type", "text/event-stream"), this.res.setHeader("Cache-Control", "no-cache, no-transform"), this.res.setHeader("Connection", "keep-alive"), this.res.flushHeaders(), n3.has("padding") && this.comment(" ".repeat(2049)).dispatch(), n3.has("evs_preamble") && this.comment(" ".repeat(2056)).dispatch(), null !== this.initialRetry && this.retry(this.initialRetry).dispatch(), null !== this.keepAliveInterval && (this.keepAliveTimer = setInterval(this.keepAlive, this.keepAliveInterval)), this.isConnected = true, this.emit("connected");
             }, this.onDisconnected = () => {
               this.keepAliveTimer && clearInterval(this.keepAliveTimer), this.isConnected = false, this.emit("disconnected");
             }, this.writeField = (e3, t3) => {
@@ -962,7 +962,7 @@ var require_build = __commonJS({
             }, this.retry = (e3) => {
               const t3 = e3.toString();
               return this.writeField("retry", t3), this;
-            }, this.comment = (e3) => (this.writeField("", e3 != null ? e3 : ""), this), this.push = (e3, t3, i3) => (t3 || (t3 = "message"), i3 || (i3 = (0, s.randomBytes)(4).toString("hex")), this.event(t3).id(i3).data(e3).dispatch(), this.emit("push", e3, t3, i3), this), this.stream = async (e3, t3 = {}) => {
+            }, this.comment = (e3) => (this.writeField("", null != e3 ? e3 : ""), this), this.push = (e3, t3, i3) => (t3 || (t3 = "message"), i3 || (i3 = (0, s.randomBytes)(4).toString("hex")), this.event(t3).id(i3).data(e3).dispatch(), this.emit("push", e3, t3, i3), this), this.stream = async (e3, t3 = {}) => {
               const { eventName: s2 = "stream" } = t3;
               return new Promise((t4, i3) => {
                 e3.on("data", (e4) => {
@@ -974,7 +974,7 @@ var require_build = __commonJS({
               const { eventName: s2 = "iteration" } = t3;
               for await (const t4 of e3)
                 this.push(t4, s2);
-            }, this.req = e2, this.res = t2, this.serialize = (n2 = i2.serializer) !== null && n2 !== void 0 ? n2 : o, this.sanitize = (r2 = i2.sanitizer) !== null && r2 !== void 0 ? r2 : h, this.trustClientEventId = (a2 = i2.trustClientEventId) === null || a2 === void 0 || a2, this.initialRetry = i2.retry === null ? null : (l2 = i2.retry) !== null && l2 !== void 0 ? l2 : 2e3, this.keepAliveInterval = i2.keepAlive === null ? null : (d2 = i2.keepAlive) !== null && d2 !== void 0 ? d2 : 1e4, this.statusCode = (c2 = i2.statusCode) !== null && c2 !== void 0 ? c2 : 200, this.headers = (u = i2.headers) !== null && u !== void 0 ? u : {}, this.req.on("close", this.onDisconnected), setImmediate(this.onConnected);
+            }, this.req = e2, this.res = t2, this.serialize = null !== (n2 = i2.serializer) && void 0 !== n2 ? n2 : o, this.sanitize = null !== (r2 = i2.sanitizer) && void 0 !== r2 ? r2 : h, this.trustClientEventId = null === (a2 = i2.trustClientEventId) || void 0 === a2 || a2, this.initialRetry = null === i2.retry ? null : null !== (l2 = i2.retry) && void 0 !== l2 ? l2 : 2e3, this.keepAliveInterval = null === i2.keepAlive ? null : null !== (d2 = i2.keepAlive) && void 0 !== d2 ? d2 : 1e4, this.statusCode = null !== (c2 = i2.statusCode) && void 0 !== c2 ? c2 : 200, this.headers = null !== (u = i2.headers) && void 0 !== u ? u : {}, this.req.on("close", this.onDisconnected), setImmediate(this.onConnected);
           }
           event(e2) {
             return this.writeField("event", e2), this;

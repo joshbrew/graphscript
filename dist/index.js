@@ -116,13 +116,13 @@
         var b2, c2, d, e, f2 = this.s[0][4], g2 = this.s[1];
         b2 = a2.length;
         var h = 1;
-        if (b2 !== 4 && b2 !== 6 && b2 !== 8)
+        if (4 !== b2 && 6 !== b2 && 8 !== b2)
           throw new sjcl2.exception.invalid("invalid aes key size");
         this.b = [d = a2.slice(0), e = []];
         for (a2 = b2; a2 < 4 * b2 + 28; a2++) {
           c2 = d[a2 - 1];
-          if (a2 % b2 === 0 || b2 === 8 && a2 % b2 === 4)
-            c2 = f2[c2 >>> 24] << 24 ^ f2[c2 >> 16 & 255] << 16 ^ f2[c2 >> 8 & 255] << 8 ^ f2[c2 & 255], a2 % b2 === 0 && (c2 = c2 << 8 ^ c2 >>> 24 ^ h << 24, h = h << 1 ^ 283 * (h >> 7));
+          if (0 === a2 % b2 || 8 === b2 && 4 === a2 % b2)
+            c2 = f2[c2 >>> 24] << 24 ^ f2[c2 >> 16 & 255] << 16 ^ f2[c2 >> 8 & 255] << 8 ^ f2[c2 & 255], 0 === a2 % b2 && (c2 = c2 << 8 ^ c2 >>> 24 ^ h << 24, h = h << 1 ^ 283 * (h >> 7));
           d[a2] = d[a2 - b2] ^ c2;
         }
         for (b2 = 0; a2; b2++, a2--)
@@ -143,7 +143,7 @@
           a2[e] = a2[e].slice(0), b2[e] = b2[e].slice(0);
       } };
       function t(a2, b2, c2) {
-        if (b2.length !== 4)
+        if (4 !== b2.length)
           throw new sjcl2.exception.invalid("invalid aes block size");
         var d = a2.b[c2], e = b2[0] ^ d[0], f2 = b2[c2 ? 3 : 1] ^ d[1], g2 = b2[2] ^ d[2];
         b2 = b2[c2 ? 1 : 3] ^ d[3];
@@ -159,18 +159,18 @@
       }
       sjcl2.bitArray = { bitSlice: function(a2, b2, c2) {
         a2 = sjcl2.bitArray.$(a2.slice(b2 / 32), 32 - (b2 & 31)).slice(1);
-        return c2 === void 0 ? a2 : sjcl2.bitArray.clamp(a2, c2 - b2);
+        return void 0 === c2 ? a2 : sjcl2.bitArray.clamp(a2, c2 - b2);
       }, extract: function(a2, b2, c2) {
         var d = Math.floor(-b2 - c2 & 31);
         return ((b2 + c2 - 1 ^ b2) & -32 ? a2[b2 / 32 | 0] << 32 - d ^ a2[b2 / 32 + 1 | 0] >>> d : a2[b2 / 32 | 0] >>> d) & (1 << c2) - 1;
       }, concat: function(a2, b2) {
-        if (a2.length === 0 || b2.length === 0)
+        if (0 === a2.length || 0 === b2.length)
           return a2.concat(b2);
         var c2 = a2[a2.length - 1], d = sjcl2.bitArray.getPartial(c2);
-        return d === 32 ? a2.concat(b2) : sjcl2.bitArray.$(b2, d, c2 | 0, a2.slice(0, a2.length - 1));
+        return 32 === d ? a2.concat(b2) : sjcl2.bitArray.$(b2, d, c2 | 0, a2.slice(0, a2.length - 1));
       }, bitLength: function(a2) {
         var b2 = a2.length;
-        return b2 === 0 ? 0 : 32 * (b2 - 1) + sjcl2.bitArray.getPartial(a2[b2 - 1]);
+        return 0 === b2 ? 0 : 32 * (b2 - 1) + sjcl2.bitArray.getPartial(a2[b2 - 1]);
       }, clamp: function(a2, b2) {
         if (32 * a2.length < b2)
           return a2;
@@ -180,7 +180,7 @@
         0 < c2 && b2 && (a2[c2 - 1] = sjcl2.bitArray.partial(b2, a2[c2 - 1] & 2147483648 >> b2 - 1, 1));
         return a2;
       }, partial: function(a2, b2, c2) {
-        return a2 === 32 ? b2 : (c2 ? b2 | 0 : b2 << 32 - a2) + 1099511627776 * a2;
+        return 32 === a2 ? b2 : (c2 ? b2 | 0 : b2 << 32 - a2) + 1099511627776 * a2;
       }, getPartial: function(a2) {
         return Math.round(a2 / 1099511627776) || 32;
       }, equal: function(a2, b2) {
@@ -189,13 +189,13 @@
         var c2 = 0, d;
         for (d = 0; d < a2.length; d++)
           c2 |= a2[d] ^ b2[d];
-        return c2 === 0;
+        return 0 === c2;
       }, $: function(a2, b2, c2, d) {
         var e;
         e = 0;
-        for (d === void 0 && (d = []); 32 <= b2; b2 -= 32)
+        for (void 0 === d && (d = []); 32 <= b2; b2 -= 32)
           d.push(c2), c2 = 0;
-        if (b2 === 0)
+        if (0 === b2)
           return d.concat(a2);
         for (e = 0; e < a2.length; e++)
           d.push(c2 | a2[e] >>> b2), c2 = a2[e] << 32 - b2;
@@ -214,13 +214,13 @@
       sjcl2.codec.utf8String = { fromBits: function(a2) {
         var b2 = "", c2 = sjcl2.bitArray.bitLength(a2), d, e;
         for (d = 0; d < c2 / 8; d++)
-          (d & 3) === 0 && (e = a2[d / 4]), b2 += String.fromCharCode(e >>> 8 >>> 8 >>> 8), e <<= 8;
+          0 === (d & 3) && (e = a2[d / 4]), b2 += String.fromCharCode(e >>> 8 >>> 8 >>> 8), e <<= 8;
         return decodeURIComponent(escape(b2));
       }, toBits: function(a2) {
         a2 = unescape(encodeURIComponent(a2));
         var b2 = [], c2, d = 0;
         for (c2 = 0; c2 < a2.length; c2++)
-          d = d << 8 | a2.charCodeAt(c2), (c2 & 3) === 3 && (b2.push(d), d = 0);
+          d = d << 8 | a2.charCodeAt(c2), 3 === (c2 & 3) && (b2.push(d), d = 0);
         c2 & 3 && b2.push(sjcl2.bitArray.partial(8 * (c2 & 3), d));
         return b2;
       } };
@@ -309,13 +309,13 @@
         this.l = 0;
         return this;
       }, update: function(a2) {
-        typeof a2 === "string" && (a2 = sjcl2.codec.utf8String.toBits(a2));
+        "string" === typeof a2 && (a2 = sjcl2.codec.utf8String.toBits(a2));
         var b2, c2 = this.A = sjcl2.bitArray.concat(this.A, a2);
         b2 = this.l;
         a2 = this.l = b2 + sjcl2.bitArray.bitLength(a2);
         if (9007199254740991 < a2)
           throw new sjcl2.exception.invalid("Cannot hash more than 2^53 - 1 bits");
-        if (typeof Uint32Array !== "undefined") {
+        if ("undefined" !== typeof Uint32Array) {
           var d = new Uint32Array(c2), e = 0;
           for (b2 = 512 + b2 - (512 + b2 & 511); b2 <= a2; b2 += 512)
             u(this, d.subarray(16 * e, 16 * (e + 1))), e += 1;
@@ -340,7 +340,7 @@
         for (var b2 = 0, c2 = 2, d, e; 64 > b2; c2++) {
           e = true;
           for (d = 2; d * d <= c2; d++)
-            if (c2 % d === 0) {
+            if (0 === c2 % d) {
               e = false;
               break;
             }
@@ -431,7 +431,7 @@
         return { tag: d, data: h.clamp(b2, l) };
       } };
       sjcl2.mode.ocb2 = { name: "ocb2", encrypt: function(a2, b2, c2, d, e, f2) {
-        if (sjcl2.bitArray.bitLength(c2) !== 128)
+        if (128 !== sjcl2.bitArray.bitLength(c2))
           throw new sjcl2.exception.invalid("ocb iv must be 128 bits");
         var g2, h = sjcl2.mode.ocb2.S, k = sjcl2.bitArray, l = k.i, n = [0, 0, 0, 0];
         c2 = h(a2.encrypt(c2));
@@ -449,7 +449,7 @@
         d.length && (n = l(n, f2 ? d : sjcl2.mode.ocb2.pmac(a2, d)));
         return p.concat(k.concat(m, k.clamp(n, e)));
       }, decrypt: function(a2, b2, c2, d, e, f2) {
-        if (sjcl2.bitArray.bitLength(c2) !== 128)
+        if (128 !== sjcl2.bitArray.bitLength(c2))
           throw new sjcl2.exception.invalid("ocb iv must be 128 bits");
         e = e || 64;
         var g2 = sjcl2.mode.ocb2.S, h = sjcl2.bitArray, k = h.i, l = [0, 0, 0, 0], n = g2(a2.encrypt(c2)), m, p, r = sjcl2.bitArray.bitLength(b2) - e, q = [];
@@ -505,8 +505,8 @@
         ];
         f2 = b2.slice(0);
         for (c2 = 0; 128 > c2; c2++) {
-          (d = (a2[Math.floor(c2 / 32)] & 1 << 31 - c2 % 32) !== 0) && (e = h(e, f2));
-          g2 = (f2[3] & 1) !== 0;
+          (d = 0 !== (a2[Math.floor(c2 / 32)] & 1 << 31 - c2 % 32)) && (e = h(e, f2));
+          g2 = 0 !== (f2[3] & 1);
           for (d = 3; 0 < d; d--)
             f2[d] = f2[d] >>> 1 | (f2[d - 1] & 1) << 31;
           f2[0] >>>= 1;
@@ -526,7 +526,7 @@
         r = q.bitLength(d);
         h = q.bitLength(e);
         g2 = b2.encrypt([0, 0, 0, 0]);
-        h === 96 ? (e = e.slice(0), e = q.concat(e, [1])) : (e = sjcl2.mode.gcm.j(g2, [0, 0, 0, 0], e), e = sjcl2.mode.gcm.j(g2, e, [0, 0, Math.floor(h / 4294967296), h & 4294967295]));
+        96 === h ? (e = e.slice(0), e = q.concat(e, [1])) : (e = sjcl2.mode.gcm.j(g2, [0, 0, 0, 0], e), e = sjcl2.mode.gcm.j(g2, e, [0, 0, Math.floor(h / 4294967296), h & 4294967295]));
         h = sjcl2.mode.gcm.j(g2, [0, 0, 0, 0], d);
         n = e.slice(0);
         d = h.slice(0);
@@ -578,8 +578,8 @@
         c2 = c2 || 1e4;
         if (0 > d || 0 > c2)
           throw new sjcl2.exception.invalid("invalid params to pbkdf2");
-        typeof a2 === "string" && (a2 = sjcl2.codec.utf8String.toBits(a2));
-        typeof b2 === "string" && (b2 = sjcl2.codec.utf8String.toBits(b2));
+        "string" === typeof a2 && (a2 = sjcl2.codec.utf8String.toBits(a2));
+        "string" === typeof b2 && (b2 = sjcl2.codec.utf8String.toBits(b2));
         e = e || sjcl2.misc.hmac;
         a2 = new e(a2);
         var f2, g2, h, k, l = [], n = sjcl2.bitArray;
@@ -641,12 +641,12 @@
               ;
           }
           for (d = 0; d < a2; d += 4)
-            (d + 1) % this.ca === 0 && y(this), e = z(this), c2.push(e[0], e[1], e[2], e[3]);
+            0 === (d + 1) % this.ca && y(this), e = z(this), c2.push(e[0], e[1], e[2], e[3]);
           y(this);
           return c2.slice(0, a2);
         },
         setDefaultParanoia: function(a2, b2) {
-          if (a2 === 0 && b2 !== "Setting paranoia=0 will ruin your security; use it only for testing")
+          if (0 === a2 && "Setting paranoia=0 will ruin your security; use it only for testing" !== b2)
             throw new sjcl2.exception.invalid("Setting paranoia=0 will ruin your security; use it only for testing");
           this.M = a2;
         },
@@ -654,26 +654,26 @@
           c2 = c2 || "user";
           var d, e, f2 = new Date().valueOf(), g2 = this.H[c2], h = this.isReady(), k = 0;
           d = this.U[c2];
-          d === void 0 && (d = this.U[c2] = this.ha++);
-          g2 === void 0 && (g2 = this.H[c2] = 0);
+          void 0 === d && (d = this.U[c2] = this.ha++);
+          void 0 === g2 && (g2 = this.H[c2] = 0);
           this.H[c2] = (this.H[c2] + 1) % this.c.length;
           switch (typeof a2) {
             case "number":
-              b2 === void 0 && (b2 = 1);
+              void 0 === b2 && (b2 = 1);
               this.c[g2].update([d, this.N++, 1, b2, f2, 1, a2 | 0]);
               break;
             case "object":
               c2 = Object.prototype.toString.call(a2);
-              if (c2 === "[object Uint32Array]") {
+              if ("[object Uint32Array]" === c2) {
                 e = [];
                 for (c2 = 0; c2 < a2.length; c2++)
                   e.push(a2[c2]);
                 a2 = e;
               } else
-                for (c2 !== "[object Array]" && (k = 1), c2 = 0; c2 < a2.length && !k; c2++)
-                  typeof a2[c2] !== "number" && (k = 1);
+                for ("[object Array]" !== c2 && (k = 1), c2 = 0; c2 < a2.length && !k; c2++)
+                  "number" !== typeof a2[c2] && (k = 1);
               if (!k) {
-                if (b2 === void 0)
+                if (void 0 === b2)
                   for (c2 = b2 = 0; c2 < a2.length; c2++)
                     for (e = a2[c2]; 0 < e; )
                       b2++, e = e >>> 1;
@@ -681,7 +681,7 @@
               }
               break;
             case "string":
-              b2 === void 0 && (b2 = a2.length);
+              void 0 === b2 && (b2 = a2.length);
               this.c[g2].update([d, this.N++, 3, b2, f2, a2.length]);
               this.c[g2].update(a2);
               break;
@@ -695,7 +695,7 @@
           h === this.u && (this.isReady() !== this.u && A("seeded", Math.max(this.o, this.f)), A("progress", this.getProgress()));
         },
         isReady: function(a2) {
-          a2 = this.T[a2 !== void 0 ? a2 : this.M];
+          a2 = this.T[void 0 !== a2 ? a2 : this.M];
           return this.o && this.o >= a2 ? this.m[0] > this.ba && new Date().valueOf() > this.Z ? this.J | this.I : this.I : this.f >= a2 ? this.J | this.u : this.u;
         },
         getProgress: function(a2) {
@@ -737,7 +737,7 @@
           } catch (d) {
             c2 = b2 = 0;
           }
-          b2 != 0 && c2 != 0 && this.addEntropy([b2, c2], 2, "mouse");
+          0 != b2 && 0 != c2 && this.addEntropy([b2, c2], 2, "mouse");
           C(this, 0);
         },
         qa: function(a2) {
@@ -752,7 +752,7 @@
           a2 = a2.accelerationIncludingGravity.x || a2.accelerationIncludingGravity.y || a2.accelerationIncludingGravity.z;
           if (window.orientation) {
             var b2 = window.orientation;
-            typeof b2 === "number" && this.addEntropy(b2, 1, "accelerometer");
+            "number" === typeof b2 && this.addEntropy(b2, 1, "accelerometer");
           }
           a2 && this.addEntropy(a2, 2, "accelerometer");
           C(this, 0);
@@ -766,7 +766,7 @@
           e[c2](b2);
       }
       function C(a2, b2) {
-        typeof window !== "undefined" && window.performance && typeof window.performance.now === "function" ? a2.addEntropy(window.performance.now(), b2, "loadtime") : a2.addEntropy(new Date().valueOf(), b2, "loadtime");
+        "undefined" !== typeof window && window.performance && "function" === typeof window.performance.now ? a2.addEntropy(window.performance.now(), b2, "loadtime") : a2.addEntropy(new Date().valueOf(), b2, "loadtime");
       }
       function y(a2) {
         a2.b = z(a2).concat(z(a2));
@@ -785,7 +785,7 @@
       sjcl2.random = new sjcl2.prng(6);
       a:
         try {
-          if (G = typeof module !== "undefined" && module.exports) {
+          if (G = "undefined" !== typeof module && module.exports) {
             try {
               H = __require("crypto");
             } catch (a2) {
@@ -795,7 +795,7 @@
           }
           if (G && E.randomBytes)
             D = E.randomBytes(128), D = new Uint32Array(new Uint8Array(D).buffer), sjcl2.random.addEntropy(D, 1024, "crypto['randomBytes']");
-          else if (typeof window !== "undefined" && typeof Uint32Array !== "undefined") {
+          else if ("undefined" !== typeof window && "undefined" !== typeof Uint32Array) {
             F = new Uint32Array(32);
             if (window.crypto && window.crypto.getRandomValues)
               window.crypto.getRandomValues(F);
@@ -806,7 +806,7 @@
             sjcl2.random.addEntropy(F, 1024, "crypto['getRandomValues']");
           }
         } catch (a2) {
-          typeof window !== "undefined" && window.console && (console.log("There was an error collecting entropy from the browser:"), console.log(a2));
+          "undefined" !== typeof window && window.console && (console.log("There was an error collecting entropy from the browser:"), console.log(a2));
         }
       var D;
       var E;
@@ -819,17 +819,17 @@
         var e = sjcl2.json, f2 = e.g({ iv: sjcl2.random.randomWords(4, 0) }, e.defaults), g2;
         e.g(f2, c2);
         c2 = f2.adata;
-        typeof f2.salt === "string" && (f2.salt = sjcl2.codec.base64.toBits(f2.salt));
-        typeof f2.iv === "string" && (f2.iv = sjcl2.codec.base64.toBits(f2.iv));
-        if (!sjcl2.mode[f2.mode] || !sjcl2.cipher[f2.cipher] || typeof a2 === "string" && 100 >= f2.iter || f2.ts !== 64 && f2.ts !== 96 && f2.ts !== 128 || f2.ks !== 128 && f2.ks !== 192 && f2.ks !== 256 || 2 > f2.iv.length || 4 < f2.iv.length)
+        "string" === typeof f2.salt && (f2.salt = sjcl2.codec.base64.toBits(f2.salt));
+        "string" === typeof f2.iv && (f2.iv = sjcl2.codec.base64.toBits(f2.iv));
+        if (!sjcl2.mode[f2.mode] || !sjcl2.cipher[f2.cipher] || "string" === typeof a2 && 100 >= f2.iter || 64 !== f2.ts && 96 !== f2.ts && 128 !== f2.ts || 128 !== f2.ks && 192 !== f2.ks && 256 !== f2.ks || 2 > f2.iv.length || 4 < f2.iv.length)
           throw new sjcl2.exception.invalid("json encrypt: invalid parameters");
-        typeof a2 === "string" ? (g2 = sjcl2.misc.cachedPbkdf2(a2, f2), a2 = g2.key.slice(0, f2.ks / 32), f2.salt = g2.salt) : sjcl2.ecc && a2 instanceof sjcl2.ecc.elGamal.publicKey && (g2 = a2.kem(), f2.kemtag = g2.tag, a2 = g2.key.slice(0, f2.ks / 32));
-        typeof b2 === "string" && (b2 = sjcl2.codec.utf8String.toBits(b2));
-        typeof c2 === "string" && (f2.adata = c2 = sjcl2.codec.utf8String.toBits(c2));
+        "string" === typeof a2 ? (g2 = sjcl2.misc.cachedPbkdf2(a2, f2), a2 = g2.key.slice(0, f2.ks / 32), f2.salt = g2.salt) : sjcl2.ecc && a2 instanceof sjcl2.ecc.elGamal.publicKey && (g2 = a2.kem(), f2.kemtag = g2.tag, a2 = g2.key.slice(0, f2.ks / 32));
+        "string" === typeof b2 && (b2 = sjcl2.codec.utf8String.toBits(b2));
+        "string" === typeof c2 && (f2.adata = c2 = sjcl2.codec.utf8String.toBits(c2));
         g2 = new sjcl2.cipher[f2.cipher](a2);
         e.g(d, f2);
         d.key = a2;
-        f2.ct = f2.mode === "ccm" && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b2 instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.encrypt(g2, b2, f2.iv, c2, f2.ts) : sjcl2.mode[f2.mode].encrypt(g2, b2, f2.iv, c2, f2.ts);
+        f2.ct = "ccm" === f2.mode && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b2 instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.encrypt(g2, b2, f2.iv, c2, f2.ts) : sjcl2.mode[f2.mode].encrypt(g2, b2, f2.iv, c2, f2.ts);
         return f2;
       }, encrypt: function(a2, b2, c2, d) {
         var e = sjcl2.json, f2 = e.ja.apply(e, arguments);
@@ -841,17 +841,17 @@
         b2 = e.g(e.g(e.g({}, e.defaults), b2), c2, true);
         var f2, g2;
         f2 = b2.adata;
-        typeof b2.salt === "string" && (b2.salt = sjcl2.codec.base64.toBits(b2.salt));
-        typeof b2.iv === "string" && (b2.iv = sjcl2.codec.base64.toBits(b2.iv));
-        if (!sjcl2.mode[b2.mode] || !sjcl2.cipher[b2.cipher] || typeof a2 === "string" && 100 >= b2.iter || b2.ts !== 64 && b2.ts !== 96 && b2.ts !== 128 || b2.ks !== 128 && b2.ks !== 192 && b2.ks !== 256 || !b2.iv || 2 > b2.iv.length || 4 < b2.iv.length)
+        "string" === typeof b2.salt && (b2.salt = sjcl2.codec.base64.toBits(b2.salt));
+        "string" === typeof b2.iv && (b2.iv = sjcl2.codec.base64.toBits(b2.iv));
+        if (!sjcl2.mode[b2.mode] || !sjcl2.cipher[b2.cipher] || "string" === typeof a2 && 100 >= b2.iter || 64 !== b2.ts && 96 !== b2.ts && 128 !== b2.ts || 128 !== b2.ks && 192 !== b2.ks && 256 !== b2.ks || !b2.iv || 2 > b2.iv.length || 4 < b2.iv.length)
           throw new sjcl2.exception.invalid("json decrypt: invalid parameters");
-        typeof a2 === "string" ? (g2 = sjcl2.misc.cachedPbkdf2(a2, b2), a2 = g2.key.slice(0, b2.ks / 32), b2.salt = g2.salt) : sjcl2.ecc && a2 instanceof sjcl2.ecc.elGamal.secretKey && (a2 = a2.unkem(sjcl2.codec.base64.toBits(b2.kemtag)).slice(0, b2.ks / 32));
-        typeof f2 === "string" && (f2 = sjcl2.codec.utf8String.toBits(f2));
+        "string" === typeof a2 ? (g2 = sjcl2.misc.cachedPbkdf2(a2, b2), a2 = g2.key.slice(0, b2.ks / 32), b2.salt = g2.salt) : sjcl2.ecc && a2 instanceof sjcl2.ecc.elGamal.secretKey && (a2 = a2.unkem(sjcl2.codec.base64.toBits(b2.kemtag)).slice(0, b2.ks / 32));
+        "string" === typeof f2 && (f2 = sjcl2.codec.utf8String.toBits(f2));
         g2 = new sjcl2.cipher[b2.cipher](a2);
-        f2 = b2.mode === "ccm" && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b2.ct instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.decrypt(g2, b2.ct, b2.iv, b2.tag, f2, b2.ts) : sjcl2.mode[b2.mode].decrypt(g2, b2.ct, b2.iv, f2, b2.ts);
+        f2 = "ccm" === b2.mode && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b2.ct instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.decrypt(g2, b2.ct, b2.iv, b2.tag, f2, b2.ts) : sjcl2.mode[b2.mode].decrypt(g2, b2.ct, b2.iv, f2, b2.ts);
         e.g(d, b2);
         d.key = a2;
-        return c2.raw === 1 ? f2 : sjcl2.codec.utf8String.fromBits(f2);
+        return 1 === c2.raw ? f2 : sjcl2.codec.utf8String.fromBits(f2);
       }, decrypt: function(a2, b2, c2, d) {
         var e = sjcl2.json;
         return e.ia(a2, e.decode(b2), c2, d);
@@ -888,16 +888,16 @@
         for (c2 = 0; c2 < a2.length; c2++) {
           if (!(d = a2[c2].match(/^\s*(?:(["']?)([a-z][a-z0-9]*)\1)\s*:\s*(?:(-?\d+)|"([a-z0-9+\/%*_.@=\-]*)"|(true|false))$/i)))
             throw new sjcl2.exception.invalid("json decode: this isn't json!");
-          d[3] != null ? b2[d[2]] = parseInt(d[3], 10) : d[4] != null ? b2[d[2]] = d[2].match(/^(ct|adata|salt|iv)$/) ? sjcl2.codec.base64.toBits(d[4]) : unescape(d[4]) : d[5] != null && (b2[d[2]] = d[5] === "true");
+          null != d[3] ? b2[d[2]] = parseInt(d[3], 10) : null != d[4] ? b2[d[2]] = d[2].match(/^(ct|adata|salt|iv)$/) ? sjcl2.codec.base64.toBits(d[4]) : unescape(d[4]) : null != d[5] && (b2[d[2]] = "true" === d[5]);
         }
         return b2;
       }, g: function(a2, b2, c2) {
-        a2 === void 0 && (a2 = {});
-        if (b2 === void 0)
+        void 0 === a2 && (a2 = {});
+        if (void 0 === b2)
           return a2;
         for (var d in b2)
           if (b2.hasOwnProperty(d)) {
-            if (c2 && a2[d] !== void 0 && a2[d] !== b2[d])
+            if (c2 && void 0 !== a2[d] && a2[d] !== b2[d])
               throw new sjcl2.exception.invalid("required parameter overridden");
             a2[d] = b2[d];
           }
@@ -910,7 +910,7 @@
       }, ra: function(a2, b2) {
         var c2 = {}, d;
         for (d = 0; d < b2.length; d++)
-          a2[b2[d]] !== void 0 && (c2[b2[d]] = a2[b2[d]]);
+          void 0 !== a2[b2[d]] && (c2[b2[d]] = a2[b2[d]]);
         return c2;
       } };
       sjcl2.encrypt = sjcl2.json.encrypt;
@@ -922,12 +922,12 @@
         d = b2.iter || 1e3;
         c2 = c2[a2] = c2[a2] || {};
         d = c2[d] = c2[d] || { firstSalt: b2.salt && b2.salt.length ? b2.salt.slice(0) : sjcl2.random.randomWords(2, 0) };
-        c2 = b2.salt === void 0 ? d.firstSalt : b2.salt;
+        c2 = void 0 === b2.salt ? d.firstSalt : b2.salt;
         d[c2] = d[c2] || sjcl2.misc.pbkdf2(a2, c2, b2.iter);
         return { key: d[c2].slice(0), salt: c2.slice(0) };
       };
-      typeof module !== "undefined" && module.exports && (module.exports = sjcl2);
-      typeof define === "function" && define([], function() {
+      "undefined" !== typeof module && module.exports && (module.exports = sjcl2);
+      "function" === typeof define && define([], function() {
         return sjcl2;
       });
     }
@@ -2900,7 +2900,7 @@
       super(...arguments);
       this.name = "html";
       this.components = {};
-      this.addElement = (options2) => {
+      this.addElement = (options2, generateChildElementNodes = false) => {
         let elm;
         if (options2.element) {
           if (typeof options2.element === "string") {
@@ -2922,7 +2922,8 @@
           options2.parentNode = document.body;
         if (!options2.parentNode)
           options2.parentNode = document.body;
-        options2.parentNode.appendChild(elm);
+        if (!document.getElementById(elm.id))
+          options2.parentNode.appendChild(elm);
         let node = new GraphNode({
           element: elm,
           operator: (node2, origin, props) => {
@@ -2944,10 +2945,14 @@
           }
         });
         this.add(node);
-        this.elements[options2.id] = { element: elm, node, parentNode: options2.parentNode };
+        let divs = elm.querySelectorAll("*");
+        if (generateChildElementNodes) {
+          divs = divs.map((d) => this.addElement({ element: d }));
+        }
+        this.elements[options2.id] = { element: elm, node, parentNode: options2.parentNode, divs };
         return this.elements[options2.id];
       };
-      this.addComponent = (options2) => {
+      this.addComponent = (options2, generateChildElementNodes = false) => {
         let elm = new c();
         if (options2.props)
           elm.props = options2.props;
@@ -2969,9 +2974,13 @@
           options2.parentNode = document.body;
         if (!options2.parentNode)
           options2.parentNode = document.body;
-        options2.parentNode.appendChild(elm);
+        if (!document.getElementById(elm.id))
+          options2.parentNode.appendChild(elm);
         this.templates[options2.id] = options2;
         let divs = elm.querySelectorAll("*");
+        if (generateChildElementNodes) {
+          divs = divs.map((d) => this.addElement({ element: d }));
+        }
         let node = new GraphNode({
           element: elm,
           operator: (node2, origin, props) => {
@@ -3025,7 +3034,8 @@
           options2.parentNode = document.body;
         if (!options2.parentNode)
           options2.parentNode = document.body;
-        options2.parentNode.appendChild(elm);
+        if (!document.getElementById(elm.id))
+          options2.parentNode.appendChild(elm);
         let animation = () => {
           if (this.components[options2.id]?.animating) {
             this.components[options2.id].draw(this.components[options2.id].element.props, this.components[options2.id].element);
@@ -3033,7 +3043,6 @@
           }
         };
         this.templates[options2.id] = options2;
-        let divs = elm.querySelectorAll("*");
         let node = new GraphNode({
           element: elm,
           operator: (node2, origin, props) => {
@@ -3062,7 +3071,6 @@
           template: elm.template,
           canvas,
           node,
-          divs,
           ...options2
         };
         this.components[options2.id].context = context;

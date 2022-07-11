@@ -1,6 +1,12 @@
 import { DOMElement } from "fragelement";
 import { GraphNode } from '../../Graph';
 import { Routes, Service } from "../Service";
+export declare type ElementInfo = {
+    element: HTMLElement;
+    node: GraphNode;
+    parentNode: HTMLElement;
+    divs: any[];
+};
 export declare type DOMElementProps = {
     template?: string | ((props: any) => string);
     parentNode?: string | HTMLElement;
@@ -10,11 +16,12 @@ export declare type DOMElementProps = {
     ondelete?: (props: any, self: DOMElement) => void;
     onchanged?: (props: any, self: DOMElement) => void;
     renderonchanged?: boolean | ((props: any, self: DOMElement) => void);
+    id?: string;
 };
 export declare type DOMElementInfo = {
     element: DOMElement;
     node: GraphNode;
-    divs?: any[];
+    divs: any[];
 } & DOMElementProps;
 export declare type CanvasElementProps = {
     draw: ((props: any, self: DOMElement) => string);
@@ -36,7 +43,6 @@ export declare type CanvasElementInfo = {
     width?: string;
     height?: string;
     style?: string;
-    divs?: any[];
     node: GraphNode;
 } & DOMElementProps;
 export declare class DOMService extends Service {
@@ -51,14 +57,14 @@ export declare class DOMService extends Service {
         [key: string]: DOMElementProps | CanvasElementProps;
     };
     addElement: (options: {
-        tagName: string;
+        tagName?: string;
         element?: HTMLElement;
-        style: CSSStyleDeclaration;
-        parentNode: string | HTMLElement;
+        style?: CSSStyleDeclaration;
+        parentNode?: string | HTMLElement;
         id?: string;
-    }) => any;
+    }, generateChildElementNodes?: boolean) => any;
     addComponent: (options: {
-        template: string | ((props: any) => string);
+        template?: string | ((props: any) => string);
         parentNode?: string | HTMLElement;
         styles?: string;
         oncreate?: (props: any, self: DOMElement) => void;
@@ -70,7 +76,7 @@ export declare class DOMService extends Service {
             [key: string]: any;
         };
         id?: string;
-    }) => DOMElementInfo | CanvasElementInfo;
+    }, generateChildElementNodes?: boolean) => DOMElementInfo | CanvasElementInfo;
     addCanvasComponent: (options: {
         context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent';
         draw: (props: any, self: DOMElement) => void;
