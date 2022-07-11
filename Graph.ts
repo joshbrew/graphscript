@@ -1102,7 +1102,6 @@ export class Graph {
         if(typeof node === 'string') node = this.nodes.get(node);
         if((node as GraphNode)?.tag) {
             (node as GraphNode).stopNode();
-            if((node as GraphNode)?.tag) this.nodes.delete((node as GraphNode).tag);
             if((node as GraphNode)?.tag) {
                 if(this.nodes.get((node as GraphNode).tag)) 
                 {
@@ -1112,6 +1111,7 @@ export class Graph {
                         if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
                     });
                 }
+
             }
         }
         return node;

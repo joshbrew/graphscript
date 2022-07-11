@@ -102,6 +102,8 @@ export class DOMService extends Service {
             }
         });
 
+        this.add(node);
+        
         this.elements[options.id] = {element:elm, node, parentNode:options.parentNode};
 
         return this.elements[options.id];
@@ -164,6 +166,8 @@ export class DOMService extends Service {
                 return props;
             }
         });
+
+        this.add(node);
 
         this.components[options.id] = {
             element:elm,
@@ -244,6 +248,7 @@ export class DOMService extends Service {
             }
         });
 
+        this.add(node);
 
         this.components[options.id] = {
             element:elm,
@@ -278,6 +283,10 @@ export class DOMService extends Service {
             element = this.elements[element].element;
         }
         
+        if(this.nodes.get(element.id)) {
+            this.removeTree(element.id);
+        }
+
         if(element instanceof DOMElement)
             element.delete(); //will trigger the ondelete callback
         else if ((element as HTMLElement)?.parentNode) {
