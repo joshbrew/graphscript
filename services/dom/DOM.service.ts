@@ -311,12 +311,19 @@ export class DOMService extends Service {
         else if(typeof element === 'string' && this.components[element]) {
             if((this.components[element] as CanvasElementInfo).node.isAnimating)
                 (this.components[element] as CanvasElementInfo).node.stopNode();
-            element = this.components[element].element;
+            if((this.components[element] as DOMElementInfo).divs)
+                (this.components[element] as DOMElementInfo).divs.forEach((d) => this.terminate(d));
+                
+            let temp = this.components[element].element;
             delete this.components[element]
+            element = temp;
         }
         else if(typeof element === 'string' && this.elements[element]) {
-            element = this.elements[element].element;
+            if(this.elements[element].divs)
+                this.elements[element].divs.forEach((d) => this.terminate(d));
+            let temp = this.elements[element].element;
             delete this.elements[element]
+            element = temp;
         }
         
         if(this.nodes.get(element.id)) {
