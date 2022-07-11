@@ -28,7 +28,7 @@ export type CanvasElementProps = {
 } & DOMElementProps
 
 export type CanvasElementInfo = {
-    element:DOMElement,
+    element:DOMElement & {canvas:HTMLCanvasElement, context:RenderingContext},
     draw:((props:any,self:DOMElement)=>string),
     canvas:HTMLCanvasElement,
     context:RenderingContext,
@@ -135,7 +135,6 @@ export class DOMService extends Service {
         }
     )=>{
         
-
         let elm = new DOMElement();
         if(options.props) elm.props = options.props;
         if(options.template) elm.template = options.template;
