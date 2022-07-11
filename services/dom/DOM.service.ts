@@ -11,12 +11,12 @@ export type DOMElementProps = {
     ondelete?:(props:any,self:DOMElement)=>void,
     onchanged?:(props:any,self:DOMElement)=>void,
     renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
-    divs?:any[]
 }
 
 export type DOMElementInfo = {
     element:DOMElement,
-    node:GraphNode
+    node:GraphNode,
+    divs?:any[]
 } & DOMElementProps
 
 export type CanvasElementProps = {
@@ -67,6 +67,7 @@ export class DOMService extends Service {
         }
         
     )=>{
+
         let elm;
         if(options.element) {
             if(typeof options.element === 'string') {
@@ -153,7 +154,7 @@ export class DOMService extends Service {
 
         this.templates[options.id] = options;
 
-        elm.divs = elm.querySelectorAll('*');
+        let divs = elm.querySelectorAll('*');
      
         let node = new GraphNode({
             element:elm,   
@@ -180,6 +181,7 @@ export class DOMService extends Service {
         this.components[options.id] = {
             element:elm,
             node,
+            divs,
             ...options
         };
 
@@ -235,7 +237,7 @@ export class DOMService extends Service {
 
         this.templates[options.id] = options;
 
-        elm.divs = elm.querySelectorAll('*');
+        let divs = elm.querySelectorAll('*');
                 
         let node = new GraphNode({
             element:elm,   
@@ -268,6 +270,7 @@ export class DOMService extends Service {
             template:elm.template,
             canvas,
             node,
+            divs,
             ...options
         };
 
@@ -276,8 +279,6 @@ export class DOMService extends Service {
         elm.context = context; 
         node.canvas = canvas; //make sure everything is accessible;
         node.context = context;
-
-        this.components[options.id].divs = elm.querySelectorAll('*'); //get all child divs, this can include other component divs fyi since the scoped stylesheets will apply
 
         node.runAnimation(animation); //update the animation by calling this function again or setting node.animation manually
 
