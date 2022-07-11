@@ -51,20 +51,35 @@ export class DOMService extends Service {
     }
 
     routeElement=(
-        tagName:string, //e.g. 'div', 'canvas'
-        styles:CSSStyleDeclaration,
-        parentNode:string|HTMLElement,
-        id?:string
+        options:{
+            tagName:string, //e.g. 'div', 'canvas'
+            element?:HTMLElement, //alternatively set an element
+            styles:CSSStyleDeclaration,
+            parentNode:string|HTMLElement,
+            id?:string
+        }
+        
     )=>{
-        let elm = document.createElement(tagName);
-        Object.assign(elm.style,styles);
+        let elm;
+        if(options.element) {
+            if(typeof options.element === 'string') {
+                elm = document.querySelector(options.element); //get first element by tag or id 
+                if(!elm) elm = document.getElementById(options.element); 
+            }
+            else elm = options.element;
+        }
+        else if (options.tagName) elm = document.createElement(options.tagName);
 
-        if(!id) id = `element${Math.floor(Math.random()*1000000000000000)}`;
-        elm.id = id;
+        if(!elm) return undefined;
 
-        if(typeof parentNode === 'string') parentNode = document.body;
-        if(!parentNode) parentNode = document.body;
-        parentNode.appendChild(elm);
+        if(options.styles) Object.assign(elm.style,options.styles);
+
+        if(!options.id) options.id = `element${Math.floor(Math.random()*1000000000000000)}`;
+        elm.id = options.id;
+
+        if(typeof options.parentNode === 'string') options.parentNode = document.body;
+        if(!options.parentNode) options.parentNode = document.body;
+        options.parentNode.appendChild(elm);
 
         let node = new GraphNode({
             element:elm,   
@@ -87,9 +102,9 @@ export class DOMService extends Service {
             }
         });
 
-        this.elements[id] = {element:elm, node, parentNode};
+        this.elements[options.id] = {element:elm, node, parentNode:options.parentNode};
 
-        return this.elements[id];
+        return this.elements[options.id];
 
     }
 
@@ -254,16 +269,20 @@ export class DOMService extends Service {
 
             if((element as DOMElementInfo|CanvasElementInfo).element) element = (element as DOMElementInfo|CanvasElementInfo).element;
          }
+        else if(typeof element === 'string' && this.components[element]) {
+            if((this.components[element] as CanvasElementInfo).animating)
+            (this.components[element] as CanvasElementInfo).animating = false; //quits the anim
+            element = this.components[element].element;
+        }
         else if(typeof element === 'string' && this.elements[element]) {
-            if((this.elements[element] as CanvasElementInfo).animating)
-            (this.elements[element] as CanvasElementInfo).animating = false; //quits the anim
             element = this.elements[element].element;
         }
         
         if(element instanceof DOMElement)
             element.delete(); //will trigger the ondelete callback
-        else if ((element as HTMLElement)?.parentNode)
+        else if ((element as HTMLElement)?.parentNode) {
             (element as any).parentNode.removeChild(element);
+        }
 
         return true;
     }
@@ -275,3 +294,13 @@ export class DOMService extends Service {
         terminate:this.terminate
     }
 }
+
+/**
+ * Usage
+ * 
+ * let router = new Router([
+ *      DOMService
+ * ]);
+ * 
+ * 
+ */
