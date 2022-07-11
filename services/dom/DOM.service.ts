@@ -1,5 +1,5 @@
 import { DOMElement } from "fragelement"; //https://github.com/joshbrew/DOMElement <---- this is the special sauce
-import { GraphNode, Graph } from '../../Graph';
+import { GraphNode } from '../../Graph';
 import { Routes, Service } from "../Service";
 
 export type DOMElementProps = {
