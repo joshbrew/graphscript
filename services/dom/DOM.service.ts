@@ -53,7 +53,7 @@ export class DOMService extends Service {
     name='html'
     
     elements:{
-        [key:string]:any
+        [key:string]:ElementInfo
     }
 
     components:{
@@ -95,7 +95,7 @@ export class DOMService extends Service {
 
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
-        
+
         if(!elm.parentNode) options.parentNode.appendChild(elm);
 
         let node = new GraphNode({
@@ -129,7 +129,7 @@ export class DOMService extends Service {
 
         this.elements[options.id] = {element:elm, node, parentNode:options.parentNode, divs};
 
-        return this.elements[options.id];
+        return this.elements[options.id] as ElementInfo;
 
     }
 
@@ -203,7 +203,7 @@ export class DOMService extends Service {
             ...options
         };
 
-        return this.components[options.id];
+        return this.components[options.id] as DOMElementInfo;
     }
 
     //create a canvas with a draw loop that can respond to props
@@ -298,7 +298,7 @@ export class DOMService extends Service {
 
         node.runAnimation(animation); //update the animation by calling this function again or setting node.animation manually
 
-        return this.components[options.id];
+        return this.components[options.id] as CanvasElementInfo;
 
     }
 
