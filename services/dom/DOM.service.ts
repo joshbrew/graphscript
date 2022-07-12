@@ -95,7 +95,8 @@ export class DOMService extends Service {
 
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
-        if(!document.getElementById(elm.id)) options.parentNode.appendChild(elm);
+        
+        if(!elm.parentNode) options.parentNode.appendChild(elm);
 
         let node = new GraphNode({
             element:elm,   
@@ -164,7 +165,7 @@ export class DOMService extends Service {
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
 
-        if(!document.getElementById(elm.id)) options.parentNode.appendChild(elm);  //this instantiates the DOMElement
+        if(!elm.parentNode) options.parentNode.appendChild(elm);  //this instantiates the DOMElement
 
         this.templates[options.id] = options;
 
@@ -243,7 +244,7 @@ export class DOMService extends Service {
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
         
-        if(!document.getElementById(elm.id)) options.parentNode.appendChild(elm); //this instantiates the DOMElement
+        if(!elm.parentNode) options.parentNode.appendChild(elm); //this instantiates the DOMElement
 
         let animation = () => { //default animation
             if((this.components[options.id as string] as CanvasElementInfo)?.animating) {
