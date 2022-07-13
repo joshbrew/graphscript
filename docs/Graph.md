@@ -70,6 +70,8 @@ type OperatorType = ( //can be async
     ...args:any //input arguments, e.g. output from another node
 )=>any|void
 
+
+
 type GraphNodeProperties = {
     tag?:string, //generated if not specified, or use to get another node by tag instead of generating a new one
     operator?:OperatorType|((...args)=>any|void), //Operator to handle I/O on this node. Returned inputs can propagate according to below settings
@@ -83,6 +85,7 @@ type GraphNodeProperties = {
             then:string|((operator_result:any)=>any)|GraphNode //then do this, e.g. use a node tag, a GraphNode, or supply any function
         } //it still returns afterward but is treated like an additional flow statement :D
     },
+    tree?:Tree, //can also declare independent node maps on a node for referencing e.g. internally or on a parent graph
     delay?:false|number, //ms delay to fire the node
     repeat?:false|number, // set repeat as an integer to repeat the input n times, cmd will be the number of times the operation has been repeated
     recursive?:false|number, //or set recursive with an integer to pass the output back in as the next input n times, cmd will be the number of times the operation has been repeated
@@ -94,6 +97,16 @@ type GraphNodeProperties = {
     DEBUGNODE?:boolean // print a console.time and the result for a node by tag, run DEBUGNODES on a GraphNode or Graph to toggle debug on all attached nodes.
     [key:string]:any //add whatever variables and utilities
 }; //can specify properties of the element which can be subscribed to for changes.
+
+type Tree = {
+    [key:string]: //the key becomes the node tag on the graph
+        GraphNode |
+        Graph | //special nodes, the graph will live on the .source property of this node and the operator accepts objects with key:value pairs to run functions on the graph and return a results object with corresponding key:value pairs.
+        GraphNodeProperties |
+        OperatorType |
+        ((...args)=>any|void) |
+        { aliases:string[] } & GraphNodeProperties
+}
 
 ```
 
@@ -190,15 +203,6 @@ node
 ```js
 
 
-type Tree = {
-    [key:string]: //the key becomes the node tag on the graph
-        GraphNode |
-        Graph | //special nodes, the graph will live on the .source property of this node and the operator accepts objects with key:value pairs to run functions on the graph and return a results object with corresponding key:value pairs.
-        GraphNodeProperties |
-        OperatorType |
-        ((...args)=>any|void) |
-        { aliases:string[] } & GraphNodeProperties
-}
 
 let tree = { //you may pass an object to register a list of nodes from prototypes given here. The keys given will be the tag for the base node (parent/child prototypes need tags, else they are randomly assigned tags)
     log:(...inp)=>{

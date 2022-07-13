@@ -86,6 +86,7 @@ export type GraphNodeProperties = {
             then:string|((...operator_result:any[])=>any)|GraphNode //then do this, e.g. use a node tag, a GraphNode, or supply any function
         } //it still returns afterward but is treated like an additional flow statement :D
     },
+    tree?:Tree, //can also declare independent node maps on a node for referencing
     delay?:false|number, //ms delay to fire the node
     repeat?:false|number, // set repeat as an integer to repeat the input n times, cmd will be the number of times the operation has been repeated
     recursive?:false|number, //or set recursive with an integer to pass the output back in as the next input n times, cmd will be the number of times the operation has been repeated
@@ -180,6 +181,7 @@ export class GraphNode {
     firstRun:boolean = true;
     DEBUGNODE:boolean = false; //prints a console.time and console.timeEnd on each runOp call
     source:Graph; //if we pass a graph in as properties it will go here so as to not compete with the graphnode overlapping commands
+    tree:Tree;
 
     [key:string]: any; // any additional attribute
 
@@ -211,7 +213,7 @@ export class GraphNode {
                                             result[key] = (source[key](...input[key]));
                                         else result[key] = source[key](input[key]);
                                     } 
-                                else source[key] = input[key]; 
+                                else {source[key] = input[key]; result[key] = source[key]}
                             }
                             return result;
                         }
@@ -277,6 +279,8 @@ export class GraphNode {
             //     }
             //     else this[prop] = properties[prop];
             // }
+
+
             Object.assign(this,properties); //set the node's props as this  
 
             if(!this.tag) {
@@ -286,12 +290,21 @@ export class GraphNode {
                     this.tag = `node${Math.floor(Math.random()*10000000000)}`;
                 }
             }        
-            if(parentNode) this.parent=parentNode;
+            if(parentNode && !properties.parent) this.parent=parentNode;
             if(graph) this.graph=graph;
         
             if(graph) {
                 graph.nNodes++;
                 graph.nodes.set(this.tag,this);
+            }
+
+            
+            if(typeof properties.tree === 'object') { //can generate node maps from trees in nodes that will be available for use in the main graph, and the main graph will index them by tag
+                for(const key in properties.tree) {
+                    if(typeof properties.tree[key] === 'object') if((!properties.tree[key] as any).tag) (properties.tree[key] as any).tag = key;
+                    let node = new GraphNode(properties.tree[key],this,graph);
+                    this.nodes.set(node.tag,node);
+                }
             }
         
             if(this.children) this.convertChildrenToNodes(this);

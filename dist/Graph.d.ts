@@ -25,6 +25,7 @@ export declare type GraphNodeProperties = {
             then: string | ((...operator_result: any[]) => any) | GraphNode;
         };
     };
+    tree?: Tree;
     delay?: false | number;
     repeat?: false | number;
     recursive?: false | number;
@@ -83,6 +84,7 @@ export declare class GraphNode {
     firstRun: boolean;
     DEBUGNODE: boolean;
     source: Graph;
+    tree: Tree;
     [key: string]: any;
     constructor(properties?: GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void), parentNode?: GraphNode, graph?: Graph);
     operator: OperatorType;
