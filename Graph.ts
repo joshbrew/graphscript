@@ -1,7 +1,7 @@
 //another method
 export function getFnParamInfo(fn):Map<string, any>{
     var fstr = fn.toString();
-    const matches = fstr.match(/\(.*?\)/)[0].replace(/[()]/gi,'').replace(/\s/gi,'').split(',');
+    const matches = fstr.match(/\(.*?\)/)[0].replace(/[()]/gi,'').split(',');
     const info = new Map()
     matches.forEach(v => {
         const arr = v.split('=')
