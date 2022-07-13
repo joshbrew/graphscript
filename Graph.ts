@@ -232,6 +232,7 @@ export class GraphNode {
                 if(source.looper) properties.looper = source.looper;
                 if(source.animation) properties.animation = source.animation;
                 if(source.delay) properties.delay = source.delay;
+                if(source.tag) properties.tag = source.tag;
                 
             }
 
