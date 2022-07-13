@@ -295,13 +295,16 @@ export class GraphNode {
         
             if(graph) {
                 graph.nNodes++;
-                graph.nodes.set(this.tag,this);
+                if(graph.nodes.get(this.tag)) graph.nodes.set(`${graph.nNodes}${this.tag}`,this);
+                else graph.nodes.set(this.tag,this);
             }
 
             
             if(typeof properties.tree === 'object') { //can generate node maps from trees in nodes that will be available for use in the main graph, and the main graph will index them by tag
                 for(const key in properties.tree) {
-                    if(typeof properties.tree[key] === 'object') if((!properties.tree[key] as any).tag) (properties.tree[key] as any).tag = key;
+                    if(typeof properties.tree[key] === 'object') if((!properties.tree[key] as any).tag) {
+                        (properties.tree[key] as any).tag = key;
+                    }
                     let node = new GraphNode(properties.tree[key],this,graph);
                     this.nodes.set(node.tag,node);
                 }
