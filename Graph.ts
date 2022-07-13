@@ -205,7 +205,7 @@ export class GraphNode {
                         if(typeof input === 'object') {
                             let result = {};
                             for(const key in input) {
-                                if(typeof source[key] === 'function' && typeof input[key] !== 'function')
+                                if(typeof source[key] === 'function')
                                     { //attempt to execute a function with arguments
                                         if(Array.isArray(input[key]))
                                             result[key] = (source[key](...input[key]));
