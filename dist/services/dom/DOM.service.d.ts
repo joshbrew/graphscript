@@ -48,7 +48,7 @@ export declare type CanvasElementInfo = {
 export declare class DOMService extends Service {
     name: string;
     elements: {
-        [key: string]: any;
+        [key: string]: ElementInfo;
     };
     components: {
         [key: string]: DOMElementInfo | CanvasElementInfo;
@@ -62,7 +62,7 @@ export declare class DOMService extends Service {
         style?: CSSStyleDeclaration;
         parentNode?: string | HTMLElement;
         id?: string;
-    }, generateChildElementNodes?: boolean) => any;
+    }, generateChildElementNodes?: boolean) => ElementInfo;
     addComponent: (options: {
         template?: string | ((props: any) => string);
         parentNode?: string | HTMLElement;
@@ -76,7 +76,7 @@ export declare class DOMService extends Service {
             [key: string]: any;
         };
         id?: string;
-    }, generateChildElementNodes?: boolean) => DOMElementInfo | CanvasElementInfo;
+    }, generateChildElementNodes?: boolean) => DOMElementInfo;
     addCanvasComponent: (options: {
         context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent';
         draw: (props: any, self: DOMElement) => void;
@@ -94,7 +94,7 @@ export declare class DOMService extends Service {
             [key: string]: any;
         };
         id?: string;
-    }) => DOMElementInfo | CanvasElementInfo;
+    }) => CanvasElementInfo;
     terminate: (element: string | DOMElement | HTMLElement | DOMElementInfo | CanvasElementInfo) => boolean;
     routes: Routes;
 }

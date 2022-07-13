@@ -193,6 +193,7 @@ node
 type Tree = {
     [key:string]: //the key becomes the node tag on the graph
         GraphNode |
+        Graph | //special nodes, the graph will live on the .source property of this node and the operator accepts objects with key:value pairs to run functions on the graph and return a results object with corresponding key:value pairs.
         GraphNodeProperties |
         OperatorType |
         ((...args)=>any|void) |

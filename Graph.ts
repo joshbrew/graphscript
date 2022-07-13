@@ -65,6 +65,7 @@ export type OperatorType = ( //can be async
 export type Tree = {
     [key:string]: //the key becomes the node tag on the graph
         GraphNode |
+        Graph | //for graphs, pass an input object to the operator like so: e.g. to run a node in the graph: node.run({run:[arg1,arg2]})
         GraphNodeProperties |
         OperatorType |
         ((...args)=>any|void) |
@@ -178,11 +179,12 @@ export class GraphNode {
     runSync:boolean = false;
     firstRun:boolean = true;
     DEBUGNODE:boolean = false; //prints a console.time and console.timeEnd on each runOp call
+    source:Graph; //if we pass a graph in as properties it will go here so as to not compete with the graphnode overlapping commands
 
     [key:string]: any; // any additional attribute
 
     constructor(
-        properties:GraphNodeProperties|OperatorType|((...args:any[])=>any|void)={}, 
+        properties:GraphNodeProperties|Graph|OperatorType|((...args:any[])=>any|void)={}, 
         parentNode?:GraphNode, 
         graph?:Graph
     ) {    
@@ -192,6 +194,31 @@ export class GraphNode {
         }
 
         if(typeof properties === 'object') {
+
+            //can pass graphs and wrap Graphs with GraphNodes to enable nesting in trees
+            if(properties instanceof Graph) {
+                let source = properties;
+
+                properties = {
+                    source,
+                    operator:(input?:{[key:string]:any}) => {
+                        if(typeof input === 'object') {
+                            let result = {};
+                            for(const key in input) {
+                                if(typeof source[key] === 'function' && typeof input[key] !== 'function')
+                                    { //attempt to execute a function with arguments
+                                        if(Array.isArray(input[key]))
+                                            result[key] = (source[key](...input[key]));
+                                        else result[key] = source[key](input[key]);
+                                    } 
+                                else source[key] = input[key]; 
+                            }
+                            return result;
+                        }
+                        return source;
+                    }
+                };
+            }
 
             if(properties.tag) {
                 if(graph?.nodes) {
@@ -1191,6 +1218,7 @@ export class Graph {
             else n.DEBUGNODE = false;
         });
     }
+
 }
 
 

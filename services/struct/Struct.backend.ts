@@ -1,6 +1,7 @@
 import ObjectID from "bson-objectid"
 import { AuthorizationStruct, CommentStruct, GroupStruct, ProfileStruct } from "brainsatplay-data/dist/src/types";
 import { Routes, Service } from "../Service";
+import { UserProps } from '../../routers/users/User.router'
 
 export const randomId = (prefix?) => ((prefix) ? `${prefix}_` : '')  + Math.floor(1000000000000000*Math.random())
 
@@ -29,6 +30,8 @@ type CollectionType = any | {
     // }
 }
 
+export type UserStruct = UserProps & ProfileStruct;
+
 const defaultCollections = [
     'profile',
     'group',
@@ -45,18 +48,20 @@ const defaultCollections = [
 
 export class StructBackend extends Service {
     
+    name='structs'
+
     debug:boolean=false;
 
-    db: any;
+    db: any; // mongodb instance (mongoose)
     users:{[key:string]:{_id:string, [key:string]:any}} = {}
     collections: CollectionsType = {}
     mode: 'local' | 'mongodb' | string 
-    useAuths: boolean = true
+    useAuths: boolean = true //check if the user querying has the correct permissions 
 
     constructor(routes?:Routes,name?:string, options?:{
         users?:{[key:string]:{_id:string, [key:string]:any}},
         mode?:'local' | 'mongodb' | string,
-        db?:any,
+        db?:any, //mongodb instance (mongoose)
         collections?:CollectionsType
     }) {
         super(routes,name);
@@ -73,12 +78,346 @@ export class StructBackend extends Service {
 
     }
 
-    //routes
-    async query(self:any,origin:any,user:Partial<ProfileStruct>,collection?:any,queryObj?:any,findOne?:boolean) {
-        
+    //------------------------------------
+    //routes to be loaded
+    query = async (user:Partial<UserStruct>,collection?:any,queryObj?:any,findOne?:boolean,skip?:number) => {
+        if(!user) return false;
+
+        if(this.mode.indexOf('mongo') > -1) {
+            return await this.queryMongo(user,collection,queryObj,findOne,skip)
+        } else {
+            let res = this.getLocalData(user,collection);
+            if(res && !Array.isArray(res)) {
+                let passed = !this.useAuths;
+                if(!res?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user,res);
+            }
+            if(typeof skip === 'number' && Array.isArray(res)) if(res.length > skip) res.splice(0,skip);
+            let data:any[] = [];
+            if(res) await Promise.all(res.map(async(s) => {
+                let struct = this.getLocalData(getStringId(s._id));
+                let passed = !this.useAuths;
+                if(!struct?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct);
+                if(passed) data.push(struct);
+            }));
+            return data;
+        }
     }
 
+    getUser = async (user:Partial<UserStruct>,lookupId:string) => {
+        if(!user) return false;
 
+        let data:any;
+        if(this.mode.indexOf('mongo') > -1) {
+            data = await this.getMongoUser(user,lookupId);
+        } else {
+            let struct = this.getLocalData('profile',{_id:lookupId});
+            if(!struct) data = {user:{}};
+            else {
+                let passed = !this.useAuths;
+                if(!struct?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct);
+                if(passed) {
+                    let groups = this.getLocalData('group',{ownerId:lookupId});
+                    let auths = this.getLocalData('authorization',{ownerId:lookupId});
+                    data = {user:struct,groups:groups,authorizations:auths};
+                } else data = {user:{}};
+            }
+        }
+        if(this.debug) console.log('getUser: user:',user,'input:',lookupId,'output',data)
+        return data;
+    }
+
+    setUser = async (user:Partial<UserStruct>, struct:Partial<UserStruct>) => {
+        if(!user) return false;
+
+        let data:any;
+        if(this.mode.indexOf('mongo') > -1) {
+            data = await this.setMongoUser(user,struct);
+        } else {
+            let passed = !this.useAuths;
+                if(!struct?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct, 'WRITE');
+                if(passed) this.setLocalData(struct);
+                return true;
+            }
+            if(this.debug) console.log('setUser user:',user,'input:',struct,'output',data)
+            return data;
+    }
+
+    getUsersByIds = async (user:Partial<UserStruct>, userIds:string[]) => {
+        if(!user) return false;
+
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.getMongoUsersByIds(user,userIds);
+        } else {
+            data = [];
+            if(Array.isArray(userIds)) {
+                let struct = this.getLocalData('profile',{_id:userIds});
+                if(struct) data.push(struct);
+            }
+        }
+        if(this.debug) console.log('getUserByIds: user:',user,'input:',userIds,'output',data)
+        return data;
+    }
+
+    getUsersByRole = async (user:Partial<UserStruct>, role:string) => {
+        if(!user) return false;
+
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.getMongoUsersByRole(user,role);
+        } else {
+            let profiles = this.getLocalData('profile');
+            data = [];
+            profiles.forEach((struct) => {
+                if(struct.userRoles[role]) {
+                    data.push(struct);
+                }
+            });
+        }
+        if(this.debug) console.log('getUserByRoles: user:',user,'input:',role,'output',data)
+        return data;
+    }
+
+    deleteUser = async (user:Partial<UserStruct>, userId:string) => {
+        if(!user) return false;
+
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.deleteMongoUser(user,userId);
+        } else {
+            data = false;
+            let struct = this.getLocalData(userId);
+            if(struct) {
+                let passed = !this.useAuths;
+                if(!struct?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE');
+                if(passed) data = this.deleteLocalData(struct);
+            }
+        }
+        if(this.debug) console.log('deleteUser: user:',user,'input:',userId,'output',data)
+        return data;
+    }
+
+    setData = async (user:Partial<UserStruct>, structs:any[], notify?:boolean) => {
+        if(!user) return false;
+        let data;
+
+        if(this.mode.includes('mongo')) {
+            data = await this.setMongoData(user,structs,notify); //input array of structs
+        } else { 
+            let non_notes:any[] = [];
+            data = [];
+            await Promise.all(structs.map(async(structId) => {
+                let struct = this.getLocalData(structId);
+                let passed = !this.useAuths;
+                if(!struct?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user, struct,'WRITE');
+                if(passed) {
+                    if(!this.collections[struct.structType]) {
+                        this.collections[struct.structType] = (this.db) ? {instance: this.db.collection(struct.structType)} : {}
+                        this.collections[struct.structType].reference = {}
+                    }
+                    this.setLocalData(struct);
+                    data.push(struct);
+                    if(struct.structType !== 'notification') non_notes.push(struct);
+                }
+            }));
+            if(non_notes.length > 0 && (notify === true || typeof notify === 'undefined')) this.checkToNotify(user, non_notes, this.mode);
+            if(this.debug) console.log('setData:',user,structs,data);
+            return true;
+        }
+        if(this.debug) console.log('setData: user:',user,'input:',structs,notify,'output',data)
+        return data;
+    }
+
+    getData = async (user:Partial<UserStruct>, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number) => {
+        if(!user) return false;
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.getMongoData(user, collection, ownerId, dict, limit, skip);
+        } else {
+            data = [];
+            let structs;
+            if(collection) structs = this.getLocalData(collection);
+            if(structs && ownerId) structs = structs.filter((o)=>{if(o.ownerId === ownerId) return true;});
+            //bandaid
+            if(structs) await Promise.all(structs.map(async(s) => {
+                let struct = this.getLocalData(getStringId(s._id));
+                let passed = !this.useAuths;
+                if(!struct?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct);
+                if(passed) data.push(struct);
+            }));
+        }
+        if(this.debug) console.log('getData: user:',user,'input:',collection, ownerId, dict, limit, skip,'output',data)
+        return data;
+    }
+
+    getDataByIds = async (user:Partial<UserStruct>, structIds:string[], ownerId?:string, collection?:string) => {
+        if(!user) return false;
+
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.getMongoDataByIds(user, structIds, ownerId, collection);
+        } else {
+            data = [];
+            let structs;
+            if(collection) structs = this.getLocalData(collection);
+            if(structs && ownerId) structs = structs.filter((o)=>{if(o.ownerId === ownerId) return true;});
+            if(structs)await Promise.all(structs.map(async(s) => {
+                let struct = this.getLocalData(getStringId(s._id));
+                let passed = !this.useAuths;
+                if(!struct?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct);
+                if(passed) data.push(struct);
+            }));
+        }
+        if(this.debug) console.log('getDataByIds: user:',user,'input:',structIds,ownerId,collection,'output',data)
+        return data;
+    }
+
+    getAllData = async (user:Partial<UserStruct>, ownerId:string, excludedCollections?:string[]) => {
+        if (!user) return false
+
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.getAllUserMongoData(user,ownerId,excludedCollections);
+        } else {
+            let result = this.getLocalData(undefined,{ownerId:ownerId});
+            data = [];
+            await Promise.all(result.map(async (struct) => {
+                if(excludedCollections) {
+                    if(excludedCollections.indexOf(struct.structType) < 0) {
+                        let passed = !this.useAuths;
+                        if(!struct?.ownerId) passed = true;
+                        else if(this.useAuths) passed = await this.checkAuthorization(user,struct);
+                        if(passed) data.push(struct);
+                    }
+                } else {
+                    let passed = !this.useAuths;
+                    
+                    if(!struct?.ownerId) passed = true;
+                    else if(this.useAuths) passed = await this.checkAuthorization(user,struct);
+                    if(passed) data.push(struct);
+                }
+            }));
+        }
+        if(this.debug) console.log('getAllData: user:',user,'input:',ownerId, excludedCollections,'output',data)
+        return data;
+    }   
+
+    deleteData = async (user:Partial<UserStruct>, structIds:string[]) => {
+        if (!user) return false;
+
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.deleteMongoData(user,structIds);
+        } else {
+            data = false;
+            await Promise.all(structIds.map(async (structId) => {
+                let struct = this.getLocalData(structId);
+                let passed = !this.useAuths;
+                if(!struct?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE');
+                if(passed) this.deleteLocalData(struct);
+                data = true;
+            }));
+        }
+        if(this.debug) console.log('deleteData: user:',user,'input:',structIds,'output',data)
+        return data;
+    }
+
+    getUserGroups = async (user:Partial<UserStruct>, userId?:string, groupId?:string) => {
+        if(!user) return false;
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.getMongoGroups(user,userId,groupId);
+        } else {
+            if(typeof groupId === 'string') {
+                data = this.getLocalData('group',{_id:groupId});
+            } else {
+                data = [];
+                let result = this.getLocalData('group');
+                if(userId) {
+                    result.forEach((struct)=>{
+                        if(Object.keys(struct.users).includes(userId)) data.push(struct);
+                    });
+                }
+                else {
+                    result.forEach((struct)=>{
+                        if(Object.keys(struct.users).includes(getStringId(user._id as string|ObjectID))) data.push(struct);
+                    });
+                }
+            }
+        }
+        if(this.debug) console.log('getGroups: user:',user,'input:',userId, groupId,'output',data)
+        return data;
+    }
+
+    deleteGroup = async (user:Partial<UserStruct>, groupId:string) => {
+        if (!user) return false
+
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.deleteMongoGroup(user,groupId);
+        } else {
+            let struct = this.getLocalData('group',groupId);
+            let passed = !this.useAuths;
+            if(struct) {
+                if(!struct?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE');
+            }
+            if(passed) {
+                data = true;
+            }
+        }
+        if(this.debug) console.log('deleteGroup: user:',user,'input:',groupId,'output',data)
+        return data;
+    }
+
+    getAuthorizations = async (user:Partial<UserStruct>, ownerId?: string, authId?: string) => {
+        if (!user) return false
+
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.getMongoAuthorizations(user,ownerId,authId);
+        } else {
+            if(authId) {
+                let result = this.getLocalData('authorization',{_id:authId});
+                if(result) data = [result];
+            } else {
+                data = this.getLocalData('authorization',{ownerId});
+            }
+        }
+        if(this.debug) console.log('getAuths: user:',user,'input:',ownerId,authId,'output',data)
+        return data;
+    }
+
+    deleteAuthorization = async (user:Partial<UserStruct>, authId:string) => {
+        if (!user) return false
+
+        let data;
+        if(this.mode.includes('mongo')) {
+            data = await this.deleteMongoAuthorization(user,authId);
+        } else {
+            data = true;
+            let struct = this.getLocalData('authorization',{_id:authId});
+            if(struct) {
+                let passed = !this.useAuths;
+                if(!struct?.ownerId) passed = true;
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE');
+                if(passed) data = this.deleteLocalData(struct);
+            }
+        } 
+        if(this.debug) console.log('deleteAuth: user:',user,'input:',authId,'output',data)
+        return data;
+    }
+
+    //------------------------------------
 
     //internalish stuff
      
@@ -100,7 +439,7 @@ export class StructBackend extends Service {
 
     //when passing structs to be set, check them for if notifications need to be created
     //TODO: need to make this more flexible in the cases you DON'T want an update
-    async checkToNotify(user:Partial<ProfileStruct>,structs:any[]=[], mode=this.mode) {
+    async checkToNotify(user:Partial<UserStruct>,structs:any[]=[], mode=this.mode) {
         //console.log('CHECK TO NOTIFY', structs)
         if(structs.length === 0) return false;
         if(typeof user === 'string') {
@@ -190,7 +529,7 @@ export class StructBackend extends Service {
     }
 
     //general mongodb query
-    async queryMongo(user:Partial<ProfileStruct>,collection:string, queryObj:any={}, findOne:boolean=false, skip:number=0) {
+    async queryMongo(user:Partial<UserStruct>,collection:string, queryObj:any={}, findOne:boolean=false, skip:number=0) {
         if(!collection && !queryObj) return undefined;
         else if(findOne){
             let res = this.db.collection(collection).findOne(queryObj);
@@ -229,7 +568,7 @@ export class StructBackend extends Service {
     }
 
     //structs can be Struct objects or they can be an array with a secondary option e.g. [Struct,{$push:{x:[1,2,3]}}]
-    async setMongoData(user:Partial<ProfileStruct>,structs:any[] = [], notify=true) {
+    async setMongoData(user:Partial<UserStruct>,structs:any[] = [], notify=true) {
         
         //console.log(structs,user);
         let firstwrite = false;
@@ -381,7 +720,7 @@ export class StructBackend extends Service {
         else return false;
     }
 
-    async setMongoUser(user:Partial<ProfileStruct>,struct:ProfileStruct) {
+    async setMongoUser(user:Partial<UserStruct>,struct:Partial<UserStruct>) {
 
         if(struct._id) { //this has a second id that matches the token id
     
@@ -411,8 +750,8 @@ export class StructBackend extends Service {
         } else return false;
     }
 
-    async setGroup(user:Partial<ProfileStruct>,struct:any={}, mode=this.mode) {
-        if(struct._id) {
+    async setGroup(user:Partial<UserStruct>,struct:any, mode=this.mode) {
+        if(struct?._id) {
             let exists:any = undefined;
             if(mode.includes('mongo')) {
                 exists = await this.collections.group.instance.findOne({name:struct.name});
@@ -493,12 +832,13 @@ export class StructBackend extends Service {
             }
             this.checkToNotify(user, [struct], this.mode);
             //console.log(struct);
+            if(this.debug) console.log('setGroup: user:',user,'output',struct)
             return struct as GroupStruct;
         } else return false;
     }
 
     //
-    async getMongoUser(user:Partial<ProfileStruct>,info='', bypassAuth=false):Promise<{}|{user:ProfileStruct,authorizations:AuthorizationStruct[], groups:GroupStruct[]|{user:ProfileStruct}}>  {
+    async getMongoUser(user:Partial<UserStruct>,info='', bypassAuth=false):Promise<{}|{user:ProfileStruct,authorizations:AuthorizationStruct[], groups:GroupStruct[]|{user:ProfileStruct}}>  {
         return new Promise(async resolve => {
             const query:any[] = [{email: info},{id: info},{username:info}]
             try {query.push({_id: toObjectID(info)})} catch (e) {}
@@ -535,7 +875,7 @@ export class StructBackend extends Service {
     }
 
     //safely returns the profile id, username, and email and other basic info based on the user role set applied
-    async getMongoUsersByIds(user={},userIds=[]) {
+    async getMongoUsersByIds(user:Partial<UserStruct>,userIds:any[]=[]) {
         let usrs :any[] = [];
         userIds.forEach((u) => {
             try {usrs.push({_id:toObjectID(u)});} catch {}
@@ -555,9 +895,9 @@ export class StructBackend extends Service {
     }
 
     //safely returns the profile id, username, and email and other basic info based on the user role set applied
-    async getMongoUsersByRoles(user={},userRoles={}) {
+    async getMongoUsersByRoles(user:Partial<UserStruct>,role:string) {
         let users = this.collections.profile.instance.find({
-            userRoles:{$all: userRoles}
+            userRoles:{$all: {[role]:true}}
         });
         let found :any[] = [];
         if(await users.count() > 0) {
@@ -568,7 +908,7 @@ export class StructBackend extends Service {
         return found as ProfileStruct[];
     }
 
-    async getMongoDataByIds(user:Partial<ProfileStruct>, structIds:[], ownerId:string|undefined, collection:string|undefined) {
+    async getMongoDataByIds(user:Partial<UserStruct>, structIds:string[], ownerId:string|undefined, collection:string|undefined) {
         if(structIds.length > 0) {
             let query :any[] = [];
             structIds.forEach(
@@ -617,7 +957,7 @@ export class StructBackend extends Service {
     }
 
     //get all data for an associated user, can add a search string
-    async getMongoData(user:Partial<ProfileStruct>, collection:string|undefined, ownerId:string|undefined, dict:any|undefined={}, limit=0, skip=0) {
+    async getMongoData(user:Partial<UserStruct>, collection:string|undefined, ownerId:string|undefined, dict:any|undefined={}, limit=0, skip=0) {
         if (!ownerId) ownerId = dict?.ownerId // TODO: Ensure that replacing ownerId, key, value with dict was successful
         if(!dict) dict = {};
         if (dict._id) dict._id = toObjectID(dict._id)
@@ -662,7 +1002,7 @@ export class StructBackend extends Service {
         return structs;
     }
 
-    async getAllUserMongoData(user:Partial<ProfileStruct>,ownerId,excluded:any[]=[]) {
+    async getAllUserMongoData(user:Partial<UserStruct>,ownerId,excluded:any[]=[]) {
         let structs :any[] = [];
 
         let passed = true;
@@ -693,7 +1033,7 @@ export class StructBackend extends Service {
     }
 
     //passing in structrefs to define the collection (structType) and id
-    async getMongoDataByRefs(user:Partial<ProfileStruct>,structRefs:any[]=[]) {
+    async getMongoDataByRefs(user:Partial<UserStruct>,structRefs:any[]=[]) {
         let structs :any[] = [];
         //structRef = {structType, id}
         if(structs.length > 0) {
@@ -718,7 +1058,7 @@ export class StructBackend extends Service {
         return structs;
     }
 
-    async getMongoAuthorizations(user:Partial<ProfileStruct>,ownerId=getStringId(user._id as string), authId='') {
+    async getMongoAuthorizations(user:Partial<UserStruct>,ownerId=getStringId(user._id as string), authId='') {
         let auths :any[] = [];
         //console.log(user);
         if(authId.length === 0 ) {
@@ -741,7 +1081,7 @@ export class StructBackend extends Service {
 
     }
 
-    async getMongoGroups(user:Partial<ProfileStruct>, userId=getStringId(user._id as string), groupId='') {
+    async getMongoGroups(user:Partial<UserStruct>, userId=getStringId(user._id as string), groupId='') {
         let groups :any[] = [];
         if(groupId.length === 0 ) {
             let cursor = this.collections.group.instance.find({users:{$all:[userId]}});
@@ -759,7 +1099,7 @@ export class StructBackend extends Service {
     }
 
     //general delete function
-    async deleteMongoData(user:Partial<ProfileStruct>,structRefs:any[]=[]) {
+    async deleteMongoData(user:Partial<UserStruct>,structRefs:any[]=[]) {
         // let ids :any[] = [];
         let structs :any[] = [];
 
@@ -808,7 +1148,7 @@ export class StructBackend extends Service {
     }
 
     //specific delete functions (the above works for everything)
-    async deleteMongoUser(user:Partial<ProfileStruct>,userId) {
+    async deleteMongoUser(user:Partial<UserStruct>,userId) {
         
         if(getStringId(user._id as string) !== userId || (getStringId(user._id as string) === userId && (user.userRoles as any)?.admincontrol)) {
             let u = await this.collections.profile.instance.findOne({ id: userId });
@@ -826,7 +1166,7 @@ export class StructBackend extends Service {
         return true; 
     }
 
-    async deleteMongoGroup(user:Partial<ProfileStruct>,groupId) {
+    async deleteMongoGroup(user:Partial<UserStruct>,groupId) {
         let s = await this.collections.group.instance.findOne({ _id: toObjectID(groupId) });
         if(s) {
             if(!s?.ownerId) true;
@@ -844,7 +1184,7 @@ export class StructBackend extends Service {
     }
 
 
-    async deleteMongoAuthorization(user:Partial<ProfileStruct>,authId) {
+    async deleteMongoAuthorization(user:Partial<UserStruct>,authId) {
         let s = await this.collections.authorization.instance.findOne({ _id: toObjectID(authId) });
         if(s) {
             if(getStringId(user._id as string) !== s.ownerId || (getStringId(user._id as string) === s.ownerId && (user.userRoles as any)?.admincontrol)) {
@@ -864,7 +1204,7 @@ export class StructBackend extends Service {
         } else return false; 
     }
 
-    async setAuthorization(user:Partial<ProfileStruct>, authStruct, mode=this.mode) {
+    async setAuthorization(user:Partial<UserStruct>, authStruct, mode=this.mode) {
         //check against authorization db to allow or deny client/professional requests.
         //i.e. we need to preauthorize people to use stuff and allow each other to view sensitive data to cover our asses
 
@@ -1004,7 +1344,7 @@ export class StructBackend extends Service {
 
     
     async checkAuthorization(
-        user:string|Partial<ProfileStruct>|{_id:string}, 
+        user:string|Partial<UserStruct>|{_id:string}, 
         struct, 
         request='READ', //'WRITE'
         mode = this.mode
@@ -1085,44 +1425,44 @@ export class StructBackend extends Service {
         return passed;
     }
 
-    permissionSets = [ //return undefined to pass to next or return a boolean to break the checks
-        (user, struct, auth1, auth2, request) => {
-            if (auth1.excluded[struct.structType] && struct.ownerId === getStringId(user._id as string) && request === 'WRITE') return false;
-        },
-        (user, struct, auth1, auth2, request) => {
-            if(struct.structType === 'group') {
-                if (auth1.authorizations[struct.name+'_admin'] && auth2.authorizations[struct.name+'_admin']) return true;
-                else return false;
-            }
-        },
-        (user, struct, auth1, auth2, request) => {
-            if(auth1.authorizations['peer'] && auth2.authorizations['peer']) return true;
-        },
-        (user, struct, auth1, auth2, request) => {
-            if(auth1.authorizations['admincontrol'] && auth2.authorizations['admincontrol']) return true;
-        },
-        (user, struct, auth1, auth2, request) => {
-            if (auth1.structIds[getStringId(struct._id)] && auth2.structIds[getStringId(struct._id)]) return true;
-        }
-    ]
+    // permissionSets = [ //return undefined to pass to next or return a boolean to break the checks
+    //     (user, struct, auth1, auth2, request) => {
+    //         if (auth1.excluded[struct.structType] && struct.ownerId === getStringId(user._id as string) && request === 'WRITE') return false;
+    //     },
+    //     (user, struct, auth1, auth2, request) => {
+    //         if(struct.structType === 'group') {
+    //             if (auth1.authorizations[struct.name+'_admin'] && auth2.authorizations[struct.name+'_admin']) return true;
+    //             else return false;
+    //         }
+    //     },
+    //     (user, struct, auth1, auth2, request) => {
+    //         if(auth1.authorizations['peer'] && auth2.authorizations['peer']) return true;
+    //     },
+    //     (user, struct, auth1, auth2, request) => {
+    //         if(auth1.authorizations['admincontrol'] && auth2.authorizations['admincontrol']) return true;
+    //     },
+    //     (user, struct, auth1, auth2, request) => {
+    //         if (auth1.structIds[getStringId(struct._id)] && auth2.structIds[getStringId(struct._id)]) return true;
+    //     }
+    // ]
 
-    //return undefined if nothing passes
-    checkPermissionSets(user, struct, auth1, auth2, request): boolean|undefined {
-        let checked:any = undefined;
-        for(let i = 0; i < this.permissionSets.length; i++) {
-            checked = this.permissionSets[i](user,struct,auth1,auth2,request);
-            if(checked !== undefined) break;
-        }
-        return checked;
-    }
+    // //return undefined if nothing passes
+    // checkPermissionSets(user, struct, auth1, auth2, request): boolean|undefined {
+    //     let checked:any = undefined;
+    //     for(let i = 0; i < this.permissionSets.length; i++) {
+    //         checked = this.permissionSets[i](user,struct,auth1,auth2,request);
+    //         if(checked !== undefined) break;
+    //     }
+    //     return checked;
+    // }
 
-    addPermissionSet(callback=(struct, auth1, auth2)=>{return true;}) {
-        if(typeof callback === 'function') {
-            this.permissionSets.push(callback);
-            return true;
-        }
-        return false;
-    }
+    // addPermissionSet(callback=(struct, auth1, auth2)=>{return true;}) {
+    //     if(typeof callback === 'function') {
+    //         this.permissionSets.push(callback);
+    //         return true;
+    //     }
+    //     return false;
+    // }
 
     wipeDB = async () => {
         //await this.collections.authorization.instance.deleteMany({});
@@ -1257,6 +1597,26 @@ export class StructBackend extends Service {
         // Delete the Reference by ID
         if (this.collections[struct.structType]) delete this.collections[struct.structType].reference[struct._id]
         return true;
+    }
+
+    routes:Routes = {
+        query:this.query,
+        getUser:this.getUser,
+        setUser:this.setUser,
+        getUsersByIds:this.getUsersByIds,
+        getUsersByRole:this.getUsersByRole,
+        deleteUser:this.deleteUser,
+        setData:this.setData,
+        getData:this.getData,
+        getDataByIds:this.getDataByIds,
+        getAllData:this.getAllData,
+        deleteData:this.deleteData,
+        getUserGroups:this.getUserGroups,
+        setGroup:this.setGroup,
+        deleteGroup:this.deleteGroup,
+        setAuthorization:this.setAuthorization,
+        getAuthorizations:this.getAuthorizations,
+        deleteAuthorization:this.deleteAuthorization
     }
 
 }

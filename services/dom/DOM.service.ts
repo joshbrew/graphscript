@@ -107,7 +107,7 @@ export class DOMService extends Service {
                             if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
                                 { //attempt to execute a function with arguments
                                     if(Array.isArray(props[key]))
-                                        node.element[key](props[key]);
+                                        node.element[key](...props[key]);
                                     else node.element[key](props[key]);
                                 } 
                             else if (key === 'style') { Object.assign(node.element[key],props[key])}
@@ -183,7 +183,7 @@ export class DOMService extends Service {
                             if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
                                 { //attempt to execute a function with arguments
                                     if(Array.isArray(props[key]))
-                                        node.element[key](props[key]);
+                                        node.element[key](...props[key]);
                                     else node.element[key](props[key]);
                                 } 
                             else node.element[key] = props[key]; 
@@ -264,7 +264,7 @@ export class DOMService extends Service {
                             if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
                                 { //attempt to execute a function with arguments
                                     if(Array.isArray(props[key]))
-                                        node.element[key](props[key]);
+                                        node.element[key](...props[key]);
                                     else node.element[key](props[key]);
                                 } 
                             else node.element[key] = props[key]; 
