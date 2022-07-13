@@ -203,6 +203,7 @@ export class Service extends Graph {
         }
         if(this.routes[route]?.[m]) {
             if(!(this.routes[route][m] instanceof Function)) {
+                if(args) this.routes[route][m] = args; //if args were passed set the value
                 return this.routes[route][m]; //could just be a stored local variable we are returning like a string or object
             }// else if(origin) { return this.routes[route][m](origin,data); }//put origin in first position
             else return this.routes[route][m](args); 
