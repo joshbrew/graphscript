@@ -37,7 +37,9 @@ export declare class Service extends Graph {
     firstLoad: boolean;
     name: string;
     keepState: boolean;
-    constructor(routes?: Routes, name?: string);
+    constructor(routes?: Routes, name?: string, props?: {
+        [key: string]: any;
+    });
     load: (routes?: any) => Routes;
     unload: (routes?: Service | Routes | any) => Routes;
     handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;

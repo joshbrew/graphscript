@@ -218,6 +218,21 @@ export class GraphNode {
                         return source;
                     }
                 };
+
+                //in case any stuff was added to the graph to indicate flow logic
+                if(source.operator) properties.operator = source.operator;
+                if(source.children) properties.children = source.children;
+                if(source.parent) properties.parent = source.parent;
+                if(source.forward) properties.forward = source.forward;
+                if(source.backward) properties.backward = source.backward;
+                if(source.repeat) properties.repeat = source.repeat;
+                if(source.recurse) properties.recurse = source.recurse;
+                if(source.loop) properties.loop = source.loop;
+                if(source.animate) properties.animate = source.animate;
+                if(source.looper) properties.looper = source.looper;
+                if(source.animation) properties.animation = source.animation;
+                if(source.delay) properties.delay = source.delay;
+                
             }
 
             if(properties.tag) {
@@ -1020,10 +1035,12 @@ export class Graph {
 
     [key:string]:any;
 
-    constructor( tree?:Tree, tag?:string ) {
+    constructor( tree?:Tree, tag?:string, props?:{[key:string]:any} ) {
         this.tag = tag ? tag : `graph${Math.floor(Math.random()*100000000000)}`;
 
         if(tree || Object.keys(this.tree).length > 0) this.setTree(tree);
+
+        if(props) Object.assign(this,props); //set other props like flow properties in a nested graph
     }
 
     //converts all children nodes and tag references to GraphNodes also

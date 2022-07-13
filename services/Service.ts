@@ -52,8 +52,8 @@ export class Service extends Graph {
     name:string=`service${Math.floor(Math.random()*100000000000000)}`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
 
-    constructor(routes?:Routes, name?:string) {
-        super(undefined,name);
+    constructor(routes?:Routes, name?:string,props?:{[key:string]:any}) {
+        super(undefined,name,props);
         if(name) this.name = name;
         if(routes) this.load(routes); //now process the routes for the acyclic graph to load them as graph nodes :-D
     }

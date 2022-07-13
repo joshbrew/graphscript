@@ -147,7 +147,9 @@ export declare class Graph {
     };
     tree: Tree;
     [key: string]: any;
-    constructor(tree?: Tree, tag?: string);
+    constructor(tree?: Tree, tag?: string, props?: {
+        [key: string]: any;
+    });
     add: (node?: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void)) => GraphNode | GraphNodeProperties;
     setTree: (tree?: Tree) => void;
     get: (tag: string) => any;

@@ -39,7 +39,7 @@ const tree = {
     }
 }
 
-const graph = new Graph(tree);
+const graph = new Graph(tree,'graph1',undefined);
 
 graph.run('sequence',21,23).then((res) => {
     console.log(res);
