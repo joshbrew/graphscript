@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { DOMElement } from "./DOMElement";
 import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph';
 import { RouteProp, Routes, Service, ServiceMessage } from "../Service";

@@ -80,7 +80,8 @@ export class StructBackend extends Service {
 
     //------------------------------------
     //routes to be loaded
-    query = async (user:Partial<UserStruct>,collection?:any,queryObj?:any,findOne?:boolean,skip?:number) => {
+    query = async (self=this, origin:any, user:Partial<UserStruct>,collection?:any,queryObj?:any,findOne?:boolean,skip?:number) => {
+        if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
         if(this.mode.indexOf('mongo') > -1) {
@@ -105,7 +106,8 @@ export class StructBackend extends Service {
         }
     }
 
-    getUser = async (user:Partial<UserStruct>,lookupId:string) => {
+    getUser = async (self=this, origin:any, user:Partial<UserStruct>,lookupId:string) => {
+        if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
         let data:any;
@@ -129,7 +131,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    setUser = async (user:Partial<UserStruct>, struct:Partial<UserStruct>) => {
+    setUser = async (self=this, origin:any, user:Partial<UserStruct>, struct:Partial<UserStruct>) => {
+        if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
         let data:any;
@@ -146,7 +149,8 @@ export class StructBackend extends Service {
             return data;
     }
 
-    getUsersByIds = async (user:Partial<UserStruct>, userIds:string[]) => {
+    getUsersByIds = async (self=this, origin:any, user:Partial<UserStruct>, userIds:string[]) => {
+        if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
         let data;
@@ -163,7 +167,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getUsersByRole = async (user:Partial<UserStruct>, role:string) => {
+    getUsersByRole = async (self=this, origin:any, user:Partial<UserStruct>, role:string) => {
+        if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
         let data;
@@ -182,7 +187,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteUser = async (user:Partial<UserStruct>, userId:string) => {
+    deleteUser = async (self=this, origin:any, user:Partial<UserStruct>, userId:string) => {
+        if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
         let data;
@@ -202,8 +208,10 @@ export class StructBackend extends Service {
         return data;
     }
 
-    setData = async (user:Partial<UserStruct>, structs:any[], notify?:boolean) => {
+    setData = async (self=this, origin:any, user:Partial<UserStruct>, structs:any[], notify?:boolean) => {
+        if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
+
         let data;
 
         if(this.mode.includes('mongo')) {
@@ -234,8 +242,10 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getData = async (user:Partial<UserStruct>, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number) => {
+    getData = async (self=this, origin:any, user:Partial<UserStruct>, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number) => {
+        if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
+
         let data;
         if(this.mode.includes('mongo')) {
             data = await this.getMongoData(user, collection, ownerId, dict, limit, skip);
@@ -257,7 +267,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getDataByIds = async (user:Partial<UserStruct>, structIds:string[], ownerId?:string, collection?:string) => {
+    getDataByIds = async (self=this, origin:any, user:Partial<UserStruct>, structIds:string[], ownerId?:string, collection?:string) => {
+        if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
         let data;
@@ -280,8 +291,9 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAllData = async (user:Partial<UserStruct>, ownerId:string, excludedCollections?:string[]) => {
-        if (!user) return false
+    getAllData = async (self=this, origin:any, user:Partial<UserStruct>, ownerId:string, excludedCollections?:string[]) => {
+        if(!user && origin) {user = this.users[origin]}
+        if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
@@ -310,8 +322,9 @@ export class StructBackend extends Service {
         return data;
     }   
 
-    deleteData = async (user:Partial<UserStruct>, structIds:string[]) => {
-        if (!user) return false;
+    deleteData = async (self=this, origin:any, user:Partial<UserStruct>, structIds:string[]) => {
+        if(!user && origin) {user = this.users[origin]}
+        if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
@@ -331,8 +344,10 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getUserGroups = async (user:Partial<UserStruct>, userId?:string, groupId?:string) => {
+    getUserGroups = async (self=this, origin:any, user:Partial<UserStruct>, userId?:string, groupId?:string) => {
+        if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
+
         let data;
         if(this.mode.includes('mongo')) {
             data = await this.getMongoGroups(user,userId,groupId);
@@ -358,8 +373,9 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteGroup = async (user:Partial<UserStruct>, groupId:string) => {
-        if (!user) return false
+    deleteGroup = async (self=this, origin:any, user:Partial<UserStruct>, groupId:string) => {
+        if(!user && origin) {user = this.users[origin]}
+        if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
@@ -379,8 +395,9 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAuthorizations = async (user:Partial<UserStruct>, ownerId?: string, authId?: string) => {
-        if (!user) return false
+    getAuthorizations = async (self=this, origin:any, user:Partial<UserStruct>, ownerId?: string, authId?: string) => {
+        if(!user && origin) {user = this.users[origin]}
+        if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
@@ -397,8 +414,9 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteAuthorization = async (user:Partial<UserStruct>, authId:string) => {
-        if (!user) return false
+    deleteAuthorization = async (self=this, origin:any, user:Partial<UserStruct>, authId:string) => {
+        if(!user && origin) {user = this.users[origin]}
+        if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
