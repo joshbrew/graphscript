@@ -10,6 +10,7 @@ export type ElementInfo = { //returned from addElement
 }
 
 export type DOMElementProps = {
+    tagName?:string, //custom node tag name, requires a '-' in it 
     template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
     parentNode?:string|HTMLElement,
     styles?:string, //will use the shadow DOM automatically in this case
@@ -23,6 +24,7 @@ export type DOMElementProps = {
 
 export type DOMElementInfo = { //returned from addComponent
     element:DOMElement,
+    class:any, //the customized DOMElement class
     node:GraphNode,
     divs:any[]
 } & DOMElementProps
@@ -45,8 +47,11 @@ export type CanvasElementInfo = { //returned from addCanvasComponent
     width?:string,
     height?:string,
     style?:string,
+    class:any, //the customized DOMElement class
     node:GraphNode
 } & DOMElementProps
+
+DOMElement.addElement()
 
 export class DOMService extends Service {
 
@@ -76,7 +81,7 @@ export class DOMService extends Service {
         
     )=>{
 
-        let elm;
+        let elm:HTMLElement;
         if(options.element) {
             if(typeof options.element === 'string') {
                 elm = document.querySelector(options.element); //get first element by tag or id 
@@ -90,7 +95,7 @@ export class DOMService extends Service {
 
         if(options.style) Object.assign(elm.style,options.style);
 
-        if(!options.id) options.id = `element${Math.floor(Math.random()*1000000000000000)}`;
+        if(!options.id) options.id = `${elm.tagName}${Math.floor(Math.random()*1000000000000000)}`;
         elm.id = options.id;
 
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
@@ -122,9 +127,9 @@ export class DOMService extends Service {
         this.add(node);
 
         
-        let divs = elm.querySelectorAll('*');
+        let divs:any[] = Array.from(elm.querySelectorAll('*'));
         if(generateChildElementNodes) { //convert all child divs to additional nodes
-            divs = divs.map((d:HTMLElement) => this.addElement({element:d}));
+            divs = divs.map((d:HTMLElement,i) => this.addElement({element:d}));
         }
 
         this.elements[options.id] = {element:elm, node, parentNode:options.parentNode, divs};
@@ -137,6 +142,7 @@ export class DOMService extends Service {
     // with the node
     addComponent=(
         options:{
+            tagName?:string,
             template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
             parentNode?:string|HTMLElement,
             styles?:string, //will use the shadow DOM automatically in this case
@@ -147,29 +153,37 @@ export class DOMService extends Service {
             renderonchanged?:boolean|((props:any,self:DOMElement)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
             props?:{[key:string]:any},
             id?:string
-        },
+        } = {},
         generateChildElementNodes=false
     )=>{
         
-        let elm = new DOMElement();
-        if(options.props) elm.props = options.props;
-        if(options.template) elm.template = options.template;
-        if(options.oncreate) elm.oncreate = options.oncreate;
-        if(options.onresize) elm.onresize = options.onresize;
-        if(options.ondelete) elm.ondelete = options.ondelete;
-        if(options.onchanged) elm.onchanged = options.onchanged;
-        if(options.renderonchanged) elm.renderonchanged = options.renderonchanged;
 
-        if(!options.id) options.id = `element${Math.floor(Math.random()*1000000000000000)}`
+        class CustomElement extends DOMElement {
+            props = options.props;
+            styles = options.styles;
+            template = options.template;
+            oncreate = options.oncreate;
+            onresize = options.onresize;
+            ondelete = options.ondelete;
+            renderonchanged = options.renderonchanged;
+        }
+
+        if(!options.tagName) options.tagName = `custom-element${Math.random()*1000000000000000}`;
+
+        (CustomElement as DOMElement).addElement(options.tagName); 
+
+        if(!options.id) options.id = options.tagName;
 
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
+
+        let elm = document.createElement(options.tagName);
 
         if(!elm.parentNode) options.parentNode.appendChild(elm);  //this instantiates the DOMElement
 
         this.templates[options.id] = options;
 
-        let divs = elm.querySelectorAll('*');
+        let divs:any[] = Array.from(elm.querySelectorAll('*'));
         if(generateChildElementNodes) { //convert all child divs to additional nodes
             divs = divs.map((d:HTMLElement) => this.addElement({element:d}));
         }
@@ -198,6 +212,7 @@ export class DOMService extends Service {
 
         this.components[options.id] = {
             element:elm,
+            class:CustomElement,
             node,
             divs,
             ...options
@@ -209,6 +224,7 @@ export class DOMService extends Service {
     //create a canvas with a draw loop that can respond to props
     addCanvasComponent=(
         options:{
+            tagName?:string, //custom element tagName, requires a '-' in the tag or it gets added to the end
             context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent', //
             draw:((props:any,self:DOMElement)=>void), //string or function that passes the modifiable props on the element (the graph node properties)
             width?:string, //e.g. '300px'
@@ -222,28 +238,37 @@ export class DOMService extends Service {
             onchanged?:(props:any,self:DOMElement)=>void,
             renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
             props?:{[key:string]:any}
-            id?:string
+            id?:string,
+            [key:string]:any
         }
     ) => {
 
-        let elm = new DOMElement();
-        if(options.props) elm.props = options.props;
-        elm.template = `<canvas `;
-        if(options.width) elm.template += `width="${options.width}"`;
-        if(options.height) elm.template += `height="${options.height}"`;
-        elm.template+=` ></canvas>`;
+        options.template = `<canvas `;
+        if(options.width) options.template += `width="${options.width}"`;
+        if(options.height) options.template += `height="${options.height}"`;
+        options.template+=` ></canvas>`;
+        
+        class CustomElement extends DOMElement {
+            props = options.props;
+            styles = options.styles;
+            template = options.template;
+            oncreate = options.oncreate;
+            onresize = options.onresize;
+            ondelete = options.ondelete;
+            renderonchanged = options.renderonchanged;
+        }
 
-        if(options.oncreate) elm.oncreate = options.oncreate;
-        if(options.onresize) elm.onresize = options.onresize;
-        if(options.ondelete) elm.ondelete = options.ondelete;
-        if(options.onchanged) elm.onchanged = options.onchanged;
-        if(options.renderonchanged) elm.renderonchanged = options.renderonchanged;
+        if(!options.tagName) options.tagName = `custom-element${Math.random()*1000000000000000}`;
 
-        if(!options.id) options.id = `element${Math.floor(Math.random()*1000000000000000)}`
+        (CustomElement as DOMElement).addElement(options.tagName); 
+
+        if(!options.id) options.id = options.tagName;
 
         if(typeof options.parentNode === 'string') options.parentNode = document.body;
         if(!options.parentNode) options.parentNode = document.body;
         
+        let elm = document.createElement(options.tagName);
+
         if(!elm.parentNode) options.parentNode.appendChild(elm); //this instantiates the DOMElement
 
         let animation = () => { //default animation
@@ -283,7 +308,8 @@ export class DOMService extends Service {
 
         this.components[options.id] = {
             element:elm,
-            template:elm.template,
+            class:CustomElement,
+            template:options.template,
             canvas,
             node,
             ...options
@@ -291,8 +317,8 @@ export class DOMService extends Service {
 
         (this.components[options.id] as CanvasElementInfo).context = context;
 
-        elm.canvas = canvas; //make sure everything is accessible;
-        elm.context = context; 
+        (elm as any).canvas = canvas; //make sure everything is accessible;
+        (elm as any).context = context; 
         node.canvas = canvas; //make sure everything is accessible;
         node.context = context;
 

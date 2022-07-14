@@ -2963,6 +2963,7 @@
   }
 
   // services/dom/DOM.service.ts
+  c.addElement();
   var DOMService = class extends Service {
     constructor() {
       super(...arguments);
@@ -2984,7 +2985,7 @@
         if (options2.style)
           Object.assign(elm.style, options2.style);
         if (!options2.id)
-          options2.id = `element${Math.floor(Math.random() * 1e15)}`;
+          options2.id = `${elm.tagName}${Math.floor(Math.random() * 1e15)}`;
         elm.id = options2.id;
         if (typeof options2.parentNode === "string")
           options2.parentNode = document.body;
@@ -3013,39 +3014,40 @@
           }
         });
         this.add(node);
-        let divs = elm.querySelectorAll("*");
+        let divs = Array.from(elm.querySelectorAll("*"));
         if (generateChildElementNodes) {
-          divs = divs.map((d) => this.addElement({ element: d }));
+          divs = divs.map((d, i) => this.addElement({ element: d }));
         }
         this.elements[options2.id] = { element: elm, node, parentNode: options2.parentNode, divs };
         return this.elements[options2.id];
       };
-      this.addComponent = (options2, generateChildElementNodes = false) => {
-        let elm = new c();
-        if (options2.props)
-          elm.props = options2.props;
-        if (options2.template)
-          elm.template = options2.template;
-        if (options2.oncreate)
-          elm.oncreate = options2.oncreate;
-        if (options2.onresize)
-          elm.onresize = options2.onresize;
-        if (options2.ondelete)
-          elm.ondelete = options2.ondelete;
-        if (options2.onchanged)
-          elm.onchanged = options2.onchanged;
-        if (options2.renderonchanged)
-          elm.renderonchanged = options2.renderonchanged;
+      this.addComponent = (options2 = {}, generateChildElementNodes = false) => {
+        class CustomElement extends c {
+          constructor() {
+            super(...arguments);
+            this.props = options2.props;
+            this.styles = options2.styles;
+            this.template = options2.template;
+            this.oncreate = options2.oncreate;
+            this.onresize = options2.onresize;
+            this.ondelete = options2.ondelete;
+            this.renderonchanged = options2.renderonchanged;
+          }
+        }
+        if (!options2.tagName)
+          options2.tagName = `custom-element${Math.random() * 1e15}`;
+        CustomElement.addElement(options2.tagName);
         if (!options2.id)
-          options2.id = `element${Math.floor(Math.random() * 1e15)}`;
+          options2.id = options2.tagName;
         if (typeof options2.parentNode === "string")
           options2.parentNode = document.body;
         if (!options2.parentNode)
           options2.parentNode = document.body;
+        let elm = document.createElement(options2.tagName);
         if (!elm.parentNode)
           options2.parentNode.appendChild(elm);
         this.templates[options2.id] = options2;
-        let divs = elm.querySelectorAll("*");
+        let divs = Array.from(elm.querySelectorAll("*"));
         if (generateChildElementNodes) {
           divs = divs.map((d) => this.addElement({ element: d }));
         }
@@ -3070,6 +3072,7 @@
         this.add(node);
         this.components[options2.id] = {
           element: elm,
+          class: CustomElement,
           node,
           divs,
           ...options2
@@ -3077,31 +3080,34 @@
         return this.components[options2.id];
       };
       this.addCanvasComponent = (options2) => {
-        let elm = new c();
-        if (options2.props)
-          elm.props = options2.props;
-        elm.template = `<canvas `;
+        options2.template = `<canvas `;
         if (options2.width)
-          elm.template += `width="${options2.width}"`;
+          options2.template += `width="${options2.width}"`;
         if (options2.height)
-          elm.template += `height="${options2.height}"`;
-        elm.template += ` ></canvas>`;
-        if (options2.oncreate)
-          elm.oncreate = options2.oncreate;
-        if (options2.onresize)
-          elm.onresize = options2.onresize;
-        if (options2.ondelete)
-          elm.ondelete = options2.ondelete;
-        if (options2.onchanged)
-          elm.onchanged = options2.onchanged;
-        if (options2.renderonchanged)
-          elm.renderonchanged = options2.renderonchanged;
+          options2.template += `height="${options2.height}"`;
+        options2.template += ` ></canvas>`;
+        class CustomElement extends c {
+          constructor() {
+            super(...arguments);
+            this.props = options2.props;
+            this.styles = options2.styles;
+            this.template = options2.template;
+            this.oncreate = options2.oncreate;
+            this.onresize = options2.onresize;
+            this.ondelete = options2.ondelete;
+            this.renderonchanged = options2.renderonchanged;
+          }
+        }
+        if (!options2.tagName)
+          options2.tagName = `custom-element${Math.random() * 1e15}`;
+        CustomElement.addElement(options2.tagName);
         if (!options2.id)
-          options2.id = `element${Math.floor(Math.random() * 1e15)}`;
+          options2.id = options2.tagName;
         if (typeof options2.parentNode === "string")
           options2.parentNode = document.body;
         if (!options2.parentNode)
           options2.parentNode = document.body;
+        let elm = document.createElement(options2.tagName);
         if (!elm.parentNode)
           options2.parentNode.appendChild(elm);
         let animation = () => {
@@ -3136,7 +3142,8 @@
         let context = canvas.getContext(options2.context);
         this.components[options2.id] = {
           element: elm,
-          template: elm.template,
+          class: CustomElement,
+          template: options2.template,
           canvas,
           node,
           ...options2

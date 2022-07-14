@@ -8,6 +8,7 @@ export declare type ElementInfo = {
     divs: any[];
 };
 export declare type DOMElementProps = {
+    tagName?: string;
     template?: string | ((props: any) => string);
     parentNode?: string | HTMLElement;
     styles?: string;
@@ -20,6 +21,7 @@ export declare type DOMElementProps = {
 };
 export declare type DOMElementInfo = {
     element: DOMElement;
+    class: any;
     node: GraphNode;
     divs: any[];
 } & DOMElementProps;
@@ -43,6 +45,7 @@ export declare type CanvasElementInfo = {
     width?: string;
     height?: string;
     style?: string;
+    class: any;
     node: GraphNode;
 } & DOMElementProps;
 export declare class DOMService extends Service {
@@ -63,7 +66,8 @@ export declare class DOMService extends Service {
         parentNode?: string | HTMLElement;
         id?: string;
     }, generateChildElementNodes?: boolean) => ElementInfo;
-    addComponent: (options: {
+    addComponent: (options?: {
+        tagName?: string;
         template?: string | ((props: any) => string);
         parentNode?: string | HTMLElement;
         styles?: string;
@@ -78,6 +82,8 @@ export declare class DOMService extends Service {
         id?: string;
     }, generateChildElementNodes?: boolean) => DOMElementInfo;
     addCanvasComponent: (options: {
+        [key: string]: any;
+        tagName?: string;
         context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent';
         draw: (props: any, self: DOMElement) => void;
         width?: string;
