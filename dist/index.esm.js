@@ -6,7 +6,7 @@ var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __defNormalProp = (obj, key, value2) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value: value2 }) : obj[key] = value2;
 var __require = /* @__PURE__ */ ((x2) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x2, {
-  get: (a2, b2) => (typeof require !== "undefined" ? require : a2)[b2]
+  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
 }) : x2)(function(x2) {
   if (typeof require !== "undefined")
     return require.apply(this, arguments);
@@ -29,570 +29,514 @@ var __publicField = (obj, key, value2) => {
   return value2;
 };
 
-// services/dom/components/graph.node.html
-var require_graph_node = __commonJS({
-  "services/dom/components/graph.node.html"(exports, module) {
-    module.exports = "<!-- Build any HTML elements and connect them to the nodes graphs by the hierarchy in the html page! -->";
-  }
-});
-
-// services/dom/components/acyclic.graph.html
-var require_acyclic_graph = __commonJS({
-  "services/dom/components/acyclic.graph.html"(exports, module) {
-    module.exports = '<div>\r\n    Check Console\r\n    <button id="rungraph">Run</button>\r\n</div>';
-  }
-});
-
-// services/dom/components/template.node.html
-var require_template_node = __commonJS({
-  "services/dom/components/template.node.html"(exports, module) {
-    module.exports = '<div id="template">Hello World!</div>';
-  }
-});
-
-// services/dom/components/examples/button.node.html
-var require_button_node = __commonJS({
-  "services/dom/components/examples/button.node.html"(exports, module) {
-    module.exports = "<button>Click</button>";
-  }
-});
-
-// services/dom/components/examples/input.node.html
-var require_input_node = __commonJS({
-  "services/dom/components/examples/input.node.html"(exports, module) {
-    module.exports = "<input></input>";
-  }
-});
-
-// services/dom/components/examples/canvas.node.html
-var require_canvas_node = __commonJS({
-  "services/dom/components/examples/canvas.node.html"(exports, module) {
-    module.exports = '<canvas height="100%" width="100%"></canvas>';
-  }
-});
-
-// services/dom/components/examples/circlecanvas.node.html
-var require_circlecanvas_node = __commonJS({
-  "services/dom/components/examples/circlecanvas.node.html"(exports, module) {
-    module.exports = '<canvas height="100%" width="100%"></canvas>';
-  }
-});
-
-// services/dom/components/examples/place.node.html
-var require_place_node = __commonJS({
-  "services/dom/components/examples/place.node.html"(exports, module) {
-    module.exports = '<div style="position:absolute">\r\n    <input type="color" id="colorwheel">\r\n    <button id="zoomin">Zoom +</button>\r\n    <button id="zoomout">Zoom -</button>\r\n    <button id="panleft">Left</button>\r\n    <button id="panright">Right</button>\r\n    <button id="panup">Up</button>\r\n    <button id="pandown">Down</button>\r\n</div>\r\n<canvas height="100%" width="100%"></canvas>';
-  }
-});
-
 // services/e2ee/sjcl.js
 var require_sjcl = __commonJS({
   "services/e2ee/sjcl.js"(exports, module) {
     "use strict";
-    var sjcl2 = { cipher: {}, hash: {}, keyexchange: {}, mode: {}, misc: {}, codec: {}, exception: { corrupt: function(a2) {
+    var sjcl2 = { cipher: {}, hash: {}, keyexchange: {}, mode: {}, misc: {}, codec: {}, exception: { corrupt: function(a) {
       this.toString = function() {
         return "CORRUPT: " + this.message;
       };
-      this.message = a2;
-    }, invalid: function(a2) {
+      this.message = a;
+    }, invalid: function(a) {
       this.toString = function() {
         return "INVALID: " + this.message;
       };
-      this.message = a2;
-    }, bug: function(a2) {
+      this.message = a;
+    }, bug: function(a) {
       this.toString = function() {
         return "BUG: " + this.message;
       };
-      this.message = a2;
-    }, notReady: function(a2) {
+      this.message = a;
+    }, notReady: function(a) {
       this.toString = function() {
         return "NOT READY: " + this.message;
       };
-      this.message = a2;
+      this.message = a;
     } } };
-    sjcl2.cipher.aes = function(a2) {
+    sjcl2.cipher.aes = function(a) {
       this.s[0][0][0] || this.O();
-      var b2, c2, d, e, f2 = this.s[0][4], g2 = this.s[1];
-      b2 = a2.length;
+      var b, c, d, e, f = this.s[0][4], g = this.s[1];
+      b = a.length;
       var h = 1;
-      if (4 !== b2 && 6 !== b2 && 8 !== b2)
+      if (4 !== b && 6 !== b && 8 !== b)
         throw new sjcl2.exception.invalid("invalid aes key size");
-      this.b = [d = a2.slice(0), e = []];
-      for (a2 = b2; a2 < 4 * b2 + 28; a2++) {
-        c2 = d[a2 - 1];
-        if (0 === a2 % b2 || 8 === b2 && 4 === a2 % b2)
-          c2 = f2[c2 >>> 24] << 24 ^ f2[c2 >> 16 & 255] << 16 ^ f2[c2 >> 8 & 255] << 8 ^ f2[c2 & 255], 0 === a2 % b2 && (c2 = c2 << 8 ^ c2 >>> 24 ^ h << 24, h = h << 1 ^ 283 * (h >> 7));
-        d[a2] = d[a2 - b2] ^ c2;
+      this.b = [d = a.slice(0), e = []];
+      for (a = b; a < 4 * b + 28; a++) {
+        c = d[a - 1];
+        if (0 === a % b || 8 === b && 4 === a % b)
+          c = f[c >>> 24] << 24 ^ f[c >> 16 & 255] << 16 ^ f[c >> 8 & 255] << 8 ^ f[c & 255], 0 === a % b && (c = c << 8 ^ c >>> 24 ^ h << 24, h = h << 1 ^ 283 * (h >> 7));
+        d[a] = d[a - b] ^ c;
       }
-      for (b2 = 0; a2; b2++, a2--)
-        c2 = d[b2 & 3 ? a2 : a2 - 4], e[b2] = 4 >= a2 || 4 > b2 ? c2 : g2[0][f2[c2 >>> 24]] ^ g2[1][f2[c2 >> 16 & 255]] ^ g2[2][f2[c2 >> 8 & 255]] ^ g2[3][f2[c2 & 255]];
+      for (b = 0; a; b++, a--)
+        c = d[b & 3 ? a : a - 4], e[b] = 4 >= a || 4 > b ? c : g[0][f[c >>> 24]] ^ g[1][f[c >> 16 & 255]] ^ g[2][f[c >> 8 & 255]] ^ g[3][f[c & 255]];
     };
-    sjcl2.cipher.aes.prototype = { encrypt: function(a2) {
-      return t(this, a2, 0);
-    }, decrypt: function(a2) {
-      return t(this, a2, 1);
+    sjcl2.cipher.aes.prototype = { encrypt: function(a) {
+      return t(this, a, 0);
+    }, decrypt: function(a) {
+      return t(this, a, 1);
     }, s: [[[], [], [], [], []], [[], [], [], [], []]], O: function() {
-      var a2 = this.s[0], b2 = this.s[1], c2 = a2[4], d = b2[4], e, f2, g2, h = [], k = [], l, n, m, p;
+      var a = this.s[0], b = this.s[1], c = a[4], d = b[4], e, f, g, h = [], k = [], l, n, m, p;
       for (e = 0; 256 > e; e++)
         k[(h[e] = e << 1 ^ 283 * (e >> 7)) ^ e] = e;
-      for (f2 = g2 = 0; !c2[f2]; f2 ^= l || 1, g2 = k[g2] || 1)
-        for (m = g2 ^ g2 << 1 ^ g2 << 2 ^ g2 << 3 ^ g2 << 4, m = m >> 8 ^ m & 255 ^ 99, c2[f2] = m, d[m] = f2, n = h[e = h[l = h[f2]]], p = 16843009 * n ^ 65537 * e ^ 257 * l ^ 16843008 * f2, n = 257 * h[m] ^ 16843008 * m, e = 0; 4 > e; e++)
-          a2[e][f2] = n = n << 24 ^ n >>> 8, b2[e][m] = p = p << 24 ^ p >>> 8;
+      for (f = g = 0; !c[f]; f ^= l || 1, g = k[g] || 1)
+        for (m = g ^ g << 1 ^ g << 2 ^ g << 3 ^ g << 4, m = m >> 8 ^ m & 255 ^ 99, c[f] = m, d[m] = f, n = h[e = h[l = h[f]]], p = 16843009 * n ^ 65537 * e ^ 257 * l ^ 16843008 * f, n = 257 * h[m] ^ 16843008 * m, e = 0; 4 > e; e++)
+          a[e][f] = n = n << 24 ^ n >>> 8, b[e][m] = p = p << 24 ^ p >>> 8;
       for (e = 0; 5 > e; e++)
-        a2[e] = a2[e].slice(0), b2[e] = b2[e].slice(0);
+        a[e] = a[e].slice(0), b[e] = b[e].slice(0);
     } };
-    function t(a2, b2, c2) {
-      if (4 !== b2.length)
+    function t(a, b, c) {
+      if (4 !== b.length)
         throw new sjcl2.exception.invalid("invalid aes block size");
-      var d = a2.b[c2], e = b2[0] ^ d[0], f2 = b2[c2 ? 3 : 1] ^ d[1], g2 = b2[2] ^ d[2];
-      b2 = b2[c2 ? 1 : 3] ^ d[3];
+      var d = a.b[c], e = b[0] ^ d[0], f = b[c ? 3 : 1] ^ d[1], g = b[2] ^ d[2];
+      b = b[c ? 1 : 3] ^ d[3];
       var h, k, l, n = d.length / 4 - 2, m, p = 4, r = [0, 0, 0, 0];
-      h = a2.s[c2];
-      a2 = h[0];
-      var q = h[1], v = h[2], w2 = h[3], x2 = h[4];
+      h = a.s[c];
+      a = h[0];
+      var q = h[1], v = h[2], w = h[3], x2 = h[4];
       for (m = 0; m < n; m++)
-        h = a2[e >>> 24] ^ q[f2 >> 16 & 255] ^ v[g2 >> 8 & 255] ^ w2[b2 & 255] ^ d[p], k = a2[f2 >>> 24] ^ q[g2 >> 16 & 255] ^ v[b2 >> 8 & 255] ^ w2[e & 255] ^ d[p + 1], l = a2[g2 >>> 24] ^ q[b2 >> 16 & 255] ^ v[e >> 8 & 255] ^ w2[f2 & 255] ^ d[p + 2], b2 = a2[b2 >>> 24] ^ q[e >> 16 & 255] ^ v[f2 >> 8 & 255] ^ w2[g2 & 255] ^ d[p + 3], p += 4, e = h, f2 = k, g2 = l;
+        h = a[e >>> 24] ^ q[f >> 16 & 255] ^ v[g >> 8 & 255] ^ w[b & 255] ^ d[p], k = a[f >>> 24] ^ q[g >> 16 & 255] ^ v[b >> 8 & 255] ^ w[e & 255] ^ d[p + 1], l = a[g >>> 24] ^ q[b >> 16 & 255] ^ v[e >> 8 & 255] ^ w[f & 255] ^ d[p + 2], b = a[b >>> 24] ^ q[e >> 16 & 255] ^ v[f >> 8 & 255] ^ w[g & 255] ^ d[p + 3], p += 4, e = h, f = k, g = l;
       for (m = 0; 4 > m; m++)
-        r[c2 ? 3 & -m : m] = x2[e >>> 24] << 24 ^ x2[f2 >> 16 & 255] << 16 ^ x2[g2 >> 8 & 255] << 8 ^ x2[b2 & 255] ^ d[p++], h = e, e = f2, f2 = g2, g2 = b2, b2 = h;
+        r[c ? 3 & -m : m] = x2[e >>> 24] << 24 ^ x2[f >> 16 & 255] << 16 ^ x2[g >> 8 & 255] << 8 ^ x2[b & 255] ^ d[p++], h = e, e = f, f = g, g = b, b = h;
       return r;
     }
-    sjcl2.bitArray = { bitSlice: function(a2, b2, c2) {
-      a2 = sjcl2.bitArray.$(a2.slice(b2 / 32), 32 - (b2 & 31)).slice(1);
-      return void 0 === c2 ? a2 : sjcl2.bitArray.clamp(a2, c2 - b2);
-    }, extract: function(a2, b2, c2) {
-      var d = Math.floor(-b2 - c2 & 31);
-      return ((b2 + c2 - 1 ^ b2) & -32 ? a2[b2 / 32 | 0] << 32 - d ^ a2[b2 / 32 + 1 | 0] >>> d : a2[b2 / 32 | 0] >>> d) & (1 << c2) - 1;
-    }, concat: function(a2, b2) {
-      if (0 === a2.length || 0 === b2.length)
-        return a2.concat(b2);
-      var c2 = a2[a2.length - 1], d = sjcl2.bitArray.getPartial(c2);
-      return 32 === d ? a2.concat(b2) : sjcl2.bitArray.$(b2, d, c2 | 0, a2.slice(0, a2.length - 1));
-    }, bitLength: function(a2) {
-      var b2 = a2.length;
-      return 0 === b2 ? 0 : 32 * (b2 - 1) + sjcl2.bitArray.getPartial(a2[b2 - 1]);
-    }, clamp: function(a2, b2) {
-      if (32 * a2.length < b2)
-        return a2;
-      a2 = a2.slice(0, Math.ceil(b2 / 32));
-      var c2 = a2.length;
-      b2 = b2 & 31;
-      0 < c2 && b2 && (a2[c2 - 1] = sjcl2.bitArray.partial(b2, a2[c2 - 1] & 2147483648 >> b2 - 1, 1));
-      return a2;
-    }, partial: function(a2, b2, c2) {
-      return 32 === a2 ? b2 : (c2 ? b2 | 0 : b2 << 32 - a2) + 1099511627776 * a2;
-    }, getPartial: function(a2) {
-      return Math.round(a2 / 1099511627776) || 32;
-    }, equal: function(a2, b2) {
-      if (sjcl2.bitArray.bitLength(a2) !== sjcl2.bitArray.bitLength(b2))
+    sjcl2.bitArray = { bitSlice: function(a, b, c) {
+      a = sjcl2.bitArray.$(a.slice(b / 32), 32 - (b & 31)).slice(1);
+      return void 0 === c ? a : sjcl2.bitArray.clamp(a, c - b);
+    }, extract: function(a, b, c) {
+      var d = Math.floor(-b - c & 31);
+      return ((b + c - 1 ^ b) & -32 ? a[b / 32 | 0] << 32 - d ^ a[b / 32 + 1 | 0] >>> d : a[b / 32 | 0] >>> d) & (1 << c) - 1;
+    }, concat: function(a, b) {
+      if (0 === a.length || 0 === b.length)
+        return a.concat(b);
+      var c = a[a.length - 1], d = sjcl2.bitArray.getPartial(c);
+      return 32 === d ? a.concat(b) : sjcl2.bitArray.$(b, d, c | 0, a.slice(0, a.length - 1));
+    }, bitLength: function(a) {
+      var b = a.length;
+      return 0 === b ? 0 : 32 * (b - 1) + sjcl2.bitArray.getPartial(a[b - 1]);
+    }, clamp: function(a, b) {
+      if (32 * a.length < b)
+        return a;
+      a = a.slice(0, Math.ceil(b / 32));
+      var c = a.length;
+      b = b & 31;
+      0 < c && b && (a[c - 1] = sjcl2.bitArray.partial(b, a[c - 1] & 2147483648 >> b - 1, 1));
+      return a;
+    }, partial: function(a, b, c) {
+      return 32 === a ? b : (c ? b | 0 : b << 32 - a) + 1099511627776 * a;
+    }, getPartial: function(a) {
+      return Math.round(a / 1099511627776) || 32;
+    }, equal: function(a, b) {
+      if (sjcl2.bitArray.bitLength(a) !== sjcl2.bitArray.bitLength(b))
         return false;
-      var c2 = 0, d;
-      for (d = 0; d < a2.length; d++)
-        c2 |= a2[d] ^ b2[d];
-      return 0 === c2;
-    }, $: function(a2, b2, c2, d) {
+      var c = 0, d;
+      for (d = 0; d < a.length; d++)
+        c |= a[d] ^ b[d];
+      return 0 === c;
+    }, $: function(a, b, c, d) {
       var e;
       e = 0;
-      for (void 0 === d && (d = []); 32 <= b2; b2 -= 32)
-        d.push(c2), c2 = 0;
-      if (0 === b2)
-        return d.concat(a2);
-      for (e = 0; e < a2.length; e++)
-        d.push(c2 | a2[e] >>> b2), c2 = a2[e] << 32 - b2;
-      e = a2.length ? a2[a2.length - 1] : 0;
-      a2 = sjcl2.bitArray.getPartial(e);
-      d.push(sjcl2.bitArray.partial(b2 + a2 & 31, 32 < b2 + a2 ? c2 : d.pop(), 1));
+      for (void 0 === d && (d = []); 32 <= b; b -= 32)
+        d.push(c), c = 0;
+      if (0 === b)
+        return d.concat(a);
+      for (e = 0; e < a.length; e++)
+        d.push(c | a[e] >>> b), c = a[e] << 32 - b;
+      e = a.length ? a[a.length - 1] : 0;
+      a = sjcl2.bitArray.getPartial(e);
+      d.push(sjcl2.bitArray.partial(b + a & 31, 32 < b + a ? c : d.pop(), 1));
       return d;
-    }, i: function(a2, b2) {
-      return [a2[0] ^ b2[0], a2[1] ^ b2[1], a2[2] ^ b2[2], a2[3] ^ b2[3]];
-    }, byteswapM: function(a2) {
-      var b2, c2;
-      for (b2 = 0; b2 < a2.length; ++b2)
-        c2 = a2[b2], a2[b2] = c2 >>> 24 | c2 >>> 8 & 65280 | (c2 & 65280) << 8 | c2 << 24;
-      return a2;
+    }, i: function(a, b) {
+      return [a[0] ^ b[0], a[1] ^ b[1], a[2] ^ b[2], a[3] ^ b[3]];
+    }, byteswapM: function(a) {
+      var b, c;
+      for (b = 0; b < a.length; ++b)
+        c = a[b], a[b] = c >>> 24 | c >>> 8 & 65280 | (c & 65280) << 8 | c << 24;
+      return a;
     } };
-    sjcl2.codec.utf8String = { fromBits: function(a2) {
-      var b2 = "", c2 = sjcl2.bitArray.bitLength(a2), d, e;
-      for (d = 0; d < c2 / 8; d++)
-        0 === (d & 3) && (e = a2[d / 4]), b2 += String.fromCharCode(e >>> 8 >>> 8 >>> 8), e <<= 8;
-      return decodeURIComponent(escape(b2));
-    }, toBits: function(a2) {
-      a2 = unescape(encodeURIComponent(a2));
-      var b2 = [], c2, d = 0;
-      for (c2 = 0; c2 < a2.length; c2++)
-        d = d << 8 | a2.charCodeAt(c2), 3 === (c2 & 3) && (b2.push(d), d = 0);
-      c2 & 3 && b2.push(sjcl2.bitArray.partial(8 * (c2 & 3), d));
-      return b2;
+    sjcl2.codec.utf8String = { fromBits: function(a) {
+      var b = "", c = sjcl2.bitArray.bitLength(a), d, e;
+      for (d = 0; d < c / 8; d++)
+        0 === (d & 3) && (e = a[d / 4]), b += String.fromCharCode(e >>> 8 >>> 8 >>> 8), e <<= 8;
+      return decodeURIComponent(escape(b));
+    }, toBits: function(a) {
+      a = unescape(encodeURIComponent(a));
+      var b = [], c, d = 0;
+      for (c = 0; c < a.length; c++)
+        d = d << 8 | a.charCodeAt(c), 3 === (c & 3) && (b.push(d), d = 0);
+      c & 3 && b.push(sjcl2.bitArray.partial(8 * (c & 3), d));
+      return b;
     } };
-    sjcl2.codec.hex = { fromBits: function(a2) {
-      var b2 = "", c2;
-      for (c2 = 0; c2 < a2.length; c2++)
-        b2 += ((a2[c2] | 0) + 263882790666240).toString(16).substr(4);
-      return b2.substr(0, sjcl2.bitArray.bitLength(a2) / 4);
-    }, toBits: function(a2) {
-      var b2, c2 = [], d;
-      a2 = a2.replace(/\s|0x/g, "");
-      d = a2.length;
-      a2 = a2 + "00000000";
-      for (b2 = 0; b2 < a2.length; b2 += 8)
-        c2.push(parseInt(a2.substr(b2, 8), 16) ^ 0);
-      return sjcl2.bitArray.clamp(c2, 4 * d);
+    sjcl2.codec.hex = { fromBits: function(a) {
+      var b = "", c;
+      for (c = 0; c < a.length; c++)
+        b += ((a[c] | 0) + 263882790666240).toString(16).substr(4);
+      return b.substr(0, sjcl2.bitArray.bitLength(a) / 4);
+    }, toBits: function(a) {
+      var b, c = [], d;
+      a = a.replace(/\s|0x/g, "");
+      d = a.length;
+      a = a + "00000000";
+      for (b = 0; b < a.length; b += 8)
+        c.push(parseInt(a.substr(b, 8), 16) ^ 0);
+      return sjcl2.bitArray.clamp(c, 4 * d);
     } };
-    sjcl2.codec.base32 = { B: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", X: "0123456789ABCDEFGHIJKLMNOPQRSTUV", BITS: 32, BASE: 5, REMAINING: 27, fromBits: function(a2, b2, c2) {
-      var d = sjcl2.codec.base32.BASE, e = sjcl2.codec.base32.REMAINING, f2 = "", g2 = 0, h = sjcl2.codec.base32.B, k = 0, l = sjcl2.bitArray.bitLength(a2);
-      c2 && (h = sjcl2.codec.base32.X);
-      for (c2 = 0; f2.length * d < l; )
-        f2 += h.charAt((k ^ a2[c2] >>> g2) >>> e), g2 < d ? (k = a2[c2] << d - g2, g2 += e, c2++) : (k <<= d, g2 -= d);
-      for (; f2.length & 7 && !b2; )
-        f2 += "=";
-      return f2;
-    }, toBits: function(a2, b2) {
-      a2 = a2.replace(/\s|=/g, "").toUpperCase();
-      var c2 = sjcl2.codec.base32.BITS, d = sjcl2.codec.base32.BASE, e = sjcl2.codec.base32.REMAINING, f2 = [], g2, h = 0, k = sjcl2.codec.base32.B, l = 0, n, m = "base32";
-      b2 && (k = sjcl2.codec.base32.X, m = "base32hex");
-      for (g2 = 0; g2 < a2.length; g2++) {
-        n = k.indexOf(a2.charAt(g2));
+    sjcl2.codec.base32 = { B: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", X: "0123456789ABCDEFGHIJKLMNOPQRSTUV", BITS: 32, BASE: 5, REMAINING: 27, fromBits: function(a, b, c) {
+      var d = sjcl2.codec.base32.BASE, e = sjcl2.codec.base32.REMAINING, f = "", g = 0, h = sjcl2.codec.base32.B, k = 0, l = sjcl2.bitArray.bitLength(a);
+      c && (h = sjcl2.codec.base32.X);
+      for (c = 0; f.length * d < l; )
+        f += h.charAt((k ^ a[c] >>> g) >>> e), g < d ? (k = a[c] << d - g, g += e, c++) : (k <<= d, g -= d);
+      for (; f.length & 7 && !b; )
+        f += "=";
+      return f;
+    }, toBits: function(a, b) {
+      a = a.replace(/\s|=/g, "").toUpperCase();
+      var c = sjcl2.codec.base32.BITS, d = sjcl2.codec.base32.BASE, e = sjcl2.codec.base32.REMAINING, f = [], g, h = 0, k = sjcl2.codec.base32.B, l = 0, n, m = "base32";
+      b && (k = sjcl2.codec.base32.X, m = "base32hex");
+      for (g = 0; g < a.length; g++) {
+        n = k.indexOf(a.charAt(g));
         if (0 > n) {
-          if (!b2)
+          if (!b)
             try {
-              return sjcl2.codec.base32hex.toBits(a2);
+              return sjcl2.codec.base32hex.toBits(a);
             } catch (p) {
             }
           throw new sjcl2.exception.invalid("this isn't " + m + "!");
         }
-        h > e ? (h -= e, f2.push(l ^ n >>> h), l = n << c2 - h) : (h += d, l ^= n << c2 - h);
+        h > e ? (h -= e, f.push(l ^ n >>> h), l = n << c - h) : (h += d, l ^= n << c - h);
       }
-      h & 56 && f2.push(sjcl2.bitArray.partial(h & 56, l, 1));
-      return f2;
+      h & 56 && f.push(sjcl2.bitArray.partial(h & 56, l, 1));
+      return f;
     } };
-    sjcl2.codec.base32hex = { fromBits: function(a2, b2) {
-      return sjcl2.codec.base32.fromBits(a2, b2, 1);
-    }, toBits: function(a2) {
-      return sjcl2.codec.base32.toBits(a2, 1);
+    sjcl2.codec.base32hex = { fromBits: function(a, b) {
+      return sjcl2.codec.base32.fromBits(a, b, 1);
+    }, toBits: function(a) {
+      return sjcl2.codec.base32.toBits(a, 1);
     } };
-    sjcl2.codec.base64 = { B: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", fromBits: function(a2, b2, c2) {
-      var d = "", e = 0, f2 = sjcl2.codec.base64.B, g2 = 0, h = sjcl2.bitArray.bitLength(a2);
-      c2 && (f2 = f2.substr(0, 62) + "-_");
-      for (c2 = 0; 6 * d.length < h; )
-        d += f2.charAt((g2 ^ a2[c2] >>> e) >>> 26), 6 > e ? (g2 = a2[c2] << 6 - e, e += 26, c2++) : (g2 <<= 6, e -= 6);
-      for (; d.length & 3 && !b2; )
+    sjcl2.codec.base64 = { B: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", fromBits: function(a, b, c) {
+      var d = "", e = 0, f = sjcl2.codec.base64.B, g = 0, h = sjcl2.bitArray.bitLength(a);
+      c && (f = f.substr(0, 62) + "-_");
+      for (c = 0; 6 * d.length < h; )
+        d += f.charAt((g ^ a[c] >>> e) >>> 26), 6 > e ? (g = a[c] << 6 - e, e += 26, c++) : (g <<= 6, e -= 6);
+      for (; d.length & 3 && !b; )
         d += "=";
       return d;
-    }, toBits: function(a2, b2) {
-      a2 = a2.replace(/\s|=/g, "");
-      var c2 = [], d, e = 0, f2 = sjcl2.codec.base64.B, g2 = 0, h;
-      b2 && (f2 = f2.substr(0, 62) + "-_");
-      for (d = 0; d < a2.length; d++) {
-        h = f2.indexOf(a2.charAt(d));
+    }, toBits: function(a, b) {
+      a = a.replace(/\s|=/g, "");
+      var c = [], d, e = 0, f = sjcl2.codec.base64.B, g = 0, h;
+      b && (f = f.substr(0, 62) + "-_");
+      for (d = 0; d < a.length; d++) {
+        h = f.indexOf(a.charAt(d));
         if (0 > h)
           throw new sjcl2.exception.invalid("this isn't base64!");
-        26 < e ? (e -= 26, c2.push(g2 ^ h >>> e), g2 = h << 32 - e) : (e += 6, g2 ^= h << 32 - e);
+        26 < e ? (e -= 26, c.push(g ^ h >>> e), g = h << 32 - e) : (e += 6, g ^= h << 32 - e);
       }
-      e & 56 && c2.push(sjcl2.bitArray.partial(e & 56, g2, 1));
-      return c2;
+      e & 56 && c.push(sjcl2.bitArray.partial(e & 56, g, 1));
+      return c;
     } };
-    sjcl2.codec.base64url = { fromBits: function(a2) {
-      return sjcl2.codec.base64.fromBits(a2, 1, 1);
-    }, toBits: function(a2) {
-      return sjcl2.codec.base64.toBits(a2, 1);
+    sjcl2.codec.base64url = { fromBits: function(a) {
+      return sjcl2.codec.base64.fromBits(a, 1, 1);
+    }, toBits: function(a) {
+      return sjcl2.codec.base64.toBits(a, 1);
     } };
-    sjcl2.hash.sha256 = function(a2) {
+    sjcl2.hash.sha256 = function(a) {
       this.b[0] || this.O();
-      a2 ? (this.F = a2.F.slice(0), this.A = a2.A.slice(0), this.l = a2.l) : this.reset();
+      a ? (this.F = a.F.slice(0), this.A = a.A.slice(0), this.l = a.l) : this.reset();
     };
-    sjcl2.hash.sha256.hash = function(a2) {
-      return new sjcl2.hash.sha256().update(a2).finalize();
+    sjcl2.hash.sha256.hash = function(a) {
+      return new sjcl2.hash.sha256().update(a).finalize();
     };
     sjcl2.hash.sha256.prototype = { blockSize: 512, reset: function() {
       this.F = this.Y.slice(0);
       this.A = [];
       this.l = 0;
       return this;
-    }, update: function(a2) {
-      "string" === typeof a2 && (a2 = sjcl2.codec.utf8String.toBits(a2));
-      var b2, c2 = this.A = sjcl2.bitArray.concat(this.A, a2);
-      b2 = this.l;
-      a2 = this.l = b2 + sjcl2.bitArray.bitLength(a2);
-      if (9007199254740991 < a2)
+    }, update: function(a) {
+      "string" === typeof a && (a = sjcl2.codec.utf8String.toBits(a));
+      var b, c = this.A = sjcl2.bitArray.concat(this.A, a);
+      b = this.l;
+      a = this.l = b + sjcl2.bitArray.bitLength(a);
+      if (9007199254740991 < a)
         throw new sjcl2.exception.invalid("Cannot hash more than 2^53 - 1 bits");
       if ("undefined" !== typeof Uint32Array) {
-        var d = new Uint32Array(c2), e = 0;
-        for (b2 = 512 + b2 - (512 + b2 & 511); b2 <= a2; b2 += 512)
+        var d = new Uint32Array(c), e = 0;
+        for (b = 512 + b - (512 + b & 511); b <= a; b += 512)
           u(this, d.subarray(16 * e, 16 * (e + 1))), e += 1;
-        c2.splice(0, 16 * e);
+        c.splice(0, 16 * e);
       } else
-        for (b2 = 512 + b2 - (512 + b2 & 511); b2 <= a2; b2 += 512)
-          u(this, c2.splice(0, 16));
+        for (b = 512 + b - (512 + b & 511); b <= a; b += 512)
+          u(this, c.splice(0, 16));
       return this;
     }, finalize: function() {
-      var a2, b2 = this.A, c2 = this.F, b2 = sjcl2.bitArray.concat(b2, [sjcl2.bitArray.partial(1, 1)]);
-      for (a2 = b2.length + 2; a2 & 15; a2++)
-        b2.push(0);
-      b2.push(Math.floor(this.l / 4294967296));
-      for (b2.push(this.l | 0); b2.length; )
-        u(this, b2.splice(0, 16));
+      var a, b = this.A, c = this.F, b = sjcl2.bitArray.concat(b, [sjcl2.bitArray.partial(1, 1)]);
+      for (a = b.length + 2; a & 15; a++)
+        b.push(0);
+      b.push(Math.floor(this.l / 4294967296));
+      for (b.push(this.l | 0); b.length; )
+        u(this, b.splice(0, 16));
       this.reset();
-      return c2;
+      return c;
     }, Y: [], b: [], O: function() {
-      function a2(a3) {
-        return 4294967296 * (a3 - Math.floor(a3)) | 0;
+      function a(a2) {
+        return 4294967296 * (a2 - Math.floor(a2)) | 0;
       }
-      for (var b2 = 0, c2 = 2, d, e; 64 > b2; c2++) {
+      for (var b = 0, c = 2, d, e; 64 > b; c++) {
         e = true;
-        for (d = 2; d * d <= c2; d++)
-          if (0 === c2 % d) {
+        for (d = 2; d * d <= c; d++)
+          if (0 === c % d) {
             e = false;
             break;
           }
-        e && (8 > b2 && (this.Y[b2] = a2(Math.pow(c2, 0.5))), this.b[b2] = a2(Math.pow(c2, 1 / 3)), b2++);
+        e && (8 > b && (this.Y[b] = a(Math.pow(c, 0.5))), this.b[b] = a(Math.pow(c, 1 / 3)), b++);
       }
     } };
-    function u(a2, b2) {
-      var c2, d, e, f2 = a2.F, g2 = a2.b, h = f2[0], k = f2[1], l = f2[2], n = f2[3], m = f2[4], p = f2[5], r = f2[6], q = f2[7];
-      for (c2 = 0; 64 > c2; c2++)
-        16 > c2 ? d = b2[c2] : (d = b2[c2 + 1 & 15], e = b2[c2 + 14 & 15], d = b2[c2 & 15] = (d >>> 7 ^ d >>> 18 ^ d >>> 3 ^ d << 25 ^ d << 14) + (e >>> 17 ^ e >>> 19 ^ e >>> 10 ^ e << 15 ^ e << 13) + b2[c2 & 15] + b2[c2 + 9 & 15] | 0), d = d + q + (m >>> 6 ^ m >>> 11 ^ m >>> 25 ^ m << 26 ^ m << 21 ^ m << 7) + (r ^ m & (p ^ r)) + g2[c2], q = r, r = p, p = m, m = n + d | 0, n = l, l = k, k = h, h = d + (k & l ^ n & (k ^ l)) + (k >>> 2 ^ k >>> 13 ^ k >>> 22 ^ k << 30 ^ k << 19 ^ k << 10) | 0;
-      f2[0] = f2[0] + h | 0;
-      f2[1] = f2[1] + k | 0;
-      f2[2] = f2[2] + l | 0;
-      f2[3] = f2[3] + n | 0;
-      f2[4] = f2[4] + m | 0;
-      f2[5] = f2[5] + p | 0;
-      f2[6] = f2[6] + r | 0;
-      f2[7] = f2[7] + q | 0;
+    function u(a, b) {
+      var c, d, e, f = a.F, g = a.b, h = f[0], k = f[1], l = f[2], n = f[3], m = f[4], p = f[5], r = f[6], q = f[7];
+      for (c = 0; 64 > c; c++)
+        16 > c ? d = b[c] : (d = b[c + 1 & 15], e = b[c + 14 & 15], d = b[c & 15] = (d >>> 7 ^ d >>> 18 ^ d >>> 3 ^ d << 25 ^ d << 14) + (e >>> 17 ^ e >>> 19 ^ e >>> 10 ^ e << 15 ^ e << 13) + b[c & 15] + b[c + 9 & 15] | 0), d = d + q + (m >>> 6 ^ m >>> 11 ^ m >>> 25 ^ m << 26 ^ m << 21 ^ m << 7) + (r ^ m & (p ^ r)) + g[c], q = r, r = p, p = m, m = n + d | 0, n = l, l = k, k = h, h = d + (k & l ^ n & (k ^ l)) + (k >>> 2 ^ k >>> 13 ^ k >>> 22 ^ k << 30 ^ k << 19 ^ k << 10) | 0;
+      f[0] = f[0] + h | 0;
+      f[1] = f[1] + k | 0;
+      f[2] = f[2] + l | 0;
+      f[3] = f[3] + n | 0;
+      f[4] = f[4] + m | 0;
+      f[5] = f[5] + p | 0;
+      f[6] = f[6] + r | 0;
+      f[7] = f[7] + q | 0;
     }
-    sjcl2.mode.ccm = { name: "ccm", G: [], listenProgress: function(a2) {
-      sjcl2.mode.ccm.G.push(a2);
-    }, unListenProgress: function(a2) {
-      a2 = sjcl2.mode.ccm.G.indexOf(a2);
-      -1 < a2 && sjcl2.mode.ccm.G.splice(a2, 1);
-    }, fa: function(a2) {
-      var b2 = sjcl2.mode.ccm.G.slice(), c2;
-      for (c2 = 0; c2 < b2.length; c2 += 1)
-        b2[c2](a2);
-    }, encrypt: function(a2, b2, c2, d, e) {
-      var f2, g2 = b2.slice(0), h = sjcl2.bitArray, k = h.bitLength(c2) / 8, l = h.bitLength(g2) / 8;
+    sjcl2.mode.ccm = { name: "ccm", G: [], listenProgress: function(a) {
+      sjcl2.mode.ccm.G.push(a);
+    }, unListenProgress: function(a) {
+      a = sjcl2.mode.ccm.G.indexOf(a);
+      -1 < a && sjcl2.mode.ccm.G.splice(a, 1);
+    }, fa: function(a) {
+      var b = sjcl2.mode.ccm.G.slice(), c;
+      for (c = 0; c < b.length; c += 1)
+        b[c](a);
+    }, encrypt: function(a, b, c, d, e) {
+      var f, g = b.slice(0), h = sjcl2.bitArray, k = h.bitLength(c) / 8, l = h.bitLength(g) / 8;
       e = e || 64;
       d = d || [];
       if (7 > k)
         throw new sjcl2.exception.invalid("ccm: iv must be at least 7 bytes");
-      for (f2 = 2; 4 > f2 && l >>> 8 * f2; f2++)
+      for (f = 2; 4 > f && l >>> 8 * f; f++)
         ;
-      f2 < 15 - k && (f2 = 15 - k);
-      c2 = h.clamp(c2, 8 * (15 - f2));
-      b2 = sjcl2.mode.ccm.V(a2, b2, c2, d, e, f2);
-      g2 = sjcl2.mode.ccm.C(a2, g2, c2, b2, e, f2);
-      return h.concat(g2.data, g2.tag);
-    }, decrypt: function(a2, b2, c2, d, e) {
+      f < 15 - k && (f = 15 - k);
+      c = h.clamp(c, 8 * (15 - f));
+      b = sjcl2.mode.ccm.V(a, b, c, d, e, f);
+      g = sjcl2.mode.ccm.C(a, g, c, b, e, f);
+      return h.concat(g.data, g.tag);
+    }, decrypt: function(a, b, c, d, e) {
       e = e || 64;
       d = d || [];
-      var f2 = sjcl2.bitArray, g2 = f2.bitLength(c2) / 8, h = f2.bitLength(b2), k = f2.clamp(b2, h - e), l = f2.bitSlice(b2, h - e), h = (h - e) / 8;
-      if (7 > g2)
+      var f = sjcl2.bitArray, g = f.bitLength(c) / 8, h = f.bitLength(b), k = f.clamp(b, h - e), l = f.bitSlice(b, h - e), h = (h - e) / 8;
+      if (7 > g)
         throw new sjcl2.exception.invalid("ccm: iv must be at least 7 bytes");
-      for (b2 = 2; 4 > b2 && h >>> 8 * b2; b2++)
+      for (b = 2; 4 > b && h >>> 8 * b; b++)
         ;
-      b2 < 15 - g2 && (b2 = 15 - g2);
-      c2 = f2.clamp(c2, 8 * (15 - b2));
-      k = sjcl2.mode.ccm.C(a2, k, c2, l, e, b2);
-      a2 = sjcl2.mode.ccm.V(a2, k.data, c2, d, e, b2);
-      if (!f2.equal(k.tag, a2))
+      b < 15 - g && (b = 15 - g);
+      c = f.clamp(c, 8 * (15 - b));
+      k = sjcl2.mode.ccm.C(a, k, c, l, e, b);
+      a = sjcl2.mode.ccm.V(a, k.data, c, d, e, b);
+      if (!f.equal(k.tag, a))
         throw new sjcl2.exception.corrupt("ccm: tag doesn't match");
       return k.data;
-    }, na: function(a2, b2, c2, d, e, f2) {
-      var g2 = [], h = sjcl2.bitArray, k = h.i;
-      d = [h.partial(8, (b2.length ? 64 : 0) | d - 2 << 2 | f2 - 1)];
-      d = h.concat(d, c2);
+    }, na: function(a, b, c, d, e, f) {
+      var g = [], h = sjcl2.bitArray, k = h.i;
+      d = [h.partial(8, (b.length ? 64 : 0) | d - 2 << 2 | f - 1)];
+      d = h.concat(d, c);
       d[3] |= e;
-      d = a2.encrypt(d);
-      if (b2.length)
-        for (c2 = h.bitLength(b2) / 8, 65279 >= c2 ? g2 = [h.partial(16, c2)] : 4294967295 >= c2 && (g2 = h.concat([h.partial(16, 65534)], [c2])), g2 = h.concat(g2, b2), b2 = 0; b2 < g2.length; b2 += 4)
-          d = a2.encrypt(k(d, g2.slice(b2, b2 + 4).concat([0, 0, 0])));
+      d = a.encrypt(d);
+      if (b.length)
+        for (c = h.bitLength(b) / 8, 65279 >= c ? g = [h.partial(16, c)] : 4294967295 >= c && (g = h.concat([h.partial(16, 65534)], [c])), g = h.concat(g, b), b = 0; b < g.length; b += 4)
+          d = a.encrypt(k(d, g.slice(b, b + 4).concat([0, 0, 0])));
       return d;
-    }, V: function(a2, b2, c2, d, e, f2) {
-      var g2 = sjcl2.bitArray, h = g2.i;
+    }, V: function(a, b, c, d, e, f) {
+      var g = sjcl2.bitArray, h = g.i;
       e /= 8;
       if (e % 2 || 4 > e || 16 < e)
         throw new sjcl2.exception.invalid("ccm: invalid tag length");
-      if (4294967295 < d.length || 4294967295 < b2.length)
+      if (4294967295 < d.length || 4294967295 < b.length)
         throw new sjcl2.exception.bug("ccm: can't deal with 4GiB or more data");
-      c2 = sjcl2.mode.ccm.na(a2, d, c2, e, g2.bitLength(b2) / 8, f2);
-      for (d = 0; d < b2.length; d += 4)
-        c2 = a2.encrypt(h(c2, b2.slice(d, d + 4).concat([0, 0, 0])));
-      return g2.clamp(c2, 8 * e);
-    }, C: function(a2, b2, c2, d, e, f2) {
-      var g2, h = sjcl2.bitArray;
-      g2 = h.i;
-      var k = b2.length, l = h.bitLength(b2), n = k / 50, m = n;
-      c2 = h.concat([h.partial(8, f2 - 1)], c2).concat([0, 0, 0]).slice(0, 4);
-      d = h.bitSlice(g2(d, a2.encrypt(c2)), 0, e);
+      c = sjcl2.mode.ccm.na(a, d, c, e, g.bitLength(b) / 8, f);
+      for (d = 0; d < b.length; d += 4)
+        c = a.encrypt(h(c, b.slice(d, d + 4).concat([0, 0, 0])));
+      return g.clamp(c, 8 * e);
+    }, C: function(a, b, c, d, e, f) {
+      var g, h = sjcl2.bitArray;
+      g = h.i;
+      var k = b.length, l = h.bitLength(b), n = k / 50, m = n;
+      c = h.concat([h.partial(8, f - 1)], c).concat([0, 0, 0]).slice(0, 4);
+      d = h.bitSlice(g(d, a.encrypt(c)), 0, e);
       if (!k)
         return { tag: d, data: [] };
-      for (g2 = 0; g2 < k; g2 += 4)
-        g2 > n && (sjcl2.mode.ccm.fa(g2 / k), n += m), c2[3]++, e = a2.encrypt(c2), b2[g2] ^= e[0], b2[g2 + 1] ^= e[1], b2[g2 + 2] ^= e[2], b2[g2 + 3] ^= e[3];
-      return { tag: d, data: h.clamp(b2, l) };
+      for (g = 0; g < k; g += 4)
+        g > n && (sjcl2.mode.ccm.fa(g / k), n += m), c[3]++, e = a.encrypt(c), b[g] ^= e[0], b[g + 1] ^= e[1], b[g + 2] ^= e[2], b[g + 3] ^= e[3];
+      return { tag: d, data: h.clamp(b, l) };
     } };
-    sjcl2.mode.ocb2 = { name: "ocb2", encrypt: function(a2, b2, c2, d, e, f2) {
-      if (128 !== sjcl2.bitArray.bitLength(c2))
+    sjcl2.mode.ocb2 = { name: "ocb2", encrypt: function(a, b, c, d, e, f) {
+      if (128 !== sjcl2.bitArray.bitLength(c))
         throw new sjcl2.exception.invalid("ocb iv must be 128 bits");
-      var g2, h = sjcl2.mode.ocb2.S, k = sjcl2.bitArray, l = k.i, n = [0, 0, 0, 0];
-      c2 = h(a2.encrypt(c2));
+      var g, h = sjcl2.mode.ocb2.S, k = sjcl2.bitArray, l = k.i, n = [0, 0, 0, 0];
+      c = h(a.encrypt(c));
       var m, p = [];
       d = d || [];
       e = e || 64;
-      for (g2 = 0; g2 + 4 < b2.length; g2 += 4)
-        m = b2.slice(g2, g2 + 4), n = l(n, m), p = p.concat(l(c2, a2.encrypt(l(c2, m)))), c2 = h(c2);
-      m = b2.slice(g2);
-      b2 = k.bitLength(m);
-      g2 = a2.encrypt(l(c2, [0, 0, 0, b2]));
-      m = k.clamp(l(m.concat([0, 0, 0]), g2), b2);
-      n = l(n, l(m.concat([0, 0, 0]), g2));
-      n = a2.encrypt(l(n, l(c2, h(c2))));
-      d.length && (n = l(n, f2 ? d : sjcl2.mode.ocb2.pmac(a2, d)));
+      for (g = 0; g + 4 < b.length; g += 4)
+        m = b.slice(g, g + 4), n = l(n, m), p = p.concat(l(c, a.encrypt(l(c, m)))), c = h(c);
+      m = b.slice(g);
+      b = k.bitLength(m);
+      g = a.encrypt(l(c, [0, 0, 0, b]));
+      m = k.clamp(l(m.concat([0, 0, 0]), g), b);
+      n = l(n, l(m.concat([0, 0, 0]), g));
+      n = a.encrypt(l(n, l(c, h(c))));
+      d.length && (n = l(n, f ? d : sjcl2.mode.ocb2.pmac(a, d)));
       return p.concat(k.concat(m, k.clamp(n, e)));
-    }, decrypt: function(a2, b2, c2, d, e, f2) {
-      if (128 !== sjcl2.bitArray.bitLength(c2))
+    }, decrypt: function(a, b, c, d, e, f) {
+      if (128 !== sjcl2.bitArray.bitLength(c))
         throw new sjcl2.exception.invalid("ocb iv must be 128 bits");
       e = e || 64;
-      var g2 = sjcl2.mode.ocb2.S, h = sjcl2.bitArray, k = h.i, l = [0, 0, 0, 0], n = g2(a2.encrypt(c2)), m, p, r = sjcl2.bitArray.bitLength(b2) - e, q = [];
+      var g = sjcl2.mode.ocb2.S, h = sjcl2.bitArray, k = h.i, l = [0, 0, 0, 0], n = g(a.encrypt(c)), m, p, r = sjcl2.bitArray.bitLength(b) - e, q = [];
       d = d || [];
-      for (c2 = 0; c2 + 4 < r / 32; c2 += 4)
-        m = k(n, a2.decrypt(k(n, b2.slice(c2, c2 + 4)))), l = k(l, m), q = q.concat(m), n = g2(n);
-      p = r - 32 * c2;
-      m = a2.encrypt(k(n, [0, 0, 0, p]));
-      m = k(m, h.clamp(b2.slice(c2), p).concat([
+      for (c = 0; c + 4 < r / 32; c += 4)
+        m = k(n, a.decrypt(k(n, b.slice(c, c + 4)))), l = k(l, m), q = q.concat(m), n = g(n);
+      p = r - 32 * c;
+      m = a.encrypt(k(n, [0, 0, 0, p]));
+      m = k(m, h.clamp(b.slice(c), p).concat([
         0,
         0,
         0
       ]));
       l = k(l, m);
-      l = a2.encrypt(k(l, k(n, g2(n))));
-      d.length && (l = k(l, f2 ? d : sjcl2.mode.ocb2.pmac(a2, d)));
-      if (!h.equal(h.clamp(l, e), h.bitSlice(b2, r)))
+      l = a.encrypt(k(l, k(n, g(n))));
+      d.length && (l = k(l, f ? d : sjcl2.mode.ocb2.pmac(a, d)));
+      if (!h.equal(h.clamp(l, e), h.bitSlice(b, r)))
         throw new sjcl2.exception.corrupt("ocb: tag doesn't match");
       return q.concat(h.clamp(m, p));
-    }, pmac: function(a2, b2) {
-      var c2, d = sjcl2.mode.ocb2.S, e = sjcl2.bitArray, f2 = e.i, g2 = [0, 0, 0, 0], h = a2.encrypt([0, 0, 0, 0]), h = f2(h, d(d(h)));
-      for (c2 = 0; c2 + 4 < b2.length; c2 += 4)
-        h = d(h), g2 = f2(g2, a2.encrypt(f2(h, b2.slice(c2, c2 + 4))));
-      c2 = b2.slice(c2);
-      128 > e.bitLength(c2) && (h = f2(h, d(h)), c2 = e.concat(c2, [-2147483648, 0, 0, 0]));
-      g2 = f2(g2, c2);
-      return a2.encrypt(f2(d(f2(h, d(h))), g2));
-    }, S: function(a2) {
-      return [a2[0] << 1 ^ a2[1] >>> 31, a2[1] << 1 ^ a2[2] >>> 31, a2[2] << 1 ^ a2[3] >>> 31, a2[3] << 1 ^ 135 * (a2[0] >>> 31)];
+    }, pmac: function(a, b) {
+      var c, d = sjcl2.mode.ocb2.S, e = sjcl2.bitArray, f = e.i, g = [0, 0, 0, 0], h = a.encrypt([0, 0, 0, 0]), h = f(h, d(d(h)));
+      for (c = 0; c + 4 < b.length; c += 4)
+        h = d(h), g = f(g, a.encrypt(f(h, b.slice(c, c + 4))));
+      c = b.slice(c);
+      128 > e.bitLength(c) && (h = f(h, d(h)), c = e.concat(c, [-2147483648, 0, 0, 0]));
+      g = f(g, c);
+      return a.encrypt(f(d(f(h, d(h))), g));
+    }, S: function(a) {
+      return [a[0] << 1 ^ a[1] >>> 31, a[1] << 1 ^ a[2] >>> 31, a[2] << 1 ^ a[3] >>> 31, a[3] << 1 ^ 135 * (a[0] >>> 31)];
     } };
-    sjcl2.mode.gcm = { name: "gcm", encrypt: function(a2, b2, c2, d, e) {
-      var f2 = b2.slice(0);
-      b2 = sjcl2.bitArray;
+    sjcl2.mode.gcm = { name: "gcm", encrypt: function(a, b, c, d, e) {
+      var f = b.slice(0);
+      b = sjcl2.bitArray;
       d = d || [];
-      a2 = sjcl2.mode.gcm.C(true, a2, f2, d, c2, e || 128);
-      return b2.concat(a2.data, a2.tag);
-    }, decrypt: function(a2, b2, c2, d, e) {
-      var f2 = b2.slice(0), g2 = sjcl2.bitArray, h = g2.bitLength(f2);
+      a = sjcl2.mode.gcm.C(true, a, f, d, c, e || 128);
+      return b.concat(a.data, a.tag);
+    }, decrypt: function(a, b, c, d, e) {
+      var f = b.slice(0), g = sjcl2.bitArray, h = g.bitLength(f);
       e = e || 128;
       d = d || [];
-      e <= h ? (b2 = g2.bitSlice(f2, h - e), f2 = g2.bitSlice(f2, 0, h - e)) : (b2 = f2, f2 = []);
-      a2 = sjcl2.mode.gcm.C(false, a2, f2, d, c2, e);
-      if (!g2.equal(a2.tag, b2))
+      e <= h ? (b = g.bitSlice(f, h - e), f = g.bitSlice(f, 0, h - e)) : (b = f, f = []);
+      a = sjcl2.mode.gcm.C(false, a, f, d, c, e);
+      if (!g.equal(a.tag, b))
         throw new sjcl2.exception.corrupt("gcm: tag doesn't match");
-      return a2.data;
-    }, ka: function(a2, b2) {
-      var c2, d, e, f2, g2, h = sjcl2.bitArray.i;
+      return a.data;
+    }, ka: function(a, b) {
+      var c, d, e, f, g, h = sjcl2.bitArray.i;
       e = [
         0,
         0,
         0,
         0
       ];
-      f2 = b2.slice(0);
-      for (c2 = 0; 128 > c2; c2++) {
-        (d = 0 !== (a2[Math.floor(c2 / 32)] & 1 << 31 - c2 % 32)) && (e = h(e, f2));
-        g2 = 0 !== (f2[3] & 1);
+      f = b.slice(0);
+      for (c = 0; 128 > c; c++) {
+        (d = 0 !== (a[Math.floor(c / 32)] & 1 << 31 - c % 32)) && (e = h(e, f));
+        g = 0 !== (f[3] & 1);
         for (d = 3; 0 < d; d--)
-          f2[d] = f2[d] >>> 1 | (f2[d - 1] & 1) << 31;
-        f2[0] >>>= 1;
-        g2 && (f2[0] ^= -520093696);
+          f[d] = f[d] >>> 1 | (f[d - 1] & 1) << 31;
+        f[0] >>>= 1;
+        g && (f[0] ^= -520093696);
       }
       return e;
-    }, j: function(a2, b2, c2) {
-      var d, e = c2.length;
-      b2 = b2.slice(0);
+    }, j: function(a, b, c) {
+      var d, e = c.length;
+      b = b.slice(0);
       for (d = 0; d < e; d += 4)
-        b2[0] ^= 4294967295 & c2[d], b2[1] ^= 4294967295 & c2[d + 1], b2[2] ^= 4294967295 & c2[d + 2], b2[3] ^= 4294967295 & c2[d + 3], b2 = sjcl2.mode.gcm.ka(b2, a2);
-      return b2;
-    }, C: function(a2, b2, c2, d, e, f2) {
-      var g2, h, k, l, n, m, p, r, q = sjcl2.bitArray;
-      m = c2.length;
-      p = q.bitLength(c2);
+        b[0] ^= 4294967295 & c[d], b[1] ^= 4294967295 & c[d + 1], b[2] ^= 4294967295 & c[d + 2], b[3] ^= 4294967295 & c[d + 3], b = sjcl2.mode.gcm.ka(b, a);
+      return b;
+    }, C: function(a, b, c, d, e, f) {
+      var g, h, k, l, n, m, p, r, q = sjcl2.bitArray;
+      m = c.length;
+      p = q.bitLength(c);
       r = q.bitLength(d);
       h = q.bitLength(e);
-      g2 = b2.encrypt([0, 0, 0, 0]);
-      96 === h ? (e = e.slice(0), e = q.concat(e, [1])) : (e = sjcl2.mode.gcm.j(g2, [0, 0, 0, 0], e), e = sjcl2.mode.gcm.j(g2, e, [0, 0, Math.floor(h / 4294967296), h & 4294967295]));
-      h = sjcl2.mode.gcm.j(g2, [0, 0, 0, 0], d);
+      g = b.encrypt([0, 0, 0, 0]);
+      96 === h ? (e = e.slice(0), e = q.concat(e, [1])) : (e = sjcl2.mode.gcm.j(g, [0, 0, 0, 0], e), e = sjcl2.mode.gcm.j(g, e, [0, 0, Math.floor(h / 4294967296), h & 4294967295]));
+      h = sjcl2.mode.gcm.j(g, [0, 0, 0, 0], d);
       n = e.slice(0);
       d = h.slice(0);
-      a2 || (d = sjcl2.mode.gcm.j(g2, h, c2));
+      a || (d = sjcl2.mode.gcm.j(g, h, c));
       for (l = 0; l < m; l += 4)
-        n[3]++, k = b2.encrypt(n), c2[l] ^= k[0], c2[l + 1] ^= k[1], c2[l + 2] ^= k[2], c2[l + 3] ^= k[3];
-      c2 = q.clamp(c2, p);
-      a2 && (d = sjcl2.mode.gcm.j(g2, h, c2));
-      a2 = [Math.floor(r / 4294967296), r & 4294967295, Math.floor(p / 4294967296), p & 4294967295];
-      d = sjcl2.mode.gcm.j(g2, d, a2);
-      k = b2.encrypt(e);
+        n[3]++, k = b.encrypt(n), c[l] ^= k[0], c[l + 1] ^= k[1], c[l + 2] ^= k[2], c[l + 3] ^= k[3];
+      c = q.clamp(c, p);
+      a && (d = sjcl2.mode.gcm.j(g, h, c));
+      a = [Math.floor(r / 4294967296), r & 4294967295, Math.floor(p / 4294967296), p & 4294967295];
+      d = sjcl2.mode.gcm.j(g, d, a);
+      k = b.encrypt(e);
       d[0] ^= k[0];
       d[1] ^= k[1];
       d[2] ^= k[2];
       d[3] ^= k[3];
-      return { tag: q.bitSlice(d, 0, f2), data: c2 };
+      return { tag: q.bitSlice(d, 0, f), data: c };
     } };
-    sjcl2.misc.hmac = function(a2, b2) {
-      this.W = b2 = b2 || sjcl2.hash.sha256;
-      var c2 = [[], []], d, e = b2.prototype.blockSize / 32;
-      this.w = [new b2(), new b2()];
-      a2.length > e && (a2 = b2.hash(a2));
+    sjcl2.misc.hmac = function(a, b) {
+      this.W = b = b || sjcl2.hash.sha256;
+      var c = [[], []], d, e = b.prototype.blockSize / 32;
+      this.w = [new b(), new b()];
+      a.length > e && (a = b.hash(a));
       for (d = 0; d < e; d++)
-        c2[0][d] = a2[d] ^ 909522486, c2[1][d] = a2[d] ^ 1549556828;
-      this.w[0].update(c2[0]);
-      this.w[1].update(c2[1]);
-      this.R = new b2(this.w[0]);
+        c[0][d] = a[d] ^ 909522486, c[1][d] = a[d] ^ 1549556828;
+      this.w[0].update(c[0]);
+      this.w[1].update(c[1]);
+      this.R = new b(this.w[0]);
     };
-    sjcl2.misc.hmac.prototype.encrypt = sjcl2.misc.hmac.prototype.mac = function(a2) {
+    sjcl2.misc.hmac.prototype.encrypt = sjcl2.misc.hmac.prototype.mac = function(a) {
       if (this.aa)
         throw new sjcl2.exception.invalid("encrypt on already updated hmac called!");
-      this.update(a2);
-      return this.digest(a2);
+      this.update(a);
+      return this.digest(a);
     };
     sjcl2.misc.hmac.prototype.reset = function() {
       this.R = new this.W(this.w[0]);
       this.aa = false;
     };
-    sjcl2.misc.hmac.prototype.update = function(a2) {
+    sjcl2.misc.hmac.prototype.update = function(a) {
       this.aa = true;
-      this.R.update(a2);
+      this.R.update(a);
     };
     sjcl2.misc.hmac.prototype.digest = function() {
-      var a2 = this.R.finalize(), a2 = new this.W(this.w[1]).update(a2).finalize();
+      var a = this.R.finalize(), a = new this.W(this.w[1]).update(a).finalize();
       this.reset();
-      return a2;
+      return a;
     };
-    sjcl2.misc.pbkdf2 = function(a2, b2, c2, d, e) {
-      c2 = c2 || 1e4;
-      if (0 > d || 0 > c2)
+    sjcl2.misc.pbkdf2 = function(a, b, c, d, e) {
+      c = c || 1e4;
+      if (0 > d || 0 > c)
         throw new sjcl2.exception.invalid("invalid params to pbkdf2");
-      "string" === typeof a2 && (a2 = sjcl2.codec.utf8String.toBits(a2));
-      "string" === typeof b2 && (b2 = sjcl2.codec.utf8String.toBits(b2));
+      "string" === typeof a && (a = sjcl2.codec.utf8String.toBits(a));
+      "string" === typeof b && (b = sjcl2.codec.utf8String.toBits(b));
       e = e || sjcl2.misc.hmac;
-      a2 = new e(a2);
-      var f2, g2, h, k, l = [], n = sjcl2.bitArray;
+      a = new e(a);
+      var f, g, h, k, l = [], n = sjcl2.bitArray;
       for (k = 1; 32 * l.length < (d || 1); k++) {
-        e = f2 = a2.encrypt(n.concat(b2, [k]));
-        for (g2 = 1; g2 < c2; g2++)
-          for (f2 = a2.encrypt(f2), h = 0; h < f2.length; h++)
-            e[h] ^= f2[h];
+        e = f = a.encrypt(n.concat(b, [k]));
+        for (g = 1; g < c; g++)
+          for (f = a.encrypt(f), h = 0; h < f.length; h++)
+            e[h] ^= f[h];
         l = l.concat(e);
       }
       d && (l = n.clamp(l, d));
       return l;
     };
-    sjcl2.prng = function(a2) {
+    sjcl2.prng = function(a) {
       this.c = [new sjcl2.hash.sha256()];
       this.m = [0];
       this.P = 0;
@@ -603,7 +547,7 @@ var require_sjcl = __commonJS({
       this.b = [0, 0, 0, 0, 0, 0, 0, 0];
       this.h = [0, 0, 0, 0];
       this.L = void 0;
-      this.M = a2;
+      this.M = a;
       this.D = false;
       this.K = { progress: {}, seeded: {} };
       this.u = this.ga = 0;
@@ -615,91 +559,91 @@ var require_sjcl = __commonJS({
       this.ba = 80;
     };
     sjcl2.prng.prototype = {
-      randomWords: function(a2, b2) {
-        var c2 = [], d;
-        d = this.isReady(b2);
+      randomWords: function(a, b) {
+        var c = [], d;
+        d = this.isReady(b);
         var e;
         if (d === this.u)
           throw new sjcl2.exception.notReady("generator isn't seeded");
         if (d & this.J) {
           d = !(d & this.I);
           e = [];
-          var f2 = 0, g2;
+          var f = 0, g;
           this.Z = e[0] = new Date().valueOf() + this.da;
-          for (g2 = 0; 16 > g2; g2++)
+          for (g = 0; 16 > g; g++)
             e.push(4294967296 * Math.random() | 0);
-          for (g2 = 0; g2 < this.c.length && (e = e.concat(this.c[g2].finalize()), f2 += this.m[g2], this.m[g2] = 0, d || !(this.P & 1 << g2)); g2++)
+          for (g = 0; g < this.c.length && (e = e.concat(this.c[g].finalize()), f += this.m[g], this.m[g] = 0, d || !(this.P & 1 << g)); g++)
             ;
           this.P >= 1 << this.c.length && (this.c.push(new sjcl2.hash.sha256()), this.m.push(0));
-          this.f -= f2;
-          f2 > this.o && (this.o = f2);
+          this.f -= f;
+          f > this.o && (this.o = f);
           this.P++;
           this.b = sjcl2.hash.sha256.hash(this.b.concat(e));
           this.L = new sjcl2.cipher.aes(this.b);
           for (d = 0; 4 > d && (this.h[d] = this.h[d] + 1 | 0, !this.h[d]); d++)
             ;
         }
-        for (d = 0; d < a2; d += 4)
-          0 === (d + 1) % this.ca && y(this), e = z(this), c2.push(e[0], e[1], e[2], e[3]);
+        for (d = 0; d < a; d += 4)
+          0 === (d + 1) % this.ca && y(this), e = z(this), c.push(e[0], e[1], e[2], e[3]);
         y(this);
-        return c2.slice(0, a2);
+        return c.slice(0, a);
       },
-      setDefaultParanoia: function(a2, b2) {
-        if (0 === a2 && "Setting paranoia=0 will ruin your security; use it only for testing" !== b2)
+      setDefaultParanoia: function(a, b) {
+        if (0 === a && "Setting paranoia=0 will ruin your security; use it only for testing" !== b)
           throw new sjcl2.exception.invalid("Setting paranoia=0 will ruin your security; use it only for testing");
-        this.M = a2;
+        this.M = a;
       },
-      addEntropy: function(a2, b2, c2) {
-        c2 = c2 || "user";
-        var d, e, f2 = new Date().valueOf(), g2 = this.H[c2], h = this.isReady(), k = 0;
-        d = this.U[c2];
-        void 0 === d && (d = this.U[c2] = this.ha++);
-        void 0 === g2 && (g2 = this.H[c2] = 0);
-        this.H[c2] = (this.H[c2] + 1) % this.c.length;
-        switch (typeof a2) {
+      addEntropy: function(a, b, c) {
+        c = c || "user";
+        var d, e, f = new Date().valueOf(), g = this.H[c], h = this.isReady(), k = 0;
+        d = this.U[c];
+        void 0 === d && (d = this.U[c] = this.ha++);
+        void 0 === g && (g = this.H[c] = 0);
+        this.H[c] = (this.H[c] + 1) % this.c.length;
+        switch (typeof a) {
           case "number":
-            void 0 === b2 && (b2 = 1);
-            this.c[g2].update([d, this.N++, 1, b2, f2, 1, a2 | 0]);
+            void 0 === b && (b = 1);
+            this.c[g].update([d, this.N++, 1, b, f, 1, a | 0]);
             break;
           case "object":
-            c2 = Object.prototype.toString.call(a2);
-            if ("[object Uint32Array]" === c2) {
+            c = Object.prototype.toString.call(a);
+            if ("[object Uint32Array]" === c) {
               e = [];
-              for (c2 = 0; c2 < a2.length; c2++)
-                e.push(a2[c2]);
-              a2 = e;
+              for (c = 0; c < a.length; c++)
+                e.push(a[c]);
+              a = e;
             } else
-              for ("[object Array]" !== c2 && (k = 1), c2 = 0; c2 < a2.length && !k; c2++)
-                "number" !== typeof a2[c2] && (k = 1);
+              for ("[object Array]" !== c && (k = 1), c = 0; c < a.length && !k; c++)
+                "number" !== typeof a[c] && (k = 1);
             if (!k) {
-              if (void 0 === b2)
-                for (c2 = b2 = 0; c2 < a2.length; c2++)
-                  for (e = a2[c2]; 0 < e; )
-                    b2++, e = e >>> 1;
-              this.c[g2].update([d, this.N++, 2, b2, f2, a2.length].concat(a2));
+              if (void 0 === b)
+                for (c = b = 0; c < a.length; c++)
+                  for (e = a[c]; 0 < e; )
+                    b++, e = e >>> 1;
+              this.c[g].update([d, this.N++, 2, b, f, a.length].concat(a));
             }
             break;
           case "string":
-            void 0 === b2 && (b2 = a2.length);
-            this.c[g2].update([d, this.N++, 3, b2, f2, a2.length]);
-            this.c[g2].update(a2);
+            void 0 === b && (b = a.length);
+            this.c[g].update([d, this.N++, 3, b, f, a.length]);
+            this.c[g].update(a);
             break;
           default:
             k = 1;
         }
         if (k)
           throw new sjcl2.exception.bug("random: addEntropy only supports number, array of numbers or string");
-        this.m[g2] += b2;
-        this.f += b2;
+        this.m[g] += b;
+        this.f += b;
         h === this.u && (this.isReady() !== this.u && A("seeded", Math.max(this.o, this.f)), A("progress", this.getProgress()));
       },
-      isReady: function(a2) {
-        a2 = this.T[void 0 !== a2 ? a2 : this.M];
-        return this.o && this.o >= a2 ? this.m[0] > this.ba && new Date().valueOf() > this.Z ? this.J | this.I : this.I : this.f >= a2 ? this.J | this.u : this.u;
+      isReady: function(a) {
+        a = this.T[void 0 !== a ? a : this.M];
+        return this.o && this.o >= a ? this.m[0] > this.ba && new Date().valueOf() > this.Z ? this.J | this.I : this.I : this.f >= a ? this.J | this.u : this.u;
       },
-      getProgress: function(a2) {
-        a2 = this.T[a2 ? a2 : this.M];
-        return this.o >= a2 ? 1 : this.f > a2 ? 1 : this.f / a2;
+      getProgress: function(a) {
+        a = this.T[a ? a : this.M];
+        return this.o >= a ? 1 : this.f > a ? 1 : this.f / a;
       },
       startCollectors: function() {
         if (!this.D) {
@@ -716,69 +660,69 @@ var require_sjcl = __commonJS({
       stopCollectors: function() {
         this.D && (window.removeEventListener ? (window.removeEventListener("load", this.a.loadTimeCollector, false), window.removeEventListener("mousemove", this.a.mouseCollector, false), window.removeEventListener("keypress", this.a.keyboardCollector, false), window.removeEventListener("devicemotion", this.a.accelerometerCollector, false), window.removeEventListener("touchmove", this.a.touchCollector, false)) : document.detachEvent && (document.detachEvent("onload", this.a.loadTimeCollector), document.detachEvent("onmousemove", this.a.mouseCollector), document.detachEvent("keypress", this.a.keyboardCollector)), this.D = false);
       },
-      addEventListener: function(a2, b2) {
-        this.K[a2][this.ga++] = b2;
+      addEventListener: function(a, b) {
+        this.K[a][this.ga++] = b;
       },
-      removeEventListener: function(a2, b2) {
-        var c2, d, e = this.K[a2], f2 = [];
+      removeEventListener: function(a, b) {
+        var c, d, e = this.K[a], f = [];
         for (d in e)
-          e.hasOwnProperty(d) && e[d] === b2 && f2.push(d);
-        for (c2 = 0; c2 < f2.length; c2++)
-          d = f2[c2], delete e[d];
+          e.hasOwnProperty(d) && e[d] === b && f.push(d);
+        for (c = 0; c < f.length; c++)
+          d = f[c], delete e[d];
       },
       la: function() {
         C(this, 1);
       },
-      oa: function(a2) {
-        var b2, c2;
+      oa: function(a) {
+        var b, c;
         try {
-          b2 = a2.x || a2.clientX || a2.offsetX || 0, c2 = a2.y || a2.clientY || a2.offsetY || 0;
+          b = a.x || a.clientX || a.offsetX || 0, c = a.y || a.clientY || a.offsetY || 0;
         } catch (d) {
-          c2 = b2 = 0;
+          c = b = 0;
         }
-        0 != b2 && 0 != c2 && this.addEntropy([b2, c2], 2, "mouse");
+        0 != b && 0 != c && this.addEntropy([b, c], 2, "mouse");
         C(this, 0);
       },
-      qa: function(a2) {
-        a2 = a2.touches[0] || a2.changedTouches[0];
-        this.addEntropy([a2.pageX || a2.clientX, a2.pageY || a2.clientY], 1, "touch");
+      qa: function(a) {
+        a = a.touches[0] || a.changedTouches[0];
+        this.addEntropy([a.pageX || a.clientX, a.pageY || a.clientY], 1, "touch");
         C(this, 0);
       },
       ma: function() {
         C(this, 2);
       },
-      ea: function(a2) {
-        a2 = a2.accelerationIncludingGravity.x || a2.accelerationIncludingGravity.y || a2.accelerationIncludingGravity.z;
+      ea: function(a) {
+        a = a.accelerationIncludingGravity.x || a.accelerationIncludingGravity.y || a.accelerationIncludingGravity.z;
         if (window.orientation) {
-          var b2 = window.orientation;
-          "number" === typeof b2 && this.addEntropy(b2, 1, "accelerometer");
+          var b = window.orientation;
+          "number" === typeof b && this.addEntropy(b, 1, "accelerometer");
         }
-        a2 && this.addEntropy(a2, 2, "accelerometer");
+        a && this.addEntropy(a, 2, "accelerometer");
         C(this, 0);
       }
     };
-    function A(a2, b2) {
-      var c2, d = sjcl2.random.K[a2], e = [];
-      for (c2 in d)
-        d.hasOwnProperty(c2) && e.push(d[c2]);
-      for (c2 = 0; c2 < e.length; c2++)
-        e[c2](b2);
+    function A(a, b) {
+      var c, d = sjcl2.random.K[a], e = [];
+      for (c in d)
+        d.hasOwnProperty(c) && e.push(d[c]);
+      for (c = 0; c < e.length; c++)
+        e[c](b);
     }
-    function C(a2, b2) {
-      "undefined" !== typeof window && window.performance && "function" === typeof window.performance.now ? a2.addEntropy(window.performance.now(), b2, "loadtime") : a2.addEntropy(new Date().valueOf(), b2, "loadtime");
+    function C(a, b) {
+      "undefined" !== typeof window && window.performance && "function" === typeof window.performance.now ? a.addEntropy(window.performance.now(), b, "loadtime") : a.addEntropy(new Date().valueOf(), b, "loadtime");
     }
-    function y(a2) {
-      a2.b = z(a2).concat(z(a2));
-      a2.L = new sjcl2.cipher.aes(a2.b);
+    function y(a) {
+      a.b = z(a).concat(z(a));
+      a.L = new sjcl2.cipher.aes(a.b);
     }
-    function z(a2) {
-      for (var b2 = 0; 4 > b2 && (a2.h[b2] = a2.h[b2] + 1 | 0, !a2.h[b2]); b2++)
+    function z(a) {
+      for (var b = 0; 4 > b && (a.h[b] = a.h[b] + 1 | 0, !a.h[b]); b++)
         ;
-      return a2.L.encrypt(a2.h);
+      return a.L.encrypt(a.h);
     }
-    function B(a2, b2) {
+    function B(a, b) {
       return function() {
-        b2.apply(a2, arguments);
+        b.apply(a, arguments);
       };
     }
     sjcl2.random = new sjcl2.prng(6);
@@ -787,7 +731,7 @@ var require_sjcl = __commonJS({
         if (G = "undefined" !== typeof module && module.exports) {
           try {
             H = __require("crypto");
-          } catch (a2) {
+          } catch (a) {
             H = null;
           }
           G = E = H;
@@ -804,126 +748,126 @@ var require_sjcl = __commonJS({
             break a;
           sjcl2.random.addEntropy(F, 1024, "crypto['getRandomValues']");
         }
-      } catch (a2) {
-        "undefined" !== typeof window && window.console && (console.log("There was an error collecting entropy from the browser:"), console.log(a2));
+      } catch (a) {
+        "undefined" !== typeof window && window.console && (console.log("There was an error collecting entropy from the browser:"), console.log(a));
       }
     var D;
     var E;
     var F;
     var G;
     var H;
-    sjcl2.json = { defaults: { v: 1, iter: 1e4, ks: 128, ts: 64, mode: "ccm", adata: "", cipher: "aes" }, ja: function(a2, b2, c2, d) {
-      c2 = c2 || {};
+    sjcl2.json = { defaults: { v: 1, iter: 1e4, ks: 128, ts: 64, mode: "ccm", adata: "", cipher: "aes" }, ja: function(a, b, c, d) {
+      c = c || {};
       d = d || {};
-      var e = sjcl2.json, f2 = e.g({ iv: sjcl2.random.randomWords(4, 0) }, e.defaults), g2;
-      e.g(f2, c2);
-      c2 = f2.adata;
-      "string" === typeof f2.salt && (f2.salt = sjcl2.codec.base64.toBits(f2.salt));
-      "string" === typeof f2.iv && (f2.iv = sjcl2.codec.base64.toBits(f2.iv));
-      if (!sjcl2.mode[f2.mode] || !sjcl2.cipher[f2.cipher] || "string" === typeof a2 && 100 >= f2.iter || 64 !== f2.ts && 96 !== f2.ts && 128 !== f2.ts || 128 !== f2.ks && 192 !== f2.ks && 256 !== f2.ks || 2 > f2.iv.length || 4 < f2.iv.length)
+      var e = sjcl2.json, f = e.g({ iv: sjcl2.random.randomWords(4, 0) }, e.defaults), g;
+      e.g(f, c);
+      c = f.adata;
+      "string" === typeof f.salt && (f.salt = sjcl2.codec.base64.toBits(f.salt));
+      "string" === typeof f.iv && (f.iv = sjcl2.codec.base64.toBits(f.iv));
+      if (!sjcl2.mode[f.mode] || !sjcl2.cipher[f.cipher] || "string" === typeof a && 100 >= f.iter || 64 !== f.ts && 96 !== f.ts && 128 !== f.ts || 128 !== f.ks && 192 !== f.ks && 256 !== f.ks || 2 > f.iv.length || 4 < f.iv.length)
         throw new sjcl2.exception.invalid("json encrypt: invalid parameters");
-      "string" === typeof a2 ? (g2 = sjcl2.misc.cachedPbkdf2(a2, f2), a2 = g2.key.slice(0, f2.ks / 32), f2.salt = g2.salt) : sjcl2.ecc && a2 instanceof sjcl2.ecc.elGamal.publicKey && (g2 = a2.kem(), f2.kemtag = g2.tag, a2 = g2.key.slice(0, f2.ks / 32));
-      "string" === typeof b2 && (b2 = sjcl2.codec.utf8String.toBits(b2));
-      "string" === typeof c2 && (f2.adata = c2 = sjcl2.codec.utf8String.toBits(c2));
-      g2 = new sjcl2.cipher[f2.cipher](a2);
-      e.g(d, f2);
-      d.key = a2;
-      f2.ct = "ccm" === f2.mode && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b2 instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.encrypt(g2, b2, f2.iv, c2, f2.ts) : sjcl2.mode[f2.mode].encrypt(g2, b2, f2.iv, c2, f2.ts);
-      return f2;
-    }, encrypt: function(a2, b2, c2, d) {
-      var e = sjcl2.json, f2 = e.ja.apply(e, arguments);
-      return e.encode(f2);
-    }, ia: function(a2, b2, c2, d) {
-      c2 = c2 || {};
+      "string" === typeof a ? (g = sjcl2.misc.cachedPbkdf2(a, f), a = g.key.slice(0, f.ks / 32), f.salt = g.salt) : sjcl2.ecc && a instanceof sjcl2.ecc.elGamal.publicKey && (g = a.kem(), f.kemtag = g.tag, a = g.key.slice(0, f.ks / 32));
+      "string" === typeof b && (b = sjcl2.codec.utf8String.toBits(b));
+      "string" === typeof c && (f.adata = c = sjcl2.codec.utf8String.toBits(c));
+      g = new sjcl2.cipher[f.cipher](a);
+      e.g(d, f);
+      d.key = a;
+      f.ct = "ccm" === f.mode && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.encrypt(g, b, f.iv, c, f.ts) : sjcl2.mode[f.mode].encrypt(g, b, f.iv, c, f.ts);
+      return f;
+    }, encrypt: function(a, b, c, d) {
+      var e = sjcl2.json, f = e.ja.apply(e, arguments);
+      return e.encode(f);
+    }, ia: function(a, b, c, d) {
+      c = c || {};
       d = d || {};
       var e = sjcl2.json;
-      b2 = e.g(e.g(e.g({}, e.defaults), b2), c2, true);
-      var f2, g2;
-      f2 = b2.adata;
-      "string" === typeof b2.salt && (b2.salt = sjcl2.codec.base64.toBits(b2.salt));
-      "string" === typeof b2.iv && (b2.iv = sjcl2.codec.base64.toBits(b2.iv));
-      if (!sjcl2.mode[b2.mode] || !sjcl2.cipher[b2.cipher] || "string" === typeof a2 && 100 >= b2.iter || 64 !== b2.ts && 96 !== b2.ts && 128 !== b2.ts || 128 !== b2.ks && 192 !== b2.ks && 256 !== b2.ks || !b2.iv || 2 > b2.iv.length || 4 < b2.iv.length)
+      b = e.g(e.g(e.g({}, e.defaults), b), c, true);
+      var f, g;
+      f = b.adata;
+      "string" === typeof b.salt && (b.salt = sjcl2.codec.base64.toBits(b.salt));
+      "string" === typeof b.iv && (b.iv = sjcl2.codec.base64.toBits(b.iv));
+      if (!sjcl2.mode[b.mode] || !sjcl2.cipher[b.cipher] || "string" === typeof a && 100 >= b.iter || 64 !== b.ts && 96 !== b.ts && 128 !== b.ts || 128 !== b.ks && 192 !== b.ks && 256 !== b.ks || !b.iv || 2 > b.iv.length || 4 < b.iv.length)
         throw new sjcl2.exception.invalid("json decrypt: invalid parameters");
-      "string" === typeof a2 ? (g2 = sjcl2.misc.cachedPbkdf2(a2, b2), a2 = g2.key.slice(0, b2.ks / 32), b2.salt = g2.salt) : sjcl2.ecc && a2 instanceof sjcl2.ecc.elGamal.secretKey && (a2 = a2.unkem(sjcl2.codec.base64.toBits(b2.kemtag)).slice(0, b2.ks / 32));
-      "string" === typeof f2 && (f2 = sjcl2.codec.utf8String.toBits(f2));
-      g2 = new sjcl2.cipher[b2.cipher](a2);
-      f2 = "ccm" === b2.mode && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b2.ct instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.decrypt(g2, b2.ct, b2.iv, b2.tag, f2, b2.ts) : sjcl2.mode[b2.mode].decrypt(g2, b2.ct, b2.iv, f2, b2.ts);
-      e.g(d, b2);
-      d.key = a2;
-      return 1 === c2.raw ? f2 : sjcl2.codec.utf8String.fromBits(f2);
-    }, decrypt: function(a2, b2, c2, d) {
+      "string" === typeof a ? (g = sjcl2.misc.cachedPbkdf2(a, b), a = g.key.slice(0, b.ks / 32), b.salt = g.salt) : sjcl2.ecc && a instanceof sjcl2.ecc.elGamal.secretKey && (a = a.unkem(sjcl2.codec.base64.toBits(b.kemtag)).slice(0, b.ks / 32));
+      "string" === typeof f && (f = sjcl2.codec.utf8String.toBits(f));
+      g = new sjcl2.cipher[b.cipher](a);
+      f = "ccm" === b.mode && sjcl2.arrayBuffer && sjcl2.arrayBuffer.ccm && b.ct instanceof ArrayBuffer ? sjcl2.arrayBuffer.ccm.decrypt(g, b.ct, b.iv, b.tag, f, b.ts) : sjcl2.mode[b.mode].decrypt(g, b.ct, b.iv, f, b.ts);
+      e.g(d, b);
+      d.key = a;
+      return 1 === c.raw ? f : sjcl2.codec.utf8String.fromBits(f);
+    }, decrypt: function(a, b, c, d) {
       var e = sjcl2.json;
-      return e.ia(a2, e.decode(b2), c2, d);
-    }, encode: function(a2) {
-      var b2, c2 = "{", d = "";
-      for (b2 in a2)
-        if (a2.hasOwnProperty(b2)) {
-          if (!b2.match(/^[a-z0-9]+$/i))
+      return e.ia(a, e.decode(b), c, d);
+    }, encode: function(a) {
+      var b, c = "{", d = "";
+      for (b in a)
+        if (a.hasOwnProperty(b)) {
+          if (!b.match(/^[a-z0-9]+$/i))
             throw new sjcl2.exception.invalid("json encode: invalid property name");
-          c2 += d + '"' + b2 + '":';
+          c += d + '"' + b + '":';
           d = ",";
-          switch (typeof a2[b2]) {
+          switch (typeof a[b]) {
             case "number":
             case "boolean":
-              c2 += a2[b2];
+              c += a[b];
               break;
             case "string":
-              c2 += '"' + escape(a2[b2]) + '"';
+              c += '"' + escape(a[b]) + '"';
               break;
             case "object":
-              c2 += '"' + sjcl2.codec.base64.fromBits(a2[b2], 0) + '"';
+              c += '"' + sjcl2.codec.base64.fromBits(a[b], 0) + '"';
               break;
             default:
               throw new sjcl2.exception.bug("json encode: unsupported type");
           }
         }
-      return c2 + "}";
-    }, decode: function(a2) {
-      a2 = a2.replace(/\s/g, "");
-      if (!a2.match(/^\{.*\}$/))
+      return c + "}";
+    }, decode: function(a) {
+      a = a.replace(/\s/g, "");
+      if (!a.match(/^\{.*\}$/))
         throw new sjcl2.exception.invalid("json decode: this isn't json!");
-      a2 = a2.replace(/^\{|\}$/g, "").split(/,/);
-      var b2 = {}, c2, d;
-      for (c2 = 0; c2 < a2.length; c2++) {
-        if (!(d = a2[c2].match(/^\s*(?:(["']?)([a-z][a-z0-9]*)\1)\s*:\s*(?:(-?\d+)|"([a-z0-9+\/%*_.@=\-]*)"|(true|false))$/i)))
+      a = a.replace(/^\{|\}$/g, "").split(/,/);
+      var b = {}, c, d;
+      for (c = 0; c < a.length; c++) {
+        if (!(d = a[c].match(/^\s*(?:(["']?)([a-z][a-z0-9]*)\1)\s*:\s*(?:(-?\d+)|"([a-z0-9+\/%*_.@=\-]*)"|(true|false))$/i)))
           throw new sjcl2.exception.invalid("json decode: this isn't json!");
-        null != d[3] ? b2[d[2]] = parseInt(d[3], 10) : null != d[4] ? b2[d[2]] = d[2].match(/^(ct|adata|salt|iv)$/) ? sjcl2.codec.base64.toBits(d[4]) : unescape(d[4]) : null != d[5] && (b2[d[2]] = "true" === d[5]);
+        null != d[3] ? b[d[2]] = parseInt(d[3], 10) : null != d[4] ? b[d[2]] = d[2].match(/^(ct|adata|salt|iv)$/) ? sjcl2.codec.base64.toBits(d[4]) : unescape(d[4]) : null != d[5] && (b[d[2]] = "true" === d[5]);
       }
-      return b2;
-    }, g: function(a2, b2, c2) {
-      void 0 === a2 && (a2 = {});
-      if (void 0 === b2)
-        return a2;
-      for (var d in b2)
-        if (b2.hasOwnProperty(d)) {
-          if (c2 && void 0 !== a2[d] && a2[d] !== b2[d])
+      return b;
+    }, g: function(a, b, c) {
+      void 0 === a && (a = {});
+      if (void 0 === b)
+        return a;
+      for (var d in b)
+        if (b.hasOwnProperty(d)) {
+          if (c && void 0 !== a[d] && a[d] !== b[d])
             throw new sjcl2.exception.invalid("required parameter overridden");
-          a2[d] = b2[d];
+          a[d] = b[d];
         }
-      return a2;
-    }, sa: function(a2, b2) {
-      var c2 = {}, d;
-      for (d in a2)
-        a2.hasOwnProperty(d) && a2[d] !== b2[d] && (c2[d] = a2[d]);
-      return c2;
-    }, ra: function(a2, b2) {
-      var c2 = {}, d;
-      for (d = 0; d < b2.length; d++)
-        void 0 !== a2[b2[d]] && (c2[b2[d]] = a2[b2[d]]);
-      return c2;
+      return a;
+    }, sa: function(a, b) {
+      var c = {}, d;
+      for (d in a)
+        a.hasOwnProperty(d) && a[d] !== b[d] && (c[d] = a[d]);
+      return c;
+    }, ra: function(a, b) {
+      var c = {}, d;
+      for (d = 0; d < b.length; d++)
+        void 0 !== a[b[d]] && (c[b[d]] = a[b[d]]);
+      return c;
     } };
     sjcl2.encrypt = sjcl2.json.encrypt;
     sjcl2.decrypt = sjcl2.json.decrypt;
     sjcl2.misc.pa = {};
-    sjcl2.misc.cachedPbkdf2 = function(a2, b2) {
-      var c2 = sjcl2.misc.pa, d;
-      b2 = b2 || {};
-      d = b2.iter || 1e3;
-      c2 = c2[a2] = c2[a2] || {};
-      d = c2[d] = c2[d] || { firstSalt: b2.salt && b2.salt.length ? b2.salt.slice(0) : sjcl2.random.randomWords(2, 0) };
-      c2 = void 0 === b2.salt ? d.firstSalt : b2.salt;
-      d[c2] = d[c2] || sjcl2.misc.pbkdf2(a2, c2, b2.iter);
-      return { key: d[c2].slice(0), salt: c2.slice(0) };
+    sjcl2.misc.cachedPbkdf2 = function(a, b) {
+      var c = sjcl2.misc.pa, d;
+      b = b || {};
+      d = b.iter || 1e3;
+      c = c[a] = c[a] || {};
+      d = c[d] = c[d] || { firstSalt: b.salt && b.salt.length ? b.salt.slice(0) : sjcl2.random.randomWords(2, 0) };
+      c = void 0 === b.salt ? d.firstSalt : b.salt;
+      d[c] = d[c] || sjcl2.misc.pbkdf2(a, c, b.iter);
+      return { key: d[c].slice(0), salt: c.slice(0) };
     };
     "undefined" !== typeof module && module.exports && (module.exports = sjcl2);
     "function" === typeof define && define([], function() {
@@ -1012,8 +956,8 @@ var state = {
       if (!sub)
         delete state.triggers[key];
       else {
-        let obj = triggers.find((o2) => {
-          if (o2.idx === sub) {
+        let obj = triggers.find((o) => {
+          if (o.idx === sub) {
             return true;
           }
         });
@@ -1138,24 +1082,24 @@ var GraphNode = class {
       }
       return new Promise(async (resolve) => {
         if (node) {
-          let run = (node2, tick = 0, ...input2) => {
+          let run = (node2, tick = 0, ...input) => {
             return new Promise(async (r) => {
               tick++;
-              let res = await node2.runOp(node2, origin, ...input2);
+              let res = await node2.runOp(node2, origin, ...input);
               if (node2.repeat) {
                 while (tick < node2.repeat) {
                   if (node2.delay) {
                     setTimeout(async () => {
-                      r(await run(node2, tick, ...input2));
+                      r(await run(node2, tick, ...input));
                     }, node2.delay);
                     break;
                   } else if (node2.frame && window?.requestAnimationFrame) {
                     requestAnimationFrame(async () => {
-                      r(await run(node2, tick, ...input2));
+                      r(await run(node2, tick, ...input));
                     });
                     break;
                   } else
-                    res = await node2.runOp(node2, origin, ...input2);
+                    res = await node2.runOp(node2, origin, ...input);
                   tick++;
                 }
                 if (tick === node2.repeat) {
@@ -1463,11 +1407,11 @@ var GraphNode = class {
         }
       } else if (Array.isArray(children)) {
         this.children.push(...children);
-        children.forEach((c2) => {
-          if (typeof c2 === "object" && c2.tag) {
-            this.nodes.set(c2.tag, c2);
+        children.forEach((c) => {
+          if (typeof c === "object" && c.tag) {
+            this.nodes.set(c.tag, c);
             if (this.graph)
-              this.graph.nodes.set(c2.tag, c2);
+              this.graph.nodes.set(c.tag, c);
           }
         });
       } else {
@@ -1554,18 +1498,18 @@ var GraphNode = class {
         const recursivelyRemove = (node2) => {
           if (node2.children) {
             if (Array.isArray(node2.children)) {
-              node2.children.forEach((c2) => {
-                if (c2.stopNode)
-                  c2.stopNode();
-                if (c2.tag) {
-                  if (this.nodes.get(c2.tag))
-                    this.nodes.delete(c2.tag);
+              node2.children.forEach((c) => {
+                if (c.stopNode)
+                  c.stopNode();
+                if (c.tag) {
+                  if (this.nodes.get(c.tag))
+                    this.nodes.delete(c.tag);
                 }
                 this.nodes.forEach((n) => {
-                  if (n.nodes.get(c2.tag))
-                    n.nodes.delete(c2.tag);
+                  if (n.nodes.get(c.tag))
+                    n.nodes.delete(c.tag);
                 });
-                recursivelyRemove(c2);
+                recursivelyRemove(c);
               });
             } else if (typeof node2.children === "object") {
               if (node2.stopNode)
@@ -1673,15 +1617,15 @@ var GraphNode = class {
           jsonToPrint.parent = node.parent.tag;
         if (node.children) {
           if (Array.isArray(node.children)) {
-            node.children = node.children.map((c2) => {
-              if (typeof c2 === "string")
-                return c2;
-              if (nodesPrinted.includes(c2.tag))
-                return c2.tag;
+            node.children = node.children.map((c) => {
+              if (typeof c === "string")
+                return c;
+              if (nodesPrinted.includes(c.tag))
+                return c.tag;
               else if (!printChildren) {
-                return c2.tag;
+                return c.tag;
               } else
-                return c2.print(c2, printChildren, nodesPrinted);
+                return c.print(c, printChildren, nodesPrinted);
             });
           } else if (typeof node.children === "object") {
             if (!printChildren) {
@@ -1733,17 +1677,17 @@ var GraphNode = class {
         let source = properties;
         properties = {
           source,
-          operator: (input2) => {
-            if (typeof input2 === "object") {
+          operator: (input) => {
+            if (typeof input === "object") {
               let result = {};
-              for (const key in input2) {
+              for (const key in input) {
                 if (typeof source[key] === "function") {
-                  if (Array.isArray(input2[key]))
-                    result[key] = source[key](...input2[key]);
+                  if (Array.isArray(input[key]))
+                    result[key] = source[key](...input[key]);
                   else
-                    result[key] = source[key](input2[key]);
+                    result[key] = source[key](input[key]);
                 } else {
-                  source[key] = input2[key];
+                  source[key] = input[key];
                   result[key] = source[key];
                 }
               }
@@ -1861,8 +1805,8 @@ var Graph = class {
               tree[node].tag = node;
             let newNode = this.add(tree[node]);
             if (tree[node].aliases) {
-              tree[node].aliases.forEach((a2) => {
-                this.nodes.set(a2, newNode);
+              tree[node].aliases.forEach((a) => {
+                this.nodes.set(a, newNode);
               });
             }
           } else {
@@ -1911,18 +1855,18 @@ var Graph = class {
         const recursivelyRemove = (node2) => {
           if (node2.children) {
             if (Array.isArray(node2.children)) {
-              node2.children.forEach((c2) => {
-                if (c2.stopNode)
-                  c2.stopNode();
-                if (c2.tag) {
-                  if (this.nodes.get(c2.tag))
-                    this.nodes.delete(c2.tag);
+              node2.children.forEach((c) => {
+                if (c.stopNode)
+                  c.stopNode();
+                if (c.tag) {
+                  if (this.nodes.get(c.tag))
+                    this.nodes.delete(c.tag);
                 }
                 this.nodes.forEach((n) => {
-                  if (n.nodes.get(c2.tag))
-                    n.nodes.delete(c2.tag);
+                  if (n.nodes.get(c.tag))
+                    n.nodes.delete(c.tag);
                 });
-                recursivelyRemove(c2);
+                recursivelyRemove(c);
               });
             } else if (typeof node2.children === "object") {
               if (node2.stopNode)
@@ -2180,8 +2124,8 @@ var stringifyFast = function() {
     let val;
     if (value2 != null) {
       if (typeof value2 === "object") {
-        let c2 = value2.constructor.name;
-        if (key && c2 === "Object") {
+        let c = value2.constructor.name;
+        if (key && c === "Object") {
           updateParents(key, value2);
         }
         let other = refs.get(value2);
@@ -2190,16 +2134,16 @@ var stringifyFast = function() {
         } else {
           refs.set(value2, path.join("."));
         }
-        if (c2 === "Array") {
+        if (c === "Array") {
           if (value2.length > 20) {
             val = value2.slice(value2.length - 20);
           } else
             val = value2;
-        } else if (c2.includes("Set")) {
+        } else if (c.includes("Set")) {
           val = Array.from(value2);
-        } else if (c2 !== "Object" && c2 !== "Number" && c2 !== "String" && c2 !== "Boolean") {
-          val = "instanceof_" + c2;
-        } else if (c2 === "Object") {
+        } else if (c !== "Object" && c !== "Number" && c !== "String" && c !== "Boolean") {
+          val = "instanceof_" + c;
+        } else if (c === "Object") {
           let obj = {};
           for (const prop in value2) {
             if (value2[prop] == null) {
@@ -2382,11 +2326,11 @@ var Service = class extends Graph {
       for (const prop in this.routes) {
         if (this.routes[prop]?.aliases) {
           let aliases = this.routes[prop].aliases;
-          aliases.forEach((a2) => {
+          aliases.forEach((a) => {
             if (service)
-              routes[service.name + "/" + a2] = this.routes[prop];
+              routes[service.name + "/" + a] = this.routes[prop];
             else
-              routes[a2] = this.routes[prop];
+              routes[a] = this.routes[prop];
           });
         }
       }
@@ -2679,69 +2623,115 @@ var unsafeRoutes = {
   }
 };
 
-// node_modules/fragelement/dist/index.esm.js
-var f = Object.defineProperty;
-var g = (i, d, e) => d in i ? f(i, d, { enumerable: true, configurable: true, writable: true, value: e }) : i[d] = e;
-var o = (i, d, e) => (g(i, typeof d != "symbol" ? d + "" : d, e), e);
-var c = class extends HTMLElement {
+// services/dom/DOMElement.js
+var DOMElement = class extends HTMLElement {
   constructor() {
     super();
-    o(this, "template", (e) => `<div> Custom Fragment Props: ${JSON.stringify(e)} </div>`);
-    o(this, "props", { test: true });
-    o(this, "useShadow", false);
-    o(this, "styles");
-    o(this, "oncreate");
-    o(this, "onresize");
-    o(this, "ondelete");
-    o(this, "onchanged");
-    o(this, "renderonchanged", false);
-    o(this, "FRAGMENT");
-    o(this, "attachedShadow", false);
-    o(this, "obsAttributes", ["props", "options", "onchanged", "onresize", "ondelete", "oncreate", "template"]);
-    o(this, "delete", () => {
-      this.remove(), typeof this.ondelete == "function" && this.ondelete(this.props);
+    __publicField(this, "template", (props) => {
+      return `<div> Custom Fragment Props: ${JSON.stringify(props)} </div>`;
     });
-    o(this, "render", (e = this.props) => {
-      typeof this.template == "function" ? this.templateString = this.template(e) : this.templateString = this.template;
-      let r = document.createElement("template");
-      r.innerHTML = this.templateString;
-      let s = r.content;
-      this.FRAGMENT && (this.useShadow ? this.shadowRoot.removeChild(this.FRAGMENT) : this.removeChild(this.FRAGMENT)), this.useShadow ? (this.attachedShadow || this.attachShadow({ mode: "open" }), this.shadowRoot.prepend(s), this.FRAGMENT = this.shadowRoot.childNodes[0]) : this.prepend(s), this.FRAGMENT = this.childNodes[0];
-      let t = new CustomEvent("rendered", { detail: { props: this.props, self: this } });
-      this.dispatchEvent("rendered"), this.oncreate && this.oncreate(e, this);
+    __publicField(this, "props", {});
+    __publicField(this, "useShadow", false);
+    __publicField(this, "styles");
+    __publicField(this, "oncreate");
+    __publicField(this, "onresize");
+    __publicField(this, "ondelete");
+    __publicField(this, "onchanged");
+    __publicField(this, "renderonchanged", false);
+    __publicField(this, "FRAGMENT");
+    __publicField(this, "attachedShadow", false);
+    __publicField(this, "obsAttributes", ["props", "options", "onchanged", "onresize", "ondelete", "oncreate", "template"]);
+    __publicField(this, "delete", () => {
+      this.remove();
+      if (typeof this.ondelete === "function")
+        this.ondelete(this.props);
     });
-    o(this, "state", { pushToState: {}, data: {}, triggers: {}, setState(e) {
-      if (Object.assign(this.pushToState, e), Object.keys(this.triggers).length > 0)
-        for (let r of Object.getOwnPropertyNames(this.triggers))
-          this.pushToState[r] && (this.data[r] = this.pushToState[r], delete this.pushToState[r], this.triggers[r].forEach((s) => {
-            s.onchanged(this.data[r]);
-          }));
-      return this.pushToState;
-    }, subscribeTrigger(e, r = (s) => {
-    }) {
-      if (e) {
-        this.triggers[e] || (this.triggers[e] = []);
-        let s = this.triggers[e].length;
-        return this.triggers[e].push({ idx: s, onchanged: r }), this.triggers[e].length - 1;
+    __publicField(this, "render", (props = this.props) => {
+      if (typeof this.template === "function")
+        this.templateString = this.template(props);
+      else
+        this.templateString = this.template;
+      const t = document.createElement("template");
+      t.innerHTML = this.templateString;
+      const fragment = t.content;
+      if (this.FRAGMENT) {
+        if (this.useShadow) {
+          this.shadowRoot.removeChild(this.FRAGMENT);
+        } else
+          this.removeChild(this.FRAGMENT);
+      }
+      if (this.useShadow) {
+        if (!this.attachedShadow)
+          this.attachShadow({ mode: "open" });
+        this.shadowRoot.prepend(fragment);
+        this.FRAGMENT = this.shadowRoot.childNodes[0];
       } else
-        return;
-    }, unsubscribeTrigger(e, r) {
-      let s, t = this.triggers[e];
-      if (t)
-        if (!r)
-          delete this.triggers[e];
-        else
-          return t.find((n) => {
-            if (n.idx === r)
-              return true;
-          }) && t.splice(s, 1), true;
-    }, subscribeTriggerOnce(e = void 0, r = (s) => {
-    }) {
-      let s, t = (p) => {
-        r(p), this.unsubscribeTrigger(e, s);
-      };
-      s = this.subscribeTrigger(e, t);
-    } });
+        this.prepend(fragment);
+      this.FRAGMENT = this.childNodes[0];
+      let rendered = new CustomEvent("rendered", { detail: { props: this.props, self: this } });
+      this.dispatchEvent("rendered");
+      if (this.oncreate)
+        this.oncreate(props, this);
+    });
+    __publicField(this, "state", {
+      pushToState: {},
+      data: {},
+      triggers: {},
+      setState(updateObj) {
+        Object.assign(this.pushToState, updateObj);
+        if (Object.keys(this.triggers).length > 0) {
+          for (const prop of Object.getOwnPropertyNames(this.triggers)) {
+            if (this.pushToState[prop]) {
+              this.data[prop] = this.pushToState[prop];
+              delete this.pushToState[prop];
+              this.triggers[prop].forEach((obj) => {
+                obj.onchanged(this.data[prop]);
+              });
+            }
+          }
+        }
+        return this.pushToState;
+      },
+      subscribeTrigger(key, onchanged = (res) => {
+      }) {
+        if (key) {
+          if (!this.triggers[key]) {
+            this.triggers[key] = [];
+          }
+          let l = this.triggers[key].length;
+          this.triggers[key].push({ idx: l, onchanged });
+          return this.triggers[key].length - 1;
+        } else
+          return void 0;
+      },
+      unsubscribeTrigger(key, sub) {
+        let idx = void 0;
+        let triggers = this.triggers[key];
+        if (triggers) {
+          if (!sub)
+            delete this.triggers[key];
+          else {
+            let obj = triggers.find((o) => {
+              if (o.idx === sub) {
+                return true;
+              }
+            });
+            if (obj)
+              triggers.splice(idx, 1);
+            return true;
+          }
+        }
+      },
+      subscribeTriggerOnce(key = void 0, onchanged = (value2) => {
+      }) {
+        let sub;
+        let changed = (value2) => {
+          onchanged(value2);
+          this.unsubscribeTrigger(key, sub);
+        };
+        sub = this.subscribeTrigger(key, changed);
+      }
+    });
   }
   get observedAttributes() {
     return this.obsAttributes;
@@ -2749,134 +2739,234 @@ var c = class extends HTMLElement {
   get obsAttributes() {
     return this.obsAttributes;
   }
-  set obsAttributes(e) {
-    typeof e == "string" ? this.obsAttributes.push(e) : Array.isArray(e) && (this.obsAttributes = e);
+  set obsAttributes(att) {
+    if (typeof att === "string") {
+      this.obsAttributes.push(att);
+    } else if (Array.isArray(att))
+      this.obsAttributes = att;
   }
   static get tag() {
     return this.name.toLowerCase() + "-";
   }
-  static addElement(e = this.tag, r = this, s = void 0) {
-    b(r, e, s);
+  static addElement(tag = this.tag, cls = this, extend = void 0) {
+    addCustomElement(cls, tag, extend);
   }
-  attributeChangedCallback(e, r, s) {
-    if (e === "onchanged") {
-      let t = s;
-      if (typeof t == "string" && (t = a(t)), typeof t == "function") {
-        this.onchanged = t, this.state.data.props = this.props, this.state.unsubscribeTrigger("props"), this.state.subscribeTrigger("props", this.onchanged);
-        let p = new CustomEvent("changed", { detail: { props: this.props, self: this } });
+  attributeChangedCallback(name2, old, val) {
+    if (name2 === "onchanged") {
+      let onchanged = val;
+      if (typeof onchanged === "string")
+        onchanged = parseFunctionFromText2(onchanged);
+      if (typeof onchanged === "function") {
+        this.onchanged = onchanged;
+        this.state.data.props = this.props;
+        this.state.unsubscribeTrigger("props");
+        this.state.subscribeTrigger("props", this.onchanged);
+        let changed = new CustomEvent("changed", { detail: { props: this.props, self: this } });
         this.state.subscribeTrigger("props", () => {
-          this.dispatchEvent(p);
+          this.dispatchEvent(changed);
         });
       }
-    } else if (e === "onresize") {
-      let t = s;
-      if (typeof t == "string" && (t = a(t)), typeof t == "function") {
-        if (this.ONRESIZE)
+    } else if (name2 === "onresize") {
+      let onresize = val;
+      if (typeof onresize === "string")
+        onresize = parseFunctionFromText2(onresize);
+      if (typeof onresize === "function") {
+        if (this.ONRESIZE) {
           try {
             window.removeEventListener("resize", this.ONRESIZE);
-          } catch {
+          } catch (err2) {
           }
-        this.ONRESIZE = (p) => {
-          this.onresize(this.props, this);
-        }, this.onresize = t, window.addEventListener("resize", this.ONRESIZE);
-      }
-    } else if (e === "ondelete") {
-      let t = s;
-      typeof t == "string" && (t = a(t)), typeof t == "function" && (this.ondelete = () => {
-        this.ONRESIZE && window.removeEventListener("resize", this.ONRESIZE), this.state.unsubscribeTrigger("props"), t && t(this.props, this);
-      });
-    } else if (e === "oncreate") {
-      let t = s;
-      typeof t == "string" && (t = a(t)), typeof t == "function" && (this.oncreate = t);
-    } else if (e === "renderonchanged") {
-      let t = s;
-      typeof this.renderonchanged == "number" && this.unsubscribeTrigger(this.renderonchanged), typeof t == "string" && (t = a(t)), typeof t == "function" ? this.renderonchanged = this.state.subscribeTrigger("props", (p) => {
-        this.render(p), t(p, this);
-      }) : t != false && (this.renderonchanged = this.state.subscribeTrigger("props", this.render));
-    } else if (e === "props") {
-      let t = s;
-      typeof t == "string" && (t = JSON.parse(t)), Object.assign(this.props, t), this.state.setState({ props: this.props });
-    } else if (e === "template") {
-      let t = s;
-      this.template = options.template, typeof t == "function" ? this.templateString = this.template(this.props) : this.templateString = t, this.render(this.props);
-      let p = new CustomEvent("created", { detail: { props: this.props } });
-      this.dispatchEvent(p);
-    } else {
-      let t = s;
-      if (e.includes("eval_"))
-        e = e.split("_"), e.shift(), e = e.join(), t = a(s);
-      else if (typeof s == "string")
-        try {
-          t = JSON.parse(s);
-        } catch {
-          t = s;
         }
-      this[e] = t, e !== "props" && (this.props[e] = t);
+        this.ONRESIZE = (ev2) => {
+          this.onresize(this.props, this);
+        };
+        this.onresize = onresize;
+        window.addEventListener("resize", this.ONRESIZE);
+      }
+    } else if (name2 === "ondelete") {
+      let ondelete = val;
+      if (typeof ondelete === "string")
+        ondelete = parseFunctionFromText2(ondelete);
+      if (typeof ondelete === "function") {
+        this.ondelete = () => {
+          if (this.ONRESIZE)
+            window.removeEventListener("resize", this.ONRESIZE);
+          this.state.unsubscribeTrigger("props");
+          if (ondelete)
+            ondelete(this.props, this);
+        };
+      }
+    } else if (name2 === "oncreate") {
+      let oncreate = val;
+      if (typeof oncreate === "string")
+        oncreate = parseFunctionFromText2(oncreate);
+      if (typeof oncreate === "function") {
+        this.oncreate = oncreate;
+      }
+    } else if (name2 === "renderonchanged") {
+      let rpc = val;
+      if (typeof this.renderonchanged === "number")
+        this.unsubscribeTrigger(this.renderonchanged);
+      if (typeof rpc === "string")
+        rpc = parseFunctionFromText2(rpc);
+      if (typeof rpc === "function") {
+        this.renderonchanged = this.state.subscribeTrigger("props", (p) => {
+          this.render(p);
+          rpc(p, this);
+        });
+      } else if (rpc != false)
+        this.renderonchanged = this.state.subscribeTrigger("props", this.render);
+    } else if (name2 === "props") {
+      let newProps = val;
+      if (typeof newProps === "string")
+        newProps = JSON.parse(newProps);
+      Object.assign(this.props, newProps);
+      this.state.setState({ props: this.props });
+    } else if (name2 === "template") {
+      let template = val;
+      this.template = options.template;
+      if (typeof template === "function")
+        this.templateString = this.template(this.props);
+      else
+        this.templateString = template;
+      this.render(this.props);
+      let created = new CustomEvent("created", { detail: { props: this.props } });
+      this.dispatchEvent(created);
+    } else {
+      let parsed = val;
+      if (name2.includes("eval_")) {
+        name2 = name2.split("_");
+        name2.shift();
+        name2 = name2.join();
+        parsed = parseFunctionFromText2(val);
+      } else if (typeof val === "string") {
+        try {
+          parsed = JSON.parse(val);
+        } catch (err2) {
+          parsed = val;
+        }
+      }
+      this[name2] = parsed;
+      if (name2 !== "props")
+        this.props[name2] = parsed;
     }
   }
   connectedCallback() {
-    let e = this.getAttribute("props");
-    typeof e == "string" && (e = JSON.parse(e)), Object.assign(this.props, e), this.state.setState({ props: this.props }), Array.from(this.attributes).forEach((n) => {
-      let h = n.name, l = n.value;
-      if (h.includes("eval_"))
-        h = h.split("_"), h.shift(), h = h.join(), l = a(n.value);
-      else if (typeof n.value == "string")
+    let newProps = this.getAttribute("props");
+    if (typeof newProps === "string")
+      newProps = JSON.parse(newProps);
+    Object.assign(this.props, newProps);
+    this.state.setState({ props: this.props });
+    Array.from(this.attributes).forEach((att) => {
+      let name2 = att.name;
+      let parsed = att.value;
+      if (name2.includes("eval_")) {
+        name2 = name2.split("_");
+        name2.shift();
+        name2 = name2.join();
+        parsed = parseFunctionFromText2(att.value);
+      } else if (typeof att.value === "string") {
         try {
-          l = JSON.parse(n.value);
-        } catch {
-          l = n.value;
+          parsed = JSON.parse(att.value);
+        } catch (err2) {
+          parsed = att.value;
         }
-      this[h] || Object.defineProperties(this, n, { value: l, writable: true, get() {
-        return this[h];
-      }, set(u) {
-        this.setAttribute(h, u);
-      } }), this[h] = l, h !== "props" && (this.props[h] = l), this.obsAttributes.push(h);
+      }
+      if (!this[name2]) {
+        Object.defineProperties(this, att, {
+          value: parsed,
+          writable: true,
+          get() {
+            return this[name2];
+          },
+          set(val) {
+            this.setAttribute(name2, val);
+          }
+        });
+      }
+      this[name2] = parsed;
+      if (name2 !== "props")
+        this.props[name2] = parsed;
+      this.obsAttributes.push(name2);
     });
-    let r = new CustomEvent("resized", { detail: { props: this.props, self: this } }), s = new CustomEvent("changed", { detail: { props: this.props, self: this } }), t = new CustomEvent("deleted", { detail: { props: this.props, self: this } }), p = new CustomEvent("created", { detail: { props: this.props, self: this } });
+    let resizeevent = new CustomEvent("resized", { detail: { props: this.props, self: this } });
+    let changed = new CustomEvent("changed", { detail: { props: this.props, self: this } });
+    let deleted = new CustomEvent("deleted", { detail: { props: this.props, self: this } });
+    let created = new CustomEvent("created", { detail: { props: this.props, self: this } });
     if (this.styles) {
-      let n = `
+      let elm = `
             <style>
                 ${templateStr}
             </style>
             `;
-      this.template.indexOf("<style") ? this.template.splice(this.template.indexOf("<style" + 7), this.template.indexOf("</style"), templateStr) : this.template.indexOf("<head") ? this.template.splice(this.template.indexOf("<head" + 6), 0, n) : this.template = n + this.template, this.useShadow = true;
+      if (this.template.indexOf("<style")) {
+        this.template.splice(this.template.indexOf("<style" + 7), this.template.indexOf("</style"), templateStr);
+      } else {
+        if (this.template.indexOf("<head")) {
+          this.template.splice(this.template.indexOf("<head" + 6), 0, elm);
+        } else
+          this.template = elm + this.template;
+      }
+      this.useShadow = true;
     }
-    if (this.render(this.props), this.dispatchEvent(p), this.state.subscribeTrigger("props", () => {
-      this.dispatchEvent(s);
-    }), typeof this.onresize == "function") {
-      if (this.ONRESIZE)
+    this.render(this.props);
+    this.dispatchEvent(created);
+    this.state.subscribeTrigger("props", () => {
+      this.dispatchEvent(changed);
+    });
+    if (typeof this.onresize === "function") {
+      if (this.ONRESIZE) {
         try {
           window.removeEventListener("resize", this.ONRESIZE);
-        } catch {
+        } catch (err2) {
         }
-      this.ONRESIZE = (n) => {
-        this.onresize(this.props, this), this.dispatchEvent(r);
-      }, window.addEventListener("resize", this.ONRESIZE);
+      }
+      this.ONRESIZE = (ev2) => {
+        this.onresize(this.props, this);
+        this.dispatchEvent(resizeevent);
+      };
+      window.addEventListener("resize", this.ONRESIZE);
     }
-    if (typeof this.ondelete == "function") {
-      let n = this.ondelete;
-      this.ondelete = (h = this.props) => {
-        this.ONRESIZE && window.removeEventListener("resize", this.ONRESIZE), this.state.unsubscribeTrigger("props"), this.dispatchEvent(t), n(h, this);
+    if (typeof this.ondelete === "function") {
+      let ondelete = this.ondelete;
+      this.ondelete = (props = this.props) => {
+        if (this.ONRESIZE)
+          window.removeEventListener("resize", this.ONRESIZE);
+        this.state.unsubscribeTrigger("props");
+        this.dispatchEvent(deleted);
+        ondelete(props, this);
       };
     }
-    if (typeof this.onchanged == "function" && (this.state.data.props = this.props, this.state.subscribeTrigger("props", this.onchanged)), this.renderonchanged) {
-      let n = this.renderonchanged;
-      typeof this.renderonchanged == "number" && this.unsubscribeTrigger(this.renderonchanged), typeof n == "string" && (n = a(n)), typeof n == "function" ? this.renderonchanged = this.state.subscribeTrigger("props", (h) => {
-        this.render(h), n(h);
-      }) : n !== false && (this.renderonchanged = this.state.subscribeTrigger("props", this.render));
+    if (typeof this.onchanged === "function") {
+      this.state.data.props = this.props;
+      this.state.subscribeTrigger("props", this.onchanged);
+    }
+    if (this.renderonchanged) {
+      let rpc = this.renderonchanged;
+      if (typeof this.renderonchanged === "number")
+        this.unsubscribeTrigger(this.renderonchanged);
+      if (typeof rpc === "string")
+        rpc = parseFunctionFromText2(rpc);
+      if (typeof rpc === "function") {
+        this.renderonchanged = this.state.subscribeTrigger("props", (p) => {
+          this.render(p);
+          rpc(p);
+        });
+      } else if (rpc !== false)
+        this.renderonchanged = this.state.subscribeTrigger("props", this.render);
     }
   }
   get props() {
     return this.props;
   }
-  set props(e = {}) {
-    this.setAttribute("props", e);
+  set props(newProps = {}) {
+    this.setAttribute("props", newProps);
   }
   get template() {
     return this.template;
   }
-  set template(e) {
-    this.setAttribute("template", e);
+  set template(template) {
+    this.setAttribute("template", template);
   }
   get render() {
     return this.render;
@@ -2890,86 +2980,126 @@ var c = class extends HTMLElement {
   get onchanged() {
     return this.onchanged;
   }
-  set onchanged(e) {
-    this.setAttribute("onchanged", e);
+  set onchanged(onchanged) {
+    this.setAttribute("onchanged", onchanged);
   }
   get styles() {
     return this.styles;
   }
-  set styles(e) {
-    let r = `
+  set styles(templateStr2) {
+    let elm = `
         <style>
-            ${e}
+            ${templateStr2}
         </style>
         `;
-    this.template.indexOf("<style") ? this.template.splice(this.template.indexOf("<style" + 7), this.template.indexOf("</style"), e) : this.template.indexOf("<head") ? this.template.splice(this.template.indexOf("<head" + 6), 0, r) : this.template = r + this.template, this.querySelector("style") ? this.useShadow ? this.querySelector("style").innerHTML = e : (this.useShadow = true, this.render()) : (this.useShadow = true, this.render());
+    if (this.template.indexOf("<style")) {
+      this.template.splice(this.template.indexOf("<style" + 7), this.template.indexOf("</style"), templateStr2);
+    } else {
+      if (this.template.indexOf("<head")) {
+        this.template.splice(this.template.indexOf("<head" + 6), 0, elm);
+      } else
+        this.template = elm + this.template;
+    }
+    if (this.querySelector("style")) {
+      if (!this.useShadow) {
+        this.useShadow = true;
+        this.render();
+      } else
+        this.querySelector("style").innerHTML = templateStr2;
+    } else {
+      this.useShadow = true;
+      this.render();
+    }
   }
   get renderonchanged() {
     return this.renderonchanged;
   }
-  set renderonchanged(e) {
-    this.setAttribute("renderonchanged", e);
+  set renderonchanged(onchanged) {
+    this.setAttribute("renderonchanged", onchanged);
   }
   get onresize() {
     return this.props;
   }
-  set onresize(e) {
-    this.setAttribute("onresize", e);
+  set onresize(onresize) {
+    this.setAttribute("onresize", onresize);
   }
   get ondelete() {
     return this.props;
   }
-  set ondelete(e) {
-    this.setAttribute("ondelete", e);
+  set ondelete(ondelete) {
+    this.setAttribute("ondelete", ondelete);
   }
   get oncreate() {
     return this.oncreate;
   }
-  set oncreate(e) {
-    this.setAttribute("oncreated", e);
+  set oncreate(oncreate) {
+    this.setAttribute("oncreated", oncreate);
   }
 };
-function b(i, d, e = null) {
+function addCustomElement(cls, tag, extend = null) {
   try {
-    e ? d ? window.customElements.define(d, i, { extends: e }) : window.customElements.define(i.name.toLowerCase() + "-", i, { extends: e }) : d ? window.customElements.define(d, i) : window.customElements.define(i.name.toLowerCase() + "-", i);
-  } catch {
+    if (extend) {
+      if (tag)
+        window.customElements.define(tag, cls, { extends: extend });
+      else
+        window.customElements.define(cls.name.toLowerCase() + "-", cls, { extends: extend });
+    } else {
+      if (tag)
+        window.customElements.define(tag, cls);
+      else
+        window.customElements.define(cls.name.toLowerCase() + "-", cls);
+    }
+  } catch (err2) {
   }
 }
-function w(i = "") {
-  return i + Math.floor(Math.random() * 1e15);
+function randomId(tag = "") {
+  return tag + Math.floor(Math.random() * 1e15);
 }
-function a(method) {
-  let getFunctionBody = (i) => i.replace(/^\W*(function[^{]+\{([\s\S]*)\}|[^=]+=>[^{]*\{([\s\S]*)\}|[^=]+=>(.+))/i, "$2$3$4"), getFunctionHead = (i) => {
-    let d = i.indexOf(")");
-    return i.slice(0, i.indexOf("{", d) + 1);
-  }, newFuncHead = getFunctionHead(method), newFuncBody = getFunctionBody(method), newFunc;
+function parseFunctionFromText2(method) {
+  let getFunctionBody = (methodString) => {
+    return methodString.replace(/^\W*(function[^{]+\{([\s\S]*)\}|[^=]+=>[^{]*\{([\s\S]*)\}|[^=]+=>(.+))/i, "$2$3$4");
+  };
+  let getFunctionHead = (methodString) => {
+    let startindex = methodString.indexOf(")");
+    return methodString.slice(0, methodString.indexOf("{", startindex) + 1);
+  };
+  let newFuncHead = getFunctionHead(method);
+  let newFuncBody = getFunctionBody(method);
+  let newFunc;
   try {
     if (newFuncHead.includes("function ")) {
-      let i = newFuncHead.split("(")[1].split(")")[0];
-      newFunc = new Function(i, newFuncBody);
-    } else if (newFuncHead.substring(0, 6) === newFuncBody.substring(0, 6)) {
-      let i = newFuncHead.split("(")[1].split(")")[0];
-      newFunc = new Function(i, newFuncBody.substring(newFuncBody.indexOf("{") + 1, newFuncBody.length - 1));
-    } else
-      try {
-        newFunc = eval(newFuncHead + newFuncBody + "}");
-      } catch (err) {
-        newFunc = eval(method);
+      let varName = newFuncHead.split("(")[1].split(")")[0];
+      newFunc = new Function(varName, newFuncBody);
+    } else {
+      if (newFuncHead.substring(0, 6) === newFuncBody.substring(0, 6)) {
+        let varName = newFuncHead.split("(")[1].split(")")[0];
+        newFunc = new Function(varName, newFuncBody.substring(newFuncBody.indexOf("{") + 1, newFuncBody.length - 1));
+      } else {
+        try {
+          newFunc = eval(newFuncHead + newFuncBody + "}");
+        } catch (err) {
+          newFunc = eval(method);
+        }
       }
-  } catch (i) {
+    }
+  } catch (err2) {
   }
   return newFunc;
 }
 
 // services/dom/DOM.service.ts
-c.addElement();
-var DOMService = class extends Service {
-  constructor() {
-    super(...arguments);
-    this.name = "html";
+var DOMService = class extends Graph {
+  constructor(routes, name2, props) {
+    super(void 0, name2, props);
+    this.routes = {};
+    this.firstLoad = true;
+    this.name = `service${Math.floor(Math.random() * 1e14)}`;
+    this.keepState = true;
     this.components = {};
     this.addElement = (options2, generateChildElementNodes = false) => {
       let elm;
+      if (!options2.id && options2.tag)
+        options2.id = options2.tag;
       if (options2.element) {
         if (typeof options2.element === "string") {
           elm = document.querySelector(options2.element);
@@ -2979,6 +3109,8 @@ var DOMService = class extends Service {
           elm = options2.element;
       } else if (options2.tagName)
         elm = document.createElement(options2.tagName);
+      else if (options2.id && document.getElementById(options2.id))
+        elm = document.getElementById(options2.id);
       if (!elm)
         return void 0;
       if (options2.style)
@@ -3010,7 +3142,8 @@ var DOMService = class extends Service {
               }
             }
           return props;
-        }
+        },
+        ...options2
       });
       this.add(node);
       let divs = Array.from(elm.querySelectorAll("*"));
@@ -3020,8 +3153,8 @@ var DOMService = class extends Service {
       this.elements[options2.id] = { element: elm, node, parentNode: options2.parentNode, divs };
       return this.elements[options2.id];
     };
-    this.addComponent = (options2 = {}, generateChildElementNodes = false) => {
-      class CustomElement extends c {
+    this.addComponent = (options2, generateChildElementNodes = true) => {
+      class CustomElement extends DOMElement {
         constructor() {
           super(...arguments);
           this.props = options2.props;
@@ -3036,6 +3169,8 @@ var DOMService = class extends Service {
       if (!options2.tagName)
         options2.tagName = `custom-element${Math.random() * 1e15}`;
       CustomElement.addElement(options2.tagName);
+      if (!options2.id && options2.tag)
+        options2.id = options2.tag;
       if (!options2.id)
         options2.id = options2.tagName;
       if (typeof options2.parentNode === "string")
@@ -3066,7 +3201,8 @@ var DOMService = class extends Service {
               }
             }
           return props;
-        }
+        },
+        ...options2
       });
       this.add(node);
       this.components[options2.id] = {
@@ -3085,7 +3221,7 @@ var DOMService = class extends Service {
       if (options2.height)
         options2.template += `height="${options2.height}"`;
       options2.template += ` ></canvas>`;
-      class CustomElement extends c {
+      class CustomElement extends DOMElement {
         constructor() {
           super(...arguments);
           this.props = options2.props;
@@ -3100,6 +3236,8 @@ var DOMService = class extends Service {
       if (!options2.tagName)
         options2.tagName = `custom-element${Math.random() * 1e15}`;
       CustomElement.addElement(options2.tagName);
+      if (!options2.id && options2.tag)
+        options2.id = options2.tag;
       if (!options2.id)
         options2.id = options2.tagName;
       if (typeof options2.parentNode === "string")
@@ -3132,7 +3270,8 @@ var DOMService = class extends Service {
               }
             }
           return props;
-        }
+        },
+        ...options2
       });
       this.add(node);
       let canvas = elm.querySelector("canvas");
@@ -3155,6 +3294,249 @@ var DOMService = class extends Service {
       node.runAnimation(animation);
       return this.components[options2.id];
     };
+    this.load = (routes) => {
+      if (!routes && !this.firstLoad)
+        return;
+      let service;
+      if (!(routes instanceof Service) && routes?.name) {
+        if (routes.module) {
+          let mod = routes;
+          routes = {};
+          Object.getOwnPropertyNames(routes.module).forEach((prop) => {
+            routes[mod.name + "/" + prop] = routes.module[prop];
+          });
+        } else {
+          service = new routes();
+          service.load();
+          routes = service.routes;
+        }
+      } else if (routes instanceof Service) {
+        service = routes;
+        routes = routes.routes;
+      } else if (typeof routes === "object") {
+        let name2 = routes.constructor.name;
+        if (name2 === "Object") {
+          name2 = Object.prototype.toString.call(routes);
+          if (name2)
+            name2 = name2.split(" ")[1];
+          if (name2)
+            name2 = name2.split("]")[0];
+        }
+        if (name2 && name2 !== "Object") {
+          let module = routes;
+          routes = {};
+          Object.getOwnPropertyNames(module).forEach((route) => {
+            routes[name2 + "/" + route] = module[route];
+          });
+        }
+      }
+      if (service instanceof Service) {
+        routes = Object.assign({}, routes);
+        for (const prop in routes) {
+          let route = routes[prop];
+          delete routes[prop];
+          routes[service.name + "/" + prop] = route;
+        }
+      }
+      if (this.firstLoad) {
+        let rts = Object.assign({}, this.defaultRoutes);
+        if (routes) {
+          Object.assign(rts, this.routes);
+          routes = Object.assign(rts, routes);
+        } else
+          routes = Object.assign(rts, this.routes);
+        this.firstLoad = false;
+      }
+      for (const route in routes) {
+        if (typeof routes[route] === "object") {
+          let r = routes[route];
+          for (const prop in r) {
+            r[prop.toLowerCase()] = r[prop];
+          }
+          if (r.template) {
+            this.addComponent(routes[route]);
+          }
+          if (r.context) {
+            this.addCanvasComponent(routes[route]);
+          }
+          if (r.tagName || r.element) {
+            this.addElement(routes[route]);
+          }
+          if (r.get) {
+            if (typeof r.get == "object") {
+            }
+          }
+          if (r.post) {
+          }
+          if (r.delete) {
+          }
+          if (r.put) {
+          }
+          if (r.head) {
+          }
+          if (r.patch) {
+          }
+          if (r.options) {
+          }
+          if (r.connect) {
+          }
+          if (r.trace) {
+          }
+          if (r.post && !r.operator) {
+            routes[route].operator = r.post;
+          } else if (!r.operator && typeof r.get == "function") {
+            routes[route].operator = r.get;
+          }
+          if (this.routes[route]) {
+            if (typeof this.routes[route] === "object")
+              Object.assign(this.routes[route], routes[route]);
+            else
+              this.routes[route] = routes[route];
+          } else
+            this.routes[route] = routes[route];
+        } else if (this.routes[route]) {
+          if (typeof this.routes[route] === "object")
+            Object.assign(this.routes[route], routes[route]);
+          else
+            this.routes[route] = routes[route];
+        } else
+          this.routes[route] = routes[route];
+      }
+      this.setTree(this.routes);
+      for (const prop in this.routes) {
+        if (this.routes[prop]?.aliases) {
+          let aliases = this.routes[prop].aliases;
+          aliases.forEach((a) => {
+            if (service)
+              routes[service.name + "/" + a] = this.routes[prop];
+            else
+              routes[a] = this.routes[prop];
+          });
+        }
+      }
+      return this.routes;
+    };
+    this.unload = (routes = this.routes) => {
+      if (!routes)
+        return;
+      let service;
+      if (!(routes instanceof Service) && typeof routes === "function") {
+        service = new Service();
+        routes = service.routes;
+      } else if (routes instanceof Service) {
+        routes = routes.routes;
+      }
+      for (const r in routes) {
+        delete this.routes[r];
+        if (this.nodes.get(r))
+          this.remove(r);
+      }
+      return this.routes;
+    };
+    this.handleMethod = (route, method2, args, origin) => {
+      let m = method2.toLowerCase();
+      if (m === "get" && this.routes[route]?.get?.transform instanceof Function) {
+        if (Array.isArray(args))
+          return this.routes[route].get.transform(...args);
+        else
+          return this.routes[route].get.transform(args);
+      }
+      if (this.routes[route]?.[m]) {
+        if (!(this.routes[route][m] instanceof Function)) {
+          if (args)
+            this.routes[route][m] = args;
+          return this.routes[route][m];
+        } else
+          return this.routes[route][m](args);
+      } else
+        return this.handleServiceMessage({ route, args, method: method2, origin });
+    };
+    this.transmit = (...args) => {
+      if (typeof args[0] === "object") {
+        if (args[0].method) {
+          return this.handleMethod(args[0].route, args[0].method, args[0].args);
+        } else if (args[0].route) {
+          return this.handleServiceMessage(args[0]);
+        } else if (args[0].node) {
+          return this.handleGraphNodeCall(args[0].node, args[0].args, args[0].origin);
+        } else if (this.keepState) {
+          if (args[0].route)
+            this.setState({ [args[0].route]: args[0].args });
+          if (args[0].node)
+            this.setState({ [args[0].node]: args[0].args });
+        }
+      } else
+        return args;
+    };
+    this.receive = (...args) => {
+      if (args[0]) {
+        if (typeof args[0] === "string") {
+          let substr = args[0].substring(0, 8);
+          if (substr.includes("{") || substr.includes("[")) {
+            if (substr.includes("\\"))
+              args[0] = args[0].replace(/\\/g, "");
+            if (args[0][0] === '"') {
+              args[0] = args[0].substring(1, args[0].length - 1);
+            }
+            ;
+            args[0] = JSON.parse(args[0]);
+          }
+        }
+      }
+      if (typeof args[0] === "object") {
+        if (args[0].method) {
+          return this.handleMethod(args[0].route, args[0].method, args[0].args);
+        } else if (args[0].route) {
+          return this.handleServiceMessage(args[0]);
+        } else if (args[0].node) {
+          return this.handleGraphNodeCall(args[0].node, args[0].args, args[0].origin);
+        } else if (this.keepState) {
+          if (args[0].route)
+            this.setState({ [args[0].route]: args[0].args });
+          if (args[0].node)
+            this.setState({ [args[0].node]: args[0].args });
+        }
+      } else
+        return args;
+    };
+    this.pipe = (source, destination, endpoint, origin, method2, callback) => {
+      if (source instanceof GraphNode) {
+        if (callback)
+          return source.subscribe((res) => {
+            let mod = callback(res);
+            if (mod !== void 0)
+              this.transmit({ route: destination, args: mod, origin, method: method2 });
+            else
+              this.transmit({ route: destination, args: res, origin, method: method2 }, endpoint);
+          });
+        else
+          return this.subscribe(source, (res) => {
+            this.transmit({ route: destination, args: res, origin, method: method2 }, endpoint);
+          });
+      } else if (typeof source === "string")
+        return this.subscribe(source, (res) => {
+          this.transmit({ route: destination, args: res, origin, method: method2 }, endpoint);
+        });
+    };
+    this.pipeOnce = (source, destination, endpoint, origin, method2, callback) => {
+      if (source instanceof GraphNode) {
+        if (callback)
+          return source.state.subscribeTriggerOnce(source.tag, (res) => {
+            let mod = callback(res);
+            if (mod !== void 0)
+              this.transmit({ route: destination, args: mod, origin, method: method2 });
+            else
+              this.transmit({ route: destination, args: res, origin, method: method2 }, endpoint);
+          });
+        else
+          return this.state.subscribeTriggerOnce(source.tag, (res) => {
+            this.transmit({ route: destination, args: res, origin, method: method2 }, endpoint);
+          });
+      } else if (typeof source === "string")
+        return this.state.subscribeTriggerOnce(source, (res) => {
+          this.transmit({ route: destination, args: res, origin, method: method2 }, endpoint);
+        });
+    };
     this.terminate = (element) => {
       if (typeof element === "object") {
         if (element.animating)
@@ -3176,807 +3558,155 @@ var DOMService = class extends Service {
         delete this.elements[element];
         element = temp;
       }
-      if (this.nodes.get(element.id)) {
-        this.removeTree(element.id);
+      if (element) {
+        if (this.nodes.get(element.id)) {
+          this.removeTree(element.id);
+        }
+        if (element instanceof DOMElement)
+          element.delete();
+        else if (element?.parentNode) {
+          element.parentNode.removeChild(element);
+        }
+        return true;
       }
-      if (element instanceof c)
-        element.delete();
-      else if (element?.parentNode) {
-        element.parentNode.removeChild(element);
+      return false;
+    };
+    this.recursivelyAssign = (target, obj) => {
+      for (const key in obj) {
+        if (typeof obj[key] === "object") {
+          if (typeof target[key] === "object")
+            this.recursivelyAssign(target[key], obj[key]);
+          else
+            target[key] = this.recursivelyAssign({}, obj[key]);
+        } else
+          target[key] = obj[key];
       }
-      return true;
+      return target;
     };
-    this.routes = {
-      addElement: this.addElement,
-      addComponent: this.addComponent,
-      addCanvasComponent: this.addCanvasComponent,
-      terminate: this.terminate
-    };
-  }
-};
-
-// services/dom/components/graph.node.js
-var component = require_graph_node();
-if (typeof component !== "string")
-  component = component.default;
-var NodeElement = class extends c {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "props", {
-      operator: (self2, origin, ...args) => {
-        console.log(this.tag, " input: ", args);
+    this.defaultRoutes = {
+      "/": {
+        get: () => {
+          return this.print();
+        },
+        aliases: [""]
+      },
+      ping: () => {
+        console.log("ping");
+        return "pong";
+      },
+      echo: (...args) => {
+        this.transmit(...args);
         return args;
       },
-      forward: true,
-      backward: false,
-      children: void 0,
-      parent: void 0,
-      delay: false,
-      repeat: false,
-      recursive: false,
-      frame: false,
-      animate: false,
-      loop: void 0,
-      tag: void 0,
-      input: void 0,
-      graph: void 0
-    });
-    __publicField(this, "input_delay", 1);
-    __publicField(this, "template", component);
-    __publicField(this, "render", (props = this.props) => {
-      if (typeof this.template === "function")
-        this.templateString = this.template(props);
-      else
-        this.templateString = this.template;
-      const t = document.createElement("template");
-      t.innerHTML = this.templateString;
-      const fragment = t.content;
-      if (this.FRAGMENT) {
-        if (this.useShadow) {
-          this.shadowRoot.removeChild(this.FRAGMENT);
+      assign: (source) => {
+        if (typeof source === "object") {
+          Object.assign(this, source);
+          return true;
+        }
+        return false;
+      },
+      recursivelyAssign: (source) => {
+        if (typeof source === "object") {
+          this.recursivelyAssign(this, source);
+          return true;
+        }
+        return false;
+      },
+      log: {
+        post: (...args) => {
+          console.log("Log: ", ...args);
+        },
+        aliases: ["info"]
+      },
+      error: (message) => {
+        let er = new Error(message);
+        console.error(message);
+        return er;
+      },
+      state: (key) => {
+        if (key) {
+          return this.state.data[key];
         } else
-          this.removeChild(this.FRAGMENT);
-      }
-      if (this.useShadow) {
-        if (!this.attachedShadow)
-          this.attachShadow({ mode: "open" });
-        this.shadowRoot.prepend(fragment);
-        this.FRAGMENT = this.shadowRoot.childNodes[0];
-      } else
-        this.prepend(fragment);
-      this.FRAGMENT = this.childNodes[0];
-      this.setupNode(props);
-      if (this.props.input) {
-        setTimeout(async () => {
-          if (Array.isArray(this.props.input))
-            this.props._run(this.props, this.props.graph, ...this.props.input);
-          else
-            this.props._run(this.props, this.props.graph, this.props.input);
-        }, this.input_delay);
-      }
-      if (this.oncreate)
-        this.oncreate(props, this);
-    });
-    __publicField(this, "oncreate");
-    __publicField(this, "ondelete");
-    __publicField(this, "onresize");
-    __publicField(this, "onchanged");
-    __publicField(this, "renderonchanged", false);
-  }
-  setupNode(props) {
-    let parent = this.parentNode;
-    if (parent.props?.operator) {
-      if (parent.props?.node)
-        props.parent = parent.props;
-    }
-    if (!props.graph) {
-      while (!parent.props?.nodes) {
-        if (parent.constructor.name === "HTMLBodyElement" || parent.constructor.name === "HTMLHeadElement" || parent.constructor.name === "HTMLHtmlElement" || parent.constructor.name === "HTMLDocument") {
-          break;
-        }
-        parent = parent.parentNode;
-      }
-      if (parent.props?.nodes) {
-        props.graph = parent.props.graph;
-        props.input_delay = parent.props.input_delay;
-      }
-    }
-    if (this.id && !props.tag)
-      props.tag = this.id;
-    if (props.graph && !props && props.tag)
-      props = props.graph.nodes.get(props.tag);
-    else if (props.graph && typeof props === "string")
-      props = props.graph.nodes.get(props);
-    if (props instanceof GraphNode)
-      props = props;
-    if (!props)
-      props = new GraphNode(props, props.parent, props.graph);
-    props.tag = props.tag;
-    if (!this.id)
-      this.id = props.tag;
-    if (props.parent) {
-      props.parent.addChildren(props);
-    }
-  }
-};
-NodeElement.addElement("graph-node");
-
-// services/dom/components/acyclic.graph.js
-var component2 = require_acyclic_graph();
-if (typeof component2 !== "string")
-  component2 = component2.default;
-var GraphElement = class extends c {
-  constructor() {
-    super();
-    __publicField(this, "tree", {});
-    __publicField(this, "props", {
-      graph: new Graph(this.tree),
-      nodes: []
-    });
-    __publicField(this, "input_delay", 1);
-    __publicField(this, "template", component2);
-    __publicField(this, "oncreate");
-    __publicField(this, "ondelete");
-    __publicField(this, "onresize");
-    __publicField(this, "onchanged");
-    __publicField(this, "renderonchanged", false);
-    setTimeout(() => {
-      let children = Array.from(this.children);
-      let top_children = [];
-      if (children?.length > 0) {
-        children.forEach((n) => {
-          if (n.props)
-            this.props.nodes.push(n.props.node);
-          if (n.props && n.parentNode.tagName === this.tagName)
-            top_children.push(n);
-        });
-      }
-      this.children_ready(children, top_children);
-    }, this.input_delay);
-  }
-  children_ready(top_children = []) {
-    this.querySelector("#rungraph").onclick = () => {
-      top_children.forEach((c2) => {
-        c2.props._run(c2.props, c2.props.graph, c2.props.input);
-      });
+          return this.state.data;
+      },
+      printState: (key) => {
+        if (key) {
+          return stringifyWithCircularRefs(this.state.data[key]);
+        } else
+          return stringifyWithCircularRefs(this.state.data);
+      },
+      transmit: this.transmit,
+      receive: this.receive,
+      load: this.load,
+      unload: this.unload,
+      pipe: this.pipe,
+      terminate: this.terminate,
+      run: this.run,
+      _run: this._run,
+      subscribe: this.subscribe,
+      unsubscribe: this.unsubscribe,
+      stopNode: this.stopNode,
+      get: this.get,
+      add: this.add,
+      remove: this.remove,
+      setTree: this.setTree,
+      setState: this.setState,
+      print: this.print,
+      reconstruct: this.reconstruct,
+      handleMethod: this.handleMethod,
+      handleServiceMessage: this.handleServiceMessage,
+      handleGraphNodeCall: this.handleGraphNodeCall,
+      addElement: this.addElement,
+      addComponent: this.addComponent,
+      addCanvasComponent: this.addCanvasComponent
     };
+    if (name2)
+      this.name = name2;
+    if (routes)
+      this.load(routes);
   }
-};
-GraphElement.addElement("graph-element");
-
-// services/dom/components/template.node.js
-var component3 = require_template_node();
-if (typeof component3 !== "string")
-  component3 = component3.default;
-var TemplateNode = class extends NodeElement {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "props", {
-      operator: (node, origin, ...args) => {
-        console.log(input);
-        return input;
-      },
-      forward: true,
-      backward: false,
-      children: void 0,
-      parent: void 0,
-      delay: false,
-      repeat: false,
-      recursive: false,
-      frame: false,
-      animate: false,
-      loop: void 0,
-      tag: void 0,
-      input: void 0,
-      graph: void 0,
-      node: void 0
-    });
-    __publicField(this, "template", component3);
-    __publicField(this, "styles", `
-        #template {
-            background-color:black;
-            color:white;
-            font-size:32px;
-        }
-    `);
-    __publicField(this, "oncreate");
-    __publicField(this, "ondelete");
-    __publicField(this, "onresize");
-    __publicField(this, "onchanged");
-    __publicField(this, "renderonchanged", false);
-  }
-};
-TemplateNode.addElement("template-node");
-
-// services/dom/components/examples/button.node.js
-var component4 = require_button_node();
-if (typeof component4 !== "string")
-  component4 = component4.default;
-var ButtonNode = class extends NodeElement {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "props", {
-      operator: (node, origin, input2) => {
-        if (input2)
-          this.props.input = input2;
-        return this.props.input;
-      },
-      forward: true,
-      backward: false,
-      children: void 0,
-      delay: false,
-      repeat: false,
-      recursive: false,
-      frame: false,
-      animate: false,
-      loop: void 0,
-      tag: void 0,
-      input: void 0,
-      graph: void 0,
-      node: void 0
-    });
-    __publicField(this, "template", component4);
-    __publicField(this, "oncreate", (props) => {
-      console.log(this.template);
-      let button = this.querySelector("button");
-      if (button)
-        button.onclick = (ev2) => {
-          props.run(props.input);
-        };
-    });
-  }
-};
-ButtonNode.addElement("button-node");
-
-// services/dom/components/examples/input.node.js
-var component5 = require_input_node();
-if (typeof component5 !== "string")
-  component5 = component5.default;
-var InputNode = class extends NodeElement {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "props", {
-      operator: (node, origin, input2) => {
-        this.props.input = input2;
-        return input2;
-      },
-      forward: true,
-      backward: false,
-      children: void 0,
-      delay: false,
-      repeat: false,
-      recursive: false,
-      frame: false,
-      animate: false,
-      loop: void 0,
-      tag: void 0,
-      input: void 0,
-      graph: void 0,
-      node: void 0
-    });
-    __publicField(this, "template", component5);
-    __publicField(this, "oncreate", (props) => {
-      let input2 = this.querySelector("input");
-      input2.type = this.type;
-      input2.oninput = (ev2) => {
-        if (props)
-          props.callChildren(null, ev2.target.value);
-      };
-    });
-  }
-};
-InputNode.addElement("input-node");
-
-// services/dom/components/examples/canvas.node.js
-var component6 = require_canvas_node();
-if (typeof component6 !== "string")
-  component6 = component6.default;
-var CanvasNode = class extends NodeElement {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "props", {
-      animation: (node, origin, input2) => {
-        this.draw(node, origin, input2);
-        for (let i = 0; i < this.drawFuncs.length; i++) {
-          let f2 = this.drawFuncs[i];
-          if (typeof f2 === "function") {
-            f2(node, origin, input2);
-          }
-        }
-      },
-      operator: (node, origin, input2) => {
-        if (typeof input2 === "object") {
-        } else if (typeof input2 === "number") {
-        } else if (typeof input2 === "string") {
-        } else {
-        }
-      },
-      forward: true,
-      backward: false,
-      children: void 0,
-      parent: void 0,
-      delay: false,
-      repeat: false,
-      recursive: false,
-      animate: true,
-      loop: void 0,
-      tag: void 0,
-      input: void 0,
-      graph: void 0,
-      node: void 0
-    });
-    __publicField(this, "template", component6);
-    __publicField(this, "drawFuncs", []);
-    __publicField(this, "oncreate", (props) => {
-      this.canvas = this.querySelector("canvas");
-      if (props.width) {
-        this.canvas.width = props.width;
-        this.canvas.style.height = props.height;
+  handleServiceMessage(message) {
+    let call;
+    if (typeof message === "object") {
+      if (message.route)
+        call = message.route;
+      else if (message.node)
+        call = message.node;
+    }
+    if (call) {
+      if (message.origin) {
+        if (Array.isArray(message.args))
+          return this._run(call, message.origin, ...message.args);
+        else
+          return this._run(call, message.origin, message.args);
+      } else {
+        if (Array.isArray(message.args))
+          return this.run(call, ...message.args);
+        else
+          return this.run(call, message.args);
       }
-      if (props.height) {
-        this.canvas.height = props.height;
-        this.canvas.style.height = props.height;
-      }
-      if (props.style) {
-        this.canvas.style = props.style;
-        setTimeout(() => {
-          this.canvas.height = this.canvas.clientHeight;
-          this.canvas.width = this.canvas.clientWidth;
-        }, 10);
-      }
-      props.canvas = this.canvas;
-      if (props.context)
-        props.context = this.canvas.getContext(props.context);
+    } else
+      return message;
+  }
+  handleGraphNodeCall(route, args, origin) {
+    if (!route)
+      return args;
+    if (args?.args) {
+      this.handleServiceMessage(args);
+    } else if (origin) {
+      if (Array.isArray(args))
+        return this._run(route, origin, ...args);
       else
-        props.context = this.canvas.getContext("2d");
-      this.context = props.context;
-      this.ctx = this.context;
-      props.ctx = this.context;
-      setTimeout(() => {
-        if (props.animate)
-          props.runAnimation();
-      }, 10);
-    });
-    __publicField(this, "onresize", (props) => {
-      if (this.canvas) {
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
-        this.canvas.style.width = this.canvas.clientWidth;
-        this.canvas.style.height = this.canvas.clientHeight;
-      }
-    });
+        return this._run(route, origin, args);
+    } else if (Array.isArray(args))
+      return this.run(route, ...args);
+    else
+      return this.run(route, args);
   }
-  draw(node, origin, ...input2) {
-    let canvas = this.props.canvas;
-    let ctx = this.props.ctx;
-  }
-  addDraw(f2) {
-    if (typeof f2 === "function")
-      this.drawFuncs.push(f2);
+  isTypedArray(x2) {
+    return ArrayBuffer.isView(x2) && Object.prototype.toString.call(x2) !== "[object DataView]";
   }
 };
-CanvasNode.addElement("canvas-node");
-
-// services/dom/components/examples/circlecanvas.node.js
-var component7 = require_circlecanvas_node();
-if (typeof component7 !== "string")
-  component7 = component7.default;
-var CircleCanvasNode = class extends NodeElement {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "props", {
-      radius: 20,
-      triggered: false,
-      animation: (node, origin, input2) => {
-        if (!this.props.triggered) {
-          this.props.radius += Math.random() - 0.5;
-        }
-        this.draw(node, origin, input2);
-        for (let i = 0; i < this.drawFuncs.length; i++) {
-          let f2 = this.drawFuncs[i];
-          if (typeof f2 === "function") {
-            f2(node, origin, input2);
-          }
-        }
-      },
-      operator: (node, origin, input2) => {
-        if (typeof input2 === "object") {
-          if (input2.radius)
-            this.props.radius += input2.radius;
-          this.props.triggered = true;
-        } else if (typeof input2 === "number") {
-          this.props.radius += input2;
-          this.props.triggered = true;
-        } else if (typeof input2 === "string") {
-          this.props.radius += parseFloat(input2);
-          this.props.triggered = true;
-        } else {
-          this.props.radius += Math.random() - 0.5;
-          this.props.triggered = true;
-        }
-      },
-      forward: true,
-      backward: false,
-      children: void 0,
-      parent: void 0,
-      delay: false,
-      repeat: false,
-      recursive: false,
-      animate: true,
-      loop: void 0,
-      tag: void 0,
-      input: void 0,
-      graph: void 0,
-      node: void 0
-    });
-    __publicField(this, "template", component7);
-    __publicField(this, "drawFuncs", []);
-    __publicField(this, "oncreate", (props) => {
-      this.canvas = this.querySelector("canvas");
-      if (props.width) {
-        this.canvas.width = props.width;
-        this.canvas.style.height = props.height;
-      }
-      if (props.height) {
-        this.canvas.height = props.height;
-        this.canvas.style.height = props.height;
-      }
-      if (props.style) {
-        this.canvas.style = props.style;
-        setTimeout(() => {
-          this.canvas.height = this.canvas.clientHeight;
-          this.canvas.width = this.canvas.clientWidth;
-        }, 10);
-      }
-      props.canvas = this.canvas;
-      if (props.context)
-        props.context = this.canvas.getContext(props.context);
-      else
-        props.context = this.canvas.getContext("2d");
-      this.context = props.context;
-      this.ctx = this.context;
-      props.ctx = this.context;
-      setTimeout(() => {
-        if (props.animate)
-          props.runAnimation();
-      }, 10);
-    });
-    __publicField(this, "onresize", (props) => {
-      if (this.canvas) {
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
-        this.canvas.style.width = this.canvas.clientWidth;
-        this.canvas.style.height = this.canvas.clientHeight;
-      }
-    });
-  }
-  draw(node, origin, input2) {
-    let canvas = this.props.canvas;
-    let ctx = this.props.ctx;
-    if (this.props.radius <= 1)
-      this.props.radius = 1;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    this.drawCircle(canvas.width * 0.5, canvas.height * 0.5, this.props.radius, "green", 5, "#003300");
-  }
-  addDraw(f2) {
-    if (typeof f2 === "function")
-      this.drawFuncs.push(f2);
-  }
-  drawCircle(centerX, centerY, radius, fill = "green", strokewidth = 5, strokestyle = "#003300") {
-    this.props.ctx.beginPath();
-    this.props.ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-    this.props.ctx.fillStyle = fill;
-    this.props.ctx.fill();
-    this.props.ctx.lineWidth = strokewidth;
-    this.props.ctx.strokeStyle = strokestyle;
-    this.props.ctx.stroke();
-  }
-  drawLine(from = { x: 0, y: 0 }, to = { x: 1, y: 1 }, strokewidth = 5, strokestyle = "#003300") {
-    this.props.ctx.beginPath();
-    this.props.ctx.lineWidth = strokewidth;
-    this.props.ctx.strokeStyle = strokestyle;
-    this.props.ctx.moveTo(from.x, from.y);
-    this.props.ctx.lineTo(to.x, to.y);
-    this.props.ctx.stroke();
-  }
-};
-CircleCanvasNode.addElement("circlecanvas-node");
-
-// services/dom/components/examples/place.node.js
-var component8 = require_place_node();
-if (typeof component8 !== "string")
-  component8 = component8.default;
-var PlaceNode = class extends NodeElement {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "props", {
-      colorPicked: "red",
-      xSize: 128,
-      ySize: 128,
-      xPosition: 1,
-      yPosition: 1,
-      xPixelSize: 5,
-      yPixelSize: 5,
-      zoom: 1,
-      data: {},
-      canvasClicked: this.canvasClicked,
-      updated: {},
-      animation: (node, origin, input2) => {
-        this.draw(node, origin, input2);
-        for (let i = 0; i < this.drawFuncs.length; i++) {
-          let f2 = this.drawFuncs[i];
-          if (typeof f2 === "function") {
-            f2(node, origin, input2);
-          }
-        }
-      },
-      operator: (node, origin, input2) => {
-        Object.assign(this.props.data, input2);
-        if (typeof input2 === "object") {
-        } else if (typeof input2 === "number") {
-        } else if (typeof input2 === "string") {
-        } else {
-        }
-      },
-      forward: true,
-      backward: false,
-      children: void 0,
-      parent: void 0,
-      delay: false,
-      repeat: false,
-      recursive: false,
-      animate: true,
-      loop: void 0,
-      tag: void 0,
-      input: void 0,
-      graph: void 0,
-      node: void 0
-    });
-    __publicField(this, "template", component8);
-    __publicField(this, "drawFuncs", []);
-    __publicField(this, "canvasClicked", (x2, y) => {
-      let canvasx = x2;
-      let canvasy = y;
-      let centerX = this.canvas.width * 0.5;
-      let centerY = this.canvas.height * 0.5;
-      let xPWidth = this.props.xPixelSize * this.props.zoom;
-      let yPHeight = this.props.yPixelSize * this.props.zoom;
-      let currPixelRelX = this.props.xPosition % this.props.xPixelSize;
-      let currPixelRelY = this.props.yPosition % this.props.yPixelSize;
-      let clickCenterOffsetX = canvasx - this.canvas.width * 0.5;
-      let clickCenterOffsetY = canvasy - this.canvas.height * 0.5;
-      let nPixelsLeft = currPixelRelX;
-      while (nPixelsLeft < centerX + clickCenterOffsetX) {
-        nPixelsLeft += xPWidth;
-      }
-      nPixelsLeft = (nPixelsLeft - 0.5 * (this.canvas.width - xPWidth * this.props.xSize)) / xPWidth;
-      let nPixelsUp = currPixelRelY;
-      while (nPixelsUp < centerY + clickCenterOffsetY) {
-        nPixelsUp += yPHeight;
-      }
-      nPixelsUp = (nPixelsUp - 0.5 * (this.canvas.height - yPHeight * this.props.ySize)) / yPHeight;
-      let idx = nPixelsLeft + nPixelsUp * this.props.xSize;
-      if (this.props.data[idx]) {
-        this.props.updated[idx] = this.props.colorPicked;
-      }
-    });
-    __publicField(this, "oncreate", (props) => {
-      this.canvas = this.querySelector("canvas");
-      if (props.width) {
-        this.canvas.width = props.width;
-        this.canvas.style.height = props.height;
-      }
-      if (props.height) {
-        this.canvas.height = props.height;
-        this.canvas.style.height = props.height;
-      }
-      if (props.style) {
-        this.canvas.style = props.style;
-        setTimeout(() => {
-          this.canvas.height = this.canvas.clientHeight;
-          this.canvas.width = this.canvas.clientWidth;
-          this.generateDataStructure();
-          this.props.xPosition = this.props.xPixelSize * this.props.xSize * 0.5;
-          this.props.yPosition = this.props.yPixelSize * this.props.ySize * 0.5;
-          this.drawSquare();
-        }, 10);
-      }
-      props.canvas = this.canvas;
-      if (props.context)
-        props.context = this.canvas.getContext(props.context);
-      else
-        props.context = this.canvas.getContext("2d");
-      this.context = props.context;
-      this.ctx = this.context;
-      props.ctx = this.context;
-      this.canvas.onmousedown = (ev2) => {
-        this.canvasClicked(ev2.pageX - this.canvas.offsetLeft, ev2.pageY - this.canvas.offsetTop);
-        this.canvas.onmousemove = (ev3) => {
-          this.canvasClicked(ev3.pageX - this.canvas.offsetLeft, ev3.pageY - this.canvas.offsetTop);
-        };
-        this.canvas.onmouseup = (ev3) => {
-          this.canvas.onmousemove = void 0;
-        };
-      };
-      this.querySelector("#zoomin").onclick = (ev2) => {
-        this.props.zoom += 0.1;
-        this.drawSquare();
-      };
-      this.querySelector("#zoomout").onclick = (ev2) => {
-        this.props.zoom -= 0.1;
-        this.drawSquare();
-      };
-      this.querySelector("#panleft").onclick = (ev2) => {
-        this.props.xPosition += this.props.xPixelSize;
-        this.drawSquare();
-      };
-      this.querySelector("#panright").onclick = (ev2) => {
-        this.props.xPosition -= this.props.xPixelSize;
-        this.drawSquare();
-      };
-      this.querySelector("#panup").onclick = (ev2) => {
-        this.props.yPosition -= this.props.yPixelSize;
-        this.drawSquare();
-      };
-      this.querySelector("#pandown").onclick = (ev2) => {
-        this.props.yPosition += this.props.yPixelSize;
-        this.drawSquare();
-      };
-      this.querySelector("#colorwheel").onchange = (ev2) => {
-        console.log(ev2.target.value);
-        this.props.colorPicked = ev2.target.value;
-      };
-      setTimeout(() => {
-        if (props.animate)
-          props.runAnimation();
-      }, 10);
-    });
-    __publicField(this, "onresize", (props) => {
-      if (this.canvas) {
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
-        this.canvas.style.width = this.canvas.clientWidth;
-        this.canvas.style.height = this.canvas.clientHeight;
-        this.drawSquare();
-      }
-    });
-  }
-  draw(node, origin, input2) {
-    let canvas = this.props.canvas;
-    let ctx = this.props.ctx;
-    let centerX = canvas.width * 0.5;
-    let centerY = canvas.height * 0.5;
-    let xPWidth = this.props.xPixelSize * this.props.zoom;
-    let yPHeight = this.props.yPixelSize * this.props.zoom;
-    let nPixelsX = Math.ceil(canvas.width / xPWidth);
-    if (nPixelsX > this.props.xSize)
-      nPixelsX = this.props.xSize;
-    let nPixelsY = Math.ceil(canvas.height / yPHeight);
-    if (nPixelsY > this.props.ySize)
-      nPixelsY = this.props.ySize;
-    let currPixelRelX = this.props.xPosition % this.props.xPixelSize;
-    let currPixelRelY = this.props.yPosition % this.props.yPixelSize;
-    let centerPixelX = Math.floor(this.props.xPosition / this.props.xPixelSize);
-    let centerPixelY = Math.floor(this.props.yPosition / this.props.yPixelSize);
-    let nPixelsLeft = currPixelRelX;
-    while (nPixelsLeft < centerX && nPixelsLeft < xPWidth * this.props.xSize * 0.5) {
-      nPixelsLeft += xPWidth;
-    }
-    nPixelsLeft = nPixelsLeft / xPWidth;
-    let nPixelsUp = currPixelRelY;
-    while (nPixelsUp < centerY && nPixelsUp < yPHeight * this.props.ySize * 0.5) {
-      nPixelsUp += yPHeight;
-    }
-    nPixelsUp = nPixelsUp / yPHeight;
-    let x0 = centerPixelX - Math.floor(nPixelsLeft);
-    let y0 = centerPixelY - Math.floor(nPixelsUp);
-    let xn = x0 + nPixelsX;
-    let yn = y0 + nPixelsY;
-    let startingX = centerX - nPixelsLeft * xPWidth;
-    let startingY = centerY - nPixelsUp * yPHeight;
-    for (let i = x0; i < xn; i++) {
-      for (let j = y0; j < yn; j++) {
-        let dataidx = i + j * this.props.xSize;
-        if (!this.props.data[dataidx])
-          continue;
-        if (!this.props.updated[dataidx])
-          continue;
-        this.props.data[dataidx] = this.props.updated[dataidx];
-        delete this.props.updated[dataidx];
-        ctx.fillStyle = this.props.data[dataidx];
-        let rx0 = startingX + (i - x0) * xPWidth;
-        let ry0 = startingY + (j - y0) * yPHeight;
-        if (rx0 < 0)
-          rx0 = 0;
-        else if (rx0 > canvas.width)
-          continue;
-        if (ry0 < 0)
-          ry0 = 0;
-        else if (ry0 > canvas.height)
-          continue;
-        ctx.fillRect(rx0, ry0, xPWidth, yPHeight);
-      }
-    }
-  }
-  addDraw(f2) {
-    if (typeof f2 === "function")
-      this.drawFuncs.push(f2);
-  }
-  drawSquare() {
-    console.time("square");
-    let canvas = this.props.canvas;
-    let ctx = this.props.ctx;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let centerX = canvas.width * 0.5;
-    let centerY = canvas.height * 0.5;
-    let xPWidth = this.props.xPixelSize * this.props.zoom;
-    let yPHeight = this.props.yPixelSize * this.props.zoom;
-    let nPixelsX = Math.ceil(canvas.width / xPWidth);
-    if (nPixelsX > this.props.xSize)
-      nPixelsX = this.props.xSize;
-    let nPixelsY = Math.ceil(canvas.height / yPHeight);
-    if (nPixelsY > this.props.ySize)
-      nPixelsY = this.props.ySize;
-    let currPixelRelX = this.props.xPosition % this.props.xPixelSize;
-    let currPixelRelY = this.props.yPosition % this.props.yPixelSize;
-    let centerPixelX = Math.floor(this.props.xPosition / this.props.xPixelSize);
-    let centerPixelY = Math.floor(this.props.yPosition / this.props.yPixelSize);
-    let nPixelsLeft = currPixelRelX;
-    while (nPixelsLeft < centerX && nPixelsLeft < xPWidth * this.props.xSize * 0.5) {
-      nPixelsLeft += xPWidth;
-    }
-    nPixelsLeft = nPixelsLeft / xPWidth;
-    let nPixelsUp = currPixelRelY;
-    while (nPixelsUp < centerY && nPixelsUp < yPHeight * this.props.ySize * 0.5) {
-      nPixelsUp += yPHeight;
-    }
-    nPixelsUp = nPixelsUp / yPHeight;
-    let x0 = centerPixelX - Math.floor(nPixelsLeft);
-    let y0 = centerPixelY - Math.floor(nPixelsUp);
-    let xn = x0 + nPixelsX;
-    let yn = y0 + nPixelsY;
-    let startingX = centerX - nPixelsLeft * xPWidth;
-    let startingY = centerY - nPixelsUp * yPHeight;
-    for (let i = x0; i < xn; i++) {
-      for (let j = y0; j < yn; j++) {
-        let dataidx = i + j * this.props.xSize;
-        if (!this.props.data[dataidx])
-          continue;
-        ctx.fillStyle = this.props.data[dataidx];
-        let rx0 = startingX + (i - x0) * xPWidth;
-        let ry0 = startingY + (j - y0) * yPHeight;
-        if (rx0 < 0)
-          rx0 = 0;
-        else if (rx0 > canvas.width)
-          continue;
-        if (ry0 < 0)
-          ry0 = 0;
-        else if (ry0 > canvas.height)
-          continue;
-        ctx.fillRect(rx0, ry0, xPWidth, yPHeight);
-      }
-    }
-    console.timeEnd("square");
-  }
-  generateDataStructure(defaultColor = (xCoord, yCoord) => {
-    return `rgb(${255 * xCoord / this.props.xSize},0,${255 * yCoord / this.props.ySize})`;
-  }) {
-    for (let i = 0; i < this.props.xSize; i++) {
-      for (let j = 0; j < this.props.ySize; j++) {
-        let index = i + j * this.props.xSize;
-        if (!this.props.data[index]) {
-          if (typeof defaultColor === "function")
-            this.props.data[index] = defaultColor(i, j);
-          else if (defaultColor)
-            this.data[index] = defaultColor;
-          else
-            this.props.data[index] = `0xFFFFFF`;
-        }
-      }
-    }
-  }
-};
-PlaceNode.addElement("place-node");
 
 // services/e2ee/E2EE.service.ts
 var import_sjcl = __toESM(require_sjcl());
@@ -4140,10 +3870,10 @@ var Re = ((M) => typeof __require != "undefined" ? __require : typeof Proxy != "
   throw new Error('Dynamic require of "' + M + '" is not supported');
 });
 var qt = (M, I) => () => (I || M((I = { exports: {} }).exports, I), I.exports);
-var ei = (M, I, $, o2) => {
+var ei = (M, I, $, o) => {
   if (I && typeof I == "object" || typeof I == "function")
     for (let y of Zt(I))
-      !Qt.call(M, y) && y !== $ && vt(M, y, { get: () => I[y], enumerable: !(o2 = Yt(I, y)) || o2.enumerable });
+      !Qt.call(M, y) && y !== $ && vt(M, y, { get: () => I[y], enumerable: !(o = Yt(I, y)) || o.enumerable });
   return M;
 };
 var ti = (M, I, $) => ($ = M != null ? Xt(Jt(M)) : {}, ei(I || !M || !M.__esModule ? vt($, "default", { value: M, enumerable: true }) : $, M));
@@ -4160,39 +3890,39 @@ var _t = qt((St, Ze) => {
   })(function() {
     var M, I, $;
     return function() {
-      function o2(y, E, p) {
-        function g2(n, s) {
+      function o(y, E, p) {
+        function g(n, s) {
           if (!E[n]) {
             if (!y[n]) {
               var t = typeof Re == "function" && Re;
               if (!s && t)
                 return t(n, true);
-              if (f2)
-                return f2(n, true);
+              if (f)
+                return f(n, true);
               var i = new Error("Cannot find module '" + n + "'");
               throw i.code = "MODULE_NOT_FOUND", i;
             }
             var u = E[n] = { exports: {} };
             y[n][0].call(u.exports, function(x2) {
-              var w2 = y[n][1][x2];
-              return g2(w2 || x2);
-            }, u, u.exports, o2, y, E, p);
+              var w = y[n][1][x2];
+              return g(w || x2);
+            }, u, u.exports, o, y, E, p);
           }
           return E[n].exports;
         }
-        for (var f2 = typeof Re == "function" && Re, l = 0; l < p.length; l++)
-          g2(p[l]);
-        return g2;
+        for (var f = typeof Re == "function" && Re, l = 0; l < p.length; l++)
+          g(p[l]);
+        return g;
       }
-      return o2;
-    }()({ 1: [function(o2, y, E) {
-      (function(p, g2) {
-        typeof E == "object" && typeof y < "u" ? g2(E) : typeof M == "function" && M.amd ? M(["exports"], g2) : (p = p || self, g2(p.acorn = {}));
+      return o;
+    }()({ 1: [function(o, y, E) {
+      (function(p, g) {
+        typeof E == "object" && typeof y < "u" ? g(E) : typeof M == "function" && M.amd ? M(["exports"], g) : (p = p || self, g(p.acorn = {}));
       })(this, function(p) {
         "use strict";
-        var g2 = { 3: "abstract boolean byte char class double enum export extends final float goto implements import int interface long native package private protected public short static super synchronized throws transient volatile", 5: "class enum extends super const export import", 6: "enum", strict: "implements interface let package private protected public static yield", strictBind: "eval arguments" }, f2 = "break case catch continue debugger default do else finally for function if return switch throw try var while with null true false instanceof typeof void delete new in this", l = { 5: f2, "5module": f2 + " export import", 6: f2 + " const class extends export import super" }, n = /^in(stanceof)?$/, s = "\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05D0-\u05EA\u05EF-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u0860-\u086A\u08A0-\u08B4\u08B6-\u08BD\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u09FC\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1878\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2118-\u211D\u2124\u2126\u2128\u212A-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309B-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FEF\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7BF\uA7C2-\uA7C6\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA8FE\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB67\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC", t = "\u200C\u200D\xB7\u0300-\u036F\u0387\u0483-\u0487\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u0610-\u061A\u064B-\u0669\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED\u06F0-\u06F9\u0711\u0730-\u074A\u07A6-\u07B0\u07C0-\u07C9\u07EB-\u07F3\u07FD\u0816-\u0819\u081B-\u0823\u0825-\u0827\u0829-\u082D\u0859-\u085B\u08D3-\u08E1\u08E3-\u0903\u093A-\u093C\u093E-\u094F\u0951-\u0957\u0962\u0963\u0966-\u096F\u0981-\u0983\u09BC\u09BE-\u09C4\u09C7\u09C8\u09CB-\u09CD\u09D7\u09E2\u09E3\u09E6-\u09EF\u09FE\u0A01-\u0A03\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A66-\u0A71\u0A75\u0A81-\u0A83\u0ABC\u0ABE-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AE2\u0AE3\u0AE6-\u0AEF\u0AFA-\u0AFF\u0B01-\u0B03\u0B3C\u0B3E-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B62\u0B63\u0B66-\u0B6F\u0B82\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD7\u0BE6-\u0BEF\u0C00-\u0C04\u0C3E-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C62\u0C63\u0C66-\u0C6F\u0C81-\u0C83\u0CBC\u0CBE-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CE2\u0CE3\u0CE6-\u0CEF\u0D00-\u0D03\u0D3B\u0D3C\u0D3E-\u0D44\u0D46-\u0D48\u0D4A-\u0D4D\u0D57\u0D62\u0D63\u0D66-\u0D6F\u0D82\u0D83\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0E50-\u0E59\u0EB1\u0EB4-\u0EBC\u0EC8-\u0ECD\u0ED0-\u0ED9\u0F18\u0F19\u0F20-\u0F29\u0F35\u0F37\u0F39\u0F3E\u0F3F\u0F71-\u0F84\u0F86\u0F87\u0F8D-\u0F97\u0F99-\u0FBC\u0FC6\u102B-\u103E\u1040-\u1049\u1056-\u1059\u105E-\u1060\u1062-\u1064\u1067-\u106D\u1071-\u1074\u1082-\u108D\u108F-\u109D\u135D-\u135F\u1369-\u1371\u1712-\u1714\u1732-\u1734\u1752\u1753\u1772\u1773\u17B4-\u17D3\u17DD\u17E0-\u17E9\u180B-\u180D\u1810-\u1819\u18A9\u1920-\u192B\u1930-\u193B\u1946-\u194F\u19D0-\u19DA\u1A17-\u1A1B\u1A55-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AB0-\u1ABD\u1B00-\u1B04\u1B34-\u1B44\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1B82\u1BA1-\u1BAD\u1BB0-\u1BB9\u1BE6-\u1BF3\u1C24-\u1C37\u1C40-\u1C49\u1C50-\u1C59\u1CD0-\u1CD2\u1CD4-\u1CE8\u1CED\u1CF4\u1CF7-\u1CF9\u1DC0-\u1DF9\u1DFB-\u1DFF\u203F\u2040\u2054\u20D0-\u20DC\u20E1\u20E5-\u20F0\u2CEF-\u2CF1\u2D7F\u2DE0-\u2DFF\u302A-\u302F\u3099\u309A\uA620-\uA629\uA66F\uA674-\uA67D\uA69E\uA69F\uA6F0\uA6F1\uA802\uA806\uA80B\uA823-\uA827\uA880\uA881\uA8B4-\uA8C5\uA8D0-\uA8D9\uA8E0-\uA8F1\uA8FF-\uA909\uA926-\uA92D\uA947-\uA953\uA980-\uA983\uA9B3-\uA9C0\uA9D0-\uA9D9\uA9E5\uA9F0-\uA9F9\uAA29-\uAA36\uAA43\uAA4C\uAA4D\uAA50-\uAA59\uAA7B-\uAA7D\uAAB0\uAAB2-\uAAB4\uAAB7\uAAB8\uAABE\uAABF\uAAC1\uAAEB-\uAAEF\uAAF5\uAAF6\uABE3-\uABEA\uABEC\uABED\uABF0-\uABF9\uFB1E\uFE00-\uFE0F\uFE20-\uFE2F\uFE33\uFE34\uFE4D-\uFE4F\uFF10-\uFF19\uFF3F", i = new RegExp("[" + s + "]"), u = new RegExp("[" + s + t + "]");
+        var g = { 3: "abstract boolean byte char class double enum export extends final float goto implements import int interface long native package private protected public short static super synchronized throws transient volatile", 5: "class enum extends super const export import", 6: "enum", strict: "implements interface let package private protected public static yield", strictBind: "eval arguments" }, f = "break case catch continue debugger default do else finally for function if return switch throw try var while with null true false instanceof typeof void delete new in this", l = { 5: f, "5module": f + " export import", 6: f + " const class extends export import super" }, n = /^in(stanceof)?$/, s = "\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05D0-\u05EA\u05EF-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u0860-\u086A\u08A0-\u08B4\u08B6-\u08BD\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u09FC\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1878\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2118-\u211D\u2124\u2126\u2128\u212A-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309B-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FEF\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7BF\uA7C2-\uA7C6\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA8FE\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB67\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC", t = "\u200C\u200D\xB7\u0300-\u036F\u0387\u0483-\u0487\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u0610-\u061A\u064B-\u0669\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED\u06F0-\u06F9\u0711\u0730-\u074A\u07A6-\u07B0\u07C0-\u07C9\u07EB-\u07F3\u07FD\u0816-\u0819\u081B-\u0823\u0825-\u0827\u0829-\u082D\u0859-\u085B\u08D3-\u08E1\u08E3-\u0903\u093A-\u093C\u093E-\u094F\u0951-\u0957\u0962\u0963\u0966-\u096F\u0981-\u0983\u09BC\u09BE-\u09C4\u09C7\u09C8\u09CB-\u09CD\u09D7\u09E2\u09E3\u09E6-\u09EF\u09FE\u0A01-\u0A03\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A66-\u0A71\u0A75\u0A81-\u0A83\u0ABC\u0ABE-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AE2\u0AE3\u0AE6-\u0AEF\u0AFA-\u0AFF\u0B01-\u0B03\u0B3C\u0B3E-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B62\u0B63\u0B66-\u0B6F\u0B82\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD7\u0BE6-\u0BEF\u0C00-\u0C04\u0C3E-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C62\u0C63\u0C66-\u0C6F\u0C81-\u0C83\u0CBC\u0CBE-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CE2\u0CE3\u0CE6-\u0CEF\u0D00-\u0D03\u0D3B\u0D3C\u0D3E-\u0D44\u0D46-\u0D48\u0D4A-\u0D4D\u0D57\u0D62\u0D63\u0D66-\u0D6F\u0D82\u0D83\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0E50-\u0E59\u0EB1\u0EB4-\u0EBC\u0EC8-\u0ECD\u0ED0-\u0ED9\u0F18\u0F19\u0F20-\u0F29\u0F35\u0F37\u0F39\u0F3E\u0F3F\u0F71-\u0F84\u0F86\u0F87\u0F8D-\u0F97\u0F99-\u0FBC\u0FC6\u102B-\u103E\u1040-\u1049\u1056-\u1059\u105E-\u1060\u1062-\u1064\u1067-\u106D\u1071-\u1074\u1082-\u108D\u108F-\u109D\u135D-\u135F\u1369-\u1371\u1712-\u1714\u1732-\u1734\u1752\u1753\u1772\u1773\u17B4-\u17D3\u17DD\u17E0-\u17E9\u180B-\u180D\u1810-\u1819\u18A9\u1920-\u192B\u1930-\u193B\u1946-\u194F\u19D0-\u19DA\u1A17-\u1A1B\u1A55-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AB0-\u1ABD\u1B00-\u1B04\u1B34-\u1B44\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1B82\u1BA1-\u1BAD\u1BB0-\u1BB9\u1BE6-\u1BF3\u1C24-\u1C37\u1C40-\u1C49\u1C50-\u1C59\u1CD0-\u1CD2\u1CD4-\u1CE8\u1CED\u1CF4\u1CF7-\u1CF9\u1DC0-\u1DF9\u1DFB-\u1DFF\u203F\u2040\u2054\u20D0-\u20DC\u20E1\u20E5-\u20F0\u2CEF-\u2CF1\u2D7F\u2DE0-\u2DFF\u302A-\u302F\u3099\u309A\uA620-\uA629\uA66F\uA674-\uA67D\uA69E\uA69F\uA6F0\uA6F1\uA802\uA806\uA80B\uA823-\uA827\uA880\uA881\uA8B4-\uA8C5\uA8D0-\uA8D9\uA8E0-\uA8F1\uA8FF-\uA909\uA926-\uA92D\uA947-\uA953\uA980-\uA983\uA9B3-\uA9C0\uA9D0-\uA9D9\uA9E5\uA9F0-\uA9F9\uAA29-\uAA36\uAA43\uAA4C\uAA4D\uAA50-\uAA59\uAA7B-\uAA7D\uAAB0\uAAB2-\uAAB4\uAAB7\uAAB8\uAABE\uAABF\uAAC1\uAAEB-\uAAEF\uAAF5\uAAF6\uABE3-\uABEA\uABEC\uABED\uABF0-\uABF9\uFB1E\uFE00-\uFE0F\uFE20-\uFE2F\uFE33\uFE34\uFE4D-\uFE4F\uFF10-\uFF19\uFF3F", i = new RegExp("[" + s + "]"), u = new RegExp("[" + s + t + "]");
         s = t = null;
-        var x2 = [0, 11, 2, 25, 2, 18, 2, 1, 2, 14, 3, 13, 35, 122, 70, 52, 268, 28, 4, 48, 48, 31, 14, 29, 6, 37, 11, 29, 3, 35, 5, 7, 2, 4, 43, 157, 19, 35, 5, 35, 5, 39, 9, 51, 157, 310, 10, 21, 11, 7, 153, 5, 3, 0, 2, 43, 2, 1, 4, 0, 3, 22, 11, 22, 10, 30, 66, 18, 2, 1, 11, 21, 11, 25, 71, 55, 7, 1, 65, 0, 16, 3, 2, 2, 2, 28, 43, 28, 4, 28, 36, 7, 2, 27, 28, 53, 11, 21, 11, 18, 14, 17, 111, 72, 56, 50, 14, 50, 14, 35, 477, 28, 11, 0, 9, 21, 155, 22, 13, 52, 76, 44, 33, 24, 27, 35, 30, 0, 12, 34, 4, 0, 13, 47, 15, 3, 22, 0, 2, 0, 36, 17, 2, 24, 85, 6, 2, 0, 2, 3, 2, 14, 2, 9, 8, 46, 39, 7, 3, 1, 3, 21, 2, 6, 2, 1, 2, 4, 4, 0, 19, 0, 13, 4, 159, 52, 19, 3, 21, 0, 33, 47, 21, 1, 2, 0, 185, 46, 42, 3, 37, 47, 21, 0, 60, 42, 14, 0, 72, 26, 230, 43, 117, 63, 32, 0, 161, 7, 3, 38, 17, 0, 2, 0, 29, 0, 11, 39, 8, 0, 22, 0, 12, 45, 20, 0, 35, 56, 264, 8, 2, 36, 18, 0, 50, 29, 113, 6, 2, 1, 2, 37, 22, 0, 26, 5, 2, 1, 2, 31, 15, 0, 328, 18, 270, 921, 103, 110, 18, 195, 2749, 1070, 4050, 582, 8634, 568, 8, 30, 114, 29, 19, 47, 17, 3, 32, 20, 6, 18, 689, 63, 129, 74, 6, 0, 67, 12, 65, 1, 2, 0, 29, 6135, 9, 754, 9486, 286, 50, 2, 18, 3, 9, 395, 2309, 106, 6, 12, 4, 8, 8, 9, 5991, 84, 2, 70, 2, 1, 3, 0, 3, 1, 3, 3, 2, 11, 2, 0, 2, 6, 2, 64, 2, 3, 3, 7, 2, 6, 2, 27, 2, 3, 2, 4, 2, 0, 4, 6, 2, 339, 3, 24, 2, 24, 2, 30, 2, 24, 2, 30, 2, 24, 2, 30, 2, 24, 2, 30, 2, 24, 2, 7, 2357, 44, 11, 6, 17, 0, 370, 43, 1301, 196, 60, 67, 8, 0, 1205, 3, 2, 26, 2, 1, 2, 0, 3, 0, 2, 9, 2, 3, 2, 0, 2, 0, 7, 0, 5, 0, 2, 0, 2, 0, 2, 2, 2, 1, 2, 0, 3, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 2, 0, 3, 3, 2, 6, 2, 3, 2, 3, 2, 0, 2, 9, 2, 16, 6, 2, 2, 4, 2, 16, 4421, 42710, 42, 4148, 12, 221, 3, 5761, 15, 7472, 3104, 541], w2 = [509, 0, 227, 0, 150, 4, 294, 9, 1368, 2, 2, 1, 6, 3, 41, 2, 5, 0, 166, 1, 574, 3, 9, 9, 525, 10, 176, 2, 54, 14, 32, 9, 16, 3, 46, 10, 54, 9, 7, 2, 37, 13, 2, 9, 6, 1, 45, 0, 13, 2, 49, 13, 9, 3, 4, 9, 83, 11, 7, 0, 161, 11, 6, 9, 7, 3, 56, 1, 2, 6, 3, 1, 3, 2, 10, 0, 11, 1, 3, 6, 4, 4, 193, 17, 10, 9, 5, 0, 82, 19, 13, 9, 214, 6, 3, 8, 28, 1, 83, 16, 16, 9, 82, 12, 9, 9, 84, 14, 5, 9, 243, 14, 166, 9, 232, 6, 3, 6, 4, 0, 29, 9, 41, 6, 2, 3, 9, 0, 10, 10, 47, 15, 406, 7, 2, 7, 17, 9, 57, 21, 2, 13, 123, 5, 4, 0, 2, 1, 2, 6, 2, 0, 9, 9, 49, 4, 2, 1, 2, 4, 9, 9, 330, 3, 19306, 9, 135, 4, 60, 6, 26, 9, 1014, 0, 2, 54, 8, 3, 19723, 1, 5319, 4, 4, 5, 9, 7, 3, 6, 31, 3, 149, 2, 1418, 49, 513, 54, 5, 49, 9, 0, 15, 0, 23, 4, 2, 14, 1361, 6, 2, 16, 3, 6, 2, 1, 2, 4, 262, 6, 10, 9, 419, 13, 1495, 6, 110, 6, 6, 9, 792487, 239];
+        var x2 = [0, 11, 2, 25, 2, 18, 2, 1, 2, 14, 3, 13, 35, 122, 70, 52, 268, 28, 4, 48, 48, 31, 14, 29, 6, 37, 11, 29, 3, 35, 5, 7, 2, 4, 43, 157, 19, 35, 5, 35, 5, 39, 9, 51, 157, 310, 10, 21, 11, 7, 153, 5, 3, 0, 2, 43, 2, 1, 4, 0, 3, 22, 11, 22, 10, 30, 66, 18, 2, 1, 11, 21, 11, 25, 71, 55, 7, 1, 65, 0, 16, 3, 2, 2, 2, 28, 43, 28, 4, 28, 36, 7, 2, 27, 28, 53, 11, 21, 11, 18, 14, 17, 111, 72, 56, 50, 14, 50, 14, 35, 477, 28, 11, 0, 9, 21, 155, 22, 13, 52, 76, 44, 33, 24, 27, 35, 30, 0, 12, 34, 4, 0, 13, 47, 15, 3, 22, 0, 2, 0, 36, 17, 2, 24, 85, 6, 2, 0, 2, 3, 2, 14, 2, 9, 8, 46, 39, 7, 3, 1, 3, 21, 2, 6, 2, 1, 2, 4, 4, 0, 19, 0, 13, 4, 159, 52, 19, 3, 21, 0, 33, 47, 21, 1, 2, 0, 185, 46, 42, 3, 37, 47, 21, 0, 60, 42, 14, 0, 72, 26, 230, 43, 117, 63, 32, 0, 161, 7, 3, 38, 17, 0, 2, 0, 29, 0, 11, 39, 8, 0, 22, 0, 12, 45, 20, 0, 35, 56, 264, 8, 2, 36, 18, 0, 50, 29, 113, 6, 2, 1, 2, 37, 22, 0, 26, 5, 2, 1, 2, 31, 15, 0, 328, 18, 270, 921, 103, 110, 18, 195, 2749, 1070, 4050, 582, 8634, 568, 8, 30, 114, 29, 19, 47, 17, 3, 32, 20, 6, 18, 689, 63, 129, 74, 6, 0, 67, 12, 65, 1, 2, 0, 29, 6135, 9, 754, 9486, 286, 50, 2, 18, 3, 9, 395, 2309, 106, 6, 12, 4, 8, 8, 9, 5991, 84, 2, 70, 2, 1, 3, 0, 3, 1, 3, 3, 2, 11, 2, 0, 2, 6, 2, 64, 2, 3, 3, 7, 2, 6, 2, 27, 2, 3, 2, 4, 2, 0, 4, 6, 2, 339, 3, 24, 2, 24, 2, 30, 2, 24, 2, 30, 2, 24, 2, 30, 2, 24, 2, 30, 2, 24, 2, 7, 2357, 44, 11, 6, 17, 0, 370, 43, 1301, 196, 60, 67, 8, 0, 1205, 3, 2, 26, 2, 1, 2, 0, 3, 0, 2, 9, 2, 3, 2, 0, 2, 0, 7, 0, 5, 0, 2, 0, 2, 0, 2, 2, 2, 1, 2, 0, 3, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 2, 0, 3, 3, 2, 6, 2, 3, 2, 3, 2, 0, 2, 9, 2, 16, 6, 2, 2, 4, 2, 16, 4421, 42710, 42, 4148, 12, 221, 3, 5761, 15, 7472, 3104, 541], w = [509, 0, 227, 0, 150, 4, 294, 9, 1368, 2, 2, 1, 6, 3, 41, 2, 5, 0, 166, 1, 574, 3, 9, 9, 525, 10, 176, 2, 54, 14, 32, 9, 16, 3, 46, 10, 54, 9, 7, 2, 37, 13, 2, 9, 6, 1, 45, 0, 13, 2, 49, 13, 9, 3, 4, 9, 83, 11, 7, 0, 161, 11, 6, 9, 7, 3, 56, 1, 2, 6, 3, 1, 3, 2, 10, 0, 11, 1, 3, 6, 4, 4, 193, 17, 10, 9, 5, 0, 82, 19, 13, 9, 214, 6, 3, 8, 28, 1, 83, 16, 16, 9, 82, 12, 9, 9, 84, 14, 5, 9, 243, 14, 166, 9, 232, 6, 3, 6, 4, 0, 29, 9, 41, 6, 2, 3, 9, 0, 10, 10, 47, 15, 406, 7, 2, 7, 17, 9, 57, 21, 2, 13, 123, 5, 4, 0, 2, 1, 2, 6, 2, 0, 9, 9, 49, 4, 2, 1, 2, 4, 9, 9, 330, 3, 19306, 9, 135, 4, 60, 6, 26, 9, 1014, 0, 2, 54, 8, 3, 19723, 1, 5319, 4, 4, 5, 9, 7, 3, 6, 31, 3, 149, 2, 1418, 49, 513, 54, 5, 49, 9, 0, 15, 0, 23, 4, 2, 14, 1361, 6, 2, 16, 3, 6, 2, 1, 2, 4, 262, 6, 10, 9, 419, 13, 1495, 6, 110, 6, 6, 9, 792487, 239];
         function m(e, r) {
           for (var d = 65536, _ = 0; _ < r.length; _ += 2) {
             if (d += r[_], d > e)
@@ -4205,19 +3935,19 @@ var _t = qt((St, Ze) => {
           return e < 65 ? e === 36 : e < 91 ? true : e < 97 ? e === 95 : e < 123 ? true : e <= 65535 ? e >= 170 && i.test(String.fromCharCode(e)) : r === false ? false : m(e, x2);
         }
         function v(e, r) {
-          return e < 48 ? e === 36 : e < 58 ? true : e < 65 ? false : e < 91 ? true : e < 97 ? e === 95 : e < 123 ? true : e <= 65535 ? e >= 170 && u.test(String.fromCharCode(e)) : r === false ? false : m(e, x2) || m(e, w2);
+          return e < 48 ? e === 36 : e < 58 ? true : e < 65 ? false : e < 91 ? true : e < 97 ? e === 95 : e < 123 ? true : e <= 65535 ? e >= 170 && u.test(String.fromCharCode(e)) : r === false ? false : m(e, x2) || m(e, w);
         }
         var h = function(r, d) {
           d === void 0 && (d = {}), this.label = r, this.keyword = d.keyword, this.beforeExpr = !!d.beforeExpr, this.startsExpr = !!d.startsExpr, this.isLoop = !!d.isLoop, this.isAssign = !!d.isAssign, this.prefix = !!d.prefix, this.postfix = !!d.postfix, this.binop = d.binop || null, this.updateContext = null;
         };
-        function b2(e, r) {
+        function b(e, r) {
           return new h(e, { beforeExpr: true, binop: r });
         }
         var T = { beforeExpr: true }, C = { startsExpr: true }, V = {};
-        function c2(e, r) {
+        function c(e, r) {
           return r === void 0 && (r = {}), r.keyword = e, V[e] = new h(e, r);
         }
-        var a2 = { num: new h("num", C), regexp: new h("regexp", C), string: new h("string", C), name: new h("name", C), eof: new h("eof"), bracketL: new h("[", { beforeExpr: true, startsExpr: true }), bracketR: new h("]"), braceL: new h("{", { beforeExpr: true, startsExpr: true }), braceR: new h("}"), parenL: new h("(", { beforeExpr: true, startsExpr: true }), parenR: new h(")"), comma: new h(",", T), semi: new h(";", T), colon: new h(":", T), dot: new h("."), question: new h("?", T), arrow: new h("=>", T), template: new h("template"), invalidTemplate: new h("invalidTemplate"), ellipsis: new h("...", T), backQuote: new h("`", C), dollarBraceL: new h("${", { beforeExpr: true, startsExpr: true }), eq: new h("=", { beforeExpr: true, isAssign: true }), assign: new h("_=", { beforeExpr: true, isAssign: true }), incDec: new h("++/--", { prefix: true, postfix: true, startsExpr: true }), prefix: new h("!/~", { beforeExpr: true, prefix: true, startsExpr: true }), logicalOR: b2("||", 1), logicalAND: b2("&&", 2), bitwiseOR: b2("|", 3), bitwiseXOR: b2("^", 4), bitwiseAND: b2("&", 5), equality: b2("==/!=/===/!==", 6), relational: b2("</>/<=/>=", 7), bitShift: b2("<</>>/>>>", 8), plusMin: new h("+/-", { beforeExpr: true, binop: 9, prefix: true, startsExpr: true }), modulo: b2("%", 10), star: b2("*", 10), slash: b2("/", 10), starstar: new h("**", { beforeExpr: true }), _break: c2("break"), _case: c2("case", T), _catch: c2("catch"), _continue: c2("continue"), _debugger: c2("debugger"), _default: c2("default", T), _do: c2("do", { isLoop: true, beforeExpr: true }), _else: c2("else", T), _finally: c2("finally"), _for: c2("for", { isLoop: true }), _function: c2("function", C), _if: c2("if"), _return: c2("return", T), _switch: c2("switch"), _throw: c2("throw", T), _try: c2("try"), _var: c2("var"), _const: c2("const"), _while: c2("while", { isLoop: true }), _with: c2("with"), _new: c2("new", { beforeExpr: true, startsExpr: true }), _this: c2("this", C), _super: c2("super", C), _class: c2("class", C), _extends: c2("extends", T), _export: c2("export"), _import: c2("import", C), _null: c2("null", C), _true: c2("true", C), _false: c2("false", C), _in: c2("in", { beforeExpr: true, binop: 7 }), _instanceof: c2("instanceof", { beforeExpr: true, binop: 7 }), _typeof: c2("typeof", { beforeExpr: true, prefix: true, startsExpr: true }), _void: c2("void", { beforeExpr: true, prefix: true, startsExpr: true }), _delete: c2("delete", { beforeExpr: true, prefix: true, startsExpr: true }) }, k = /\r\n?|\n|\u2028|\u2029/, A = new RegExp(k.source, "g");
+        var a = { num: new h("num", C), regexp: new h("regexp", C), string: new h("string", C), name: new h("name", C), eof: new h("eof"), bracketL: new h("[", { beforeExpr: true, startsExpr: true }), bracketR: new h("]"), braceL: new h("{", { beforeExpr: true, startsExpr: true }), braceR: new h("}"), parenL: new h("(", { beforeExpr: true, startsExpr: true }), parenR: new h(")"), comma: new h(",", T), semi: new h(";", T), colon: new h(":", T), dot: new h("."), question: new h("?", T), arrow: new h("=>", T), template: new h("template"), invalidTemplate: new h("invalidTemplate"), ellipsis: new h("...", T), backQuote: new h("`", C), dollarBraceL: new h("${", { beforeExpr: true, startsExpr: true }), eq: new h("=", { beforeExpr: true, isAssign: true }), assign: new h("_=", { beforeExpr: true, isAssign: true }), incDec: new h("++/--", { prefix: true, postfix: true, startsExpr: true }), prefix: new h("!/~", { beforeExpr: true, prefix: true, startsExpr: true }), logicalOR: b("||", 1), logicalAND: b("&&", 2), bitwiseOR: b("|", 3), bitwiseXOR: b("^", 4), bitwiseAND: b("&", 5), equality: b("==/!=/===/!==", 6), relational: b("</>/<=/>=", 7), bitShift: b("<</>>/>>>", 8), plusMin: new h("+/-", { beforeExpr: true, binop: 9, prefix: true, startsExpr: true }), modulo: b("%", 10), star: b("*", 10), slash: b("/", 10), starstar: new h("**", { beforeExpr: true }), _break: c("break"), _case: c("case", T), _catch: c("catch"), _continue: c("continue"), _debugger: c("debugger"), _default: c("default", T), _do: c("do", { isLoop: true, beforeExpr: true }), _else: c("else", T), _finally: c("finally"), _for: c("for", { isLoop: true }), _function: c("function", C), _if: c("if"), _return: c("return", T), _switch: c("switch"), _throw: c("throw", T), _try: c("try"), _var: c("var"), _const: c("const"), _while: c("while", { isLoop: true }), _with: c("with"), _new: c("new", { beforeExpr: true, startsExpr: true }), _this: c("this", C), _super: c("super", C), _class: c("class", C), _extends: c("extends", T), _export: c("export"), _import: c("import", C), _null: c("null", C), _true: c("true", C), _false: c("false", C), _in: c("in", { beforeExpr: true, binop: 7 }), _instanceof: c("instanceof", { beforeExpr: true, binop: 7 }), _typeof: c("typeof", { beforeExpr: true, prefix: true, startsExpr: true }), _void: c("void", { beforeExpr: true, prefix: true, startsExpr: true }), _delete: c("delete", { beforeExpr: true, prefix: true, startsExpr: true }) }, k = /\r\n?|\n|\u2028|\u2029/, A = new RegExp(k.source, "g");
         function N(e, r) {
           return e === 10 || e === 13 || !r && (e === 8232 || e === 8233);
         }
@@ -4277,14 +4007,14 @@ var _t = qt((St, Ze) => {
           this.options = r = oe(r), this.sourceFile = r.sourceFile, this.keywords = Y(l[r.ecmaVersion >= 6 ? 6 : r.sourceType === "module" ? "5module" : 5]);
           var D = "";
           if (r.allowReserved !== true) {
-            for (var R = r.ecmaVersion; !(D = g2[R]); R--)
+            for (var R = r.ecmaVersion; !(D = g[R]); R--)
               ;
             r.sourceType === "module" && (D += " await");
           }
           this.reservedWords = Y(D);
-          var z = (D ? D + " " : "") + g2.strict;
-          this.reservedWordsStrict = Y(z), this.reservedWordsStrictBind = Y(z + " " + g2.strictBind), this.input = String(d), this.containsEsc = false, _ ? (this.pos = _, this.lineStart = this.input.lastIndexOf(`
-`, _ - 1) + 1, this.curLine = this.input.slice(0, this.lineStart).split(k).length) : (this.pos = this.lineStart = 0, this.curLine = 1), this.type = a2.eof, this.value = null, this.start = this.end = this.pos, this.startLoc = this.endLoc = this.curPosition(), this.lastTokEndLoc = this.lastTokStartLoc = null, this.lastTokStart = this.lastTokEnd = this.pos, this.context = this.initialContext(), this.exprAllowed = true, this.inModule = r.sourceType === "module", this.strict = this.inModule || this.strictDirective(this.pos), this.potentialArrowAt = -1, this.yieldPos = this.awaitPos = this.awaitIdentPos = 0, this.labels = [], this.undefinedExports = {}, this.pos === 0 && r.allowHashBang && this.input.slice(0, 2) === "#!" && this.skipLineComment(2), this.scopeStack = [], this.enterScope(ee), this.regexpState = null;
+          var z = (D ? D + " " : "") + g.strict;
+          this.reservedWordsStrict = Y(z), this.reservedWordsStrictBind = Y(z + " " + g.strictBind), this.input = String(d), this.containsEsc = false, _ ? (this.pos = _, this.lineStart = this.input.lastIndexOf(`
+`, _ - 1) + 1, this.curLine = this.input.slice(0, this.lineStart).split(k).length) : (this.pos = this.lineStart = 0, this.curLine = 1), this.type = a.eof, this.value = null, this.start = this.end = this.pos, this.startLoc = this.endLoc = this.curPosition(), this.lastTokEndLoc = this.lastTokStartLoc = null, this.lastTokStart = this.lastTokEnd = this.pos, this.context = this.initialContext(), this.exprAllowed = true, this.inModule = r.sourceType === "module", this.strict = this.inModule || this.strictDirective(this.pos), this.potentialArrowAt = -1, this.yieldPos = this.awaitPos = this.awaitIdentPos = 0, this.labels = [], this.undefinedExports = {}, this.pos === 0 && r.allowHashBang && this.input.slice(0, 2) === "#!" && this.skipLineComment(2), this.scopeStack = [], this.enterScope(ee), this.regexpState = null;
         }, Ae = { inFunction: { configurable: true }, inGenerator: { configurable: true }, inAsync: { configurable: true }, allowSuper: { configurable: true }, allowDirectSuper: { configurable: true }, treatFunctionsAsVar: { configurable: true } };
         le.prototype.parse = function() {
           var r = this.options.program || this.startNode();
@@ -4331,18 +4061,18 @@ var _t = qt((St, Ze) => {
         }, ge.eat = function(e) {
           return this.type === e ? (this.next(), true) : false;
         }, ge.isContextual = function(e) {
-          return this.type === a2.name && this.value === e && !this.containsEsc;
+          return this.type === a.name && this.value === e && !this.containsEsc;
         }, ge.eatContextual = function(e) {
           return this.isContextual(e) ? (this.next(), true) : false;
         }, ge.expectContextual = function(e) {
           this.eatContextual(e) || this.unexpected();
         }, ge.canInsertSemicolon = function() {
-          return this.type === a2.eof || this.type === a2.braceR || k.test(this.input.slice(this.lastTokEnd, this.start));
+          return this.type === a.eof || this.type === a.braceR || k.test(this.input.slice(this.lastTokEnd, this.start));
         }, ge.insertSemicolon = function() {
           if (this.canInsertSemicolon())
             return this.options.onInsertedSemicolon && this.options.onInsertedSemicolon(this.lastTokEnd, this.lastTokEndLoc), true;
         }, ge.semicolon = function() {
-          !this.eat(a2.semi) && !this.insertSemicolon() && this.unexpected();
+          !this.eat(a.semi) && !this.insertSemicolon() && this.unexpected();
         }, ge.afterTrailingComma = function(e, r) {
           if (this.type === e)
             return this.options.onTrailingComma && this.options.onTrailingComma(this.lastTokStart, this.lastTokStartLoc), r || this.next(), true;
@@ -4375,7 +4105,7 @@ var _t = qt((St, Ze) => {
         var ie = le.prototype;
         ie.parseTopLevel = function(e) {
           var r = {};
-          for (e.body || (e.body = []); this.type !== a2.eof; ) {
+          for (e.body || (e.body = []); this.type !== a.eof; ) {
             var d = this.parseStatement(null, true, r);
             e.body.push(d);
           }
@@ -4414,59 +4144,59 @@ var _t = qt((St, Ze) => {
           return !k.test(this.input.slice(this.pos, r)) && this.input.slice(r, r + 8) === "function" && (r + 8 === this.input.length || !v(this.input.charAt(r + 8)));
         }, ie.parseStatement = function(e, r, d) {
           var _ = this.type, D = this.startNode(), R;
-          switch (this.isLet(e) && (_ = a2._var, R = "let"), _) {
-            case a2._break:
-            case a2._continue:
+          switch (this.isLet(e) && (_ = a._var, R = "let"), _) {
+            case a._break:
+            case a._continue:
               return this.parseBreakContinueStatement(D, _.keyword);
-            case a2._debugger:
+            case a._debugger:
               return this.parseDebuggerStatement(D);
-            case a2._do:
+            case a._do:
               return this.parseDoStatement(D);
-            case a2._for:
+            case a._for:
               return this.parseForStatement(D);
-            case a2._function:
+            case a._function:
               return e && (this.strict || e !== "if" && e !== "label") && this.options.ecmaVersion >= 6 && this.unexpected(), this.parseFunctionStatement(D, false, !e);
-            case a2._class:
+            case a._class:
               return e && this.unexpected(), this.parseClass(D, true);
-            case a2._if:
+            case a._if:
               return this.parseIfStatement(D);
-            case a2._return:
+            case a._return:
               return this.parseReturnStatement(D);
-            case a2._switch:
+            case a._switch:
               return this.parseSwitchStatement(D);
-            case a2._throw:
+            case a._throw:
               return this.parseThrowStatement(D);
-            case a2._try:
+            case a._try:
               return this.parseTryStatement(D);
-            case a2._const:
-            case a2._var:
+            case a._const:
+            case a._var:
               return R = R || this.value, e && R !== "var" && this.unexpected(), this.parseVarStatement(D, R);
-            case a2._while:
+            case a._while:
               return this.parseWhileStatement(D);
-            case a2._with:
+            case a._with:
               return this.parseWithStatement(D);
-            case a2.braceL:
+            case a.braceL:
               return this.parseBlock(true, D);
-            case a2.semi:
+            case a.semi:
               return this.parseEmptyStatement(D);
-            case a2._export:
-            case a2._import:
-              if (this.options.ecmaVersion > 10 && _ === a2._import) {
+            case a._export:
+            case a._import:
+              if (this.options.ecmaVersion > 10 && _ === a._import) {
                 L.lastIndex = this.pos;
                 var z = L.exec(this.input), G = this.pos + z[0].length, H = this.input.charCodeAt(G);
                 if (H === 40)
                   return this.parseExpressionStatement(D, this.parseExpression());
               }
-              return this.options.allowImportExportEverywhere || (r || this.raise(this.start, "'import' and 'export' may only appear at the top level"), this.inModule || this.raise(this.start, "'import' and 'export' may appear only with 'sourceType: module'")), _ === a2._import ? this.parseImport(D) : this.parseExport(D, d);
+              return this.options.allowImportExportEverywhere || (r || this.raise(this.start, "'import' and 'export' may only appear at the top level"), this.inModule || this.raise(this.start, "'import' and 'export' may appear only with 'sourceType: module'")), _ === a._import ? this.parseImport(D) : this.parseExport(D, d);
             default:
               if (this.isAsyncFunction())
                 return e && this.unexpected(), this.next(), this.parseFunctionStatement(D, true, !e);
               var ae = this.value, ye = this.parseExpression();
-              return _ === a2.name && ye.type === "Identifier" && this.eat(a2.colon) ? this.parseLabeledStatement(D, ae, ye, e) : this.parseExpressionStatement(D, ye);
+              return _ === a.name && ye.type === "Identifier" && this.eat(a.colon) ? this.parseLabeledStatement(D, ae, ye, e) : this.parseExpressionStatement(D, ye);
           }
         }, ie.parseBreakContinueStatement = function(e, r) {
           var d = r === "break";
-          this.next(), this.eat(a2.semi) || this.insertSemicolon() ? e.label = null : this.type !== a2.name ? this.unexpected() : (e.label = this.parseIdent(), this.semicolon());
+          this.next(), this.eat(a.semi) || this.insertSemicolon() ? e.label = null : this.type !== a.name ? this.unexpected() : (e.label = this.parseIdent(), this.semicolon());
           for (var _ = 0; _ < this.labels.length; ++_) {
             var D = this.labels[_];
             if ((e.label == null || D.name === e.label.name) && (D.kind != null && (d || D.kind === "loop") || e.label && d))
@@ -4476,31 +4206,31 @@ var _t = qt((St, Ze) => {
         }, ie.parseDebuggerStatement = function(e) {
           return this.next(), this.semicolon(), this.finishNode(e, "DebuggerStatement");
         }, ie.parseDoStatement = function(e) {
-          return this.next(), this.labels.push(je), e.body = this.parseStatement("do"), this.labels.pop(), this.expect(a2._while), e.test = this.parseParenExpression(), this.options.ecmaVersion >= 6 ? this.eat(a2.semi) : this.semicolon(), this.finishNode(e, "DoWhileStatement");
+          return this.next(), this.labels.push(je), e.body = this.parseStatement("do"), this.labels.pop(), this.expect(a._while), e.test = this.parseParenExpression(), this.options.ecmaVersion >= 6 ? this.eat(a.semi) : this.semicolon(), this.finishNode(e, "DoWhileStatement");
         }, ie.parseForStatement = function(e) {
           this.next();
           var r = this.options.ecmaVersion >= 9 && (this.inAsync || !this.inFunction && this.options.allowAwaitOutsideFunction) && this.eatContextual("await") ? this.lastTokStart : -1;
-          if (this.labels.push(je), this.enterScope(0), this.expect(a2.parenL), this.type === a2.semi)
+          if (this.labels.push(je), this.enterScope(0), this.expect(a.parenL), this.type === a.semi)
             return r > -1 && this.unexpected(r), this.parseFor(e, null);
           var d = this.isLet();
-          if (this.type === a2._var || this.type === a2._const || d) {
+          if (this.type === a._var || this.type === a._const || d) {
             var _ = this.startNode(), D = d ? "let" : this.value;
-            return this.next(), this.parseVar(_, true, D), this.finishNode(_, "VariableDeclaration"), (this.type === a2._in || this.options.ecmaVersion >= 6 && this.isContextual("of")) && _.declarations.length === 1 ? (this.options.ecmaVersion >= 9 && (this.type === a2._in ? r > -1 && this.unexpected(r) : e.await = r > -1), this.parseForIn(e, _)) : (r > -1 && this.unexpected(r), this.parseFor(e, _));
+            return this.next(), this.parseVar(_, true, D), this.finishNode(_, "VariableDeclaration"), (this.type === a._in || this.options.ecmaVersion >= 6 && this.isContextual("of")) && _.declarations.length === 1 ? (this.options.ecmaVersion >= 9 && (this.type === a._in ? r > -1 && this.unexpected(r) : e.await = r > -1), this.parseForIn(e, _)) : (r > -1 && this.unexpected(r), this.parseFor(e, _));
           }
           var R = new Ve(), z = this.parseExpression(true, R);
-          return this.type === a2._in || this.options.ecmaVersion >= 6 && this.isContextual("of") ? (this.options.ecmaVersion >= 9 && (this.type === a2._in ? r > -1 && this.unexpected(r) : e.await = r > -1), this.toAssignable(z, false, R), this.checkLVal(z), this.parseForIn(e, z)) : (this.checkExpressionErrors(R, true), r > -1 && this.unexpected(r), this.parseFor(e, z));
+          return this.type === a._in || this.options.ecmaVersion >= 6 && this.isContextual("of") ? (this.options.ecmaVersion >= 9 && (this.type === a._in ? r > -1 && this.unexpected(r) : e.await = r > -1), this.toAssignable(z, false, R), this.checkLVal(z), this.parseForIn(e, z)) : (this.checkExpressionErrors(R, true), r > -1 && this.unexpected(r), this.parseFor(e, z));
         }, ie.parseFunctionStatement = function(e, r, d) {
           return this.next(), this.parseFunction(e, Le | (d ? 0 : He), false, r);
         }, ie.parseIfStatement = function(e) {
-          return this.next(), e.test = this.parseParenExpression(), e.consequent = this.parseStatement("if"), e.alternate = this.eat(a2._else) ? this.parseStatement("if") : null, this.finishNode(e, "IfStatement");
+          return this.next(), e.test = this.parseParenExpression(), e.consequent = this.parseStatement("if"), e.alternate = this.eat(a._else) ? this.parseStatement("if") : null, this.finishNode(e, "IfStatement");
         }, ie.parseReturnStatement = function(e) {
-          return !this.inFunction && !this.options.allowReturnOutsideFunction && this.raise(this.start, "'return' outside of function"), this.next(), this.eat(a2.semi) || this.insertSemicolon() ? e.argument = null : (e.argument = this.parseExpression(), this.semicolon()), this.finishNode(e, "ReturnStatement");
+          return !this.inFunction && !this.options.allowReturnOutsideFunction && this.raise(this.start, "'return' outside of function"), this.next(), this.eat(a.semi) || this.insertSemicolon() ? e.argument = null : (e.argument = this.parseExpression(), this.semicolon()), this.finishNode(e, "ReturnStatement");
         }, ie.parseSwitchStatement = function(e) {
-          this.next(), e.discriminant = this.parseParenExpression(), e.cases = [], this.expect(a2.braceL), this.labels.push(Ct), this.enterScope(0);
-          for (var r, d = false; this.type !== a2.braceR; )
-            if (this.type === a2._case || this.type === a2._default) {
-              var _ = this.type === a2._case;
-              r && this.finishNode(r, "SwitchCase"), e.cases.push(r = this.startNode()), r.consequent = [], this.next(), _ ? r.test = this.parseExpression() : (d && this.raiseRecoverable(this.lastTokStart, "Multiple default clauses"), d = true, r.test = null), this.expect(a2.colon);
+          this.next(), e.discriminant = this.parseParenExpression(), e.cases = [], this.expect(a.braceL), this.labels.push(Ct), this.enterScope(0);
+          for (var r, d = false; this.type !== a.braceR; )
+            if (this.type === a._case || this.type === a._default) {
+              var _ = this.type === a._case;
+              r && this.finishNode(r, "SwitchCase"), e.cases.push(r = this.startNode()), r.consequent = [], this.next(), _ ? r.test = this.parseExpression() : (d && this.raiseRecoverable(this.lastTokStart, "Multiple default clauses"), d = true, r.test = null), this.expect(a.colon);
             } else
               r || this.unexpected(), r.consequent.push(this.parseStatement(null));
           return this.exitScope(), r && this.finishNode(r, "SwitchCase"), this.next(), this.labels.pop(), this.finishNode(e, "SwitchStatement");
@@ -4509,17 +4239,17 @@ var _t = qt((St, Ze) => {
         };
         var Ft = [];
         ie.parseTryStatement = function(e) {
-          if (this.next(), e.block = this.parseBlock(), e.handler = null, this.type === a2._catch) {
+          if (this.next(), e.block = this.parseBlock(), e.handler = null, this.type === a._catch) {
             var r = this.startNode();
-            if (this.next(), this.eat(a2.parenL)) {
+            if (this.next(), this.eat(a.parenL)) {
               r.param = this.parseBindingAtom();
               var d = r.param.type === "Identifier";
-              this.enterScope(d ? te : 0), this.checkLVal(r.param, d ? it : _e), this.expect(a2.parenR);
+              this.enterScope(d ? te : 0), this.checkLVal(r.param, d ? it : _e), this.expect(a.parenR);
             } else
               this.options.ecmaVersion < 10 && this.unexpected(), r.param = null, this.enterScope(0);
             r.body = this.parseBlock(false), this.exitScope(), e.handler = this.finishNode(r, "CatchClause");
           }
-          return e.finalizer = this.eat(a2._finally) ? this.parseBlock() : null, !e.handler && !e.finalizer && this.raise(e.start, "Missing catch or finally clause"), this.finishNode(e, "TryStatement");
+          return e.finalizer = this.eat(a._finally) ? this.parseBlock() : null, !e.handler && !e.finalizer && this.raise(e.start, "Missing catch or finally clause"), this.finishNode(e, "TryStatement");
         }, ie.parseVarStatement = function(e, r) {
           return this.next(), this.parseVar(e, false, r), this.semicolon(), this.finishNode(e, "VariableDeclaration");
         }, ie.parseWhileStatement = function(e) {
@@ -4533,7 +4263,7 @@ var _t = qt((St, Ze) => {
             var z = R[D];
             z.name === r && this.raise(d.start, "Label '" + r + "' is already declared");
           }
-          for (var G = this.type.isLoop ? "loop" : this.type === a2._switch ? "switch" : null, H = this.labels.length - 1; H >= 0; H--) {
+          for (var G = this.type.isLoop ? "loop" : this.type === a._switch ? "switch" : null, H = this.labels.length - 1; H >= 0; H--) {
             var ae = this.labels[H];
             if (ae.statementStart === e.start)
               ae.statementStart = this.start, ae.kind = G;
@@ -4544,20 +4274,20 @@ var _t = qt((St, Ze) => {
         }, ie.parseExpressionStatement = function(e, r) {
           return e.expression = r, this.semicolon(), this.finishNode(e, "ExpressionStatement");
         }, ie.parseBlock = function(e, r) {
-          for (e === void 0 && (e = true), r === void 0 && (r = this.startNode()), r.body = [], this.expect(a2.braceL), e && this.enterScope(0); !this.eat(a2.braceR); ) {
+          for (e === void 0 && (e = true), r === void 0 && (r = this.startNode()), r.body = [], this.expect(a.braceL), e && this.enterScope(0); !this.eat(a.braceR); ) {
             var d = this.parseStatement(null);
             r.body.push(d);
           }
           return e && this.exitScope(), this.finishNode(r, "BlockStatement");
         }, ie.parseFor = function(e, r) {
-          return e.init = r, this.expect(a2.semi), e.test = this.type === a2.semi ? null : this.parseExpression(), this.expect(a2.semi), e.update = this.type === a2.parenR ? null : this.parseExpression(), this.expect(a2.parenR), e.body = this.parseStatement("for"), this.exitScope(), this.labels.pop(), this.finishNode(e, "ForStatement");
+          return e.init = r, this.expect(a.semi), e.test = this.type === a.semi ? null : this.parseExpression(), this.expect(a.semi), e.update = this.type === a.parenR ? null : this.parseExpression(), this.expect(a.parenR), e.body = this.parseStatement("for"), this.exitScope(), this.labels.pop(), this.finishNode(e, "ForStatement");
         }, ie.parseForIn = function(e, r) {
-          var d = this.type === a2._in;
-          return this.next(), r.type === "VariableDeclaration" && r.declarations[0].init != null && (!d || this.options.ecmaVersion < 8 || this.strict || r.kind !== "var" || r.declarations[0].id.type !== "Identifier") ? this.raise(r.start, (d ? "for-in" : "for-of") + " loop variable declaration may not have an initializer") : r.type === "AssignmentPattern" && this.raise(r.start, "Invalid left-hand side in for-loop"), e.left = r, e.right = d ? this.parseExpression() : this.parseMaybeAssign(), this.expect(a2.parenR), e.body = this.parseStatement("for"), this.exitScope(), this.labels.pop(), this.finishNode(e, d ? "ForInStatement" : "ForOfStatement");
+          var d = this.type === a._in;
+          return this.next(), r.type === "VariableDeclaration" && r.declarations[0].init != null && (!d || this.options.ecmaVersion < 8 || this.strict || r.kind !== "var" || r.declarations[0].id.type !== "Identifier") ? this.raise(r.start, (d ? "for-in" : "for-of") + " loop variable declaration may not have an initializer") : r.type === "AssignmentPattern" && this.raise(r.start, "Invalid left-hand side in for-loop"), e.left = r, e.right = d ? this.parseExpression() : this.parseMaybeAssign(), this.expect(a.parenR), e.body = this.parseStatement("for"), this.exitScope(), this.labels.pop(), this.finishNode(e, d ? "ForInStatement" : "ForOfStatement");
         }, ie.parseVar = function(e, r, d) {
           for (e.declarations = [], e.kind = d; ; ) {
             var _ = this.startNode();
-            if (this.parseVarId(_, d), this.eat(a2.eq) ? _.init = this.parseMaybeAssign(r) : d === "const" && !(this.type === a2._in || this.options.ecmaVersion >= 6 && this.isContextual("of")) ? this.unexpected() : _.id.type !== "Identifier" && !(r && (this.type === a2._in || this.isContextual("of"))) ? this.raise(this.lastTokEnd, "Complex binding patterns require an initialization value") : _.init = null, e.declarations.push(this.finishNode(_, "VariableDeclarator")), !this.eat(a2.comma))
+            if (this.parseVarId(_, d), this.eat(a.eq) ? _.init = this.parseMaybeAssign(r) : d === "const" && !(this.type === a._in || this.options.ecmaVersion >= 6 && this.isContextual("of")) ? this.unexpected() : _.id.type !== "Identifier" && !(r && (this.type === a._in || this.isContextual("of"))) ? this.raise(this.lastTokEnd, "Complex binding patterns require an initialization value") : _.init = null, e.declarations.push(this.finishNode(_, "VariableDeclarator")), !this.eat(a.comma))
               break;
           }
           return e;
@@ -4566,51 +4296,51 @@ var _t = qt((St, Ze) => {
         };
         var Le = 1, He = 2, st = 4;
         ie.parseFunction = function(e, r, d, _) {
-          this.initFunction(e), (this.options.ecmaVersion >= 9 || this.options.ecmaVersion >= 6 && !_) && (this.type === a2.star && r & He && this.unexpected(), e.generator = this.eat(a2.star)), this.options.ecmaVersion >= 8 && (e.async = !!_), r & Le && (e.id = r & st && this.type !== a2.name ? null : this.parseIdent(), e.id && !(r & He) && this.checkLVal(e.id, this.strict || e.generator || e.async ? this.treatFunctionsAsVar ? Ce : _e : tt));
+          this.initFunction(e), (this.options.ecmaVersion >= 9 || this.options.ecmaVersion >= 6 && !_) && (this.type === a.star && r & He && this.unexpected(), e.generator = this.eat(a.star)), this.options.ecmaVersion >= 8 && (e.async = !!_), r & Le && (e.id = r & st && this.type !== a.name ? null : this.parseIdent(), e.id && !(r & He) && this.checkLVal(e.id, this.strict || e.generator || e.async ? this.treatFunctionsAsVar ? Ce : _e : tt));
           var D = this.yieldPos, R = this.awaitPos, z = this.awaitIdentPos;
-          return this.yieldPos = 0, this.awaitPos = 0, this.awaitIdentPos = 0, this.enterScope(Te(e.async, e.generator)), r & Le || (e.id = this.type === a2.name ? this.parseIdent() : null), this.parseFunctionParams(e), this.parseFunctionBody(e, d, false), this.yieldPos = D, this.awaitPos = R, this.awaitIdentPos = z, this.finishNode(e, r & Le ? "FunctionDeclaration" : "FunctionExpression");
+          return this.yieldPos = 0, this.awaitPos = 0, this.awaitIdentPos = 0, this.enterScope(Te(e.async, e.generator)), r & Le || (e.id = this.type === a.name ? this.parseIdent() : null), this.parseFunctionParams(e), this.parseFunctionBody(e, d, false), this.yieldPos = D, this.awaitPos = R, this.awaitIdentPos = z, this.finishNode(e, r & Le ? "FunctionDeclaration" : "FunctionExpression");
         }, ie.parseFunctionParams = function(e) {
-          this.expect(a2.parenL), e.params = this.parseBindingList(a2.parenR, false, this.options.ecmaVersion >= 8), this.checkYieldAwaitInDefaultParams();
+          this.expect(a.parenL), e.params = this.parseBindingList(a.parenR, false, this.options.ecmaVersion >= 8), this.checkYieldAwaitInDefaultParams();
         }, ie.parseClass = function(e, r) {
           this.next();
           var d = this.strict;
           this.strict = true, this.parseClassId(e, r), this.parseClassSuper(e);
           var _ = this.startNode(), D = false;
-          for (_.body = [], this.expect(a2.braceL); !this.eat(a2.braceR); ) {
+          for (_.body = [], this.expect(a.braceL); !this.eat(a.braceR); ) {
             var R = this.parseClassElement(e.superClass !== null);
             R && (_.body.push(R), R.type === "MethodDefinition" && R.kind === "constructor" && (D && this.raise(R.start, "Duplicate constructor in the same class"), D = true));
           }
           return e.body = this.finishNode(_, "ClassBody"), this.strict = d, this.finishNode(e, r ? "ClassDeclaration" : "ClassExpression");
         }, ie.parseClassElement = function(e) {
           var r = this;
-          if (this.eat(a2.semi))
+          if (this.eat(a.semi))
             return null;
           var d = this.startNode(), _ = function(H, ae) {
             ae === void 0 && (ae = false);
             var ye = r.start, Ie = r.startLoc;
-            return r.eatContextual(H) ? r.type !== a2.parenL && (!ae || !r.canInsertSemicolon()) ? true : (d.key && r.unexpected(), d.computed = false, d.key = r.startNodeAt(ye, Ie), d.key.name = H, r.finishNode(d.key, "Identifier"), false) : false;
+            return r.eatContextual(H) ? r.type !== a.parenL && (!ae || !r.canInsertSemicolon()) ? true : (d.key && r.unexpected(), d.computed = false, d.key = r.startNodeAt(ye, Ie), d.key.name = H, r.finishNode(d.key, "Identifier"), false) : false;
           };
           d.kind = "method", d.static = _("static");
-          var D = this.eat(a2.star), R = false;
-          D || (this.options.ecmaVersion >= 8 && _("async", true) ? (R = true, D = this.options.ecmaVersion >= 9 && this.eat(a2.star)) : _("get") ? d.kind = "get" : _("set") && (d.kind = "set")), d.key || this.parsePropertyName(d);
+          var D = this.eat(a.star), R = false;
+          D || (this.options.ecmaVersion >= 8 && _("async", true) ? (R = true, D = this.options.ecmaVersion >= 9 && this.eat(a.star)) : _("get") ? d.kind = "get" : _("set") && (d.kind = "set")), d.key || this.parsePropertyName(d);
           var z = d.key, G = false;
           return !d.computed && !d.static && (z.type === "Identifier" && z.name === "constructor" || z.type === "Literal" && z.value === "constructor") ? (d.kind !== "method" && this.raise(z.start, "Constructor can't have get/set modifier"), D && this.raise(z.start, "Constructor can't be a generator"), R && this.raise(z.start, "Constructor can't be an async method"), d.kind = "constructor", G = e) : d.static && z.type === "Identifier" && z.name === "prototype" && this.raise(z.start, "Classes may not have a static property named prototype"), this.parseClassMethod(d, D, R, G), d.kind === "get" && d.value.params.length !== 0 && this.raiseRecoverable(d.value.start, "getter should have no params"), d.kind === "set" && d.value.params.length !== 1 && this.raiseRecoverable(d.value.start, "setter should have exactly one param"), d.kind === "set" && d.value.params[0].type === "RestElement" && this.raiseRecoverable(d.value.params[0].start, "Setter cannot use rest params"), d;
         }, ie.parseClassMethod = function(e, r, d, _) {
           return e.value = this.parseMethod(r, d, _), this.finishNode(e, "MethodDefinition");
         }, ie.parseClassId = function(e, r) {
-          this.type === a2.name ? (e.id = this.parseIdent(), r && this.checkLVal(e.id, _e, false)) : (r === true && this.unexpected(), e.id = null);
+          this.type === a.name ? (e.id = this.parseIdent(), r && this.checkLVal(e.id, _e, false)) : (r === true && this.unexpected(), e.id = null);
         }, ie.parseClassSuper = function(e) {
-          e.superClass = this.eat(a2._extends) ? this.parseExprSubscripts() : null;
+          e.superClass = this.eat(a._extends) ? this.parseExprSubscripts() : null;
         }, ie.parseExport = function(e, r) {
-          if (this.next(), this.eat(a2.star))
-            return this.expectContextual("from"), this.type !== a2.string && this.unexpected(), e.source = this.parseExprAtom(), this.semicolon(), this.finishNode(e, "ExportAllDeclaration");
-          if (this.eat(a2._default)) {
+          if (this.next(), this.eat(a.star))
+            return this.expectContextual("from"), this.type !== a.string && this.unexpected(), e.source = this.parseExprAtom(), this.semicolon(), this.finishNode(e, "ExportAllDeclaration");
+          if (this.eat(a._default)) {
             this.checkExport(r, "default", this.lastTokStart);
             var d;
-            if (this.type === a2._function || (d = this.isAsyncFunction())) {
+            if (this.type === a._function || (d = this.isAsyncFunction())) {
               var _ = this.startNode();
               this.next(), d && this.next(), e.declaration = this.parseFunction(_, Le | st, false, d);
-            } else if (this.type === a2._class) {
+            } else if (this.type === a._class) {
               var D = this.startNode();
               e.declaration = this.parseClass(D, "nullableID");
             } else
@@ -4621,7 +4351,7 @@ var _t = qt((St, Ze) => {
             e.declaration = this.parseStatement(null), e.declaration.type === "VariableDeclaration" ? this.checkVariableExport(r, e.declaration.declarations) : this.checkExport(r, e.declaration.id.name, e.declaration.id.start), e.specifiers = [], e.source = null;
           else {
             if (e.declaration = null, e.specifiers = this.parseExportSpecifiers(r), this.eatContextual("from"))
-              this.type !== a2.string && this.unexpected(), e.source = this.parseExprAtom();
+              this.type !== a.string && this.unexpected(), e.source = this.parseExprAtom();
             else {
               for (var R = 0, z = e.specifiers; R < z.length; R += 1) {
                 var G = z[R];
@@ -4660,32 +4390,32 @@ var _t = qt((St, Ze) => {
           return this.type.keyword === "var" || this.type.keyword === "const" || this.type.keyword === "class" || this.type.keyword === "function" || this.isLet() || this.isAsyncFunction();
         }, ie.parseExportSpecifiers = function(e) {
           var r = [], d = true;
-          for (this.expect(a2.braceL); !this.eat(a2.braceR); ) {
+          for (this.expect(a.braceL); !this.eat(a.braceR); ) {
             if (d)
               d = false;
-            else if (this.expect(a2.comma), this.afterTrailingComma(a2.braceR))
+            else if (this.expect(a.comma), this.afterTrailingComma(a.braceR))
               break;
             var _ = this.startNode();
             _.local = this.parseIdent(true), _.exported = this.eatContextual("as") ? this.parseIdent(true) : _.local, this.checkExport(e, _.exported.name, _.exported.start), r.push(this.finishNode(_, "ExportSpecifier"));
           }
           return r;
         }, ie.parseImport = function(e) {
-          return this.next(), this.type === a2.string ? (e.specifiers = Ft, e.source = this.parseExprAtom()) : (e.specifiers = this.parseImportSpecifiers(), this.expectContextual("from"), e.source = this.type === a2.string ? this.parseExprAtom() : this.unexpected()), this.semicolon(), this.finishNode(e, "ImportDeclaration");
+          return this.next(), this.type === a.string ? (e.specifiers = Ft, e.source = this.parseExprAtom()) : (e.specifiers = this.parseImportSpecifiers(), this.expectContextual("from"), e.source = this.type === a.string ? this.parseExprAtom() : this.unexpected()), this.semicolon(), this.finishNode(e, "ImportDeclaration");
         }, ie.parseImportSpecifiers = function() {
           var e = [], r = true;
-          if (this.type === a2.name) {
+          if (this.type === a.name) {
             var d = this.startNode();
-            if (d.local = this.parseIdent(), this.checkLVal(d.local, _e), e.push(this.finishNode(d, "ImportDefaultSpecifier")), !this.eat(a2.comma))
+            if (d.local = this.parseIdent(), this.checkLVal(d.local, _e), e.push(this.finishNode(d, "ImportDefaultSpecifier")), !this.eat(a.comma))
               return e;
           }
-          if (this.type === a2.star) {
+          if (this.type === a.star) {
             var _ = this.startNode();
             return this.next(), this.expectContextual("as"), _.local = this.parseIdent(), this.checkLVal(_.local, _e), e.push(this.finishNode(_, "ImportNamespaceSpecifier")), e;
           }
-          for (this.expect(a2.braceL); !this.eat(a2.braceR); ) {
+          for (this.expect(a.braceL); !this.eat(a.braceR); ) {
             if (r)
               r = false;
-            else if (this.expect(a2.comma), this.afterTrailingComma(a2.braceR))
+            else if (this.expect(a.comma), this.afterTrailingComma(a.braceR))
               break;
             var D = this.startNode();
             D.imported = this.parseIdent(true), this.eatContextual("as") ? D.local = this.parseIdent() : (this.checkUnreserved(D.imported), D.local = D.imported), this.checkLVal(D.local, _e), e.push(this.finishNode(D, "ImportSpecifier"));
@@ -4755,27 +4485,27 @@ var _t = qt((St, Ze) => {
           return this.next(), r.argument = this.parseMaybeAssign(false, e), this.finishNode(r, "SpreadElement");
         }, we.parseRestBinding = function() {
           var e = this.startNode();
-          return this.next(), this.options.ecmaVersion === 6 && this.type !== a2.name && this.unexpected(), e.argument = this.parseBindingAtom(), this.finishNode(e, "RestElement");
+          return this.next(), this.options.ecmaVersion === 6 && this.type !== a.name && this.unexpected(), e.argument = this.parseBindingAtom(), this.finishNode(e, "RestElement");
         }, we.parseBindingAtom = function() {
           if (this.options.ecmaVersion >= 6)
             switch (this.type) {
-              case a2.bracketL:
+              case a.bracketL:
                 var e = this.startNode();
-                return this.next(), e.elements = this.parseBindingList(a2.bracketR, true, true), this.finishNode(e, "ArrayPattern");
-              case a2.braceL:
+                return this.next(), e.elements = this.parseBindingList(a.bracketR, true, true), this.finishNode(e, "ArrayPattern");
+              case a.braceL:
                 return this.parseObj(true);
             }
           return this.parseIdent();
         }, we.parseBindingList = function(e, r, d) {
           for (var _ = [], D = true; !this.eat(e); )
-            if (D ? D = false : this.expect(a2.comma), r && this.type === a2.comma)
+            if (D ? D = false : this.expect(a.comma), r && this.type === a.comma)
               _.push(null);
             else {
               if (d && this.afterTrailingComma(e))
                 break;
-              if (this.type === a2.ellipsis) {
+              if (this.type === a.ellipsis) {
                 var R = this.parseRestBinding();
-                this.parseBindingListItem(R), _.push(R), this.type === a2.comma && this.raise(this.start, "Comma is not permitted after the rest element"), this.expect(e);
+                this.parseBindingListItem(R), _.push(R), this.type === a.comma && this.raise(this.start, "Comma is not permitted after the rest element"), this.expect(e);
                 break;
               } else {
                 var z = this.parseMaybeDefault(this.start, this.startLoc);
@@ -4786,7 +4516,7 @@ var _t = qt((St, Ze) => {
         }, we.parseBindingListItem = function(e) {
           return e;
         }, we.parseMaybeDefault = function(e, r, d) {
-          if (d = d || this.parseBindingAtom(), this.options.ecmaVersion < 6 || !this.eat(a2.eq))
+          if (d = d || this.parseBindingAtom(), this.options.ecmaVersion < 6 || !this.eat(a.eq))
             return d;
           var _ = this.startNodeAt(e, r);
           return _.left = d, _.right = this.parseMaybeAssign(), this.finishNode(_, "AssignmentPattern");
@@ -4856,9 +4586,9 @@ var _t = qt((St, Ze) => {
           }
         }, ne.parseExpression = function(e, r) {
           var d = this.start, _ = this.startLoc, D = this.parseMaybeAssign(e, r);
-          if (this.type === a2.comma) {
+          if (this.type === a.comma) {
             var R = this.startNodeAt(d, _);
-            for (R.expressions = [D]; this.eat(a2.comma); )
+            for (R.expressions = [D]; this.eat(a.comma); )
               R.expressions.push(this.parseMaybeAssign(e, r));
             return this.finishNode(R, "SequenceExpression");
           }
@@ -4872,11 +4602,11 @@ var _t = qt((St, Ze) => {
           var _ = false, D = -1, R = -1;
           r ? (D = r.parenthesizedAssign, R = r.trailingComma, r.parenthesizedAssign = r.trailingComma = -1) : (r = new Ve(), _ = true);
           var z = this.start, G = this.startLoc;
-          (this.type === a2.parenL || this.type === a2.name) && (this.potentialArrowAt = this.start);
+          (this.type === a.parenL || this.type === a.name) && (this.potentialArrowAt = this.start);
           var H = this.parseMaybeConditional(e, r);
           if (d && (H = d.call(this, H, z, G)), this.type.isAssign) {
             var ae = this.startNodeAt(z, G);
-            return ae.operator = this.value, ae.left = this.type === a2.eq ? this.toAssignable(H, false, r) : H, _ || (r.parenthesizedAssign = r.trailingComma = r.doubleProto = -1), r.shorthandAssign >= ae.left.start && (r.shorthandAssign = -1), this.checkLVal(H), this.next(), ae.right = this.parseMaybeAssign(e), this.finishNode(ae, "AssignmentExpression");
+            return ae.operator = this.value, ae.left = this.type === a.eq ? this.toAssignable(H, false, r) : H, _ || (r.parenthesizedAssign = r.trailingComma = r.doubleProto = -1), r.shorthandAssign >= ae.left.start && (r.shorthandAssign = -1), this.checkLVal(H), this.next(), ae.right = this.parseMaybeAssign(e), this.finishNode(ae, "AssignmentExpression");
           } else
             _ && this.checkExpressionErrors(r, true);
           return D > -1 && (r.parenthesizedAssign = D), R > -1 && (r.trailingComma = R), H;
@@ -4884,9 +4614,9 @@ var _t = qt((St, Ze) => {
           var d = this.start, _ = this.startLoc, D = this.parseExprOps(e, r);
           if (this.checkExpressionErrors(r))
             return D;
-          if (this.eat(a2.question)) {
+          if (this.eat(a.question)) {
             var R = this.startNodeAt(d, _);
-            return R.test = D, R.consequent = this.parseMaybeAssign(), this.expect(a2.colon), R.alternate = this.parseMaybeAssign(e), this.finishNode(R, "ConditionalExpression");
+            return R.test = D, R.consequent = this.parseMaybeAssign(), this.expect(a.colon), R.alternate = this.parseMaybeAssign(e), this.finishNode(R, "ConditionalExpression");
           }
           return D;
         }, ne.parseExprOps = function(e, r) {
@@ -4894,8 +4624,8 @@ var _t = qt((St, Ze) => {
           return this.checkExpressionErrors(r) || D.start === d && D.type === "ArrowFunctionExpression" ? D : this.parseExprOp(D, d, _, -1, e);
         }, ne.parseExprOp = function(e, r, d, _, D) {
           var R = this.type.binop;
-          if (R != null && (!D || this.type !== a2._in) && R > _) {
-            var z = this.type === a2.logicalOR || this.type === a2.logicalAND, G = this.value;
+          if (R != null && (!D || this.type !== a._in) && R > _) {
+            var z = this.type === a.logicalOR || this.type === a.logicalAND, G = this.value;
             this.next();
             var H = this.start, ae = this.startLoc, ye = this.parseExprOp(this.parseMaybeUnary(null, false), H, ae, R, D), Ie = this.buildBinary(r, d, e, ye, G, z);
             return this.parseExprOp(Ie, r, d, _, D);
@@ -4909,7 +4639,7 @@ var _t = qt((St, Ze) => {
           if (this.isContextual("await") && (this.inAsync || !this.inFunction && this.options.allowAwaitOutsideFunction))
             D = this.parseAwait(), r = true;
           else if (this.type.prefix) {
-            var R = this.startNode(), z = this.type === a2.incDec;
+            var R = this.startNode(), z = this.type === a.incDec;
             R.operator = this.value, R.prefix = true, this.next(), R.argument = this.parseMaybeUnary(null, true), this.checkExpressionErrors(e, true), z ? this.checkLVal(R.argument) : this.strict && R.operator === "delete" && R.argument.type === "Identifier" ? this.raiseRecoverable(R.start, "Deleting local variable in strict mode") : r = true, D = this.finishNode(R, z ? "UpdateExpression" : "UnaryExpression");
           } else {
             if (D = this.parseExprSubscripts(e), this.checkExpressionErrors(e))
@@ -4919,7 +4649,7 @@ var _t = qt((St, Ze) => {
               G.operator = this.value, G.prefix = false, G.argument = D, this.checkLVal(D), this.next(), D = this.finishNode(G, "UpdateExpression");
             }
           }
-          return !r && this.eat(a2.starstar) ? this.buildBinary(d, _, D, this.parseMaybeUnary(null, false), "**", false) : D;
+          return !r && this.eat(a.starstar) ? this.buildBinary(d, _, D, this.parseMaybeUnary(null, false), "**", false) : D;
         }, ne.parseExprSubscripts = function(e) {
           var r = this.start, d = this.startLoc, _ = this.parseExprAtom(e);
           if (_.type === "ArrowFunctionExpression" && this.input.slice(this.lastTokStart, this.lastTokEnd) !== ")")
@@ -4934,69 +4664,69 @@ var _t = qt((St, Ze) => {
             e = R;
           }
         }, ne.parseSubscript = function(e, r, d, _, D) {
-          var R = this.eat(a2.bracketL);
-          if (R || this.eat(a2.dot)) {
+          var R = this.eat(a.bracketL);
+          if (R || this.eat(a.dot)) {
             var z = this.startNodeAt(r, d);
-            z.object = e, z.property = R ? this.parseExpression() : this.parseIdent(this.options.allowReserved !== "never"), z.computed = !!R, R && this.expect(a2.bracketR), e = this.finishNode(z, "MemberExpression");
-          } else if (!_ && this.eat(a2.parenL)) {
+            z.object = e, z.property = R ? this.parseExpression() : this.parseIdent(this.options.allowReserved !== "never"), z.computed = !!R, R && this.expect(a.bracketR), e = this.finishNode(z, "MemberExpression");
+          } else if (!_ && this.eat(a.parenL)) {
             var G = new Ve(), H = this.yieldPos, ae = this.awaitPos, ye = this.awaitIdentPos;
             this.yieldPos = 0, this.awaitPos = 0, this.awaitIdentPos = 0;
-            var Ie = this.parseExprList(a2.parenR, this.options.ecmaVersion >= 8, false, G);
-            if (D && !this.canInsertSemicolon() && this.eat(a2.arrow))
+            var Ie = this.parseExprList(a.parenR, this.options.ecmaVersion >= 8, false, G);
+            if (D && !this.canInsertSemicolon() && this.eat(a.arrow))
               return this.checkPatternErrors(G, false), this.checkYieldAwaitInDefaultParams(), this.awaitIdentPos > 0 && this.raise(this.awaitIdentPos, "Cannot use 'await' as identifier inside an async function"), this.yieldPos = H, this.awaitPos = ae, this.awaitIdentPos = ye, this.parseArrowExpression(this.startNodeAt(r, d), Ie, true);
             this.checkExpressionErrors(G, true), this.yieldPos = H || this.yieldPos, this.awaitPos = ae || this.awaitPos, this.awaitIdentPos = ye || this.awaitIdentPos;
             var Fe = this.startNodeAt(r, d);
             Fe.callee = e, Fe.arguments = Ie, e = this.finishNode(Fe, "CallExpression");
-          } else if (this.type === a2.backQuote) {
+          } else if (this.type === a.backQuote) {
             var De = this.startNodeAt(r, d);
             De.tag = e, De.quasi = this.parseTemplate({ isTagged: true }), e = this.finishNode(De, "TaggedTemplateExpression");
           }
           return e;
         }, ne.parseExprAtom = function(e) {
-          this.type === a2.slash && this.readRegexp();
+          this.type === a.slash && this.readRegexp();
           var r, d = this.potentialArrowAt === this.start;
           switch (this.type) {
-            case a2._super:
-              return this.allowSuper || this.raise(this.start, "'super' keyword outside a method"), r = this.startNode(), this.next(), this.type === a2.parenL && !this.allowDirectSuper && this.raise(r.start, "super() call outside constructor of a subclass"), this.type !== a2.dot && this.type !== a2.bracketL && this.type !== a2.parenL && this.unexpected(), this.finishNode(r, "Super");
-            case a2._this:
+            case a._super:
+              return this.allowSuper || this.raise(this.start, "'super' keyword outside a method"), r = this.startNode(), this.next(), this.type === a.parenL && !this.allowDirectSuper && this.raise(r.start, "super() call outside constructor of a subclass"), this.type !== a.dot && this.type !== a.bracketL && this.type !== a.parenL && this.unexpected(), this.finishNode(r, "Super");
+            case a._this:
               return r = this.startNode(), this.next(), this.finishNode(r, "ThisExpression");
-            case a2.name:
+            case a.name:
               var _ = this.start, D = this.startLoc, R = this.containsEsc, z = this.parseIdent(false);
-              if (this.options.ecmaVersion >= 8 && !R && z.name === "async" && !this.canInsertSemicolon() && this.eat(a2._function))
+              if (this.options.ecmaVersion >= 8 && !R && z.name === "async" && !this.canInsertSemicolon() && this.eat(a._function))
                 return this.parseFunction(this.startNodeAt(_, D), 0, false, true);
               if (d && !this.canInsertSemicolon()) {
-                if (this.eat(a2.arrow))
+                if (this.eat(a.arrow))
                   return this.parseArrowExpression(this.startNodeAt(_, D), [z], false);
-                if (this.options.ecmaVersion >= 8 && z.name === "async" && this.type === a2.name && !R)
-                  return z = this.parseIdent(false), (this.canInsertSemicolon() || !this.eat(a2.arrow)) && this.unexpected(), this.parseArrowExpression(this.startNodeAt(_, D), [z], true);
+                if (this.options.ecmaVersion >= 8 && z.name === "async" && this.type === a.name && !R)
+                  return z = this.parseIdent(false), (this.canInsertSemicolon() || !this.eat(a.arrow)) && this.unexpected(), this.parseArrowExpression(this.startNodeAt(_, D), [z], true);
               }
               return z;
-            case a2.regexp:
+            case a.regexp:
               var G = this.value;
               return r = this.parseLiteral(G.value), r.regex = { pattern: G.pattern, flags: G.flags }, r;
-            case a2.num:
-            case a2.string:
+            case a.num:
+            case a.string:
               return this.parseLiteral(this.value);
-            case a2._null:
-            case a2._true:
-            case a2._false:
-              return r = this.startNode(), r.value = this.type === a2._null ? null : this.type === a2._true, r.raw = this.type.keyword, this.next(), this.finishNode(r, "Literal");
-            case a2.parenL:
+            case a._null:
+            case a._true:
+            case a._false:
+              return r = this.startNode(), r.value = this.type === a._null ? null : this.type === a._true, r.raw = this.type.keyword, this.next(), this.finishNode(r, "Literal");
+            case a.parenL:
               var H = this.start, ae = this.parseParenAndDistinguishExpression(d);
               return e && (e.parenthesizedAssign < 0 && !this.isSimpleAssignTarget(ae) && (e.parenthesizedAssign = H), e.parenthesizedBind < 0 && (e.parenthesizedBind = H)), ae;
-            case a2.bracketL:
-              return r = this.startNode(), this.next(), r.elements = this.parseExprList(a2.bracketR, true, true, e), this.finishNode(r, "ArrayExpression");
-            case a2.braceL:
+            case a.bracketL:
+              return r = this.startNode(), this.next(), r.elements = this.parseExprList(a.bracketR, true, true, e), this.finishNode(r, "ArrayExpression");
+            case a.braceL:
               return this.parseObj(false, e);
-            case a2._function:
+            case a._function:
               return r = this.startNode(), this.next(), this.parseFunction(r, 0);
-            case a2._class:
+            case a._class:
               return this.parseClass(this.startNode(), false);
-            case a2._new:
+            case a._new:
               return this.parseNew();
-            case a2.backQuote:
+            case a.backQuote:
               return this.parseTemplate();
-            case a2._import:
+            case a._import:
               return this.options.ecmaVersion >= 11 ? this.parseExprImport() : this.unexpected();
             default:
               this.unexpected();
@@ -5004,40 +4734,40 @@ var _t = qt((St, Ze) => {
         }, ne.parseExprImport = function() {
           var e = this.startNode();
           switch (this.next(), this.type) {
-            case a2.parenL:
+            case a.parenL:
               return this.parseDynamicImport(e);
             default:
               this.unexpected();
           }
         }, ne.parseDynamicImport = function(e) {
-          if (this.next(), e.source = this.parseMaybeAssign(), !this.eat(a2.parenR)) {
+          if (this.next(), e.source = this.parseMaybeAssign(), !this.eat(a.parenR)) {
             var r = this.start;
-            this.eat(a2.comma) && this.eat(a2.parenR) ? this.raiseRecoverable(r, "Trailing comma is not allowed in import()") : this.unexpected(r);
+            this.eat(a.comma) && this.eat(a.parenR) ? this.raiseRecoverable(r, "Trailing comma is not allowed in import()") : this.unexpected(r);
           }
           return this.finishNode(e, "ImportExpression");
         }, ne.parseLiteral = function(e) {
           var r = this.startNode();
           return r.value = e, r.raw = this.input.slice(this.start, this.end), r.raw.charCodeAt(r.raw.length - 1) === 110 && (r.bigint = r.raw.slice(0, -1)), this.next(), this.finishNode(r, "Literal");
         }, ne.parseParenExpression = function() {
-          this.expect(a2.parenL);
+          this.expect(a.parenL);
           var e = this.parseExpression();
-          return this.expect(a2.parenR), e;
+          return this.expect(a.parenR), e;
         }, ne.parseParenAndDistinguishExpression = function(e) {
           var r = this.start, d = this.startLoc, _, D = this.options.ecmaVersion >= 8;
           if (this.options.ecmaVersion >= 6) {
             this.next();
             var R = this.start, z = this.startLoc, G = [], H = true, ae = false, ye = new Ve(), Ie = this.yieldPos, Fe = this.awaitPos, De;
-            for (this.yieldPos = 0, this.awaitPos = 0; this.type !== a2.parenR; )
-              if (H ? H = false : this.expect(a2.comma), D && this.afterTrailingComma(a2.parenR, true)) {
+            for (this.yieldPos = 0, this.awaitPos = 0; this.type !== a.parenR; )
+              if (H ? H = false : this.expect(a.comma), D && this.afterTrailingComma(a.parenR, true)) {
                 ae = true;
                 break;
-              } else if (this.type === a2.ellipsis) {
-                De = this.start, G.push(this.parseParenItem(this.parseRestBinding())), this.type === a2.comma && this.raise(this.start, "Comma is not permitted after the rest element");
+              } else if (this.type === a.ellipsis) {
+                De = this.start, G.push(this.parseParenItem(this.parseRestBinding())), this.type === a.comma && this.raise(this.start, "Comma is not permitted after the rest element");
                 break;
               } else
                 G.push(this.parseMaybeAssign(false, ye, this.parseParenItem));
             var jt = this.start, Ht = this.startLoc;
-            if (this.expect(a2.parenR), e && !this.canInsertSemicolon() && this.eat(a2.arrow))
+            if (this.expect(a.parenR), e && !this.canInsertSemicolon() && this.eat(a.arrow))
               return this.checkPatternErrors(ye, false), this.checkYieldAwaitInDefaultParams(), this.yieldPos = Ie, this.awaitPos = Fe, this.parseParenArrowList(r, d, G);
             (!G.length || ae) && this.unexpected(this.lastTokStart), De && this.unexpected(De), this.checkExpressionErrors(ye, true), this.yieldPos = Ie || this.yieldPos, this.awaitPos = Fe || this.awaitPos, G.length > 1 ? (_ = this.startNodeAt(R, z), _.expressions = G, this.finishNodeAt(_, "SequenceExpression", jt, Ht)) : _ = G[0];
           } else
@@ -5056,17 +4786,17 @@ var _t = qt((St, Ze) => {
         ne.parseNew = function() {
           this.containsEsc && this.raiseRecoverable(this.start, "Escape sequence in keyword new");
           var e = this.startNode(), r = this.parseIdent(true);
-          if (this.options.ecmaVersion >= 6 && this.eat(a2.dot)) {
+          if (this.options.ecmaVersion >= 6 && this.eat(a.dot)) {
             e.meta = r;
             var d = this.containsEsc;
             return e.property = this.parseIdent(true), (e.property.name !== "target" || d) && this.raiseRecoverable(e.property.start, "The only valid meta property for new is new.target"), this.inNonArrowFunction() || this.raiseRecoverable(e.start, "new.target can only be used in functions"), this.finishNode(e, "MetaProperty");
           }
-          var _ = this.start, D = this.startLoc, R = this.type === a2._import;
-          return e.callee = this.parseSubscripts(this.parseExprAtom(), _, D, true), R && e.callee.type === "ImportExpression" && this.raise(_, "Cannot use new with import()"), this.eat(a2.parenL) ? e.arguments = this.parseExprList(a2.parenR, this.options.ecmaVersion >= 8, false) : e.arguments = $t, this.finishNode(e, "NewExpression");
+          var _ = this.start, D = this.startLoc, R = this.type === a._import;
+          return e.callee = this.parseSubscripts(this.parseExprAtom(), _, D, true), R && e.callee.type === "ImportExpression" && this.raise(_, "Cannot use new with import()"), this.eat(a.parenL) ? e.arguments = this.parseExprList(a.parenR, this.options.ecmaVersion >= 8, false) : e.arguments = $t, this.finishNode(e, "NewExpression");
         }, ne.parseTemplateElement = function(e) {
           var r = e.isTagged, d = this.startNode();
-          return this.type === a2.invalidTemplate ? (r || this.raiseRecoverable(this.start, "Bad escape sequence in untagged template literal"), d.value = { raw: this.value, cooked: null }) : d.value = { raw: this.input.slice(this.start, this.end).replace(/\r\n?/g, `
-`), cooked: this.value }, this.next(), d.tail = this.type === a2.backQuote, this.finishNode(d, "TemplateElement");
+          return this.type === a.invalidTemplate ? (r || this.raiseRecoverable(this.start, "Bad escape sequence in untagged template literal"), d.value = { raw: this.value, cooked: null }) : d.value = { raw: this.input.slice(this.start, this.end).replace(/\r\n?/g, `
+`), cooked: this.value }, this.next(), d.tail = this.type === a.backQuote, this.finishNode(d, "TemplateElement");
         }, ne.parseTemplate = function(e) {
           e === void 0 && (e = {});
           var r = e.isTagged;
@@ -5075,16 +4805,16 @@ var _t = qt((St, Ze) => {
           this.next(), d.expressions = [];
           var _ = this.parseTemplateElement({ isTagged: r });
           for (d.quasis = [_]; !_.tail; )
-            this.type === a2.eof && this.raise(this.pos, "Unterminated template literal"), this.expect(a2.dollarBraceL), d.expressions.push(this.parseExpression()), this.expect(a2.braceR), d.quasis.push(_ = this.parseTemplateElement({ isTagged: r }));
+            this.type === a.eof && this.raise(this.pos, "Unterminated template literal"), this.expect(a.dollarBraceL), d.expressions.push(this.parseExpression()), this.expect(a.braceR), d.quasis.push(_ = this.parseTemplateElement({ isTagged: r }));
           return this.next(), this.finishNode(d, "TemplateLiteral");
         }, ne.isAsyncProp = function(e) {
-          return !e.computed && e.key.type === "Identifier" && e.key.name === "async" && (this.type === a2.name || this.type === a2.num || this.type === a2.string || this.type === a2.bracketL || this.type.keyword || this.options.ecmaVersion >= 9 && this.type === a2.star) && !k.test(this.input.slice(this.lastTokEnd, this.start));
+          return !e.computed && e.key.type === "Identifier" && e.key.name === "async" && (this.type === a.name || this.type === a.num || this.type === a.string || this.type === a.bracketL || this.type.keyword || this.options.ecmaVersion >= 9 && this.type === a.star) && !k.test(this.input.slice(this.lastTokEnd, this.start));
         }, ne.parseObj = function(e, r) {
           var d = this.startNode(), _ = true, D = {};
-          for (d.properties = [], this.next(); !this.eat(a2.braceR); ) {
+          for (d.properties = [], this.next(); !this.eat(a.braceR); ) {
             if (_)
               _ = false;
-            else if (this.expect(a2.comma), this.options.ecmaVersion >= 5 && this.afterTrailingComma(a2.braceR))
+            else if (this.expect(a.comma), this.options.ecmaVersion >= 5 && this.afterTrailingComma(a.braceR))
               break;
             var R = this.parseProperty(e, r);
             e || this.checkPropClash(R, D, r), d.properties.push(R);
@@ -5092,17 +4822,17 @@ var _t = qt((St, Ze) => {
           return this.finishNode(d, e ? "ObjectPattern" : "ObjectExpression");
         }, ne.parseProperty = function(e, r) {
           var d = this.startNode(), _, D, R, z;
-          if (this.options.ecmaVersion >= 9 && this.eat(a2.ellipsis))
-            return e ? (d.argument = this.parseIdent(false), this.type === a2.comma && this.raise(this.start, "Comma is not permitted after the rest element"), this.finishNode(d, "RestElement")) : (this.type === a2.parenL && r && (r.parenthesizedAssign < 0 && (r.parenthesizedAssign = this.start), r.parenthesizedBind < 0 && (r.parenthesizedBind = this.start)), d.argument = this.parseMaybeAssign(false, r), this.type === a2.comma && r && r.trailingComma < 0 && (r.trailingComma = this.start), this.finishNode(d, "SpreadElement"));
-          this.options.ecmaVersion >= 6 && (d.method = false, d.shorthand = false, (e || r) && (R = this.start, z = this.startLoc), e || (_ = this.eat(a2.star)));
+          if (this.options.ecmaVersion >= 9 && this.eat(a.ellipsis))
+            return e ? (d.argument = this.parseIdent(false), this.type === a.comma && this.raise(this.start, "Comma is not permitted after the rest element"), this.finishNode(d, "RestElement")) : (this.type === a.parenL && r && (r.parenthesizedAssign < 0 && (r.parenthesizedAssign = this.start), r.parenthesizedBind < 0 && (r.parenthesizedBind = this.start)), d.argument = this.parseMaybeAssign(false, r), this.type === a.comma && r && r.trailingComma < 0 && (r.trailingComma = this.start), this.finishNode(d, "SpreadElement"));
+          this.options.ecmaVersion >= 6 && (d.method = false, d.shorthand = false, (e || r) && (R = this.start, z = this.startLoc), e || (_ = this.eat(a.star)));
           var G = this.containsEsc;
-          return this.parsePropertyName(d), !e && !G && this.options.ecmaVersion >= 8 && !_ && this.isAsyncProp(d) ? (D = true, _ = this.options.ecmaVersion >= 9 && this.eat(a2.star), this.parsePropertyName(d, r)) : D = false, this.parsePropertyValue(d, e, _, D, R, z, r, G), this.finishNode(d, "Property");
+          return this.parsePropertyName(d), !e && !G && this.options.ecmaVersion >= 8 && !_ && this.isAsyncProp(d) ? (D = true, _ = this.options.ecmaVersion >= 9 && this.eat(a.star), this.parsePropertyName(d, r)) : D = false, this.parsePropertyValue(d, e, _, D, R, z, r, G), this.finishNode(d, "Property");
         }, ne.parsePropertyValue = function(e, r, d, _, D, R, z, G) {
-          if ((d || _) && this.type === a2.colon && this.unexpected(), this.eat(a2.colon))
+          if ((d || _) && this.type === a.colon && this.unexpected(), this.eat(a.colon))
             e.value = r ? this.parseMaybeDefault(this.start, this.startLoc) : this.parseMaybeAssign(false, z), e.kind = "init";
-          else if (this.options.ecmaVersion >= 6 && this.type === a2.parenL)
+          else if (this.options.ecmaVersion >= 6 && this.type === a.parenL)
             r && this.unexpected(), e.kind = "init", e.method = true, e.value = this.parseMethod(d, _);
-          else if (!r && !G && this.options.ecmaVersion >= 5 && !e.computed && e.key.type === "Identifier" && (e.key.name === "get" || e.key.name === "set") && this.type !== a2.comma && this.type !== a2.braceR) {
+          else if (!r && !G && this.options.ecmaVersion >= 5 && !e.computed && e.key.type === "Identifier" && (e.key.name === "get" || e.key.name === "set") && this.type !== a.comma && this.type !== a.braceR) {
             (d || _) && this.unexpected(), e.kind = e.key.name, this.parsePropertyName(e), e.value = this.parseMethod(false);
             var H = e.kind === "get" ? 0 : 1;
             if (e.value.params.length !== H) {
@@ -5111,24 +4841,24 @@ var _t = qt((St, Ze) => {
             } else
               e.kind === "set" && e.value.params[0].type === "RestElement" && this.raiseRecoverable(e.value.params[0].start, "Setter cannot use rest params");
           } else
-            this.options.ecmaVersion >= 6 && !e.computed && e.key.type === "Identifier" ? ((d || _) && this.unexpected(), this.checkUnreserved(e.key), e.key.name === "await" && !this.awaitIdentPos && (this.awaitIdentPos = D), e.kind = "init", r ? e.value = this.parseMaybeDefault(D, R, e.key) : this.type === a2.eq && z ? (z.shorthandAssign < 0 && (z.shorthandAssign = this.start), e.value = this.parseMaybeDefault(D, R, e.key)) : e.value = e.key, e.shorthand = true) : this.unexpected();
+            this.options.ecmaVersion >= 6 && !e.computed && e.key.type === "Identifier" ? ((d || _) && this.unexpected(), this.checkUnreserved(e.key), e.key.name === "await" && !this.awaitIdentPos && (this.awaitIdentPos = D), e.kind = "init", r ? e.value = this.parseMaybeDefault(D, R, e.key) : this.type === a.eq && z ? (z.shorthandAssign < 0 && (z.shorthandAssign = this.start), e.value = this.parseMaybeDefault(D, R, e.key)) : e.value = e.key, e.shorthand = true) : this.unexpected();
         }, ne.parsePropertyName = function(e) {
           if (this.options.ecmaVersion >= 6) {
-            if (this.eat(a2.bracketL))
-              return e.computed = true, e.key = this.parseMaybeAssign(), this.expect(a2.bracketR), e.key;
+            if (this.eat(a.bracketL))
+              return e.computed = true, e.key = this.parseMaybeAssign(), this.expect(a.bracketR), e.key;
             e.computed = false;
           }
-          return e.key = this.type === a2.num || this.type === a2.string ? this.parseExprAtom() : this.parseIdent(this.options.allowReserved !== "never");
+          return e.key = this.type === a.num || this.type === a.string ? this.parseExprAtom() : this.parseIdent(this.options.allowReserved !== "never");
         }, ne.initFunction = function(e) {
           e.id = null, this.options.ecmaVersion >= 6 && (e.generator = e.expression = false), this.options.ecmaVersion >= 8 && (e.async = false);
         }, ne.parseMethod = function(e, r, d) {
           var _ = this.startNode(), D = this.yieldPos, R = this.awaitPos, z = this.awaitIdentPos;
-          return this.initFunction(_), this.options.ecmaVersion >= 6 && (_.generator = e), this.options.ecmaVersion >= 8 && (_.async = !!r), this.yieldPos = 0, this.awaitPos = 0, this.awaitIdentPos = 0, this.enterScope(Te(r, _.generator) | re | (d ? de : 0)), this.expect(a2.parenL), _.params = this.parseBindingList(a2.parenR, false, this.options.ecmaVersion >= 8), this.checkYieldAwaitInDefaultParams(), this.parseFunctionBody(_, false, true), this.yieldPos = D, this.awaitPos = R, this.awaitIdentPos = z, this.finishNode(_, "FunctionExpression");
+          return this.initFunction(_), this.options.ecmaVersion >= 6 && (_.generator = e), this.options.ecmaVersion >= 8 && (_.async = !!r), this.yieldPos = 0, this.awaitPos = 0, this.awaitIdentPos = 0, this.enterScope(Te(r, _.generator) | re | (d ? de : 0)), this.expect(a.parenL), _.params = this.parseBindingList(a.parenR, false, this.options.ecmaVersion >= 8), this.checkYieldAwaitInDefaultParams(), this.parseFunctionBody(_, false, true), this.yieldPos = D, this.awaitPos = R, this.awaitIdentPos = z, this.finishNode(_, "FunctionExpression");
         }, ne.parseArrowExpression = function(e, r, d) {
           var _ = this.yieldPos, D = this.awaitPos, R = this.awaitIdentPos;
           return this.enterScope(Te(d, false) | pe), this.initFunction(e), this.options.ecmaVersion >= 8 && (e.async = !!d), this.yieldPos = 0, this.awaitPos = 0, this.awaitIdentPos = 0, e.params = this.toAssignableList(r, true), this.parseFunctionBody(e, true, false), this.yieldPos = _, this.awaitPos = D, this.awaitIdentPos = R, this.finishNode(e, "ArrowFunctionExpression");
         }, ne.parseFunctionBody = function(e, r, d) {
-          var _ = r && this.type !== a2.braceL, D = this.strict, R = false;
+          var _ = r && this.type !== a.braceL, D = this.strict, R = false;
           if (_)
             e.body = this.parseMaybeAssign(), e.expression = true, this.checkParams(e, false);
           else {
@@ -5154,10 +4884,10 @@ var _t = qt((St, Ze) => {
           for (var D = [], R = true; !this.eat(e); ) {
             if (R)
               R = false;
-            else if (this.expect(a2.comma), r && this.afterTrailingComma(e))
+            else if (this.expect(a.comma), r && this.afterTrailingComma(e))
               break;
             var z = void 0;
-            d && this.type === a2.comma ? z = null : this.type === a2.ellipsis ? (z = this.parseSpread(_), _ && this.type === a2.comma && _.trailingComma < 0 && (_.trailingComma = this.start)) : z = this.parseMaybeAssign(false, _), D.push(z);
+            d && this.type === a.comma ? z = null : this.type === a.ellipsis ? (z = this.parseSpread(_), _ && this.type === a.comma && _.trailingComma < 0 && (_.trailingComma = this.start)) : z = this.parseMaybeAssign(false, _), D.push(z);
           }
           return D;
         }, ne.checkUnreserved = function(e) {
@@ -5168,11 +4898,11 @@ var _t = qt((St, Ze) => {
           }
         }, ne.parseIdent = function(e, r) {
           var d = this.startNode();
-          return this.type === a2.name ? d.name = this.value : this.type.keyword ? (d.name = this.type.keyword, (d.name === "class" || d.name === "function") && (this.lastTokEnd !== this.lastTokStart + 1 || this.input.charCodeAt(this.lastTokStart) !== 46) && this.context.pop()) : this.unexpected(), this.next(!!e), this.finishNode(d, "Identifier"), e || (this.checkUnreserved(d), d.name === "await" && !this.awaitIdentPos && (this.awaitIdentPos = d.start)), d;
+          return this.type === a.name ? d.name = this.value : this.type.keyword ? (d.name = this.type.keyword, (d.name === "class" || d.name === "function") && (this.lastTokEnd !== this.lastTokStart + 1 || this.input.charCodeAt(this.lastTokStart) !== 46) && this.context.pop()) : this.unexpected(), this.next(!!e), this.finishNode(d, "Identifier"), e || (this.checkUnreserved(d), d.name === "await" && !this.awaitIdentPos && (this.awaitIdentPos = d.start)), d;
         }, ne.parseYield = function(e) {
           this.yieldPos || (this.yieldPos = this.start);
           var r = this.startNode();
-          return this.next(), this.type === a2.semi || this.canInsertSemicolon() || this.type !== a2.star && !this.type.startsExpr ? (r.delegate = false, r.argument = null) : (r.delegate = this.eat(a2.star), r.argument = this.parseMaybeAssign(e)), this.finishNode(r, "YieldExpression");
+          return this.next(), this.type === a.semi || this.canInsertSemicolon() || this.type !== a.star && !this.type.startsExpr ? (r.delegate = false, r.argument = null) : (r.delegate = this.eat(a.star), r.argument = this.parseMaybeAssign(e)), this.finishNode(r, "YieldExpression");
         }, ne.parseAwait = function() {
           this.awaitPos || (this.awaitPos = this.start);
           var e = this.startNode();
@@ -5261,7 +4991,7 @@ var _t = qt((St, Ze) => {
           return [ce.b_stat];
         }, Pe.braceIsBlock = function(e) {
           var r = this.curContext();
-          return r === ce.f_expr || r === ce.f_stat ? true : e === a2.colon && (r === ce.b_stat || r === ce.b_expr) ? !r.isExpr : e === a2._return || e === a2.name && this.exprAllowed ? k.test(this.input.slice(this.lastTokEnd, this.start)) : e === a2._else || e === a2.semi || e === a2.eof || e === a2.parenR || e === a2.arrow ? true : e === a2.braceL ? r === ce.b_stat : e === a2._var || e === a2._const || e === a2.name ? false : !this.exprAllowed;
+          return r === ce.f_expr || r === ce.f_stat ? true : e === a.colon && (r === ce.b_stat || r === ce.b_expr) ? !r.isExpr : e === a._return || e === a.name && this.exprAllowed ? k.test(this.input.slice(this.lastTokEnd, this.start)) : e === a._else || e === a.semi || e === a.eof || e === a.parenR || e === a.arrow ? true : e === a.braceL ? r === ce.b_stat : e === a._var || e === a._const || e === a.name ? false : !this.exprAllowed;
         }, Pe.inGeneratorContext = function() {
           for (var e = this.context.length - 1; e >= 1; e--) {
             var r = this.context[e];
@@ -5271,35 +5001,35 @@ var _t = qt((St, Ze) => {
           return false;
         }, Pe.updateContext = function(e) {
           var r, d = this.type;
-          d.keyword && e === a2.dot ? this.exprAllowed = false : (r = d.updateContext) ? r.call(this, e) : this.exprAllowed = d.beforeExpr;
-        }, a2.parenR.updateContext = a2.braceR.updateContext = function() {
+          d.keyword && e === a.dot ? this.exprAllowed = false : (r = d.updateContext) ? r.call(this, e) : this.exprAllowed = d.beforeExpr;
+        }, a.parenR.updateContext = a.braceR.updateContext = function() {
           if (this.context.length === 1) {
             this.exprAllowed = true;
             return;
           }
           var e = this.context.pop();
           e === ce.b_stat && this.curContext().token === "function" && (e = this.context.pop()), this.exprAllowed = !e.isExpr;
-        }, a2.braceL.updateContext = function(e) {
+        }, a.braceL.updateContext = function(e) {
           this.context.push(this.braceIsBlock(e) ? ce.b_stat : ce.b_expr), this.exprAllowed = true;
-        }, a2.dollarBraceL.updateContext = function() {
+        }, a.dollarBraceL.updateContext = function() {
           this.context.push(ce.b_tmpl), this.exprAllowed = true;
-        }, a2.parenL.updateContext = function(e) {
-          var r = e === a2._if || e === a2._for || e === a2._with || e === a2._while;
+        }, a.parenL.updateContext = function(e) {
+          var r = e === a._if || e === a._for || e === a._with || e === a._while;
           this.context.push(r ? ce.p_stat : ce.p_expr), this.exprAllowed = true;
-        }, a2.incDec.updateContext = function() {
-        }, a2._function.updateContext = a2._class.updateContext = function(e) {
-          e.beforeExpr && e !== a2.semi && e !== a2._else && !(e === a2._return && k.test(this.input.slice(this.lastTokEnd, this.start))) && !((e === a2.colon || e === a2.braceL) && this.curContext() === ce.b_stat) ? this.context.push(ce.f_expr) : this.context.push(ce.f_stat), this.exprAllowed = false;
-        }, a2.backQuote.updateContext = function() {
+        }, a.incDec.updateContext = function() {
+        }, a._function.updateContext = a._class.updateContext = function(e) {
+          e.beforeExpr && e !== a.semi && e !== a._else && !(e === a._return && k.test(this.input.slice(this.lastTokEnd, this.start))) && !((e === a.colon || e === a.braceL) && this.curContext() === ce.b_stat) ? this.context.push(ce.f_expr) : this.context.push(ce.f_stat), this.exprAllowed = false;
+        }, a.backQuote.updateContext = function() {
           this.curContext() === ce.q_tmpl ? this.context.pop() : this.context.push(ce.q_tmpl), this.exprAllowed = false;
-        }, a2.star.updateContext = function(e) {
-          if (e === a2._function) {
+        }, a.star.updateContext = function(e) {
+          if (e === a._function) {
             var r = this.context.length - 1;
             this.context[r] === ce.f_expr ? this.context[r] = ce.f_expr_gen : this.context[r] = ce.f_gen;
           }
           this.exprAllowed = true;
-        }, a2.name.updateContext = function(e) {
+        }, a.name.updateContext = function(e) {
           var r = false;
-          this.options.ecmaVersion >= 6 && e !== a2.dot && (this.value === "of" && !this.exprAllowed || this.value === "yield" && this.inGeneratorContext()) && (r = true), this.exprAllowed = r;
+          this.options.ecmaVersion >= 6 && e !== a.dot && (this.value === "of" && !this.exprAllowed || this.value === "yield" && this.inGeneratorContext()) && (r = true), this.exprAllowed = r;
         };
         var at = "ASCII ASCII_Hex_Digit AHex Alphabetic Alpha Any Assigned Bidi_Control Bidi_C Bidi_Mirrored Bidi_M Case_Ignorable CI Cased Changes_When_Casefolded CWCF Changes_When_Casemapped CWCM Changes_When_Lowercased CWL Changes_When_NFKC_Casefolded CWKCF Changes_When_Titlecased CWT Changes_When_Uppercased CWU Dash Default_Ignorable_Code_Point DI Deprecated Dep Diacritic Dia Emoji Emoji_Component Emoji_Modifier Emoji_Modifier_Base Emoji_Presentation Extender Ext Grapheme_Base Gr_Base Grapheme_Extend Gr_Ext Hex_Digit Hex IDS_Binary_Operator IDSB IDS_Trinary_Operator IDST ID_Continue IDC ID_Start IDS Ideographic Ideo Join_Control Join_C Logical_Order_Exception LOE Lowercase Lower Math Noncharacter_Code_Point NChar Pattern_Syntax Pat_Syn Pattern_White_Space Pat_WS Quotation_Mark QMark Radical Regional_Indicator RI Sentence_Terminal STerm Soft_Dotted SD Terminal_Punctuation Term Unified_Ideograph UIdeo Uppercase Upper Variation_Selector VS White_Space space XID_Continue XIDC XID_Start XIDS", ot = at + " Extended_Pictographic", Rt = ot, Mt = { 9: at, 10: ot, 11: Rt }, ut = "Cased_Letter LC Close_Punctuation Pe Connector_Punctuation Pc Control Cc cntrl Currency_Symbol Sc Dash_Punctuation Pd Decimal_Number Nd digit Enclosing_Mark Me Final_Punctuation Pf Format Cf Initial_Punctuation Pi Letter L Letter_Number Nl Line_Separator Zl Lowercase_Letter Ll Mark M Combining_Mark Math_Symbol Sm Modifier_Letter Lm Modifier_Symbol Sk Nonspacing_Mark Mn Number N Open_Punctuation Ps Other C Other_Letter Lo Other_Number No Other_Punctuation Po Other_Symbol So Paragraph_Separator Zp Private_Use Co Punctuation P punct Separator Z Space_Separator Zs Spacing_Mark Mc Surrogate Cs Symbol S Titlecase_Letter Lt Unassigned Cn Uppercase_Letter Lu", lt = "Adlam Adlm Ahom Ahom Anatolian_Hieroglyphs Hluw Arabic Arab Armenian Armn Avestan Avst Balinese Bali Bamum Bamu Bassa_Vah Bass Batak Batk Bengali Beng Bhaiksuki Bhks Bopomofo Bopo Brahmi Brah Braille Brai Buginese Bugi Buhid Buhd Canadian_Aboriginal Cans Carian Cari Caucasian_Albanian Aghb Chakma Cakm Cham Cham Cherokee Cher Common Zyyy Coptic Copt Qaac Cuneiform Xsux Cypriot Cprt Cyrillic Cyrl Deseret Dsrt Devanagari Deva Duployan Dupl Egyptian_Hieroglyphs Egyp Elbasan Elba Ethiopic Ethi Georgian Geor Glagolitic Glag Gothic Goth Grantha Gran Greek Grek Gujarati Gujr Gurmukhi Guru Han Hani Hangul Hang Hanunoo Hano Hatran Hatr Hebrew Hebr Hiragana Hira Imperial_Aramaic Armi Inherited Zinh Qaai Inscriptional_Pahlavi Phli Inscriptional_Parthian Prti Javanese Java Kaithi Kthi Kannada Knda Katakana Kana Kayah_Li Kali Kharoshthi Khar Khmer Khmr Khojki Khoj Khudawadi Sind Lao Laoo Latin Latn Lepcha Lepc Limbu Limb Linear_A Lina Linear_B Linb Lisu Lisu Lycian Lyci Lydian Lydi Mahajani Mahj Malayalam Mlym Mandaic Mand Manichaean Mani Marchen Marc Masaram_Gondi Gonm Meetei_Mayek Mtei Mende_Kikakui Mend Meroitic_Cursive Merc Meroitic_Hieroglyphs Mero Miao Plrd Modi Modi Mongolian Mong Mro Mroo Multani Mult Myanmar Mymr Nabataean Nbat New_Tai_Lue Talu Newa Newa Nko Nkoo Nushu Nshu Ogham Ogam Ol_Chiki Olck Old_Hungarian Hung Old_Italic Ital Old_North_Arabian Narb Old_Permic Perm Old_Persian Xpeo Old_South_Arabian Sarb Old_Turkic Orkh Oriya Orya Osage Osge Osmanya Osma Pahawh_Hmong Hmng Palmyrene Palm Pau_Cin_Hau Pauc Phags_Pa Phag Phoenician Phnx Psalter_Pahlavi Phlp Rejang Rjng Runic Runr Samaritan Samr Saurashtra Saur Sharada Shrd Shavian Shaw Siddham Sidd SignWriting Sgnw Sinhala Sinh Sora_Sompeng Sora Soyombo Soyo Sundanese Sund Syloti_Nagri Sylo Syriac Syrc Tagalog Tglg Tagbanwa Tagb Tai_Le Tale Tai_Tham Lana Tai_Viet Tavt Takri Takr Tamil Taml Tangut Tang Telugu Telu Thaana Thaa Thai Thai Tibetan Tibt Tifinagh Tfng Tirhuta Tirh Ugaritic Ugar Vai Vaii Warang_Citi Wara Yi Yiii Zanabazar_Square Zanb", ht = lt + " Dogra Dogr Gunjala_Gondi Gong Hanifi_Rohingya Rohg Makasar Maka Medefaidrin Medf Old_Sogdian Sogo Sogdian Sogd", Vt = ht + " Elymaic Elym Nandinagari Nand Nyiakeng_Puachue_Hmong Hmnp Wancho Wcho", Ot = { 9: lt, 10: ht, 11: Vt }, ct = {};
         function Xe(e) {
@@ -5720,14 +5450,14 @@ var _t = qt((St, Ze) => {
           var e = this;
           return { next: function() {
             var r = e.getToken();
-            return { done: r.type === a2.eof, value: r };
+            return { done: r.type === a.eof, value: r };
           } };
         }), se.curContext = function() {
           return this.context[this.context.length - 1];
         }, se.nextToken = function() {
           var e = this.curContext();
           if ((!e || !e.preserveSpace) && this.skipSpace(), this.start = this.pos, this.options.locations && (this.startLoc = this.curPosition()), this.pos >= this.input.length)
-            return this.finishToken(a2.eof);
+            return this.finishToken(a.eof);
           if (e.override)
             return e.override(this);
           this.readToken(this.fullCharCodeAtPos());
@@ -5795,56 +5525,56 @@ var _t = qt((St, Ze) => {
           if (e >= 48 && e <= 57)
             return this.readNumber(true);
           var r = this.input.charCodeAt(this.pos + 2);
-          return this.options.ecmaVersion >= 6 && e === 46 && r === 46 ? (this.pos += 3, this.finishToken(a2.ellipsis)) : (++this.pos, this.finishToken(a2.dot));
+          return this.options.ecmaVersion >= 6 && e === 46 && r === 46 ? (this.pos += 3, this.finishToken(a.ellipsis)) : (++this.pos, this.finishToken(a.dot));
         }, se.readToken_slash = function() {
           var e = this.input.charCodeAt(this.pos + 1);
-          return this.exprAllowed ? (++this.pos, this.readRegexp()) : e === 61 ? this.finishOp(a2.assign, 2) : this.finishOp(a2.slash, 1);
+          return this.exprAllowed ? (++this.pos, this.readRegexp()) : e === 61 ? this.finishOp(a.assign, 2) : this.finishOp(a.slash, 1);
         }, se.readToken_mult_modulo_exp = function(e) {
-          var r = this.input.charCodeAt(this.pos + 1), d = 1, _ = e === 42 ? a2.star : a2.modulo;
-          return this.options.ecmaVersion >= 7 && e === 42 && r === 42 && (++d, _ = a2.starstar, r = this.input.charCodeAt(this.pos + 2)), r === 61 ? this.finishOp(a2.assign, d + 1) : this.finishOp(_, d);
+          var r = this.input.charCodeAt(this.pos + 1), d = 1, _ = e === 42 ? a.star : a.modulo;
+          return this.options.ecmaVersion >= 7 && e === 42 && r === 42 && (++d, _ = a.starstar, r = this.input.charCodeAt(this.pos + 2)), r === 61 ? this.finishOp(a.assign, d + 1) : this.finishOp(_, d);
         }, se.readToken_pipe_amp = function(e) {
           var r = this.input.charCodeAt(this.pos + 1);
-          return r === e ? this.finishOp(e === 124 ? a2.logicalOR : a2.logicalAND, 2) : r === 61 ? this.finishOp(a2.assign, 2) : this.finishOp(e === 124 ? a2.bitwiseOR : a2.bitwiseAND, 1);
+          return r === e ? this.finishOp(e === 124 ? a.logicalOR : a.logicalAND, 2) : r === 61 ? this.finishOp(a.assign, 2) : this.finishOp(e === 124 ? a.bitwiseOR : a.bitwiseAND, 1);
         }, se.readToken_caret = function() {
           var e = this.input.charCodeAt(this.pos + 1);
-          return e === 61 ? this.finishOp(a2.assign, 2) : this.finishOp(a2.bitwiseXOR, 1);
+          return e === 61 ? this.finishOp(a.assign, 2) : this.finishOp(a.bitwiseXOR, 1);
         }, se.readToken_plus_min = function(e) {
           var r = this.input.charCodeAt(this.pos + 1);
-          return r === e ? r === 45 && !this.inModule && this.input.charCodeAt(this.pos + 2) === 62 && (this.lastTokEnd === 0 || k.test(this.input.slice(this.lastTokEnd, this.pos))) ? (this.skipLineComment(3), this.skipSpace(), this.nextToken()) : this.finishOp(a2.incDec, 2) : r === 61 ? this.finishOp(a2.assign, 2) : this.finishOp(a2.plusMin, 1);
+          return r === e ? r === 45 && !this.inModule && this.input.charCodeAt(this.pos + 2) === 62 && (this.lastTokEnd === 0 || k.test(this.input.slice(this.lastTokEnd, this.pos))) ? (this.skipLineComment(3), this.skipSpace(), this.nextToken()) : this.finishOp(a.incDec, 2) : r === 61 ? this.finishOp(a.assign, 2) : this.finishOp(a.plusMin, 1);
         }, se.readToken_lt_gt = function(e) {
           var r = this.input.charCodeAt(this.pos + 1), d = 1;
-          return r === e ? (d = e === 62 && this.input.charCodeAt(this.pos + 2) === 62 ? 3 : 2, this.input.charCodeAt(this.pos + d) === 61 ? this.finishOp(a2.assign, d + 1) : this.finishOp(a2.bitShift, d)) : r === 33 && e === 60 && !this.inModule && this.input.charCodeAt(this.pos + 2) === 45 && this.input.charCodeAt(this.pos + 3) === 45 ? (this.skipLineComment(4), this.skipSpace(), this.nextToken()) : (r === 61 && (d = 2), this.finishOp(a2.relational, d));
+          return r === e ? (d = e === 62 && this.input.charCodeAt(this.pos + 2) === 62 ? 3 : 2, this.input.charCodeAt(this.pos + d) === 61 ? this.finishOp(a.assign, d + 1) : this.finishOp(a.bitShift, d)) : r === 33 && e === 60 && !this.inModule && this.input.charCodeAt(this.pos + 2) === 45 && this.input.charCodeAt(this.pos + 3) === 45 ? (this.skipLineComment(4), this.skipSpace(), this.nextToken()) : (r === 61 && (d = 2), this.finishOp(a.relational, d));
         }, se.readToken_eq_excl = function(e) {
           var r = this.input.charCodeAt(this.pos + 1);
-          return r === 61 ? this.finishOp(a2.equality, this.input.charCodeAt(this.pos + 2) === 61 ? 3 : 2) : e === 61 && r === 62 && this.options.ecmaVersion >= 6 ? (this.pos += 2, this.finishToken(a2.arrow)) : this.finishOp(e === 61 ? a2.eq : a2.prefix, 1);
+          return r === 61 ? this.finishOp(a.equality, this.input.charCodeAt(this.pos + 2) === 61 ? 3 : 2) : e === 61 && r === 62 && this.options.ecmaVersion >= 6 ? (this.pos += 2, this.finishToken(a.arrow)) : this.finishOp(e === 61 ? a.eq : a.prefix, 1);
         }, se.getTokenFromCode = function(e) {
           switch (e) {
             case 46:
               return this.readToken_dot();
             case 40:
-              return ++this.pos, this.finishToken(a2.parenL);
+              return ++this.pos, this.finishToken(a.parenL);
             case 41:
-              return ++this.pos, this.finishToken(a2.parenR);
+              return ++this.pos, this.finishToken(a.parenR);
             case 59:
-              return ++this.pos, this.finishToken(a2.semi);
+              return ++this.pos, this.finishToken(a.semi);
             case 44:
-              return ++this.pos, this.finishToken(a2.comma);
+              return ++this.pos, this.finishToken(a.comma);
             case 91:
-              return ++this.pos, this.finishToken(a2.bracketL);
+              return ++this.pos, this.finishToken(a.bracketL);
             case 93:
-              return ++this.pos, this.finishToken(a2.bracketR);
+              return ++this.pos, this.finishToken(a.bracketR);
             case 123:
-              return ++this.pos, this.finishToken(a2.braceL);
+              return ++this.pos, this.finishToken(a.braceL);
             case 125:
-              return ++this.pos, this.finishToken(a2.braceR);
+              return ++this.pos, this.finishToken(a.braceR);
             case 58:
-              return ++this.pos, this.finishToken(a2.colon);
+              return ++this.pos, this.finishToken(a.colon);
             case 63:
-              return ++this.pos, this.finishToken(a2.question);
+              return ++this.pos, this.finishToken(a.question);
             case 96:
               if (this.options.ecmaVersion < 6)
                 break;
-              return ++this.pos, this.finishToken(a2.backQuote);
+              return ++this.pos, this.finishToken(a.backQuote);
             case 48:
               var r = this.input.charCodeAt(this.pos + 1);
               if (r === 120 || r === 88)
@@ -5888,7 +5618,7 @@ var _t = qt((St, Ze) => {
             case 33:
               return this.readToken_eq_excl(e);
             case 126:
-              return this.finishOp(a2.prefix, 1);
+              return this.finishOp(a.prefix, 1);
           }
           this.raise(this.pos, "Unexpected character '" + Ye(e) + "'");
         }, se.finishOp = function(e, r) {
@@ -5922,7 +5652,7 @@ var _t = qt((St, Ze) => {
             H = new RegExp(D, z);
           } catch {
           }
-          return this.finishToken(a2.regexp, { pattern: D, flags: z, value: H });
+          return this.finishToken(a.regexp, { pattern: D, flags: z, value: H });
         }, se.readInt = function(e, r) {
           for (var d = this.pos, _ = 0, D = 0, R = r ?? 1 / 0; D < R; ++D) {
             var z = this.input.charCodeAt(this.pos), G = void 0;
@@ -5935,7 +5665,7 @@ var _t = qt((St, Ze) => {
           var r = this.pos;
           this.pos += 2;
           var d = this.readInt(e);
-          return d == null && this.raise(this.start + 2, "Expected number in radix " + e), this.options.ecmaVersion >= 11 && this.input.charCodeAt(this.pos) === 110 ? (d = typeof BigInt < "u" ? BigInt(this.input.slice(r, this.pos)) : null, ++this.pos) : S(this.fullCharCodeAtPos()) && this.raise(this.pos, "Identifier directly after number"), this.finishToken(a2.num, d);
+          return d == null && this.raise(this.start + 2, "Expected number in radix " + e), this.options.ecmaVersion >= 11 && this.input.charCodeAt(this.pos) === 110 ? (d = typeof BigInt < "u" ? BigInt(this.input.slice(r, this.pos)) : null, ++this.pos) : S(this.fullCharCodeAtPos()) && this.raise(this.pos, "Identifier directly after number"), this.finishToken(a.num, d);
         }, se.readNumber = function(e) {
           var r = this.pos;
           !e && this.readInt(10) === null && this.raise(r, "Invalid number");
@@ -5944,11 +5674,11 @@ var _t = qt((St, Ze) => {
           var _ = this.input.charCodeAt(this.pos);
           if (!d && !e && this.options.ecmaVersion >= 11 && _ === 110) {
             var D = this.input.slice(r, this.pos), R = typeof BigInt < "u" ? BigInt(D) : null;
-            return ++this.pos, S(this.fullCharCodeAtPos()) && this.raise(this.pos, "Identifier directly after number"), this.finishToken(a2.num, R);
+            return ++this.pos, S(this.fullCharCodeAtPos()) && this.raise(this.pos, "Identifier directly after number"), this.finishToken(a.num, R);
           }
           d && /[89]/.test(this.input.slice(r, this.pos)) && (d = false), _ === 46 && !d && (++this.pos, this.readInt(10), _ = this.input.charCodeAt(this.pos)), (_ === 69 || _ === 101) && !d && (_ = this.input.charCodeAt(++this.pos), (_ === 43 || _ === 45) && ++this.pos, this.readInt(10) === null && this.raise(r, "Invalid number")), S(this.fullCharCodeAtPos()) && this.raise(this.pos, "Identifier directly after number");
           var z = this.input.slice(r, this.pos), G = d ? parseInt(z, 8) : parseFloat(z);
-          return this.finishToken(a2.num, G);
+          return this.finishToken(a.num, G);
         }, se.readCodePoint = function() {
           var e = this.input.charCodeAt(this.pos), r;
           if (e === 123) {
@@ -5970,7 +5700,7 @@ var _t = qt((St, Ze) => {
               break;
             _ === 92 ? (r += this.input.slice(d, this.pos), r += this.readEscapedChar(false), d = this.pos) : (N(_, this.options.ecmaVersion >= 10) && this.raise(this.start, "Unterminated string constant"), ++this.pos);
           }
-          return r += this.input.slice(d, this.pos++), this.finishToken(a2.string, r);
+          return r += this.input.slice(d, this.pos++), this.finishToken(a.string, r);
         };
         var yt = {};
         se.tryReadTemplateToken = function() {
@@ -5993,7 +5723,7 @@ var _t = qt((St, Ze) => {
             this.pos >= this.input.length && this.raise(this.start, "Unterminated template");
             var d = this.input.charCodeAt(this.pos);
             if (d === 96 || d === 36 && this.input.charCodeAt(this.pos + 1) === 123)
-              return this.pos === this.start && (this.type === a2.template || this.type === a2.invalidTemplate) ? d === 36 ? (this.pos += 2, this.finishToken(a2.dollarBraceL)) : (++this.pos, this.finishToken(a2.backQuote)) : (e += this.input.slice(r, this.pos), this.finishToken(a2.template, e));
+              return this.pos === this.start && (this.type === a.template || this.type === a.invalidTemplate) ? d === 36 ? (this.pos += 2, this.finishToken(a.dollarBraceL)) : (++this.pos, this.finishToken(a.backQuote)) : (e += this.input.slice(r, this.pos), this.finishToken(a.template, e));
             if (d === 92)
               e += this.input.slice(r, this.pos), e += this.readEscapedChar(true), r = this.pos;
             else if (N(d)) {
@@ -6022,7 +5752,7 @@ var _t = qt((St, Ze) => {
                 if (this.input[this.pos + 1] !== "{")
                   break;
               case "`":
-                return this.finishToken(a2.invalidTemplate, this.input.slice(this.start, this.pos));
+                return this.finishToken(a.invalidTemplate, this.input.slice(this.start, this.pos));
             }
           this.raise(this.start, "Unterminated template");
         }, se.readEscapedChar = function(e) {
@@ -6083,11 +5813,11 @@ var _t = qt((St, Ze) => {
           }
           return e + this.input.slice(d, this.pos);
         }, se.readWord = function() {
-          var e = this.readWord1(), r = a2.name;
+          var e = this.readWord1(), r = a.name;
           return this.keywords.test(e) && (r = V[e]), this.finishToken(r, e);
         };
         var bt = "7.1.0";
-        le.acorn = { Parser: le, version: bt, defaultOptions: U, Position: J, SourceLocation: q, getLineInfo: j, Node: ze, TokenType: h, tokTypes: a2, keywordTypes: V, TokContext: ve, tokContexts: ce, isIdentifierChar: v, isIdentifierStart: S, Token: Ue, isNewLine: N, lineBreak: k, lineBreakG: A, nonASCIIwhitespace: F };
+        le.acorn = { Parser: le, version: bt, defaultOptions: U, Position: J, SourceLocation: q, getLineInfo: j, Node: ze, TokenType: h, tokTypes: a, keywordTypes: V, TokContext: ve, tokContexts: ce, isIdentifierChar: v, isIdentifierStart: S, Token: Ue, isNewLine: N, lineBreak: k, lineBreakG: A, nonASCIIwhitespace: F };
         function Ut(e, r) {
           return le.parse(e, r);
         }
@@ -6097,13 +5827,13 @@ var _t = qt((St, Ze) => {
         function Wt(e, r) {
           return le.tokenizer(e, r);
         }
-        p.Node = ze, p.Parser = le, p.Position = J, p.SourceLocation = q, p.TokContext = ve, p.Token = Ue, p.TokenType = h, p.defaultOptions = U, p.getLineInfo = j, p.isIdentifierChar = v, p.isIdentifierStart = S, p.isNewLine = N, p.keywordTypes = V, p.lineBreak = k, p.lineBreakG = A, p.nonASCIIwhitespace = F, p.parse = Ut, p.parseExpressionAt = Bt, p.tokContexts = ce, p.tokTypes = a2, p.tokenizer = Wt, p.version = bt, Object.defineProperty(p, "__esModule", { value: true });
+        p.Node = ze, p.Parser = le, p.Position = J, p.SourceLocation = q, p.TokContext = ve, p.Token = Ue, p.TokenType = h, p.defaultOptions = U, p.getLineInfo = j, p.isIdentifierChar = v, p.isIdentifierStart = S, p.isNewLine = N, p.keywordTypes = V, p.lineBreak = k, p.lineBreakG = A, p.nonASCIIwhitespace = F, p.parse = Ut, p.parseExpressionAt = Bt, p.tokContexts = ce, p.tokTypes = a, p.tokenizer = Wt, p.version = bt, Object.defineProperty(p, "__esModule", { value: true });
       });
-    }, {}], 2: [function(o2, y, E) {
-    }, {}], 3: [function(o2, y, E) {
+    }, {}], 2: [function(o, y, E) {
+    }, {}], 3: [function(o, y, E) {
       function p(s, t = {}) {
-        let { contextName: i = "gl", throwGetError: u, useTrackablePrimitives: x2, readPixelsFile: w2, recording: m = [], variables: S = {}, onReadPixels: v, onUnrecognizedArgumentLookup: h } = t, b2 = new Proxy(s, { get: k }), T = [], C = {}, V = 0, c2 = "", a2;
-        return b2;
+        let { contextName: i = "gl", throwGetError: u, useTrackablePrimitives: x2, readPixelsFile: w, recording: m = [], variables: S = {}, onReadPixels: v, onUnrecognizedArgumentLookup: h } = t, b = new Proxy(s, { get: k }), T = [], C = {}, V = 0, c = "", a;
+        return b;
         function k(j, U) {
           switch (U) {
             case "addComment":
@@ -6111,7 +5841,7 @@ var _t = qt((St, Ze) => {
             case "checkThrowError":
               return P;
             case "getReadPixelsVariableName":
-              return a2;
+              return a;
             case "insertVariable":
               return F;
             case "reset":
@@ -6126,13 +5856,13 @@ var _t = qt((St, Ze) => {
           return typeof s[U] == "function" ? function() {
             switch (U) {
               case "getError":
-                return u ? m.push(`${c2}if (${i}.getError() !== ${i}.NONE) throw new Error('error');`) : m.push(`${c2}${i}.getError();`), s.getError();
+                return u ? m.push(`${c}if (${i}.getError() !== ${i}.NONE) throw new Error('error');`) : m.push(`${c}${i}.getError();`), s.getError();
               case "getExtension": {
                 let Q = `${i}Variables${T.length}`;
-                m.push(`${c2}const ${Q} = ${i}.getExtension('${arguments[0]}');`);
+                m.push(`${c}const ${Q} = ${i}.getExtension('${arguments[0]}');`);
                 let ue = s.getExtension(arguments[0]);
                 if (ue && typeof ue == "object") {
-                  let he = g2(ue, { getEntity: L, useTrackablePrimitives: x2, recording: m, contextName: Q, contextVariables: T, variables: S, indent: c2, onUnrecognizedArgumentLookup: h });
+                  let he = g(ue, { getEntity: L, useTrackablePrimitives: x2, recording: m, contextName: Q, contextVariables: T, variables: S, indent: c, onUnrecognizedArgumentLookup: h });
                   return T.push(he), he;
                 } else
                   T.push(null);
@@ -6142,28 +5872,28 @@ var _t = qt((St, Ze) => {
                 let Z = T.indexOf(arguments[6]), ee;
                 if (Z === -1) {
                   let Q = J(arguments[6]);
-                  Q ? (ee = Q, m.push(`${c2}${Q}`)) : (ee = `${i}Variable${T.length}`, T.push(arguments[6]), m.push(`${c2}const ${ee} = new ${arguments[6].constructor.name}(${arguments[6].length});`));
+                  Q ? (ee = Q, m.push(`${c}${Q}`)) : (ee = `${i}Variable${T.length}`, T.push(arguments[6]), m.push(`${c}const ${ee} = new ${arguments[6].constructor.name}(${arguments[6].length});`));
                 } else
                   ee = `${i}Variable${Z}`;
-                a2 = ee;
+                a = ee;
                 let be = [arguments[0], arguments[1], arguments[2], arguments[3], L(arguments[4]), L(arguments[5]), ee];
-                return m.push(`${c2}${i}.readPixels(${be.join(", ")});`), w2 && X(arguments[2], arguments[3]), v && v(ee, be), s.readPixels.apply(s, arguments);
+                return m.push(`${c}${i}.readPixels(${be.join(", ")});`), w && X(arguments[2], arguments[3]), v && v(ee, be), s.readPixels.apply(s, arguments);
               case "drawBuffers":
-                return m.push(`${c2}${i}.drawBuffers([${f2(arguments[0], { contextName: i, contextVariables: T, getEntity: L, addVariable: O, variables: S, onUnrecognizedArgumentLookup: h })}]);`), s.drawBuffers(arguments[0]);
+                return m.push(`${c}${i}.drawBuffers([${f(arguments[0], { contextName: i, contextVariables: T, getEntity: L, addVariable: O, variables: S, onUnrecognizedArgumentLookup: h })}]);`), s.drawBuffers(arguments[0]);
             }
             let oe = s[U].apply(s, arguments);
             switch (typeof oe) {
               case "undefined":
-                m.push(`${c2}${Y(U, arguments)};`);
+                m.push(`${c}${Y(U, arguments)};`);
                 return;
               case "number":
               case "boolean":
                 if (x2 && T.indexOf(n(oe)) === -1) {
-                  m.push(`${c2}const ${i}Variable${T.length} = ${Y(U, arguments)};`), T.push(oe = n(oe));
+                  m.push(`${c}const ${i}Variable${T.length} = ${Y(U, arguments)};`), T.push(oe = n(oe));
                   break;
                 }
               default:
-                oe === null ? m.push(`${Y(U, arguments)};`) : m.push(`${c2}const ${i}Variable${T.length} = ${Y(U, arguments)};`), T.push(oe);
+                oe === null ? m.push(`${Y(U, arguments)};`) : m.push(`${c}const ${i}Variable${T.length} = ${Y(U, arguments)};`), T.push(oe);
             }
             return oe;
           } : (C[s[U]] = U, s[U]);
@@ -6184,35 +5914,35 @@ var _t = qt((St, Ze) => {
           return U ? i + "." + U : j;
         }
         function K(j) {
-          c2 = " ".repeat(j);
+          c = " ".repeat(j);
         }
         function O(j, U) {
           let oe = `${i}Variable${T.length}`;
-          return m.push(`${c2}const ${oe} = ${U};`), T.push(j), oe;
+          return m.push(`${c}const ${oe} = ${U};`), T.push(j), oe;
         }
         function X(j, U) {
           let oe = `${i}Variable${T.length}`, Z = `imageDatum${V}`;
-          m.push(`${c2}let ${Z} = ["P3\\n# ${w2}.ppm\\n", ${j}, ' ', ${U}, "\\n255\\n"].join("");`), m.push(`${c2}for (let i = 0; i < ${Z}.length; i += 4) {`), m.push(`${c2}  ${Z} += ${oe}[i] + ' ' + ${oe}[i + 1] + ' ' + ${oe}[i + 2] + ' ';`), m.push(`${c2}}`), m.push(`${c2}if (typeof require !== "undefined") {`), m.push(`${c2}  require('fs').writeFileSync('./${w2}.ppm', ${Z});`), m.push(`${c2}}`), V++;
+          m.push(`${c}let ${Z} = ["P3\\n# ${w}.ppm\\n", ${j}, ' ', ${U}, "\\n255\\n"].join("");`), m.push(`${c}for (let i = 0; i < ${Z}.length; i += 4) {`), m.push(`${c}  ${Z} += ${oe}[i] + ' ' + ${oe}[i + 1] + ' ' + ${oe}[i + 2] + ' ';`), m.push(`${c}}`), m.push(`${c}if (typeof require !== "undefined") {`), m.push(`${c}  require('fs').writeFileSync('./${w}.ppm', ${Z});`), m.push(`${c}}`), V++;
         }
         function B(j) {
-          m.push(`${c2}// ${j}`);
+          m.push(`${c}// ${j}`);
         }
         function P() {
-          m.push(`${c2}(() => {
-      ${c2}const error = ${i}.getError();
-      ${c2}if (error !== ${i}.NONE) {
-      ${c2}  const names = Object.getOwnPropertyNames(gl);
-      ${c2}  for (let i = 0; i < names.length; i++) {
-      ${c2}    const name = names[i];
-      ${c2}    if (${i}[name] === error) {
-      ${c2}      throw new Error('${i} threw ' + name);
-      ${c2}    }
-      ${c2}  }
-      ${c2}}
-      ${c2}})();`);
+          m.push(`${c}(() => {
+      ${c}const error = ${i}.getError();
+      ${c}if (error !== ${i}.NONE) {
+      ${c}  const names = Object.getOwnPropertyNames(gl);
+      ${c}  for (let i = 0; i < names.length; i++) {
+      ${c}    const name = names[i];
+      ${c}    if (${i}[name] === error) {
+      ${c}      throw new Error('${i} threw ' + name);
+      ${c}    }
+      ${c}  }
+      ${c}}
+      ${c}})();`);
         }
         function Y(j, U) {
-          return `${i}.${j}(${f2(U, { contextName: i, contextVariables: T, getEntity: L, addVariable: O, variables: S, onUnrecognizedArgumentLookup: h })})`;
+          return `${i}.${j}(${f(U, { contextName: i, contextVariables: T, getEntity: L, addVariable: O, variables: S, onUnrecognizedArgumentLookup: h })})`;
         }
         function J(j) {
           if (S) {
@@ -6227,26 +5957,26 @@ var _t = qt((St, Ze) => {
           return U !== -1 ? `${i}Variable${U}` : null;
         }
       }
-      function g2(s, t) {
-        let i = new Proxy(s, { get: C }), u = {}, { contextName: x2, contextVariables: w2, getEntity: m, useTrackablePrimitives: S, recording: v, variables: h, indent: b2, onUnrecognizedArgumentLookup: T } = t;
+      function g(s, t) {
+        let i = new Proxy(s, { get: C }), u = {}, { contextName: x2, contextVariables: w, getEntity: m, useTrackablePrimitives: S, recording: v, variables: h, indent: b, onUnrecognizedArgumentLookup: T } = t;
         return i;
         function C(k, A) {
           return typeof k[A] == "function" ? function() {
             switch (A) {
               case "drawBuffersWEBGL":
-                return v.push(`${b2}${x2}.drawBuffersWEBGL([${f2(arguments[0], { contextName: x2, contextVariables: w2, getEntity: V, addVariable: a2, variables: h, onUnrecognizedArgumentLookup: T })}]);`), s.drawBuffersWEBGL(arguments[0]);
+                return v.push(`${b}${x2}.drawBuffersWEBGL([${f(arguments[0], { contextName: x2, contextVariables: w, getEntity: V, addVariable: a, variables: h, onUnrecognizedArgumentLookup: T })}]);`), s.drawBuffersWEBGL(arguments[0]);
             }
             let N = s[A].apply(s, arguments);
             switch (typeof N) {
               case "undefined":
-                v.push(`${b2}${c2(A, arguments)};`);
+                v.push(`${b}${c(A, arguments)};`);
                 return;
               case "number":
               case "boolean":
-                S && w2.indexOf(n(N)) === -1 ? (v.push(`${b2}const ${x2}Variable${w2.length} = ${c2(A, arguments)};`), w2.push(N = n(N))) : (v.push(`${b2}const ${x2}Variable${w2.length} = ${c2(A, arguments)};`), w2.push(N));
+                S && w.indexOf(n(N)) === -1 ? (v.push(`${b}const ${x2}Variable${w.length} = ${c(A, arguments)};`), w.push(N = n(N))) : (v.push(`${b}const ${x2}Variable${w.length} = ${c(A, arguments)};`), w.push(N));
                 break;
               default:
-                N === null ? v.push(`${c2(A, arguments)};`) : v.push(`${b2}const ${x2}Variable${w2.length} = ${c2(A, arguments)};`), w2.push(N);
+                N === null ? v.push(`${c(A, arguments)};`) : v.push(`${b}const ${x2}Variable${w.length} = ${c(A, arguments)};`), w.push(N);
             }
             return N;
           } : (u[s[A]] = A, s[A]);
@@ -6254,31 +5984,31 @@ var _t = qt((St, Ze) => {
         function V(k) {
           return u.hasOwnProperty(k) ? `${x2}.${u[k]}` : m(k);
         }
-        function c2(k, A) {
-          return `${x2}.${k}(${f2(A, { contextName: x2, contextVariables: w2, getEntity: V, addVariable: a2, variables: h, onUnrecognizedArgumentLookup: T })})`;
+        function c(k, A) {
+          return `${x2}.${k}(${f(A, { contextName: x2, contextVariables: w, getEntity: V, addVariable: a, variables: h, onUnrecognizedArgumentLookup: T })})`;
         }
-        function a2(k, A) {
-          let N = `${x2}Variable${w2.length}`;
-          return w2.push(k), v.push(`${b2}const ${N} = ${A};`), N;
+        function a(k, A) {
+          let N = `${x2}Variable${w.length}`;
+          return w.push(k), v.push(`${b}const ${N} = ${A};`), N;
         }
       }
-      function f2(s, t) {
+      function f(s, t) {
         let { variables: i, onUnrecognizedArgumentLookup: u } = t;
-        return Array.from(s).map((w2) => {
-          let m = x2(w2);
-          return m || l(w2, t);
+        return Array.from(s).map((w) => {
+          let m = x2(w);
+          return m || l(w, t);
         }).join(", ");
-        function x2(w2) {
+        function x2(w) {
           if (i) {
             for (let m in i)
-              if (!!i.hasOwnProperty(m) && i[m] === w2)
+              if (!!i.hasOwnProperty(m) && i[m] === w)
                 return m;
           }
-          return u ? u(w2) : null;
+          return u ? u(w) : null;
         }
       }
       function l(s, t) {
-        let { contextName: i, contextVariables: u, getEntity: x2, addVariable: w2, onUnrecognizedArgumentLookup: m } = t;
+        let { contextName: i, contextVariables: u, getEntity: x2, addVariable: w, onUnrecognizedArgumentLookup: m } = t;
         if (typeof s > "u")
           return "undefined";
         if (s === null)
@@ -6288,19 +6018,19 @@ var _t = qt((St, Ze) => {
           return `${i}Variable${S}`;
         switch (s.constructor.name) {
           case "String":
-            let v = /\n/.test(s), h = /'/.test(s), b2 = /"/.test(s);
-            return v ? "`" + s + "`" : h && !b2 ? '"' + s + '"' : "'" + s + "'";
+            let v = /\n/.test(s), h = /'/.test(s), b = /"/.test(s);
+            return v ? "`" + s + "`" : h && !b ? '"' + s + '"' : "'" + s + "'";
           case "Number":
             return x2(s);
           case "Boolean":
             return x2(s);
           case "Array":
-            return w2(s, `new ${s.constructor.name}([${Array.from(s).join(",")}])`);
+            return w(s, `new ${s.constructor.name}([${Array.from(s).join(",")}])`);
           case "Float32Array":
           case "Uint8Array":
           case "Uint16Array":
           case "Int32Array":
-            return w2(s, `new ${s.constructor.name}(${JSON.stringify(Array.from(s))})`);
+            return w(s, `new ${s.constructor.name}(${JSON.stringify(Array.from(s))})`);
           default:
             if (m) {
               let T = m(s);
@@ -6313,135 +6043,135 @@ var _t = qt((St, Ze) => {
       function n(s) {
         return new s.constructor(s);
       }
-      typeof y < "u" && (y.exports = { glWiretap: p, glExtensionWiretap: g2 }), typeof window < "u" && (p.glExtensionWiretap = g2, window.glWiretap = p);
-    }, {}], 4: [function(o2, y, E) {
-      function p(w2) {
-        let m = new Array(w2.length);
-        for (let S = 0; S < w2.length; S++) {
-          let v = w2[S];
+      typeof y < "u" && (y.exports = { glWiretap: p, glExtensionWiretap: g }), typeof window < "u" && (p.glExtensionWiretap = g, window.glWiretap = p);
+    }, {}], 4: [function(o, y, E) {
+      function p(w) {
+        let m = new Array(w.length);
+        for (let S = 0; S < w.length; S++) {
+          let v = w[S];
           v.toArray ? m[S] = v.toArray() : m[S] = v;
         }
         return m;
       }
-      function g2() {
-        let w2 = p(arguments), m = new Float32Array(this.output.x);
+      function g() {
+        let w = p(arguments), m = new Float32Array(this.output.x);
         for (let S = 0; S < this.output.x; S++)
-          this.thread.x = S, this.thread.y = 0, this.thread.z = 0, m[S] = this._fn.apply(this, w2);
+          this.thread.x = S, this.thread.y = 0, this.thread.z = 0, m[S] = this._fn.apply(this, w);
         return m;
       }
-      function f2() {
-        let w2 = p(arguments), m = new Array(this.output.y);
+      function f() {
+        let w = p(arguments), m = new Array(this.output.y);
         for (let S = 0; S < this.output.y; S++) {
           let v = new Float32Array(this.output.x);
           for (let h = 0; h < this.output.x; h++)
-            this.thread.x = h, this.thread.y = S, this.thread.z = 0, v[h] = this._fn.apply(this, w2);
+            this.thread.x = h, this.thread.y = S, this.thread.z = 0, v[h] = this._fn.apply(this, w);
           m[S] = v;
         }
         return m;
       }
       function l() {
-        let w2 = p(arguments);
+        let w = p(arguments);
         for (let m = 0; m < this.output.y; m++)
           for (let S = 0; S < this.output.x; S++)
-            this.thread.x = S, this.thread.y = m, this.thread.z = 0, this._fn.apply(this, w2);
+            this.thread.x = S, this.thread.y = m, this.thread.z = 0, this._fn.apply(this, w);
       }
       function n() {
-        let w2 = p(arguments), m = new Array(this.output.z);
+        let w = p(arguments), m = new Array(this.output.z);
         for (let S = 0; S < this.output.z; S++) {
           let v = new Array(this.output.y);
           for (let h = 0; h < this.output.y; h++) {
-            let b2 = new Float32Array(this.output.x);
+            let b = new Float32Array(this.output.x);
             for (let T = 0; T < this.output.x; T++)
-              this.thread.x = T, this.thread.y = h, this.thread.z = S, b2[T] = this._fn.apply(this, w2);
-            v[h] = b2;
+              this.thread.x = T, this.thread.y = h, this.thread.z = S, b[T] = this._fn.apply(this, w);
+            v[h] = b;
           }
           m[S] = v;
         }
         return m;
       }
-      function s(w2) {
-        w2.setOutput = (v) => {
-          w2.output = i(v), w2.graphical && t(w2);
-        }, w2.toJSON = () => {
+      function s(w) {
+        w.setOutput = (v) => {
+          w.output = i(v), w.graphical && t(w);
+        }, w.toJSON = () => {
           throw new Error("Not usable with gpuMock");
-        }, w2.setConstants = (v) => (w2.constants = v, w2), w2.setGraphical = (v) => (w2.graphical = v, w2), w2.setCanvas = (v) => (w2.canvas = v, w2), w2.setContext = (v) => (w2.context = v, w2), w2.destroy = () => {
-        }, w2.validateSettings = () => {
-        }, w2.graphical && w2.output && t(w2), w2.exec = function() {
+        }, w.setConstants = (v) => (w.constants = v, w), w.setGraphical = (v) => (w.graphical = v, w), w.setCanvas = (v) => (w.canvas = v, w), w.setContext = (v) => (w.context = v, w), w.destroy = () => {
+        }, w.validateSettings = () => {
+        }, w.graphical && w.output && t(w), w.exec = function() {
           return new Promise((v, h) => {
             try {
-              v(w2.apply(w2, arguments));
-            } catch (b2) {
-              h(b2);
+              v(w.apply(w, arguments));
+            } catch (b) {
+              h(b);
             }
           });
-        }, w2.getPixels = (v) => {
-          let { x: h, y: b2 } = w2.output;
-          return v ? x2(w2._imageData.data, h, b2) : w2._imageData.data.slice(0);
-        }, w2.color = function(v, h, b2, T) {
-          typeof T > "u" && (T = 1), v = Math.floor(v * 255), h = Math.floor(h * 255), b2 = Math.floor(b2 * 255), T = Math.floor(T * 255);
-          let C = w2.output.x, V = w2.output.y, c2 = w2.thread.x, a2 = V - w2.thread.y - 1, k = c2 + a2 * C;
-          w2._colorData[k * 4 + 0] = v, w2._colorData[k * 4 + 1] = h, w2._colorData[k * 4 + 2] = b2, w2._colorData[k * 4 + 3] = T;
+        }, w.getPixels = (v) => {
+          let { x: h, y: b } = w.output;
+          return v ? x2(w._imageData.data, h, b) : w._imageData.data.slice(0);
+        }, w.color = function(v, h, b, T) {
+          typeof T > "u" && (T = 1), v = Math.floor(v * 255), h = Math.floor(h * 255), b = Math.floor(b * 255), T = Math.floor(T * 255);
+          let C = w.output.x, V = w.output.y, c = w.thread.x, a = V - w.thread.y - 1, k = c + a * C;
+          w._colorData[k * 4 + 0] = v, w._colorData[k * 4 + 1] = h, w._colorData[k * 4 + 2] = b, w._colorData[k * 4 + 3] = T;
         };
-        let m = () => w2, S = ["setWarnVarUsage", "setArgumentTypes", "setTactic", "setOptimizeFloatMemory", "setDebug", "setLoopMaxIterations", "setConstantTypes", "setFunctions", "setNativeFunctions", "setInjectedNative", "setPipeline", "setPrecision", "setOutputToTexture", "setImmutable", "setStrictIntegers", "setDynamicOutput", "setHardcodeConstants", "setDynamicArguments", "setUseLegacyEncoder", "setWarnVarUsage", "addSubKernel"];
+        let m = () => w, S = ["setWarnVarUsage", "setArgumentTypes", "setTactic", "setOptimizeFloatMemory", "setDebug", "setLoopMaxIterations", "setConstantTypes", "setFunctions", "setNativeFunctions", "setInjectedNative", "setPipeline", "setPrecision", "setOutputToTexture", "setImmutable", "setStrictIntegers", "setDynamicOutput", "setHardcodeConstants", "setDynamicArguments", "setUseLegacyEncoder", "setWarnVarUsage", "addSubKernel"];
         for (let v = 0; v < S.length; v++)
-          w2[S[v]] = m;
-        return w2;
+          w[S[v]] = m;
+        return w;
       }
-      function t(w2) {
-        let { x: m, y: S } = w2.output;
-        if (w2.context && w2.context.createImageData) {
+      function t(w) {
+        let { x: m, y: S } = w.output;
+        if (w.context && w.context.createImageData) {
           let v = new Uint8ClampedArray(m * S * 4);
-          w2._imageData = w2.context.createImageData(m, S), w2._colorData = v;
+          w._imageData = w.context.createImageData(m, S), w._colorData = v;
         } else {
           let v = new Uint8ClampedArray(m * S * 4);
-          w2._imageData = { data: v }, w2._colorData = v;
+          w._imageData = { data: v }, w._colorData = v;
         }
       }
-      function i(w2) {
+      function i(w) {
         let m = null;
-        if (w2.length)
-          if (w2.length === 3) {
-            let [S, v, h] = w2;
+        if (w.length)
+          if (w.length === 3) {
+            let [S, v, h] = w;
             m = { x: S, y: v, z: h };
-          } else if (w2.length === 2) {
-            let [S, v] = w2;
+          } else if (w.length === 2) {
+            let [S, v] = w;
             m = { x: S, y: v };
           } else {
-            let [S] = w2;
+            let [S] = w;
             m = { x: S };
           }
         else
-          m = w2;
+          m = w;
         return m;
       }
-      function u(w2, m = {}) {
+      function u(w, m = {}) {
         let S = m.output ? i(m.output) : null;
         function v() {
-          return v.output.z ? n.apply(v, arguments) : v.output.y ? v.graphical ? l.apply(v, arguments) : f2.apply(v, arguments) : g2.apply(v, arguments);
+          return v.output.z ? n.apply(v, arguments) : v.output.y ? v.graphical ? l.apply(v, arguments) : f.apply(v, arguments) : g.apply(v, arguments);
         }
-        return v._fn = w2, v.constants = m.constants || null, v.context = m.context || null, v.canvas = m.canvas || null, v.graphical = m.graphical || false, v._imageData = null, v._colorData = null, v.output = S, v.thread = { x: 0, y: 0, z: 0 }, s(v);
+        return v._fn = w, v.constants = m.constants || null, v.context = m.context || null, v.canvas = m.canvas || null, v.graphical = m.graphical || false, v._imageData = null, v._colorData = null, v.output = S, v.thread = { x: 0, y: 0, z: 0 }, s(v);
       }
-      function x2(w2, m, S) {
-        let v = S / 2 | 0, h = m * 4, b2 = new Uint8ClampedArray(m * 4), T = w2.slice(0);
+      function x2(w, m, S) {
+        let v = S / 2 | 0, h = m * 4, b = new Uint8ClampedArray(m * 4), T = w.slice(0);
         for (let C = 0; C < v; ++C) {
-          let V = C * h, c2 = (S - C - 1) * h;
-          b2.set(T.subarray(V, V + h)), T.copyWithin(V, c2, c2 + h), T.set(b2, c2);
+          let V = C * h, c = (S - C - 1) * h;
+          b.set(T.subarray(V, V + h)), T.copyWithin(V, c, c + h), T.set(b, c);
         }
         return T;
       }
       y.exports = { gpuMock: u };
-    }, {}], 5: [function(o2, y, E) {
-      let { utils: p } = o2("./utils");
-      function g2(f2, l) {
+    }, {}], 5: [function(o, y, E) {
+      let { utils: p } = o("./utils");
+      function g(f, l) {
         let n = l.toString();
-        return new Function(`return function ${f2} (${p.getArgumentNamesFromString(n).join(", ")}) {
+        return new Function(`return function ${f} (${p.getArgumentNamesFromString(n).join(", ")}) {
         ${p.getFunctionBodyFromString(n)}
       }`)();
       }
-      y.exports = { alias: g2 };
-    }, { "./utils": 114 }], 6: [function(o2, y, E) {
-      let { FunctionNode: p } = o2("../function-node");
-      class g2 extends p {
+      y.exports = { alias: g };
+    }, { "./utils": 114 }], 6: [function(o, y, E) {
+      let { FunctionNode: p } = o("../function-node");
+      class g extends p {
         astFunction(l, n) {
           if (!this.isRootKernel) {
             n.push("function"), n.push(" "), n.push(this.name), n.push("(");
@@ -6490,8 +6220,8 @@ var _t = qt((St, Ze) => {
           let s = [], t = [], i = [], u = [], x2 = null;
           if (l.init) {
             this.pushState("in-for-loop-init"), this.astGeneric(l.init, s);
-            for (let w2 = 0; w2 < s.length; w2++)
-              s[w2].includes && s[w2].includes(",") && (x2 = false);
+            for (let w = 0; w < s.length; w++)
+              s[w].includes && s[w].includes(",") && (x2 = false);
             this.popState("in-for-loop-init");
           } else
             x2 = false;
@@ -6500,9 +6230,9 @@ var _t = qt((St, Ze) => {
 `), n.push(u.join("")), n.push(`}
 `);
           else {
-            let w2 = this.getInternalVariableName("safeI");
+            let w = this.getInternalVariableName("safeI");
             s.length > 0 && n.push(s.join(""), `;
-`), n.push(`for (let ${w2}=0;${w2}<LOOP_MAX;${w2}++){
+`), n.push(`for (let ${w}=0;${w}<LOOP_MAX;${w}++){
 `), t.length > 0 && n.push(`if (!${t.join("")}) break;
 `), n.push(u.join("")), n.push(`
 ${i.join("")};`), n.push(`}
@@ -6592,7 +6322,7 @@ ${i.join("")};`), n.push(`}
           return n.push("_this"), n;
         }
         astMemberExpression(l, n) {
-          let { signature: s, type: t, property: i, xProperty: u, yProperty: x2, zProperty: w2, name: m, origin: S } = this.getMemberExpressionDetails(l);
+          let { signature: s, type: t, property: i, xProperty: u, yProperty: x2, zProperty: w, name: m, origin: S } = this.getMemberExpressionDetails(l);
           switch (s) {
             case "this.thread.value":
               return n.push(`_this.thread.${m}`), n;
@@ -6665,13 +6395,13 @@ ${i.join("")};`), n.push(`}
             case "ArrayTexture(4)":
             case "HTMLImage":
             default:
-              let h, b2;
+              let h, b;
               if (S === "constants") {
                 let T = this.constants[m];
-                b2 = this.constantTypes[m] === "Input", h = b2 ? T.size : null;
+                b = this.constantTypes[m] === "Input", h = b ? T.size : null;
               } else
-                b2 = this.isInput(m), h = b2 ? this.argumentSizes[this.argumentNames.indexOf(m)] : null;
-              n.push(`${v}`), w2 && x2 ? b2 ? (n.push("[("), this.astGeneric(w2, n), n.push(`*${this.dynamicArguments ? "(outputY * outputX)" : h[1] * h[0]})+(`), this.astGeneric(x2, n), n.push(`*${this.dynamicArguments ? "outputX" : h[0]})+`), this.astGeneric(u, n), n.push("]")) : (n.push("["), this.astGeneric(w2, n), n.push("]"), n.push("["), this.astGeneric(x2, n), n.push("]"), n.push("["), this.astGeneric(u, n), n.push("]")) : x2 ? b2 ? (n.push("[("), this.astGeneric(x2, n), n.push(`*${this.dynamicArguments ? "outputX" : h[0]})+`), this.astGeneric(u, n), n.push("]")) : (n.push("["), this.astGeneric(x2, n), n.push("]"), n.push("["), this.astGeneric(u, n), n.push("]")) : typeof u < "u" && (n.push("["), this.astGeneric(u, n), n.push("]"));
+                b = this.isInput(m), h = b ? this.argumentSizes[this.argumentNames.indexOf(m)] : null;
+              n.push(`${v}`), w && x2 ? b ? (n.push("[("), this.astGeneric(w, n), n.push(`*${this.dynamicArguments ? "(outputY * outputX)" : h[1] * h[0]})+(`), this.astGeneric(x2, n), n.push(`*${this.dynamicArguments ? "outputX" : h[0]})+`), this.astGeneric(u, n), n.push("]")) : (n.push("["), this.astGeneric(w, n), n.push("]"), n.push("["), this.astGeneric(x2, n), n.push("]"), n.push("["), this.astGeneric(u, n), n.push("]")) : x2 ? b ? (n.push("[("), this.astGeneric(x2, n), n.push(`*${this.dynamicArguments ? "outputX" : h[0]})+`), this.astGeneric(u, n), n.push("]")) : (n.push("["), this.astGeneric(x2, n), n.push("]"), n.push("["), this.astGeneric(u, n), n.push("]")) : typeof u < "u" && (n.push("["), this.astGeneric(u, n), n.push("]"));
           }
           return n;
         }
@@ -6684,8 +6414,8 @@ ${i.join("")};`), n.push(`}
           this.onFunctionCall && this.onFunctionCall(this.name, s, l.arguments), n.push(s), n.push("(");
           let i = this.lookupFunctionArgumentTypes(s) || [];
           for (let u = 0; u < l.arguments.length; ++u) {
-            let x2 = l.arguments[u], w2 = this.getType(x2);
-            i[u] || this.triggerImplyArgumentType(s, u, w2, this), u > 0 && n.push(", "), this.astGeneric(x2, n);
+            let x2 = l.arguments[u], w = this.getType(x2);
+            i[u] || this.triggerImplyArgumentType(s, u, w, this), u > 0 && n.push(", "), this.astGeneric(x2, n);
           }
           return n.push(")"), n;
         }
@@ -6710,10 +6440,10 @@ ${i.join("")};`), n.push(`}
           return n.push("debugger;"), n;
         }
       }
-      y.exports = { CPUFunctionNode: g2 };
-    }, { "../function-node": 10 }], 7: [function(o2, y, E) {
-      let { utils: p } = o2("../../utils");
-      function g2(l, n) {
+      y.exports = { CPUFunctionNode: g };
+    }, { "../function-node": 10 }], 7: [function(o, y, E) {
+      let { utils: p } = o("../../utils");
+      function g(l, n) {
         let s = [];
         for (let t in n) {
           if (!n.hasOwnProperty(t))
@@ -6738,9 +6468,9 @@ ${i.join("")};`), n.push(`}
         }
         return `{ ${s.join()} }`;
       }
-      function f2(l, n) {
+      function f(l, n) {
         let s = [], t = [], i = [], u = !/^function/.test(l.color.toString());
-        if (s.push("  const { context, canvas, constants: incomingConstants } = settings;", `  const output = new Int32Array(${JSON.stringify(Array.from(l.output))});`, `  const _constantTypes = ${JSON.stringify(l.constantTypes)};`, `  const _constants = ${g2(l.constants, l.constantTypes)};`), t.push("    constants: _constants,", "    context,", "    output,", "    thread: {x: 0, y: 0, z: 0},"), l.graphical) {
+        if (s.push("  const { context, canvas, constants: incomingConstants } = settings;", `  const output = new Int32Array(${JSON.stringify(Array.from(l.output))});`, `  const _constantTypes = ${JSON.stringify(l.constantTypes)};`, `  const _constants = ${g(l.constants, l.constantTypes)};`), t.push("    constants: _constants,", "    context,", "    output,", "    thread: {x: 0, y: 0, z: 0},"), l.graphical) {
           s.push(`  const _imageData = context.createImageData(${l.output[0]}, ${l.output[1]});`), s.push(`  const _colorData = new Uint8ClampedArray(${l.output[0]} * ${l.output[1]} * 4);`);
           let m = p.flattenFunctionToString((u ? "function " : "") + l.color.toString(), { thisLookup: (v) => {
             switch (v) {
@@ -6769,9 +6499,9 @@ ${i.join("")};`), n.push(`}
           }, findDependency: () => null });
           t.push("    _imageData,", "    _colorData,", `    color: ${m},`), i.push(`  kernel.getPixels = ${S};`);
         }
-        let x2 = [], w2 = Object.keys(l.constantTypes);
-        for (let m = 0; m < w2.length; m++)
-          x2.push(l.constantTypes[w2]);
+        let x2 = [], w = Object.keys(l.constantTypes);
+        for (let m = 0; m < w.length; m++)
+          x2.push(l.constantTypes[w]);
         if (l.argumentTypes.indexOf("HTMLImageArray") !== -1 || x2.indexOf("HTMLImageArray") !== -1) {
           let m = p.flattenFunctionToString((u ? "function " : "") + l._imageTo3DArray.toString(), { doNotDefine: ["canvas"], findDependency: (S, v) => S === "this" ? (u ? "function " : "") + l[v].toString() : null, thisLookup: (S) => {
             switch (S) {
@@ -6831,9 +6561,9 @@ ${i.join("")};`), n.push(`}
         return kernel;
       }`;
       }
-      y.exports = { cpuKernelString: f2 };
-    }, { "../../utils": 114 }], 8: [function(o2, y, E) {
-      let { Kernel: p } = o2("../kernel"), { FunctionBuilder: g2 } = o2("../function-builder"), { CPUFunctionNode: f2 } = o2("./function-node"), { utils: l } = o2("../../utils"), { cpuKernelString: n } = o2("./kernel-string");
+      y.exports = { cpuKernelString: f };
+    }, { "../../utils": 114 }], 8: [function(o, y, E) {
+      let { Kernel: p } = o("../kernel"), { FunctionBuilder: g } = o("../function-builder"), { CPUFunctionNode: f } = o("./function-node"), { utils: l } = o("../../utils"), { cpuKernelString: n } = o("./kernel-string");
       class s extends p {
         static getFeatures() {
           return this.features;
@@ -6897,14 +6627,14 @@ ${i.join("")};`), n.push(`}
           if (this.leadingReturnStatement = this.output.length > 1 ? "resultX[x] = " : "result[x] = ", this.subKernels) {
             let u = [];
             for (let x2 = 0; x2 < this.subKernels.length; x2++) {
-              let { name: w2 } = this.subKernels[x2];
-              u.push(this.output.length > 1 ? `resultX_${w2}[x] = subKernelResult_${w2};
-` : `result_${w2}[x] = subKernelResult_${w2};
+              let { name: w } = this.subKernels[x2];
+              u.push(this.output.length > 1 ? `resultX_${w}[x] = subKernelResult_${w};
+` : `result_${w}[x] = subKernelResult_${w};
 `);
             }
             this.followingReturnStatement = u.join("");
           }
-          let i = g2.fromKernel(this, f2);
+          let i = g.fromKernel(this, f);
           this.translatedSources = i.getPrototypes("kernel"), !this.graphical && !this.returnType && (this.returnType = i.getKernelResultType());
         }
         build() {
@@ -6914,8 +6644,8 @@ ${i.join("")};`), n.push(`}
             let { canvas: u, output: x2 } = this;
             if (!u)
               throw new Error("no canvas available for using graphical output");
-            let w2 = x2[0], m = x2[1] || 1;
-            u.width = w2, u.height = m, this._imageData = this.context.createImageData(w2, m), this._colorData = new Uint8ClampedArray(w2 * m * 4);
+            let w = x2[0], m = x2[1] || 1;
+            u.width = w, u.height = m, this._imageData = this.context.createImageData(w, m), this._colorData = new Uint8ClampedArray(w * m * 4);
           }
           let i = this.getKernelString();
           this.kernelString = i, this.debug && (console.log("Function output:"), console.log(i));
@@ -6926,10 +6656,10 @@ ${i.join("")};`), n.push(`}
           }
           this.buildSignature(arguments), this.built = true;
         }
-        color(i, u, x2, w2) {
-          typeof w2 > "u" && (w2 = 1), i = Math.floor(i * 255), u = Math.floor(u * 255), x2 = Math.floor(x2 * 255), w2 = Math.floor(w2 * 255);
-          let m = this.output[0], S = this.output[1], v = this.thread.x, h = S - this.thread.y - 1, b2 = v + h * m;
-          this._colorData[b2 * 4 + 0] = i, this._colorData[b2 * 4 + 1] = u, this._colorData[b2 * 4 + 2] = x2, this._colorData[b2 * 4 + 3] = w2;
+        color(i, u, x2, w) {
+          typeof w > "u" && (w = 1), i = Math.floor(i * 255), u = Math.floor(u * 255), x2 = Math.floor(x2 * 255), w = Math.floor(w * 255);
+          let m = this.output[0], S = this.output[1], v = this.thread.x, h = S - this.thread.y - 1, b = v + h * m;
+          this._colorData[b * 4 + 0] = i, this._colorData[b * 4 + 1] = u, this._colorData[b * 4 + 2] = x2, this._colorData[b * 4 + 3] = w;
         }
         getKernelString() {
           if (this._kernelString !== null)
@@ -6991,8 +6721,8 @@ ${i.join("")};`), n.push(`}
             return "";
           let u = [];
           for (let x2 = 0; x2 < i.length; x2++) {
-            let w2 = i[x2], m = this._mapSubKernels((S) => `user_${w2} === result_${S.name}`).join(" || ");
-            u.push(`user_${w2} === result${m ? ` || ${m}` : ""}`);
+            let w = i[x2], m = this._mapSubKernels((S) => `user_${w} === result_${S.name}`).join(" || ");
+            u.push(`user_${w} === result${m ? ` || ${m}` : ""}`);
           }
           return `if (${u.join(" || ")}) throw new Error('Source and destination arrays are the same.  Use immutable = true');`;
         }
@@ -7042,13 +6772,13 @@ ${i.join("")};`), n.push(`}
           return i.join("");
         }
         _mediaTo2DArray(i) {
-          let u = this.canvas, x2 = i.width > 0 ? i.width : i.videoWidth, w2 = i.height > 0 ? i.height : i.videoHeight;
-          u.width < x2 && (u.width = x2), u.height < w2 && (u.height = w2);
+          let u = this.canvas, x2 = i.width > 0 ? i.width : i.videoWidth, w = i.height > 0 ? i.height : i.videoHeight;
+          u.width < x2 && (u.width = x2), u.height < w && (u.height = w);
           let m = this.context;
-          m.drawImage(i, 0, 0, x2, w2);
-          let S = m.getImageData(0, 0, x2, w2).data, v = new Array(w2), h = 0;
-          for (let b2 = w2 - 1; b2 >= 0; b2--) {
-            let T = v[b2] = new Array(x2);
+          m.drawImage(i, 0, 0, x2, w);
+          let S = m.getImageData(0, 0, x2, w).data, v = new Array(w), h = 0;
+          for (let b = w - 1; b >= 0; b--) {
+            let T = v[b] = new Array(x2);
             for (let C = 0; C < x2; C++) {
               let V = new Float32Array(4);
               V[0] = S[h++] / 255, V[1] = S[h++] / 255, V[2] = S[h++] / 255, V[3] = S[h++] / 255, T[C] = V;
@@ -7302,7 +7032,7 @@ ${i.join("")};`), n.push(`}
         }
         toJSON() {
           let i = super.toJSON();
-          return i.functionNodes = g2.fromKernel(this, f2).toJSON(), i;
+          return i.functionNodes = g.fromKernel(this, f).toJSON(), i;
         }
         setOutput(i) {
           super.setOutput(i);
@@ -7319,10 +7049,10 @@ ${i.join("")};`), n.push(`}
         }
       }
       y.exports = { CPUKernel: s };
-    }, { "../../utils": 114, "../function-builder": 9, "../kernel": 36, "./function-node": 6, "./kernel-string": 7 }], 9: [function(o2, y, E) {
+    }, { "../../utils": 114, "../function-builder": 9, "../kernel": 36, "./function-node": 6, "./kernel-string": 7 }], 9: [function(o, y, E) {
       class p {
-        static fromKernel(f2, l, n) {
-          let { kernelArguments: s, kernelConstants: t, argumentNames: i, argumentSizes: u, argumentBitRatios: x2, constants: w2, constantBitRatios: m, debug: S, loopMaxIterations: v, nativeFunctions: h, output: b2, optimizeFloatMemory: T, precision: C, plugins: V, source: c2, subKernels: a2, functions: k, leadingReturnStatement: A, followingReturnStatement: N, dynamicArguments: F, dynamicOutput: L } = f2, K = new Array(s.length), O = {};
+        static fromKernel(f, l, n) {
+          let { kernelArguments: s, kernelConstants: t, argumentNames: i, argumentSizes: u, argumentBitRatios: x2, constants: w, constantBitRatios: m, debug: S, loopMaxIterations: v, nativeFunctions: h, output: b, optimizeFloatMemory: T, precision: C, plugins: V, source: c, subKernels: a, functions: k, leadingReturnStatement: A, followingReturnStatement: N, dynamicArguments: F, dynamicOutput: L } = f, K = new Array(s.length), O = {};
           for (let te = 0; te < s.length; te++)
             K[te] = s[te].type;
           for (let te = 0; te < t.length; te++) {
@@ -7343,21 +7073,21 @@ ${i.join("")};`), n.push(`}
               de.push(te.params[Se].name);
             let Te = new l(re, Object.assign({}, ee, { returnType: null, ast: te, name: te.id.name, argumentNames: de, lookupReturnType: P, lookupFunctionArgumentTypes: Y, lookupFunctionArgumentName: J, lookupFunctionArgumentBitRatio: q, needsArgumentType: X, assignArgumentType: B, triggerImplyArgumentType: j, triggerImplyArgumentBitRatio: U, onFunctionCall: oe }));
             Te.traceFunctionAST(te), pe.addFunctionNode(Te);
-          }, ee = Object.assign({ isRootKernel: false, onNestedFunction: Z, lookupReturnType: P, lookupFunctionArgumentTypes: Y, lookupFunctionArgumentName: J, lookupFunctionArgumentBitRatio: q, needsArgumentType: X, assignArgumentType: B, triggerImplyArgumentType: j, triggerImplyArgumentBitRatio: U, onFunctionCall: oe, optimizeFloatMemory: T, precision: C, constants: w2, constantTypes: O, constantBitRatios: m, debug: S, loopMaxIterations: v, output: b2, plugins: V, dynamicArguments: F, dynamicOutput: L }, n || {}), be = Object.assign({}, ee, { isRootKernel: true, name: "kernel", argumentNames: i, argumentTypes: K, argumentSizes: u, argumentBitRatios: x2, leadingReturnStatement: A, followingReturnStatement: N });
-          if (typeof c2 == "object" && c2.functionNodes)
-            return new p().fromJSON(c2.functionNodes, l);
-          let Q = new l(c2, be), ue = null;
-          k && (ue = k.map((te) => new l(te.source, { returnType: te.returnType, argumentTypes: te.argumentTypes, output: b2, plugins: V, constants: w2, constantTypes: O, constantBitRatios: m, optimizeFloatMemory: T, precision: C, lookupReturnType: P, lookupFunctionArgumentTypes: Y, lookupFunctionArgumentName: J, lookupFunctionArgumentBitRatio: q, needsArgumentType: X, assignArgumentType: B, triggerImplyArgumentType: j, triggerImplyArgumentBitRatio: U, onFunctionCall: oe, onNestedFunction: Z })));
+          }, ee = Object.assign({ isRootKernel: false, onNestedFunction: Z, lookupReturnType: P, lookupFunctionArgumentTypes: Y, lookupFunctionArgumentName: J, lookupFunctionArgumentBitRatio: q, needsArgumentType: X, assignArgumentType: B, triggerImplyArgumentType: j, triggerImplyArgumentBitRatio: U, onFunctionCall: oe, optimizeFloatMemory: T, precision: C, constants: w, constantTypes: O, constantBitRatios: m, debug: S, loopMaxIterations: v, output: b, plugins: V, dynamicArguments: F, dynamicOutput: L }, n || {}), be = Object.assign({}, ee, { isRootKernel: true, name: "kernel", argumentNames: i, argumentTypes: K, argumentSizes: u, argumentBitRatios: x2, leadingReturnStatement: A, followingReturnStatement: N });
+          if (typeof c == "object" && c.functionNodes)
+            return new p().fromJSON(c.functionNodes, l);
+          let Q = new l(c, be), ue = null;
+          k && (ue = k.map((te) => new l(te.source, { returnType: te.returnType, argumentTypes: te.argumentTypes, output: b, plugins: V, constants: w, constantTypes: O, constantBitRatios: m, optimizeFloatMemory: T, precision: C, lookupReturnType: P, lookupFunctionArgumentTypes: Y, lookupFunctionArgumentName: J, lookupFunctionArgumentBitRatio: q, needsArgumentType: X, assignArgumentType: B, triggerImplyArgumentType: j, triggerImplyArgumentBitRatio: U, onFunctionCall: oe, onNestedFunction: Z })));
           let he = null;
-          a2 && (he = a2.map((te) => {
+          a && (he = a.map((te) => {
             let { name: re, source: de } = te;
             return new l(de, Object.assign({}, ee, { name: re, isSubKernel: true, isRootKernel: false }));
           }));
-          let pe = new p({ kernel: f2, rootNode: Q, functionNodes: ue, nativeFunctions: h, subKernelNodes: he });
+          let pe = new p({ kernel: f, rootNode: Q, functionNodes: ue, nativeFunctions: h, subKernelNodes: he });
           return pe;
         }
-        constructor(f2) {
-          if (f2 = f2 || {}, this.kernel = f2.kernel, this.rootNode = f2.rootNode, this.functionNodes = f2.functionNodes || [], this.subKernelNodes = f2.subKernelNodes || [], this.nativeFunctions = f2.nativeFunctions || [], this.functionMap = {}, this.nativeFunctionNames = [], this.lookupChain = [], this.functionNodeDependencies = {}, this.functionCalls = {}, this.rootNode && (this.functionMap.kernel = this.rootNode), this.functionNodes)
+        constructor(f) {
+          if (f = f || {}, this.kernel = f.kernel, this.rootNode = f.rootNode, this.functionNodes = f.functionNodes || [], this.subKernelNodes = f.subKernelNodes || [], this.nativeFunctions = f.nativeFunctions || [], this.functionMap = {}, this.nativeFunctionNames = [], this.lookupChain = [], this.functionNodeDependencies = {}, this.functionCalls = {}, this.rootNode && (this.functionMap.kernel = this.rootNode), this.functionNodes)
             for (let l = 0; l < this.functionNodes.length; l++)
               this.functionMap[this.functionNodes[l].name] = this.functionNodes[l];
           if (this.subKernelNodes)
@@ -7369,27 +7099,27 @@ ${i.join("")};`), n.push(`}
               this.nativeFunctionNames.push(n.name);
             }
         }
-        addFunctionNode(f2) {
-          if (!f2.name)
+        addFunctionNode(f) {
+          if (!f.name)
             throw new Error("functionNode.name needs set");
-          this.functionMap[f2.name] = f2, f2.isRootKernel && (this.rootNode = f2);
+          this.functionMap[f.name] = f, f.isRootKernel && (this.rootNode = f);
         }
-        traceFunctionCalls(f2, l) {
-          if (f2 = f2 || "kernel", l = l || [], this.nativeFunctionNames.indexOf(f2) > -1) {
-            let s = l.indexOf(f2);
+        traceFunctionCalls(f, l) {
+          if (f = f || "kernel", l = l || [], this.nativeFunctionNames.indexOf(f) > -1) {
+            let s = l.indexOf(f);
             if (s === -1)
-              l.push(f2);
+              l.push(f);
             else {
               let t = l.splice(s, 1)[0];
               l.push(t);
             }
             return l;
           }
-          let n = this.functionMap[f2];
+          let n = this.functionMap[f];
           if (n) {
-            let s = l.indexOf(f2);
+            let s = l.indexOf(f);
             if (s === -1) {
-              l.push(f2), n.toString();
+              l.push(f), n.toString();
               for (let t = 0; t < n.calledFunctions.length; ++t)
                 this.traceFunctionCalls(n.calledFunctions[t], l);
             } else {
@@ -7399,24 +7129,24 @@ ${i.join("")};`), n.push(`}
           }
           return l;
         }
-        getPrototypeString(f2) {
-          return this.getPrototypes(f2).join(`
+        getPrototypeString(f) {
+          return this.getPrototypes(f).join(`
 `);
         }
-        getPrototypes(f2) {
-          return this.rootNode && this.rootNode.toString(), f2 ? this.getPrototypesFromFunctionNames(this.traceFunctionCalls(f2, []).reverse()) : this.getPrototypesFromFunctionNames(Object.keys(this.functionMap));
+        getPrototypes(f) {
+          return this.rootNode && this.rootNode.toString(), f ? this.getPrototypesFromFunctionNames(this.traceFunctionCalls(f, []).reverse()) : this.getPrototypesFromFunctionNames(Object.keys(this.functionMap));
         }
-        getStringFromFunctionNames(f2) {
+        getStringFromFunctionNames(f) {
           let l = [];
-          for (let n = 0; n < f2.length; ++n)
-            this.functionMap[f2[n]] && l.push(this.functionMap[f2[n]].toString());
+          for (let n = 0; n < f.length; ++n)
+            this.functionMap[f[n]] && l.push(this.functionMap[f[n]].toString());
           return l.join(`
 `);
         }
-        getPrototypesFromFunctionNames(f2) {
+        getPrototypesFromFunctionNames(f) {
           let l = [];
-          for (let n = 0; n < f2.length; ++n) {
-            let s = f2[n], t = this.nativeFunctionNames.indexOf(s);
+          for (let n = 0; n < f.length; ++n) {
+            let s = f[n], t = this.nativeFunctionNames.indexOf(s);
             if (t > -1) {
               l.push(this.nativeFunctions[t].source);
               continue;
@@ -7427,33 +7157,33 @@ ${i.join("")};`), n.push(`}
           return l;
         }
         toJSON() {
-          return this.traceFunctionCalls(this.rootNode.name).reverse().map((f2) => {
-            let l = this.nativeFunctions.indexOf(f2);
+          return this.traceFunctionCalls(this.rootNode.name).reverse().map((f) => {
+            let l = this.nativeFunctions.indexOf(f);
             if (l > -1)
-              return { name: f2, source: this.nativeFunctions[l].source };
-            if (this.functionMap[f2])
-              return this.functionMap[f2].toJSON();
-            throw new Error(`function ${f2} not found`);
+              return { name: f, source: this.nativeFunctions[l].source };
+            if (this.functionMap[f])
+              return this.functionMap[f].toJSON();
+            throw new Error(`function ${f} not found`);
           });
         }
-        fromJSON(f2, l) {
+        fromJSON(f, l) {
           this.functionMap = {};
-          for (let n = 0; n < f2.length; n++) {
-            let s = f2[n];
+          for (let n = 0; n < f.length; n++) {
+            let s = f[n];
             this.functionMap[s.settings.name] = new l(s.ast, s.settings);
           }
           return this;
         }
-        getString(f2) {
-          return f2 ? this.getStringFromFunctionNames(this.traceFunctionCalls(f2).reverse()) : this.getStringFromFunctionNames(Object.keys(this.functionMap));
+        getString(f) {
+          return f ? this.getStringFromFunctionNames(this.traceFunctionCalls(f).reverse()) : this.getStringFromFunctionNames(Object.keys(this.functionMap));
         }
-        lookupReturnType(f2, l, n) {
+        lookupReturnType(f, l, n) {
           if (l.type !== "CallExpression")
             throw new Error(`expected ast type of "CallExpression", but is ${l.type}`);
-          if (this._isNativeFunction(f2))
-            return this._lookupNativeFunctionReturnType(f2);
-          if (this._isFunction(f2)) {
-            let s = this._getFunction(f2);
+          if (this._isNativeFunction(f))
+            return this._lookupNativeFunctionReturnType(f);
+          if (this._isFunction(f)) {
+            let s = this._getFunction(f);
             if (s.returnType)
               return s.returnType;
             {
@@ -7474,42 +7204,42 @@ ${i.join("")};`), n.push(`}
           }
           return null;
         }
-        _getFunction(f2) {
-          return this._isFunction(f2) || new Error(`Function ${f2} not found`), this.functionMap[f2];
+        _getFunction(f) {
+          return this._isFunction(f) || new Error(`Function ${f} not found`), this.functionMap[f];
         }
-        _isFunction(f2) {
-          return Boolean(this.functionMap[f2]);
+        _isFunction(f) {
+          return Boolean(this.functionMap[f]);
         }
-        _getNativeFunction(f2) {
+        _getNativeFunction(f) {
           for (let l = 0; l < this.nativeFunctions.length; l++)
-            if (this.nativeFunctions[l].name === f2)
+            if (this.nativeFunctions[l].name === f)
               return this.nativeFunctions[l];
           return null;
         }
-        _isNativeFunction(f2) {
-          return Boolean(this._getNativeFunction(f2));
+        _isNativeFunction(f) {
+          return Boolean(this._getNativeFunction(f));
         }
-        _lookupNativeFunctionReturnType(f2) {
-          let l = this._getNativeFunction(f2);
+        _lookupNativeFunctionReturnType(f) {
+          let l = this._getNativeFunction(f);
           if (l)
             return l.returnType;
-          throw new Error(`Native function ${f2} not found`);
+          throw new Error(`Native function ${f} not found`);
         }
-        lookupFunctionArgumentTypes(f2) {
-          return this._isNativeFunction(f2) ? this._getNativeFunction(f2).argumentTypes : this._isFunction(f2) ? this._getFunction(f2).argumentTypes : null;
+        lookupFunctionArgumentTypes(f) {
+          return this._isNativeFunction(f) ? this._getNativeFunction(f).argumentTypes : this._isFunction(f) ? this._getFunction(f).argumentTypes : null;
         }
-        lookupFunctionArgumentName(f2, l) {
-          return this._getFunction(f2).argumentNames[l];
+        lookupFunctionArgumentName(f, l) {
+          return this._getFunction(f).argumentNames[l];
         }
-        lookupFunctionArgumentBitRatio(f2, l) {
-          if (!this._isFunction(f2))
+        lookupFunctionArgumentBitRatio(f, l) {
+          if (!this._isFunction(f))
             throw new Error("function not found");
-          if (this.rootNode.name === f2) {
+          if (this.rootNode.name === f) {
             let i = this.rootNode.argumentNames.indexOf(l);
             if (i !== -1)
               return this.rootNode.argumentBitRatios[i];
           }
-          let n = this._getFunction(f2), s = n.argumentNames.indexOf(l);
+          let n = this._getFunction(f), s = n.argumentNames.indexOf(l);
           if (s === -1)
             throw new Error("argument not found");
           let t = n.argumentBitRatios[s];
@@ -7517,42 +7247,42 @@ ${i.join("")};`), n.push(`}
             throw new Error("argument bit ratio not found");
           return t;
         }
-        needsArgumentType(f2, l) {
-          return this._isFunction(f2) ? !this._getFunction(f2).argumentTypes[l] : false;
+        needsArgumentType(f, l) {
+          return this._isFunction(f) ? !this._getFunction(f).argumentTypes[l] : false;
         }
-        assignArgumentType(f2, l, n, s) {
-          if (!this._isFunction(f2))
+        assignArgumentType(f, l, n, s) {
+          if (!this._isFunction(f))
             return;
-          let t = this._getFunction(f2);
+          let t = this._getFunction(f);
           t.argumentTypes[l] || (t.argumentTypes[l] = n);
         }
-        assignArgumentBitRatio(f2, l, n, s) {
-          let t = this._getFunction(f2);
+        assignArgumentBitRatio(f, l, n, s) {
+          let t = this._getFunction(f);
           if (this._isNativeFunction(n))
             return null;
           let i = this._getFunction(n), u = t.argumentNames.indexOf(l);
           if (u === -1)
-            throw new Error(`Argument ${l} not found in arguments from function ${f2}`);
+            throw new Error(`Argument ${l} not found in arguments from function ${f}`);
           let x2 = t.argumentBitRatios[u];
           if (typeof x2 != "number")
-            throw new Error(`Bit ratio for argument ${l} not found in function ${f2}`);
+            throw new Error(`Bit ratio for argument ${l} not found in function ${f}`);
           i.argumentBitRatios || (i.argumentBitRatios = new Array(i.argumentNames.length));
-          let w2 = i.argumentBitRatios[u];
-          if (typeof w2 == "number") {
-            if (w2 !== x2)
-              throw new Error(`Incompatible bit ratio found at function ${f2} at argument ${l}`);
-            return w2;
+          let w = i.argumentBitRatios[u];
+          if (typeof w == "number") {
+            if (w !== x2)
+              throw new Error(`Incompatible bit ratio found at function ${f} at argument ${l}`);
+            return w;
           }
           return i.argumentBitRatios[u] = x2, x2;
         }
-        trackFunctionCall(f2, l, n) {
-          this.functionNodeDependencies[f2] || (this.functionNodeDependencies[f2] = /* @__PURE__ */ new Set(), this.functionCalls[f2] = []), this.functionNodeDependencies[f2].add(l), this.functionCalls[f2].push(n);
+        trackFunctionCall(f, l, n) {
+          this.functionNodeDependencies[f] || (this.functionNodeDependencies[f] = /* @__PURE__ */ new Set(), this.functionCalls[f] = []), this.functionNodeDependencies[f].add(l), this.functionCalls[f].push(n);
         }
         getKernelResultType() {
           return this.rootNode.returnType || this.rootNode.getType(this.rootNode.ast);
         }
-        getSubKernelResultType(f2) {
-          let l = this.subKernelNodes[f2], n = false;
+        getSubKernelResultType(f) {
+          let l = this.subKernelNodes[f], n = false;
           for (let s = 0; s < this.rootNode.functionCalls.length; s++)
             this.rootNode.functionCalls[s].ast.callee.name === l.name && (n = true);
           if (!n)
@@ -7560,22 +7290,22 @@ ${i.join("")};`), n.push(`}
           return l.returnType || l.getType(l.getJsAST());
         }
         getReturnTypes() {
-          let f2 = { [this.rootNode.name]: this.rootNode.getType(this.rootNode.ast) }, l = this.traceFunctionCalls(this.rootNode.name);
+          let f = { [this.rootNode.name]: this.rootNode.getType(this.rootNode.ast) }, l = this.traceFunctionCalls(this.rootNode.name);
           for (let n = 0; n < l.length; n++) {
             let s = l[n], t = this.functionMap[s];
-            f2[s] = t.getType(t.ast);
+            f[s] = t.getType(t.ast);
           }
-          return f2;
+          return f;
         }
       }
       y.exports = { FunctionBuilder: p };
-    }, {}], 10: [function(o2, y, E) {
-      let p = o2("acorn"), { utils: g2 } = o2("../utils"), { FunctionTracer: f2 } = o2("./function-tracer");
+    }, {}], 10: [function(o, y, E) {
+      let p = o("acorn"), { utils: g } = o("../utils"), { FunctionTracer: f } = o("./function-tracer");
       class l {
         constructor(t, i) {
           if (!t && !i.ast)
             throw new Error("source parameter is missing");
-          if (i = i || {}, this.source = t, this.ast = null, this.name = typeof t == "string" ? i.isRootKernel ? "kernel" : i.name || g2.getFunctionNameFromString(t) : null, this.calledFunctions = [], this.constants = {}, this.constantTypes = {}, this.constantBitRatios = {}, this.isRootKernel = false, this.isSubKernel = false, this.debug = null, this.functions = null, this.identifiers = null, this.contexts = null, this.functionCalls = null, this.states = [], this.needsArgumentType = null, this.assignArgumentType = null, this.lookupReturnType = null, this.lookupFunctionArgumentTypes = null, this.lookupFunctionArgumentBitRatio = null, this.triggerImplyArgumentType = null, this.triggerImplyArgumentBitRatio = null, this.onNestedFunction = null, this.onFunctionCall = null, this.optimizeFloatMemory = null, this.precision = null, this.loopMaxIterations = null, this.argumentNames = typeof this.source == "string" ? g2.getArgumentNamesFromString(this.source) : null, this.argumentTypes = [], this.argumentSizes = [], this.argumentBitRatios = null, this.returnType = null, this.output = [], this.plugins = null, this.leadingReturnStatement = null, this.followingReturnStatement = null, this.dynamicOutput = null, this.dynamicArguments = null, this.strictTypingChecking = false, this.fixIntegerDivisionAccuracy = null, i)
+          if (i = i || {}, this.source = t, this.ast = null, this.name = typeof t == "string" ? i.isRootKernel ? "kernel" : i.name || g.getFunctionNameFromString(t) : null, this.calledFunctions = [], this.constants = {}, this.constantTypes = {}, this.constantBitRatios = {}, this.isRootKernel = false, this.isSubKernel = false, this.debug = null, this.functions = null, this.identifiers = null, this.contexts = null, this.functionCalls = null, this.states = [], this.needsArgumentType = null, this.assignArgumentType = null, this.lookupReturnType = null, this.lookupFunctionArgumentTypes = null, this.lookupFunctionArgumentBitRatio = null, this.triggerImplyArgumentType = null, this.triggerImplyArgumentBitRatio = null, this.onNestedFunction = null, this.onFunctionCall = null, this.optimizeFloatMemory = null, this.precision = null, this.loopMaxIterations = null, this.argumentNames = typeof this.source == "string" ? g.getArgumentNamesFromString(this.source) : null, this.argumentTypes = [], this.argumentSizes = [], this.argumentBitRatios = null, this.returnType = null, this.output = [], this.plugins = null, this.leadingReturnStatement = null, this.followingReturnStatement = null, this.dynamicOutput = null, this.dynamicArguments = null, this.strictTypingChecking = false, this.fixIntegerDivisionAccuracy = null, i)
             for (let u in i)
               !i.hasOwnProperty(u) || !this.hasOwnProperty(u) || (this[u] = i[u]);
           this.literalTypes = {}, this.validate(), this._string = null, this._internalVariableNames = {};
@@ -7583,7 +7313,7 @@ ${i.join("")};`), n.push(`}
         validate() {
           if (typeof this.source != "string" && !this.ast)
             throw new Error("this.source not a string");
-          if (!this.ast && !g2.isFunctionString(this.source))
+          if (!this.ast && !g.isFunctionString(this.source))
             throw new Error("this.source not a function string");
           if (!this.name)
             throw new Error("this.name could not be set");
@@ -7639,28 +7369,28 @@ ${i.join("")};`), n.push(`}
           return this.ast = u;
         }
         traceFunctionAST(t) {
-          let { contexts: i, declarations: u, functions: x2, identifiers: w2, functionCalls: m } = new f2(t);
-          this.contexts = i, this.identifiers = w2, this.functionCalls = m, this.functions = x2;
+          let { contexts: i, declarations: u, functions: x2, identifiers: w, functionCalls: m } = new f(t);
+          this.contexts = i, this.identifiers = w, this.functionCalls = m, this.functions = x2;
           for (let S = 0; S < u.length; S++) {
-            let v = u[S], { ast: h, inForLoopInit: b2, inForLoopTest: T } = v, { init: C } = h, V = this.getDependencies(C), c2 = null;
-            if (b2 && T)
-              c2 = "Integer";
+            let v = u[S], { ast: h, inForLoopInit: b, inForLoopTest: T } = v, { init: C } = h, V = this.getDependencies(C), c = null;
+            if (b && T)
+              c = "Integer";
             else if (C) {
-              let a2 = this.getType(C);
-              switch (a2) {
+              let a = this.getType(C);
+              switch (a) {
                 case "Integer":
                 case "Float":
                 case "Number":
-                  C.type === "MemberExpression" ? c2 = a2 : c2 = "Number";
+                  C.type === "MemberExpression" ? c = a : c = "Number";
                   break;
                 case "LiteralInteger":
-                  c2 = "Number";
+                  c = "Number";
                   break;
                 default:
-                  c2 = a2;
+                  c = a;
               }
             }
-            v.valueType = c2, v.dependencies = V, v.isSafe = this.isSafeDependencies(V);
+            v.valueType = c, v.dependencies = V, v.isSafe = this.isSafeDependencies(V);
           }
           for (let S = 0; S < x2.length; S++)
             this.onNestedFunction(x2[S], this.source);
@@ -7782,8 +7512,8 @@ ${i.join("")};`), n.push(`}
               return t.operator === "~" ? "Integer" : this.getType(t.argument);
             case "VariableDeclaration": {
               let v = t.declarations, h;
-              for (let b2 = 0; b2 < v.length; b2++) {
-                let T = v[b2];
+              for (let b = 0; b < v.length; b++) {
+                let T = v[b];
                 h = this.getType(T);
               }
               if (!h)
@@ -7791,12 +7521,12 @@ ${i.join("")};`), n.push(`}
               return h;
             }
             case "VariableDeclarator":
-              let w2 = this.getDeclaration(t.id);
-              if (!w2)
+              let w = this.getDeclaration(t.id);
+              if (!w)
                 throw this.astErrorOutput("Unable to find declarator", t);
-              if (!w2.valueType)
+              if (!w.valueType)
                 throw this.astErrorOutput("Unable to find declarator valueType", t);
-              return w2.valueType;
+              return w.valueType;
             case "Identifier":
               if (t.name === "Infinity")
                 return "Number";
@@ -7954,8 +7684,8 @@ ${i.join("")};`), n.push(`}
             case "CallExpression":
               return i.push({ origin: "function", isSafe: true }), i;
             case "MemberExpression":
-              let w2 = this.getMemberExpressionDetails(t);
-              switch (w2.signature) {
+              let w = this.getMemberExpressionDetails(t);
+              switch (w.signature) {
                 case "value[]":
                   this.getDependencies(t.object, i, u);
                   break;
@@ -7966,11 +7696,11 @@ ${i.join("")};`), n.push(`}
                   this.getDependencies(t.object.object.object, i, u);
                   break;
                 case "this.output.value":
-                  this.dynamicOutput && i.push({ name: w2.name, origin: "output", isSafe: false });
+                  this.dynamicOutput && i.push({ name: w.name, origin: "output", isSafe: false });
                   break;
               }
-              if (w2)
-                return w2.property && this.getDependencies(w2.property, i, u), w2.xProperty && this.getDependencies(w2.xProperty, i, u), w2.yProperty && this.getDependencies(w2.yProperty, i, u), w2.zProperty && this.getDependencies(w2.zProperty, i, u), i;
+              if (w)
+                return w.property && this.getDependencies(w.property, i, u), w.xProperty && this.getDependencies(w.xProperty, i, u), w.yProperty && this.getDependencies(w.yProperty, i, u), w.zProperty && this.getDependencies(w.zProperty, i, u), i;
             case "SequenceExpression":
               return this.getDependencies(t.expressions, i, u);
             default:
@@ -8065,8 +7795,8 @@ ${i.join("")};`), n.push(`}
         astErrorOutput(t, i) {
           if (typeof this.source != "string")
             return new Error(t);
-          let u = g2.getAstString(this.source, i), w2 = this.source.substr(i.start).split(/\n/), m = w2.length > 0 ? w2[w2.length - 1] : 0;
-          return new Error(`${t} on line ${w2.length}, position ${m.length}:
+          let u = g.getAstString(this.source, i), w = this.source.substr(i.start).split(/\n/), m = w.length > 0 ? w[w.length - 1] : 0;
+          return new Error(`${t} on line ${w.length}, position ${m.length}:
  ${u}`);
         }
         astDebuggerStatement(t, i) {
@@ -8146,8 +7876,8 @@ ${i.join("")};`), n.push(`}
         }
         astSequenceExpression(t, i) {
           let { expressions: u } = t, x2 = [];
-          for (let w2 = 0; w2 < u.length; w2++) {
-            let m = u[w2], S = [];
+          for (let w = 0; w < u.length; w++) {
+            let m = u[w], S = [];
             this.astGeneric(m, S), x2.push(S.join(""));
           }
           return x2.length > 1 ? i.push("(", x2.join(","), ")") : i.push(x2[0]), i;
@@ -8297,12 +8027,12 @@ ${i.join("")};`), n.push(`}
       }
       let n = { Number: "Number", Float: "Float", Integer: "Integer", Array: "Number", "Array(2)": "Number", "Array(3)": "Number", "Array(4)": "Number", "Matrix(2)": "Number", "Matrix(3)": "Number", "Matrix(4)": "Number", Array2D: "Number", Array3D: "Number", Input: "Number", HTMLCanvas: "Array(4)", HTMLImage: "Array(4)", HTMLVideo: "Array(4)", HTMLImageArray: "Array(4)", NumberTexture: "Number", MemoryOptimizedNumberTexture: "Number", "Array1D(2)": "Array(2)", "Array1D(3)": "Array(3)", "Array1D(4)": "Array(4)", "Array2D(2)": "Array(2)", "Array2D(3)": "Array(3)", "Array2D(4)": "Array(4)", "Array3D(2)": "Array(2)", "Array3D(3)": "Array(3)", "Array3D(4)": "Array(4)", "ArrayTexture(1)": "Number", "ArrayTexture(2)": "Array(2)", "ArrayTexture(3)": "Array(3)", "ArrayTexture(4)": "Array(4)" };
       y.exports = { FunctionNode: l };
-    }, { "../utils": 114, "./function-tracer": 11, acorn: 1 }], 11: [function(o2, y, E) {
-      let { utils: p } = o2("../utils");
-      function g2(n) {
+    }, { "../utils": 114, "./function-tracer": 11, acorn: 1 }], 11: [function(o, y, E) {
+      let { utils: p } = o("../utils");
+      function g(n) {
         return n.length > 0 ? n[n.length - 1] : null;
       }
-      let f2 = { trackIdentifiers: "trackIdentifiers", memberExpression: "memberExpression", inForLoopInit: "inForLoopInit" };
+      let f = { trackIdentifiers: "trackIdentifiers", memberExpression: "memberExpression", inForLoopInit: "inForLoopInit" };
       class l {
         constructor(s) {
           this.runningContexts = [], this.functionContexts = [], this.contexts = [], this.functionCalls = [], this.declarations = [], this.identifiers = [], this.functions = [], this.returnStatements = [], this.trackedIdentifiers = null, this.states = [], this.newFunctionContext(), this.scan(s);
@@ -8323,10 +8053,10 @@ ${i.join("")};`), n.push(`}
             throw new Error(`Cannot pop the non-active state "${s}"`);
         }
         get currentFunctionContext() {
-          return g2(this.functionContexts);
+          return g(this.functionContexts);
         }
         get currentContext() {
-          return g2(this.runningContexts);
+          return g(this.runningContexts);
         }
         newFunctionContext() {
           let s = { "@contextType": "function" };
@@ -8341,19 +8071,19 @@ ${i.join("")};`), n.push(`}
           return this.runningContexts.pop(), t;
         }
         useFunctionContext(s) {
-          let t = g2(this.functionContexts);
+          let t = g(this.functionContexts);
           this.runningContexts.push(t), s(), this.runningContexts.pop();
         }
         getIdentifiers(s) {
           let t = this.trackedIdentifiers = [];
-          return this.pushState(f2.trackIdentifiers), s(), this.trackedIdentifiers = null, this.popState(f2.trackIdentifiers), t;
+          return this.pushState(f.trackIdentifiers), s(), this.trackedIdentifiers = null, this.popState(f.trackIdentifiers), t;
         }
         getDeclaration(s) {
           let { currentContext: t, currentFunctionContext: i, runningContexts: u } = this, x2 = t[s] || i[s] || null;
           if (!x2 && t === i && u.length > 0) {
-            let w2 = u[u.length - 2];
-            if (w2[s])
-              return w2[s];
+            let w = u[u.length - 2];
+            if (w[s])
+              return w[s];
           }
           return x2;
         }
@@ -8398,7 +8128,7 @@ ${i.join("")};`), n.push(`}
                 }) : (s.declarations = p.normalizeDeclarations(s), this.scan(s.declarations));
                 break;
               case "VariableDeclarator": {
-                let { currentContext: t } = this, i = this.hasState(f2.inForLoopInit), u = { ast: s, context: t, name: s.id.name, origin: "declaration", inForLoopInit: i, inForLoopTest: null, assignable: t === this.currentFunctionContext || !i && !t.hasOwnProperty(s.id.name), suggestedType: null, valueType: null, dependencies: null, isSafe: null };
+                let { currentContext: t } = this, i = this.hasState(f.inForLoopInit), u = { ast: s, context: t, name: s.id.name, origin: "declaration", inForLoopInit: i, inForLoopTest: null, assignable: t === this.currentFunctionContext || !i && !t.hasOwnProperty(s.id.name), suggestedType: null, valueType: null, dependencies: null, isSafe: null };
                 t[s.id.name] || (t[s.id.name] = u), this.declarations.push(u), this.scan(s.id), this.scan(s.init);
                 break;
               }
@@ -8411,7 +8141,7 @@ ${i.join("")};`), n.push(`}
                 break;
               case "ForStatement": {
                 let t, i = this.newContext(() => {
-                  this.pushState(f2.inForLoopInit), this.scan(s.init), this.popState(f2.inForLoopInit), t = this.getIdentifiers(() => {
+                  this.pushState(f.inForLoopInit), this.scan(s.init), this.popState(f.inForLoopInit), t = this.getIdentifiers(() => {
                     this.scan(s.test);
                   }), this.scan(s.update), this.newContext(() => {
                     this.scan(s.body);
@@ -8429,14 +8159,14 @@ ${i.join("")};`), n.push(`}
                 });
                 break;
               case "Identifier": {
-                this.isState(f2.trackIdentifiers) && this.trackedIdentifiers.push(s.name), this.identifiers.push({ context: this.currentContext, declaration: this.getDeclaration(s.name), ast: s });
+                this.isState(f.trackIdentifiers) && this.trackedIdentifiers.push(s.name), this.identifiers.push({ context: this.currentContext, declaration: this.getDeclaration(s.name), ast: s });
                 break;
               }
               case "ReturnStatement":
                 this.returnStatements.push(s), this.scan(s.argument);
                 break;
               case "MemberExpression":
-                this.pushState(f2.memberExpression), this.scan(s.object), this.scan(s.property), this.popState(f2.memberExpression);
+                this.pushState(f.memberExpression), this.scan(s.object), this.scan(s.property), this.popState(f.memberExpression);
                 break;
               case "ExpressionStatement":
                 this.scan(s.expression);
@@ -8473,13 +8203,13 @@ ${i.join("")};`), n.push(`}
         }
       }
       y.exports = { FunctionTracer: l };
-    }, { "../utils": 114 }], 12: [function(o2, y, E) {
-      let { glWiretap: p } = o2("gl-wiretap"), { utils: g2 } = o2("../../utils");
-      function f2(u) {
+    }, { "../utils": 114 }], 12: [function(o, y, E) {
+      let { glWiretap: p } = o("gl-wiretap"), { utils: g } = o("../../utils");
+      function f(u) {
         return u.toString().replace("=>", "").replace(/^function /, "").replace(/utils[.]/g, "/*utils.*/");
       }
-      function l(u, x2, w2, m, S) {
-        w2.built || w2.build.apply(w2, x2), x2 = x2 ? Array.from(x2).map((Q) => {
+      function l(u, x2, w, m, S) {
+        w.built || w.build.apply(w, x2), x2 = x2 ? Array.from(x2).map((Q) => {
           switch (typeof Q) {
             case "boolean":
               return new Boolean(Q);
@@ -8489,7 +8219,7 @@ ${i.join("")};`), n.push(`}
               return Q;
           }
         }) : null;
-        let v = [], h = [], b2 = p(w2.context, { useTrackablePrimitives: true, onReadPixels: (Q) => {
+        let v = [], h = [], b = p(w.context, { useTrackablePrimitives: true, onReadPixels: (Q) => {
           if (Z.subKernels) {
             if (!T)
               h.push(`    const result = { result: ${n(Q, Z)} };`), T = true;
@@ -8502,13 +8232,13 @@ ${i.join("")};`), n.push(`}
           }
           Q ? h.push(`    return ${n(Q, Z)};`) : h.push("    return null;");
         }, onUnrecognizedArgumentLookup: (Q) => {
-          let ue = i(Q, Z.kernelArguments, [], b2, v);
+          let ue = i(Q, Z.kernelArguments, [], b, v);
           if (ue)
             return ue;
-          let he = i(Q, Z.kernelConstants, F ? Object.keys(F).map((pe) => F[pe]) : [], b2, v);
+          let he = i(Q, Z.kernelConstants, F ? Object.keys(F).map((pe) => F[pe]) : [], b, v);
           return he || null;
-        } }), T = false, C = 0, { source: V, canvas: c2, output: a2, pipeline: k, graphical: A, loopMaxIterations: N, constants: F, optimizeFloatMemory: L, precision: K, fixIntegerDivisionAccuracy: O, functions: X, nativeFunctions: B, subKernels: P, immutable: Y, argumentTypes: J, constantTypes: q, kernelArguments: j, kernelConstants: U, tactic: oe } = w2, Z = new u(V, { canvas: c2, context: b2, checkContext: false, output: a2, pipeline: k, graphical: A, loopMaxIterations: N, constants: F, optimizeFloatMemory: L, precision: K, fixIntegerDivisionAccuracy: O, functions: X, nativeFunctions: B, subKernels: P, immutable: Y, argumentTypes: J, constantTypes: q, tactic: oe }), ee = [];
-        if (b2.setIndent(2), Z.build.apply(Z, x2), ee.push(b2.toString()), b2.reset(), Z.kernelArguments.forEach((Q, ue) => {
+        } }), T = false, C = 0, { source: V, canvas: c, output: a, pipeline: k, graphical: A, loopMaxIterations: N, constants: F, optimizeFloatMemory: L, precision: K, fixIntegerDivisionAccuracy: O, functions: X, nativeFunctions: B, subKernels: P, immutable: Y, argumentTypes: J, constantTypes: q, kernelArguments: j, kernelConstants: U, tactic: oe } = w, Z = new u(V, { canvas: c, context: b, checkContext: false, output: a, pipeline: k, graphical: A, loopMaxIterations: N, constants: F, optimizeFloatMemory: L, precision: K, fixIntegerDivisionAccuracy: O, functions: X, nativeFunctions: B, subKernels: P, immutable: Y, argumentTypes: J, constantTypes: q, tactic: oe }), ee = [];
+        if (b.setIndent(2), Z.build.apply(Z, x2), ee.push(b.toString()), b.reset(), Z.kernelArguments.forEach((Q, ue) => {
           switch (Q.type) {
             case "Integer":
             case "Boolean":
@@ -8521,16 +8251,16 @@ ${i.join("")};`), n.push(`}
             case "HTMLCanvas":
             case "HTMLImage":
             case "HTMLVideo":
-              b2.insertVariable(`uploadValue_${Q.name}`, Q.uploadValue);
+              b.insertVariable(`uploadValue_${Q.name}`, Q.uploadValue);
               break;
             case "HTMLImageArray":
               for (let he = 0; he < x2[ue].length; he++) {
                 let pe = x2[ue];
-                b2.insertVariable(`uploadValue_${Q.name}[${he}]`, pe[he]);
+                b.insertVariable(`uploadValue_${Q.name}[${he}]`, pe[he]);
               }
               break;
             case "Input":
-              b2.insertVariable(`uploadValue_${Q.name}`, Q.uploadValue);
+              b.insertVariable(`uploadValue_${Q.name}`, Q.uploadValue);
               break;
             case "MemoryOptimizedNumberTexture":
             case "NumberTexture":
@@ -8547,20 +8277,20 @@ ${i.join("")};`), n.push(`}
             case "ArrayTexture(2)":
             case "ArrayTexture(3)":
             case "ArrayTexture(4)":
-              b2.insertVariable(`uploadValue_${Q.name}`, x2[ue].texture);
+              b.insertVariable(`uploadValue_${Q.name}`, x2[ue].texture);
               break;
             default:
               throw new Error(`unhandled kernelArgumentType insertion for glWiretap of type ${Q.type}`);
           }
-        }), ee.push("/** start of injected functions **/"), ee.push(`function ${f2(g2.flattenTo)}`), ee.push(`function ${f2(g2.flatten2dArrayTo)}`), ee.push(`function ${f2(g2.flatten3dArrayTo)}`), ee.push(`function ${f2(g2.flatten4dArrayTo)}`), ee.push(`function ${f2(g2.isArray)}`), Z.renderOutput !== Z.renderTexture && Z.formatValues && ee.push(`  const renderOutput = function ${f2(Z.formatValues)};`), ee.push("/** end of injected functions **/"), ee.push(`  const innerKernel = function (${Z.kernelArguments.map((Q) => Q.varName).join(", ")}) {`), b2.setIndent(4), Z.run.apply(Z, x2), Z.renderKernels ? Z.renderKernels() : Z.renderOutput && Z.renderOutput(), ee.push("    /** start setup uploads for kernel values **/"), Z.kernelArguments.forEach((Q) => {
+        }), ee.push("/** start of injected functions **/"), ee.push(`function ${f(g.flattenTo)}`), ee.push(`function ${f(g.flatten2dArrayTo)}`), ee.push(`function ${f(g.flatten3dArrayTo)}`), ee.push(`function ${f(g.flatten4dArrayTo)}`), ee.push(`function ${f(g.isArray)}`), Z.renderOutput !== Z.renderTexture && Z.formatValues && ee.push(`  const renderOutput = function ${f(Z.formatValues)};`), ee.push("/** end of injected functions **/"), ee.push(`  const innerKernel = function (${Z.kernelArguments.map((Q) => Q.varName).join(", ")}) {`), b.setIndent(4), Z.run.apply(Z, x2), Z.renderKernels ? Z.renderKernels() : Z.renderOutput && Z.renderOutput(), ee.push("    /** start setup uploads for kernel values **/"), Z.kernelArguments.forEach((Q) => {
           ee.push("    " + Q.getStringValueHandler().split(`
 `).join(`
     `));
-        }), ee.push("    /** end setup uploads for kernel values **/"), ee.push(b2.toString()), Z.renderOutput === Z.renderTexture) {
-          b2.reset();
-          let Q = b2.getContextVariableName(Z.framebuffer);
+        }), ee.push("    /** end setup uploads for kernel values **/"), ee.push(b.toString()), Z.renderOutput === Z.renderTexture) {
+          b.reset();
+          let Q = b.getContextVariableName(Z.framebuffer);
           if (Z.renderKernels) {
-            let ue = Z.renderKernels(), he = b2.getContextVariableName(Z.texture.texture);
+            let ue = Z.renderKernels(), he = b.getContextVariableName(Z.texture.texture);
             ee.push(`    return {
             result: {
               texture: ${he},
@@ -8569,7 +8299,7 @@ ${i.join("")};`), n.push(`}
             },`);
             let { subKernels: pe, mappedTextures: te } = Z;
             for (let re = 0; re < pe.length; re++) {
-              let de = te[re], Te = pe[re], Se = ue[Te.property], Ce = b2.getContextVariableName(de.texture);
+              let de = te[re], Te = pe[re], Se = ue[Te.property], Ce = b.getContextVariableName(de.texture);
               ee.push(`
             ${Te.property}: {
               texture: ${Ce},
@@ -8579,7 +8309,7 @@ ${i.join("")};`), n.push(`}
             }
             ee.push("    };");
           } else {
-            let ue = Z.renderOutput(), he = b2.getContextVariableName(Z.texture.texture);
+            let ue = Z.renderOutput(), he = b.getContextVariableName(Z.texture.texture);
             ee.push(`    return {
               texture: ${he},
               type: '${ue.type}',
@@ -8602,12 +8332,12 @@ ${i.join("")};`), n.push(`}
       }`;
       }
       function n(u, x2) {
-        let w2 = x2.precision === "single" ? u : `new Float32Array(${u}.buffer)`;
-        return x2.output[2] ? `renderOutput(${w2}, ${x2.output[0]}, ${x2.output[1]}, ${x2.output[2]})` : x2.output[1] ? `renderOutput(${w2}, ${x2.output[0]}, ${x2.output[1]})` : `renderOutput(${w2}, ${x2.output[0]})`;
+        let w = x2.precision === "single" ? u : `new Float32Array(${u}.buffer)`;
+        return x2.output[2] ? `renderOutput(${w}, ${x2.output[0]}, ${x2.output[1]}, ${x2.output[2]})` : x2.output[1] ? `renderOutput(${w}, ${x2.output[0]}, ${x2.output[1]})` : `renderOutput(${w}, ${x2.output[0]})`;
       }
       function s(u) {
-        let x2 = u.getPixels.toString(), w2 = !/^function/.test(x2);
-        return g2.flattenFunctionToString(`${w2 ? "function " : ""}${x2}`, { findDependency: (m, S) => m === "utils" ? `const ${S} = ${g2[S].toString()};` : null, thisLookup: (m) => {
+        let x2 = u.getPixels.toString(), w = !/^function/.test(x2);
+        return g.flattenFunctionToString(`${w ? "function " : ""}${x2}`, { findDependency: (m, S) => m === "utils" ? `const ${S} = ${g[S].toString()};` : null, thisLookup: (m) => {
           if (m === "context")
             return null;
           if (u.hasOwnProperty(m))
@@ -8615,29 +8345,29 @@ ${i.join("")};`), n.push(`}
           throw new Error(`unhandled thisLookup ${m}`);
         } });
       }
-      function t(u, x2, w2) {
-        let m = u.toArray.toString(), S = !/^function/.test(m), v = g2.flattenFunctionToString(`${S ? "function " : ""}${m}`, { findDependency: (h, b2) => {
+      function t(u, x2, w) {
+        let m = u.toArray.toString(), S = !/^function/.test(m), v = g.flattenFunctionToString(`${S ? "function " : ""}${m}`, { findDependency: (h, b) => {
           if (h === "utils")
-            return `const ${b2} = ${g2[b2].toString()};`;
+            return `const ${b} = ${g[b].toString()};`;
           if (h === "this")
-            return b2 === "framebuffer" ? "" : `${S ? "function " : ""}${u[b2].toString()}`;
+            return b === "framebuffer" ? "" : `${S ? "function " : ""}${u[b].toString()}`;
           throw new Error("unhandled fromObject");
-        }, thisLookup: (h, b2) => {
+        }, thisLookup: (h, b) => {
           if (h === "texture")
             return x2;
           if (h === "context")
-            return b2 ? null : "gl";
+            return b ? null : "gl";
           if (u.hasOwnProperty(h))
             return JSON.stringify(u[h]);
           throw new Error(`unhandled thisLookup ${h}`);
         } });
         return `() => {
-        function framebuffer() { return ${w2}; };
+        function framebuffer() { return ${w}; };
         ${v}
         return toArray();
         }`;
       }
-      function i(u, x2, w2, m, S) {
+      function i(u, x2, w, m, S) {
         if (u === null || x2 === null)
           return null;
         switch (typeof u) {
@@ -8650,24 +8380,24 @@ ${i.join("")};`), n.push(`}
             let h = x2[v];
             if (h.type !== "HTMLImageArray" && h || h.uploadValue !== u)
               continue;
-            let b2 = w2[v].indexOf(u);
-            if (b2 === -1)
+            let b = w[v].indexOf(u);
+            if (b === -1)
               continue;
-            let T = `uploadValue_${h.name}[${b2}]`;
+            let T = `uploadValue_${h.name}[${b}]`;
             return m.insertVariable(T, u), T;
           }
         for (let v = 0; v < x2.length; v++) {
           let h = x2[v];
           if (u !== h.uploadValue)
             continue;
-          let b2 = `uploadValue_${h.name}`;
-          return m.insertVariable(b2, h), b2;
+          let b = `uploadValue_${h.name}`;
+          return m.insertVariable(b, h), b;
         }
         return null;
       }
       y.exports = { glKernelString: l };
-    }, { "../../utils": 114, "gl-wiretap": 3 }], 13: [function(o2, y, E) {
-      let { Kernel: p } = o2("../kernel"), { utils: g2 } = o2("../../utils"), { GLTextureArray2Float: f2 } = o2("./texture/array-2-float"), { GLTextureArray2Float2D: l } = o2("./texture/array-2-float-2d"), { GLTextureArray2Float3D: n } = o2("./texture/array-2-float-3d"), { GLTextureArray3Float: s } = o2("./texture/array-3-float"), { GLTextureArray3Float2D: t } = o2("./texture/array-3-float-2d"), { GLTextureArray3Float3D: i } = o2("./texture/array-3-float-3d"), { GLTextureArray4Float: u } = o2("./texture/array-4-float"), { GLTextureArray4Float2D: x2 } = o2("./texture/array-4-float-2d"), { GLTextureArray4Float3D: w2 } = o2("./texture/array-4-float-3d"), { GLTextureFloat: m } = o2("./texture/float"), { GLTextureFloat2D: S } = o2("./texture/float-2d"), { GLTextureFloat3D: v } = o2("./texture/float-3d"), { GLTextureMemoryOptimized: h } = o2("./texture/memory-optimized"), { GLTextureMemoryOptimized2D: b2 } = o2("./texture/memory-optimized-2d"), { GLTextureMemoryOptimized3D: T } = o2("./texture/memory-optimized-3d"), { GLTextureUnsigned: C } = o2("./texture/unsigned"), { GLTextureUnsigned2D: V } = o2("./texture/unsigned-2d"), { GLTextureUnsigned3D: c2 } = o2("./texture/unsigned-3d"), { GLTextureGraphical: a2 } = o2("./texture/graphical");
+    }, { "../../utils": 114, "gl-wiretap": 3 }], 13: [function(o, y, E) {
+      let { Kernel: p } = o("../kernel"), { utils: g } = o("../../utils"), { GLTextureArray2Float: f } = o("./texture/array-2-float"), { GLTextureArray2Float2D: l } = o("./texture/array-2-float-2d"), { GLTextureArray2Float3D: n } = o("./texture/array-2-float-3d"), { GLTextureArray3Float: s } = o("./texture/array-3-float"), { GLTextureArray3Float2D: t } = o("./texture/array-3-float-2d"), { GLTextureArray3Float3D: i } = o("./texture/array-3-float-3d"), { GLTextureArray4Float: u } = o("./texture/array-4-float"), { GLTextureArray4Float2D: x2 } = o("./texture/array-4-float-2d"), { GLTextureArray4Float3D: w } = o("./texture/array-4-float-3d"), { GLTextureFloat: m } = o("./texture/float"), { GLTextureFloat2D: S } = o("./texture/float-2d"), { GLTextureFloat3D: v } = o("./texture/float-3d"), { GLTextureMemoryOptimized: h } = o("./texture/memory-optimized"), { GLTextureMemoryOptimized2D: b } = o("./texture/memory-optimized-2d"), { GLTextureMemoryOptimized3D: T } = o("./texture/memory-optimized-3d"), { GLTextureUnsigned: C } = o("./texture/unsigned"), { GLTextureUnsigned2D: V } = o("./texture/unsigned-2d"), { GLTextureUnsigned3D: c } = o("./texture/unsigned-3d"), { GLTextureGraphical: a } = o("./texture/graphical");
       class k extends p {
         static get mode() {
           return "gpu";
@@ -8721,7 +8451,7 @@ ${i.join("")};`), n.push(`}
           return this.precision = F, this;
         }
         setFloatTextures(F) {
-          return g2.warnDeprecated("method", "setFloatTextures", "setOptimizeFloatMemory"), this.floatTextures = F, this;
+          return g.warnDeprecated("method", "setFloatTextures", "setOptimizeFloatMemory"), this.floatTextures = F, this;
         }
         static nativeFunctionArguments(F) {
           let L = [], K = [], O = [], X = /^[a-zA-Z_]/, B = /[a-zA-Z_0-9]/, P = 0, Y = null, J = null;
@@ -8797,10 +8527,10 @@ ${i.join("")};`), n.push(`}
           if (B = B.subarray(0, X[0] * X[1] * X[2]), L.output.length === 1)
             return B;
           if (L.output.length === 2)
-            return g2.splitArray(B, L.output[0]);
+            return g.splitArray(B, L.output[0]);
           if (L.output.length === 3)
-            return g2.splitArray(B, L.output[0] * L.output[1]).map(function(Y) {
-              return g2.splitArray(Y, L.output[0]);
+            return g.splitArray(B, L.output[0] * L.output[1]).map(function(Y) {
+              return g.splitArray(Y, L.output[0]);
             });
         }
         constructor(F, L) {
@@ -8816,7 +8546,7 @@ ${i.join("")};`), n.push(`}
         }
         pickRenderStrategy(F) {
           if (this.graphical)
-            return this.renderRawOutput = this.readPackedPixelsToUint8Array, this.transferValues = (L) => L, this.TextureConstructor = a2, null;
+            return this.renderRawOutput = this.readPackedPixelsToUint8Array, this.transferValues = (L) => L, this.TextureConstructor = a, null;
           if (this.precision === "unsigned")
             if (this.renderRawOutput = this.readPackedPixelsToUint8Array, this.transferValues = this.readPackedPixelsToFloat32Array, this.pipeline)
               switch (this.renderOutput = this.renderTexture, this.subKernels !== null && (this.renderKernels = this.renderKernelsToTextures), this.returnType) {
@@ -8824,7 +8554,7 @@ ${i.join("")};`), n.push(`}
                 case "Float":
                 case "Number":
                 case "Integer":
-                  return this.output[2] > 0 ? (this.TextureConstructor = c2, null) : this.output[1] > 0 ? (this.TextureConstructor = V, null) : (this.TextureConstructor = C, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = c, null) : this.output[1] > 0 ? (this.TextureConstructor = V, null) : (this.TextureConstructor = C, null);
                 case "Array(2)":
                 case "Array(3)":
                 case "Array(4)":
@@ -8836,7 +8566,7 @@ ${i.join("")};`), n.push(`}
                 case "Float":
                 case "Number":
                 case "Integer":
-                  return this.renderOutput = this.renderValues, this.output[2] > 0 ? (this.TextureConstructor = c2, this.formatValues = g2.erect3DPackedFloat, null) : this.output[1] > 0 ? (this.TextureConstructor = V, this.formatValues = g2.erect2DPackedFloat, null) : (this.TextureConstructor = C, this.formatValues = g2.erectPackedFloat, null);
+                  return this.renderOutput = this.renderValues, this.output[2] > 0 ? (this.TextureConstructor = c, this.formatValues = g.erect3DPackedFloat, null) : this.output[1] > 0 ? (this.TextureConstructor = V, this.formatValues = g.erect2DPackedFloat, null) : (this.TextureConstructor = C, this.formatValues = g.erectPackedFloat, null);
                 case "Array(2)":
                 case "Array(3)":
                 case "Array(4)":
@@ -8849,13 +8579,13 @@ ${i.join("")};`), n.push(`}
                 case "Float":
                 case "Number":
                 case "Integer":
-                  return this.optimizeFloatMemory ? this.output[2] > 0 ? (this.TextureConstructor = T, null) : this.output[1] > 0 ? (this.TextureConstructor = b2, null) : (this.TextureConstructor = h, null) : this.output[2] > 0 ? (this.TextureConstructor = v, null) : this.output[1] > 0 ? (this.TextureConstructor = S, null) : (this.TextureConstructor = m, null);
+                  return this.optimizeFloatMemory ? this.output[2] > 0 ? (this.TextureConstructor = T, null) : this.output[1] > 0 ? (this.TextureConstructor = b, null) : (this.TextureConstructor = h, null) : this.output[2] > 0 ? (this.TextureConstructor = v, null) : this.output[1] > 0 ? (this.TextureConstructor = S, null) : (this.TextureConstructor = m, null);
                 case "Array(2)":
-                  return this.output[2] > 0 ? (this.TextureConstructor = n, null) : this.output[1] > 0 ? (this.TextureConstructor = l, null) : (this.TextureConstructor = f2, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = n, null) : this.output[1] > 0 ? (this.TextureConstructor = l, null) : (this.TextureConstructor = f, null);
                 case "Array(3)":
                   return this.output[2] > 0 ? (this.TextureConstructor = i, null) : this.output[1] > 0 ? (this.TextureConstructor = t, null) : (this.TextureConstructor = s, null);
                 case "Array(4)":
-                  return this.output[2] > 0 ? (this.TextureConstructor = w2, null) : this.output[1] > 0 ? (this.TextureConstructor = x2, null) : (this.TextureConstructor = u, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = w, null) : this.output[1] > 0 ? (this.TextureConstructor = x2, null) : (this.TextureConstructor = u, null);
               }
             if (this.renderOutput = this.renderValues, this.subKernels !== null && (this.renderKernels = this.renderKernelsToArrays), this.optimizeFloatMemory)
               switch (this.returnType) {
@@ -8863,13 +8593,13 @@ ${i.join("")};`), n.push(`}
                 case "Float":
                 case "Number":
                 case "Integer":
-                  return this.output[2] > 0 ? (this.TextureConstructor = T, this.formatValues = g2.erectMemoryOptimized3DFloat, null) : this.output[1] > 0 ? (this.TextureConstructor = b2, this.formatValues = g2.erectMemoryOptimized2DFloat, null) : (this.TextureConstructor = h, this.formatValues = g2.erectMemoryOptimizedFloat, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = T, this.formatValues = g.erectMemoryOptimized3DFloat, null) : this.output[1] > 0 ? (this.TextureConstructor = b, this.formatValues = g.erectMemoryOptimized2DFloat, null) : (this.TextureConstructor = h, this.formatValues = g.erectMemoryOptimizedFloat, null);
                 case "Array(2)":
-                  return this.output[2] > 0 ? (this.TextureConstructor = n, this.formatValues = g2.erect3DArray2, null) : this.output[1] > 0 ? (this.TextureConstructor = l, this.formatValues = g2.erect2DArray2, null) : (this.TextureConstructor = f2, this.formatValues = g2.erectArray2, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = n, this.formatValues = g.erect3DArray2, null) : this.output[1] > 0 ? (this.TextureConstructor = l, this.formatValues = g.erect2DArray2, null) : (this.TextureConstructor = f, this.formatValues = g.erectArray2, null);
                 case "Array(3)":
-                  return this.output[2] > 0 ? (this.TextureConstructor = i, this.formatValues = g2.erect3DArray3, null) : this.output[1] > 0 ? (this.TextureConstructor = t, this.formatValues = g2.erect2DArray3, null) : (this.TextureConstructor = s, this.formatValues = g2.erectArray3, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = i, this.formatValues = g.erect3DArray3, null) : this.output[1] > 0 ? (this.TextureConstructor = t, this.formatValues = g.erect2DArray3, null) : (this.TextureConstructor = s, this.formatValues = g.erectArray3, null);
                 case "Array(4)":
-                  return this.output[2] > 0 ? (this.TextureConstructor = w2, this.formatValues = g2.erect3DArray4, null) : this.output[1] > 0 ? (this.TextureConstructor = x2, this.formatValues = g2.erect2DArray4, null) : (this.TextureConstructor = u, this.formatValues = g2.erectArray4, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = w, this.formatValues = g.erect3DArray4, null) : this.output[1] > 0 ? (this.TextureConstructor = x2, this.formatValues = g.erect2DArray4, null) : (this.TextureConstructor = u, this.formatValues = g.erectArray4, null);
               }
             else
               switch (this.returnType) {
@@ -8877,13 +8607,13 @@ ${i.join("")};`), n.push(`}
                 case "Float":
                 case "Number":
                 case "Integer":
-                  return this.output[2] > 0 ? (this.TextureConstructor = v, this.formatValues = g2.erect3DFloat, null) : this.output[1] > 0 ? (this.TextureConstructor = S, this.formatValues = g2.erect2DFloat, null) : (this.TextureConstructor = m, this.formatValues = g2.erectFloat, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = v, this.formatValues = g.erect3DFloat, null) : this.output[1] > 0 ? (this.TextureConstructor = S, this.formatValues = g.erect2DFloat, null) : (this.TextureConstructor = m, this.formatValues = g.erectFloat, null);
                 case "Array(2)":
-                  return this.output[2] > 0 ? (this.TextureConstructor = n, this.formatValues = g2.erect3DArray2, null) : this.output[1] > 0 ? (this.TextureConstructor = l, this.formatValues = g2.erect2DArray2, null) : (this.TextureConstructor = f2, this.formatValues = g2.erectArray2, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = n, this.formatValues = g.erect3DArray2, null) : this.output[1] > 0 ? (this.TextureConstructor = l, this.formatValues = g.erect2DArray2, null) : (this.TextureConstructor = f, this.formatValues = g.erectArray2, null);
                 case "Array(3)":
-                  return this.output[2] > 0 ? (this.TextureConstructor = i, this.formatValues = g2.erect3DArray3, null) : this.output[1] > 0 ? (this.TextureConstructor = t, this.formatValues = g2.erect2DArray3, null) : (this.TextureConstructor = s, this.formatValues = g2.erectArray3, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = i, this.formatValues = g.erect3DArray3, null) : this.output[1] > 0 ? (this.TextureConstructor = t, this.formatValues = g.erect2DArray3, null) : (this.TextureConstructor = s, this.formatValues = g.erectArray3, null);
                 case "Array(4)":
-                  return this.output[2] > 0 ? (this.TextureConstructor = w2, this.formatValues = g2.erect3DArray4, null) : this.output[1] > 0 ? (this.TextureConstructor = x2, this.formatValues = g2.erect2DArray4, null) : (this.TextureConstructor = u, this.formatValues = g2.erectArray4, null);
+                  return this.output[2] > 0 ? (this.TextureConstructor = w, this.formatValues = g.erect3DArray4, null) : this.output[1] > 0 ? (this.TextureConstructor = x2, this.formatValues = g.erect2DArray4, null) : (this.TextureConstructor = u, this.formatValues = g.erectArray4, null);
               }
           } else
             throw new Error(`unhandled precision of "${this.precision}"`);
@@ -8946,16 +8676,16 @@ ${i.join("")};`), n.push(`}
           return this.graphical ? this.getMainResultGraphical() : this.precision === "single" ? this.optimizeFloatMemory ? this.getMainResultMemoryOptimizedFloats() : this.getMainResultTexture() : this.getMainResultPackedPixels();
         }
         getMainResultNumberTexture() {
-          return g2.linesToString(this.getMainResultKernelNumberTexture()) + g2.linesToString(this.getMainResultSubKernelNumberTexture());
+          return g.linesToString(this.getMainResultKernelNumberTexture()) + g.linesToString(this.getMainResultSubKernelNumberTexture());
         }
         getMainResultArray2Texture() {
-          return g2.linesToString(this.getMainResultKernelArray2Texture()) + g2.linesToString(this.getMainResultSubKernelArray2Texture());
+          return g.linesToString(this.getMainResultKernelArray2Texture()) + g.linesToString(this.getMainResultSubKernelArray2Texture());
         }
         getMainResultArray3Texture() {
-          return g2.linesToString(this.getMainResultKernelArray3Texture()) + g2.linesToString(this.getMainResultSubKernelArray3Texture());
+          return g.linesToString(this.getMainResultKernelArray3Texture()) + g.linesToString(this.getMainResultSubKernelArray3Texture());
         }
         getMainResultArray4Texture() {
-          return g2.linesToString(this.getMainResultKernelArray4Texture()) + g2.linesToString(this.getMainResultSubKernelArray4Texture());
+          return g.linesToString(this.getMainResultKernelArray4Texture()) + g.linesToString(this.getMainResultSubKernelArray4Texture());
         }
         getFloatTacticDeclaration() {
           return `precision ${this.getVariablePrecisionString(this.texSize, this.tactic)} float;
@@ -8993,7 +8723,7 @@ ${i.join("")};`), n.push(`}
         }
         getPixels(F) {
           let { context: L, output: K } = this, [O, X] = K, B = new Uint8Array(O * X * 4);
-          return L.readPixels(0, 0, O, X, L.RGBA, L.UNSIGNED_BYTE, B), new Uint8ClampedArray((F ? B : g2.flipPixels(B, O, X)).buffer);
+          return L.readPixels(0, 0, O, X, L.RGBA, L.UNSIGNED_BYTE, B), new Uint8ClampedArray((F ? B : g.flipPixels(B, O, X)).buffer);
         }
         renderKernelsToArrays() {
           let F = { result: this.renderOutput() };
@@ -9020,7 +8750,7 @@ ${i.join("")};`), n.push(`}
           if (this.program) {
             if (!this.dynamicOutput)
               throw new Error("Resizing a kernel with dynamicOutput: false is not possible");
-            let K = [L[0], L[1] || 1, L[2] || 1], O = g2.getKernelTextureSize({ optimizeFloatMemory: this.optimizeFloatMemory, precision: this.precision }, K), X = this.texSize;
+            let K = [L[0], L[1] || 1, L[2] || 1], O = g.getKernelTextureSize({ optimizeFloatMemory: this.optimizeFloatMemory, precision: this.precision }, K), X = this.texSize;
             if (X) {
               let P = this.getVariablePrecisionString(X, this.tactic), Y = this.getVariablePrecisionString(O, this.tactic);
               if (P !== Y) {
@@ -9099,9 +8829,9 @@ ${i.join("")};`), n.push(`}
       }
       let A = { int: "Integer", float: "Number", vec2: "Array(2)", vec3: "Array(3)", vec4: "Array(4)" };
       y.exports = { GLKernel: k };
-    }, { "../../utils": 114, "../kernel": 36, "./texture/array-2-float": 16, "./texture/array-2-float-2d": 14, "./texture/array-2-float-3d": 15, "./texture/array-3-float": 19, "./texture/array-3-float-2d": 17, "./texture/array-3-float-3d": 18, "./texture/array-4-float": 22, "./texture/array-4-float-2d": 20, "./texture/array-4-float-3d": 21, "./texture/float": 25, "./texture/float-2d": 23, "./texture/float-3d": 24, "./texture/graphical": 26, "./texture/memory-optimized": 30, "./texture/memory-optimized-2d": 28, "./texture/memory-optimized-3d": 29, "./texture/unsigned": 33, "./texture/unsigned-2d": 31, "./texture/unsigned-3d": 32 }], 14: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+    }, { "../../utils": 114, "../kernel": 36, "./texture/array-2-float": 16, "./texture/array-2-float-2d": 14, "./texture/array-2-float-3d": 15, "./texture/array-3-float": 19, "./texture/array-3-float-2d": 17, "./texture/array-3-float-3d": 18, "./texture/array-4-float": 22, "./texture/array-4-float-2d": 20, "./texture/array-4-float-3d": 21, "./texture/float": 25, "./texture/float-2d": 23, "./texture/float-3d": 24, "./texture/graphical": 26, "./texture/memory-optimized": 30, "./texture/memory-optimized-2d": 28, "./texture/memory-optimized-3d": 29, "./texture/unsigned": 33, "./texture/unsigned-2d": 31, "./texture/unsigned-3d": 32 }], 14: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(2)";
         }
@@ -9109,10 +8839,10 @@ ${i.join("")};`), n.push(`}
           return p.erect2DArray2(this.renderValues(), this.output[0], this.output[1]);
         }
       }
-      y.exports = { GLTextureArray2Float2D: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 15: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureArray2Float2D: f };
+    }, { "../../../utils": 114, "./float": 25 }], 15: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(2)";
         }
@@ -9120,10 +8850,10 @@ ${i.join("")};`), n.push(`}
           return p.erect3DArray2(this.renderValues(), this.output[0], this.output[1], this.output[2]);
         }
       }
-      y.exports = { GLTextureArray2Float3D: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 16: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureArray2Float3D: f };
+    }, { "../../../utils": 114, "./float": 25 }], 16: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(2)";
         }
@@ -9131,10 +8861,10 @@ ${i.join("")};`), n.push(`}
           return p.erectArray2(this.renderValues(), this.output[0], this.output[1]);
         }
       }
-      y.exports = { GLTextureArray2Float: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 17: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureArray2Float: f };
+    }, { "../../../utils": 114, "./float": 25 }], 17: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(3)";
         }
@@ -9142,10 +8872,10 @@ ${i.join("")};`), n.push(`}
           return p.erect2DArray3(this.renderValues(), this.output[0], this.output[1]);
         }
       }
-      y.exports = { GLTextureArray3Float2D: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 18: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureArray3Float2D: f };
+    }, { "../../../utils": 114, "./float": 25 }], 18: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(3)";
         }
@@ -9153,10 +8883,10 @@ ${i.join("")};`), n.push(`}
           return p.erect3DArray3(this.renderValues(), this.output[0], this.output[1], this.output[2]);
         }
       }
-      y.exports = { GLTextureArray3Float3D: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 19: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureArray3Float3D: f };
+    }, { "../../../utils": 114, "./float": 25 }], 19: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(3)";
         }
@@ -9164,10 +8894,10 @@ ${i.join("")};`), n.push(`}
           return p.erectArray3(this.renderValues(), this.output[0]);
         }
       }
-      y.exports = { GLTextureArray3Float: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 20: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureArray3Float: f };
+    }, { "../../../utils": 114, "./float": 25 }], 20: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(4)";
         }
@@ -9175,10 +8905,10 @@ ${i.join("")};`), n.push(`}
           return p.erect2DArray4(this.renderValues(), this.output[0], this.output[1]);
         }
       }
-      y.exports = { GLTextureArray4Float2D: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 21: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureArray4Float2D: f };
+    }, { "../../../utils": 114, "./float": 25 }], 21: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(4)";
         }
@@ -9186,10 +8916,10 @@ ${i.join("")};`), n.push(`}
           return p.erect3DArray4(this.renderValues(), this.output[0], this.output[1], this.output[2]);
         }
       }
-      y.exports = { GLTextureArray4Float3D: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 22: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureArray4Float3D: f };
+    }, { "../../../utils": 114, "./float": 25 }], 22: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(4)";
         }
@@ -9197,10 +8927,10 @@ ${i.join("")};`), n.push(`}
           return p.erectArray4(this.renderValues(), this.output[0]);
         }
       }
-      y.exports = { GLTextureArray4Float: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 23: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureArray4Float: f };
+    }, { "../../../utils": 114, "./float": 25 }], 23: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(1)";
         }
@@ -9208,10 +8938,10 @@ ${i.join("")};`), n.push(`}
           return p.erect2DFloat(this.renderValues(), this.output[0], this.output[1]);
         }
       }
-      y.exports = { GLTextureFloat2D: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 24: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureFloat2D: f };
+    }, { "../../../utils": 114, "./float": 25 }], 24: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "ArrayTexture(1)";
         }
@@ -9219,10 +8949,10 @@ ${i.join("")};`), n.push(`}
           return p.erect3DFloat(this.renderValues(), this.output[0], this.output[1], this.output[2]);
         }
       }
-      y.exports = { GLTextureFloat3D: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 25: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTexture: g2 } = o2("./index");
-      class f2 extends g2 {
+      y.exports = { GLTextureFloat3D: f };
+    }, { "../../../utils": 114, "./float": 25 }], 25: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTexture: g } = o("./index");
+      class f extends g {
         get textureType() {
           return this.context.FLOAT;
         }
@@ -9242,10 +8972,10 @@ ${i.join("")};`), n.push(`}
           return p.erectFloat(this.renderValues(), this.output[0]);
         }
       }
-      y.exports = { GLTextureFloat: f2 };
-    }, { "../../../utils": 114, "./index": 27 }], 26: [function(o2, y, E) {
-      let { GLTextureUnsigned: p } = o2("./unsigned");
-      class g2 extends p {
+      y.exports = { GLTextureFloat: f };
+    }, { "../../../utils": 114, "./index": 27 }], 26: [function(o, y, E) {
+      let { GLTextureUnsigned: p } = o("./unsigned");
+      class g extends p {
         constructor(l) {
           super(l), this.type = "ArrayTexture(4)";
         }
@@ -9253,10 +8983,10 @@ ${i.join("")};`), n.push(`}
           return this.renderValues();
         }
       }
-      y.exports = { GLTextureGraphical: g2 };
-    }, { "./unsigned": 33 }], 27: [function(o2, y, E) {
-      let { Texture: p } = o2("../../../texture");
-      class g2 extends p {
+      y.exports = { GLTextureGraphical: g };
+    }, { "./unsigned": 33 }], 27: [function(o, y, E) {
+      let { Texture: p } = o("../../../texture");
+      class g extends p {
         get textureType() {
           throw new Error(`"textureType" not implemented on ${this.name}`);
         }
@@ -9269,27 +8999,27 @@ ${i.join("")};`), n.push(`}
         cloneTexture() {
           this.texture._refs--;
           let { context: n, size: s, texture: t, kernel: i } = this;
-          i.debug && console.warn("cloning internal texture"), n.bindFramebuffer(n.FRAMEBUFFER, this.framebuffer()), f2(n, t), n.framebufferTexture2D(n.FRAMEBUFFER, n.COLOR_ATTACHMENT0, n.TEXTURE_2D, t, 0);
+          i.debug && console.warn("cloning internal texture"), n.bindFramebuffer(n.FRAMEBUFFER, this.framebuffer()), f(n, t), n.framebufferTexture2D(n.FRAMEBUFFER, n.COLOR_ATTACHMENT0, n.TEXTURE_2D, t, 0);
           let u = n.createTexture();
-          f2(n, u), n.texImage2D(n.TEXTURE_2D, 0, this.internalFormat, s[0], s[1], 0, this.textureFormat, this.textureType, null), n.copyTexSubImage2D(n.TEXTURE_2D, 0, 0, 0, 0, 0, s[0], s[1]), u._refs = 1, this.texture = u;
+          f(n, u), n.texImage2D(n.TEXTURE_2D, 0, this.internalFormat, s[0], s[1], 0, this.textureFormat, this.textureType, null), n.copyTexSubImage2D(n.TEXTURE_2D, 0, 0, 0, 0, 0, s[0], s[1]), u._refs = 1, this.texture = u;
         }
         newTexture() {
           this.texture._refs--;
           let n = this.context, s = this.size;
           this.kernel.debug && console.warn("new internal texture");
           let i = n.createTexture();
-          f2(n, i), n.texImage2D(n.TEXTURE_2D, 0, this.internalFormat, s[0], s[1], 0, this.textureFormat, this.textureType, null), i._refs = 1, this.texture = i;
+          f(n, i), n.texImage2D(n.TEXTURE_2D, 0, this.internalFormat, s[0], s[1], 0, this.textureFormat, this.textureType, null), i._refs = 1, this.texture = i;
         }
         clear() {
           if (this.texture._refs) {
             this.texture._refs--;
             let t = this.context, i = this.texture = t.createTexture();
-            f2(t, i);
+            f(t, i);
             let u = this.size;
             i._refs = 1, t.texImage2D(t.TEXTURE_2D, 0, this.internalFormat, u[0], u[1], 0, this.textureFormat, this.textureType, null);
           }
           let { context: n, texture: s } = this;
-          n.bindFramebuffer(n.FRAMEBUFFER, this.framebuffer()), n.bindTexture(n.TEXTURE_2D, s), f2(n, s), n.framebufferTexture2D(n.FRAMEBUFFER, n.COLOR_ATTACHMENT0, n.TEXTURE_2D, s, 0), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT | n.DEPTH_BUFFER_BIT);
+          n.bindFramebuffer(n.FRAMEBUFFER, this.framebuffer()), n.bindTexture(n.TEXTURE_2D, s), f(n, s), n.framebufferTexture2D(n.FRAMEBUFFER, n.COLOR_ATTACHMENT0, n.TEXTURE_2D, s, 0), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT | n.DEPTH_BUFFER_BIT);
         }
         delete() {
           this._deleted || (this._deleted = true, !(this.texture._refs && (this.texture._refs--, this.texture._refs)) && this.context.deleteTexture(this.texture));
@@ -9298,13 +9028,13 @@ ${i.join("")};`), n.push(`}
           return this._framebuffer || (this._framebuffer = this.kernel.getRawValueFramebuffer(this.size[0], this.size[1])), this._framebuffer;
         }
       }
-      function f2(l, n) {
+      function f(l, n) {
         l.activeTexture(l.TEXTURE15), l.bindTexture(l.TEXTURE_2D, n), l.texParameteri(l.TEXTURE_2D, l.TEXTURE_WRAP_S, l.CLAMP_TO_EDGE), l.texParameteri(l.TEXTURE_2D, l.TEXTURE_WRAP_T, l.CLAMP_TO_EDGE), l.texParameteri(l.TEXTURE_2D, l.TEXTURE_MIN_FILTER, l.NEAREST), l.texParameteri(l.TEXTURE_2D, l.TEXTURE_MAG_FILTER, l.NEAREST);
       }
-      y.exports = { GLTexture: g2 };
-    }, { "../../../texture": 113 }], 28: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTexture: g };
+    }, { "../../../texture": 113 }], 28: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "MemoryOptimizedNumberTexture";
         }
@@ -9312,10 +9042,10 @@ ${i.join("")};`), n.push(`}
           return p.erectMemoryOptimized2DFloat(this.renderValues(), this.output[0], this.output[1]);
         }
       }
-      y.exports = { GLTextureMemoryOptimized2D: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 29: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureMemoryOptimized2D: f };
+    }, { "../../../utils": 114, "./float": 25 }], 29: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "MemoryOptimizedNumberTexture";
         }
@@ -9323,10 +9053,10 @@ ${i.join("")};`), n.push(`}
           return p.erectMemoryOptimized3DFloat(this.renderValues(), this.output[0], this.output[1], this.output[2]);
         }
       }
-      y.exports = { GLTextureMemoryOptimized3D: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 30: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureFloat: g2 } = o2("./float");
-      class f2 extends g2 {
+      y.exports = { GLTextureMemoryOptimized3D: f };
+    }, { "../../../utils": 114, "./float": 25 }], 30: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureFloat: g } = o("./float");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "MemoryOptimizedNumberTexture";
         }
@@ -9334,10 +9064,10 @@ ${i.join("")};`), n.push(`}
           return p.erectMemoryOptimizedFloat(this.renderValues(), this.output[0]);
         }
       }
-      y.exports = { GLTextureMemoryOptimized: f2 };
-    }, { "../../../utils": 114, "./float": 25 }], 31: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureUnsigned: g2 } = o2("./unsigned");
-      class f2 extends g2 {
+      y.exports = { GLTextureMemoryOptimized: f };
+    }, { "../../../utils": 114, "./float": 25 }], 31: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureUnsigned: g } = o("./unsigned");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "NumberTexture";
         }
@@ -9345,10 +9075,10 @@ ${i.join("")};`), n.push(`}
           return p.erect2DPackedFloat(this.renderValues(), this.output[0], this.output[1]);
         }
       }
-      y.exports = { GLTextureUnsigned2D: f2 };
-    }, { "../../../utils": 114, "./unsigned": 33 }], 32: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTextureUnsigned: g2 } = o2("./unsigned");
-      class f2 extends g2 {
+      y.exports = { GLTextureUnsigned2D: f };
+    }, { "../../../utils": 114, "./unsigned": 33 }], 32: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTextureUnsigned: g } = o("./unsigned");
+      class f extends g {
         constructor(n) {
           super(n), this.type = "NumberTexture";
         }
@@ -9356,10 +9086,10 @@ ${i.join("")};`), n.push(`}
           return p.erect3DPackedFloat(this.renderValues(), this.output[0], this.output[1], this.output[2]);
         }
       }
-      y.exports = { GLTextureUnsigned3D: f2 };
-    }, { "../../../utils": 114, "./unsigned": 33 }], 33: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { GLTexture: g2 } = o2("./index");
-      class f2 extends g2 {
+      y.exports = { GLTextureUnsigned3D: f };
+    }, { "../../../utils": 114, "./unsigned": 33 }], 33: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { GLTexture: g } = o("./index");
+      class f extends g {
         get textureType() {
           return this.context.UNSIGNED_BYTE;
         }
@@ -9379,10 +9109,10 @@ ${i.join("")};`), n.push(`}
           return p.erectPackedFloat(this.renderValues(), this.output[0]);
         }
       }
-      y.exports = { GLTextureUnsigned: f2 };
-    }, { "../../../utils": 114, "./index": 27 }], 34: [function(o2, y, E) {
-      let p = o2("gl"), { WebGLKernel: g2 } = o2("../web-gl/kernel"), { glKernelString: f2 } = o2("../gl/kernel-string"), l = null, n = null, s = null, t = null, i = null;
-      class u extends g2 {
+      y.exports = { GLTextureUnsigned: f };
+    }, { "../../../utils": 114, "./index": 27 }], 34: [function(o, y, E) {
+      let p = o("gl"), { WebGLKernel: g } = o("../web-gl/kernel"), { glKernelString: f } = o("../gl/kernel-string"), l = null, n = null, s = null, t = null, i = null;
+      class u extends g {
         static get isSupported() {
           return l !== null || (this.setupFeatureChecks(), l = s !== null), l;
         }
@@ -9392,13 +9122,13 @@ ${i.join("")};`), n.push(`}
               if (s = p(2, 2, { preserveDrawingBuffer: true }), !s || !s.getExtension)
                 return;
               t = { STACKGL_resize_drawingbuffer: s.getExtension("STACKGL_resize_drawingbuffer"), STACKGL_destroy_context: s.getExtension("STACKGL_destroy_context"), OES_texture_float: s.getExtension("OES_texture_float"), OES_texture_float_linear: s.getExtension("OES_texture_float_linear"), OES_element_index_uint: s.getExtension("OES_element_index_uint"), WEBGL_draw_buffers: s.getExtension("WEBGL_draw_buffers"), WEBGL_color_buffer_float: s.getExtension("WEBGL_color_buffer_float") }, i = this.getFeatures();
-            } catch (w2) {
-              console.warn(w2);
+            } catch (w) {
+              console.warn(w);
             }
         }
-        static isContextMatch(w2) {
+        static isContextMatch(w) {
           try {
-            return w2.getParameter(w2.RENDERER) === "ANGLE";
+            return w.getParameter(w.RENDERER) === "ANGLE";
           } catch {
             return false;
           }
@@ -9439,36 +9169,36 @@ ${i.join("")};`), n.push(`}
         destroyExtensions() {
           this.extensions.STACKGL_resize_drawingbuffer = null, this.extensions.STACKGL_destroy_context = null, this.extensions.OES_texture_float = null, this.extensions.OES_texture_float_linear = null, this.extensions.OES_element_index_uint = null, this.extensions.WEBGL_draw_buffers = null;
         }
-        static destroyContext(w2) {
-          let m = w2.getExtension("STACKGL_destroy_context");
+        static destroyContext(w) {
+          let m = w.getExtension("STACKGL_destroy_context");
           m && m.destroy && m.destroy();
         }
         toString() {
-          let w2 = `const gl = context || require('gl')(1, 1);
+          let w = `const gl = context || require('gl')(1, 1);
 `, m = `    if (!context) { gl.getExtension('STACKGL_destroy_context').destroy(); }
 `;
-          return f2(this.constructor, arguments, this, w2, m);
+          return f(this.constructor, arguments, this, w, m);
         }
-        setOutput(w2) {
-          return super.setOutput(w2), this.graphical && this.extensions.STACKGL_resize_drawingbuffer && this.extensions.STACKGL_resize_drawingbuffer.resize(this.maxTexSize[0], this.maxTexSize[1]), this;
+        setOutput(w) {
+          return super.setOutput(w), this.graphical && this.extensions.STACKGL_resize_drawingbuffer && this.extensions.STACKGL_resize_drawingbuffer.resize(this.maxTexSize[0], this.maxTexSize[1]), this;
         }
       }
       y.exports = { HeadlessGLKernel: u };
-    }, { "../gl/kernel-string": 12, "../web-gl/kernel": 70, gl: 2 }], 35: [function(o2, y, E) {
+    }, { "../gl/kernel-string": 12, "../web-gl/kernel": 70, gl: 2 }], 35: [function(o, y, E) {
       class p {
-        constructor(f2, l) {
-          let { name: n, kernel: s, context: t, checkContext: i, onRequestContextHandle: u, onUpdateValueMismatch: x2, origin: w2, strictIntegers: m, type: S, tactic: v } = l;
+        constructor(f, l) {
+          let { name: n, kernel: s, context: t, checkContext: i, onRequestContextHandle: u, onUpdateValueMismatch: x2, origin: w, strictIntegers: m, type: S, tactic: v } = l;
           if (!n)
             throw new Error("name not set");
           if (!S)
             throw new Error("type not set");
-          if (!w2)
+          if (!w)
             throw new Error("origin not set");
-          if (w2 !== "user" && w2 !== "constants")
-            throw new Error(`origin must be "user" or "constants" value is "${w2}"`);
+          if (w !== "user" && w !== "constants")
+            throw new Error(`origin must be "user" or "constants" value is "${w}"`);
           if (!u)
             throw new Error("onRequestContextHandle is not set");
-          this.name = n, this.origin = w2, this.tactic = v, this.varName = w2 === "constants" ? `constants.${n}` : n, this.kernel = s, this.strictIntegers = m, this.type = f2.type || S, this.size = f2.size || null, this.index = null, this.context = t, this.checkContext = i ?? true, this.contextHandle = null, this.onRequestContextHandle = u, this.onUpdateValueMismatch = x2, this.forceUploadEachRun = null;
+          this.name = n, this.origin = w, this.tactic = v, this.varName = w === "constants" ? `constants.${n}` : n, this.kernel = s, this.strictIntegers = m, this.type = f.type || S, this.size = f.size || null, this.index = null, this.context = t, this.checkContext = i ?? true, this.contextHandle = null, this.onRequestContextHandle = u, this.onUpdateValueMismatch = x2, this.forceUploadEachRun = null;
         }
         get id() {
           return `${this.origin}_${name}`;
@@ -9476,14 +9206,14 @@ ${i.join("")};`), n.push(`}
         getSource() {
           throw new Error(`"getSource" not defined on ${this.constructor.name}`);
         }
-        updateValue(f2) {
+        updateValue(f) {
           throw new Error(`"updateValue" not defined on ${this.constructor.name}`);
         }
       }
       y.exports = { KernelValue: p };
-    }, {}], 36: [function(o2, y, E) {
-      let { utils: p } = o2("../utils"), { Input: g2 } = o2("../input");
-      class f2 {
+    }, {}], 36: [function(o, y, E) {
+      let { utils: p } = o("../utils"), { Input: g } = o("../input");
+      class f {
         static get isSupported() {
           throw new Error(`"isSupported" not implemented on ${this.name}`);
         }
@@ -9537,8 +9267,8 @@ ${i.join("")};`), n.push(`}
                     continue;
                   this.nativeFunctions = [];
                   for (let i = 0; i < s.nativeFunctions.length; i++) {
-                    let u = s.nativeFunctions[i], { name: x2, source: w2 } = u;
-                    this.addNativeFunction(x2, w2, u);
+                    let u = s.nativeFunctions[i], { name: x2, source: w } = u;
+                    this.addNativeFunction(x2, w, u);
                   }
                   continue;
               }
@@ -9590,7 +9320,7 @@ ${i.join("")};`), n.push(`}
           this.argumentSizes = new Array(s.length), this.argumentBitRatios = new Int32Array(s.length);
           for (let t = 0; t < s.length; t++) {
             let i = s[t];
-            this.argumentSizes[t] = i.constructor === g2 ? i.size : null, this.argumentBitRatios[t] = this.getBitRatio(i);
+            this.argumentSizes[t] = i.constructor === g ? i.size : null, this.argumentBitRatios[t] = this.getBitRatio(i);
           }
           if (this.argumentNames.length !== s.length)
             throw new Error("arguments are miss-aligned");
@@ -9736,7 +9466,7 @@ ${i.join("")};`), n.push(`}
             return 4;
           if (Array.isArray(s[0]))
             return this.getBitRatio(s[0]);
-          if (s.constructor === g2)
+          if (s.constructor === g)
             return this.getBitRatio(s.value);
           switch (s.constructor) {
             case Uint8ClampedArray:
@@ -9780,11 +9510,11 @@ ${i.join("")};`), n.push(`}
         static getArgumentTypes(s, t) {
           let i = new Array(t.length);
           for (let u = 0; u < t.length; u++) {
-            let x2 = t[u], w2 = s.argumentTypes[u];
+            let x2 = t[u], w = s.argumentTypes[u];
             if (x2.type)
               i[u] = x2.type;
             else
-              switch (w2) {
+              switch (w) {
                 case "Number":
                 case "Integer":
                 case "Float":
@@ -9792,7 +9522,7 @@ ${i.join("")};`), n.push(`}
                   i[u] = p.getVariableType(x2);
                   break;
                 default:
-                  i[u] = w2;
+                  i[u] = w;
               }
           }
           return i;
@@ -9817,8 +9547,8 @@ ${i.join("")};`), n.push(`}
         }
         return { argumentTypes: t, argumentNames: s };
       }
-      y.exports = { Kernel: f2 };
-    }, { "../input": 110, "../utils": 114 }], 37: [function(o2, y, E) {
+      y.exports = { Kernel: f };
+    }, { "../input": 110, "../utils": 114 }], 37: [function(o, y, E) {
       let p = `__HEADER__;
       __FLOAT_TACTIC_DECLARATION__;
       __INT_TACTIC_DECLARATION__;
@@ -10311,9 +10041,9 @@ ${i.join("")};`), n.push(`}
         __MAIN_RESULT__;
       }`;
       y.exports = { fragmentShader: p };
-    }, {}], 38: [function(o2, y, E) {
-      let { utils: p } = o2("../../utils"), { FunctionNode: g2 } = o2("../function-node");
-      class f2 extends g2 {
+    }, {}], 38: [function(o, y, E) {
+      let { utils: p } = o("../../utils"), { FunctionNode: g } = o("../function-node");
+      class f extends g {
         constructor(t, i) {
           super(t, i), i && i.hasOwnProperty("fixIntegerDivisionAccuracy") && (this.fixIntegerDivisionAccuracy = i.fixIntegerDivisionAccuracy);
         }
@@ -10342,11 +10072,11 @@ ${i.join("")};`), n.push(`}
             for (let u = 0; u < this.argumentNames.length; ++u) {
               let x2 = this.argumentNames[u];
               u > 0 && i.push(", ");
-              let w2 = this.argumentTypes[this.argumentNames.indexOf(x2)];
-              if (!w2)
+              let w = this.argumentTypes[this.argumentNames.indexOf(x2)];
+              if (!w)
                 throw this.astErrorOutput(`Unknown argument ${x2} type`, t);
-              w2 === "LiteralInteger" && (this.argumentTypes[u] = w2 = "Number");
-              let m = l[w2];
+              w === "LiteralInteger" && (this.argumentTypes[u] = w = "Number");
+              let m = l[w];
               if (!m)
                 throw this.astErrorOutput("Unexpected expression", t);
               let S = p.sanitizeName(x2);
@@ -10445,8 +10175,8 @@ ${i.join("")};`), n.push(`}
           let u = this.getType(t.left) || "Number", x2 = this.getType(t.right) || "Number";
           if (!u || !x2)
             throw this.astErrorOutput("Unhandled binary expression", t);
-          let w2 = u + " & " + x2;
-          switch (w2) {
+          let w = u + " & " + x2;
+          switch (w) {
             case "Integer & Integer":
               this.pushState("building-integer"), this.astGeneric(t.left, i), i.push(n[t.operator] || t.operator), this.astGeneric(t.right, i), this.popState("building-integer");
               break;
@@ -10499,7 +10229,7 @@ ${i.join("")};`), n.push(`}
               this.pushState("building-float"), this.astGeneric(t.left, i), i.push(n[t.operator] || t.operator), this.castValueToFloat(t.right, i), this.popState("building-float");
               break;
             default:
-              throw this.astErrorOutput(`Unhandled binary expression between ${w2}`, t);
+              throw this.astErrorOutput(`Unhandled binary expression between ${w}`, t);
           }
           return i.push(")"), i;
         }
@@ -10507,10 +10237,10 @@ ${i.join("")};`), n.push(`}
           let u = this.checkAndUpconvertBitwiseOperators(t, i);
           if (u)
             return u;
-          let w2 = { "%": this.fixIntegerDivisionAccuracy ? "integerCorrectionModulo" : "modulo", "**": "pow" }[t.operator];
-          if (!w2)
+          let w = { "%": this.fixIntegerDivisionAccuracy ? "integerCorrectionModulo" : "modulo", "**": "pow" }[t.operator];
+          if (!w)
             return null;
-          switch (i.push(w2), i.push("("), this.getType(t.left)) {
+          switch (i.push(w), i.push("("), this.getType(t.left)) {
             case "Integer":
               this.castValueToFloat(t.left, i);
               break;
@@ -10598,7 +10328,7 @@ ${i.join("")};`), n.push(`}
         astForStatement(t, i) {
           if (t.type !== "ForStatement")
             throw this.astErrorOutput("Invalid for statement", t);
-          let u = [], x2 = [], w2 = [], m = [], S = null;
+          let u = [], x2 = [], w = [], m = [], S = null;
           if (t.init) {
             let { declarations: v } = t.init;
             v.length > 1 && (S = false), this.astGeneric(t.init, u);
@@ -10606,9 +10336,9 @@ ${i.join("")};`), n.push(`}
               v[h].init && v[h].init.type !== "Literal" && (S = false);
           } else
             S = false;
-          if (t.test ? this.astGeneric(t.test, x2) : S = false, t.update ? this.astGeneric(t.update, w2) : S = false, t.body && (this.pushState("loop-body"), this.astGeneric(t.body, m), this.popState("loop-body")), S === null && (S = this.isSafe(t.init) && this.isSafe(t.test)), S) {
+          if (t.test ? this.astGeneric(t.test, x2) : S = false, t.update ? this.astGeneric(t.update, w) : S = false, t.body && (this.pushState("loop-body"), this.astGeneric(t.body, m), this.popState("loop-body")), S === null && (S = this.isSafe(t.init) && this.isSafe(t.test)), S) {
             let v = u.join(""), h = v[v.length - 1] !== ";";
-            i.push(`for (${v}${h ? ";" : ""}${x2.join("")};${w2.join("")}){
+            i.push(`for (${v}${h ? ";" : ""}${x2.join("")};${w.join("")}){
 `), i.push(m.join("")), i.push(`}
 `);
           } else {
@@ -10617,7 +10347,7 @@ ${i.join("")};`), n.push(`}
 `), i.push(`for (int ${v}=0;${v}<LOOP_MAX;${v}++){
 `), x2.length > 0 && i.push(`if (!${x2.join("")}) break;
 `), i.push(m.join("")), i.push(`
-${w2.join("")};`), i.push(`}
+${w.join("")};`), i.push(`}
 `);
           }
           return i;
@@ -10670,23 +10400,23 @@ ${w2.join("")};`), i.push(`}
           let u = t.declarations;
           if (!u || !u[0] || !u[0].init)
             throw this.astErrorOutput("Unexpected expression", t);
-          let x2 = [], w2 = null, m = [], S = [];
+          let x2 = [], w = null, m = [], S = [];
           for (let v = 0; v < u.length; v++) {
-            let h = u[v], b2 = h.init, T = this.getDeclaration(h.id), C = this.getType(h.init), V = C;
+            let h = u[v], b = h.init, T = this.getDeclaration(h.id), C = this.getType(h.init), V = C;
             V === "LiteralInteger" && (T.suggestedType === "Integer" ? V = "Integer" : V = "Number");
-            let c2 = l[V];
-            if (!c2)
+            let c = l[V];
+            if (!c)
               throw this.astErrorOutput(`Markup type ${V} not handled`, t);
-            let a2 = [];
+            let a = [];
             if (C === "Integer" && V === "Integer") {
-              if (T.valueType = "Number", v === 0 || w2 === null)
-                a2.push("float ");
-              else if (V !== w2)
+              if (T.valueType = "Number", v === 0 || w === null)
+                a.push("float ");
+              else if (V !== w)
                 throw new Error("Unhandled declaration");
-              w2 = V, a2.push(`user_${p.sanitizeName(h.id.name)}=`), a2.push("float("), this.astGeneric(b2, a2), a2.push(")");
+              w = V, a.push(`user_${p.sanitizeName(h.id.name)}=`), a.push("float("), this.astGeneric(b, a), a.push(")");
             } else
-              T.valueType = V, v === 0 || w2 === null ? a2.push(`${c2} `) : V !== w2 && (m.push(S.join(",")), S = [], a2.push(`${c2} `)), w2 = V, a2.push(`user_${p.sanitizeName(h.id.name)}=`), C === "Number" && V === "Integer" ? b2.left && b2.left.type === "Literal" ? this.astGeneric(b2, a2) : (a2.push("int("), this.astGeneric(b2, a2), a2.push(")")) : C === "LiteralInteger" && V === "Integer" ? this.castLiteralToInteger(b2, a2) : this.astGeneric(b2, a2);
-            S.push(a2.join(""));
+              T.valueType = V, v === 0 || w === null ? a.push(`${c} `) : V !== w && (m.push(S.join(",")), S = [], a.push(`${c} `)), w = V, a.push(`user_${p.sanitizeName(h.id.name)}=`), C === "Number" && V === "Integer" ? b.left && b.left.type === "Literal" ? this.astGeneric(b, a) : (a.push("int("), this.astGeneric(b, a), a.push(")")) : C === "LiteralInteger" && V === "Integer" ? this.castLiteralToInteger(b, a) : this.astGeneric(b, a);
+            S.push(a.join(""));
           }
           return S.length > 0 && m.push(S.join(",")), x2.push(m.join(";")), i.push(x2.join("")), i.push(";"), i;
         }
@@ -10702,8 +10432,8 @@ ${w2.join("")};`), i.push(`}
         astSwitchStatement(t, i) {
           if (t.type !== "SwitchStatement")
             throw this.astErrorOutput("Invalid switch statement", t);
-          let { discriminant: u, cases: x2 } = t, w2 = this.getType(u), m = `switchDiscriminant${this.astKey(t, "_")}`;
-          switch (w2) {
+          let { discriminant: u, cases: x2 } = t, w = this.getType(u), m = `switchDiscriminant${this.astKey(t, "_")}`;
+          switch (w) {
             case "Float":
             case "Number":
               i.push(`float ${m} = `), this.astGeneric(u, i), i.push(`;
@@ -10716,10 +10446,10 @@ ${w2.join("")};`), i.push(`}
           }
           if (x2.length === 1 && !x2[0].test)
             return this.astGeneric(x2[0].consequent, i), i;
-          let S = false, v = [], h = false, b2 = false;
+          let S = false, v = [], h = false, b = false;
           for (let T = 0; T < x2.length; T++) {
             if (x2[T].test) {
-              if (T === 0 || !b2 ? (b2 = true, i.push(`if (${m} == `)) : S ? (i.push(`${m} == `), S = false) : i.push(` else if (${m} == `), w2 === "Integer")
+              if (T === 0 || !b ? (b = true, i.push(`if (${m} == `)) : S ? (i.push(`${m} == `), S = false) : i.push(` else if (${m} == `), w === "Integer")
                 switch (this.getType(x2[T].test)) {
                   case "Number":
                   case "Float":
@@ -10729,7 +10459,7 @@ ${w2.join("")};`), i.push(`}
                     this.castLiteralToInteger(x2[T].test, i);
                     break;
                 }
-              else if (w2 === "Float")
+              else if (w === "Float")
                 switch (this.getType(x2[T].test)) {
                   case "LiteralInteger":
                     this.castLiteralToFloat(x2[T].test, i);
@@ -10761,8 +10491,8 @@ ${w2.join("")};`), i.push(`}
           return i.push("this"), i;
         }
         astMemberExpression(t, i) {
-          let { property: u, name: x2, signature: w2, origin: m, type: S, xProperty: v, yProperty: h, zProperty: b2 } = this.getMemberExpressionDetails(t);
-          switch (w2) {
+          let { property: u, name: x2, signature: w, origin: m, type: S, xProperty: v, yProperty: h, zProperty: b } = this.getMemberExpressionDetails(t);
+          switch (w) {
             case "value.thread.value":
             case "this.thread.value":
               if (x2 !== "x" && x2 !== "y" && x2 !== "z")
@@ -10857,37 +10587,37 @@ ${w2.join("")};`), i.push(`}
               this.astGeneric(t.object, i), i.push("["), i.push(this.memberExpressionPropertyMarkup(v)), i.push("]");
               break;
             case "HTMLImageArray":
-              i.push(`getImage3D(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+              i.push(`getImage3D(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b, i), i.push(")");
               break;
             case "ArrayTexture(1)":
-              i.push(`getFloatFromSampler2D(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+              i.push(`getFloatFromSampler2D(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b, i), i.push(")");
               break;
             case "Array1D(2)":
             case "Array2D(2)":
             case "Array3D(2)":
-              i.push(`getMemoryOptimizedVec2(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+              i.push(`getMemoryOptimizedVec2(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b, i), i.push(")");
               break;
             case "ArrayTexture(2)":
-              i.push(`getVec2FromSampler2D(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+              i.push(`getVec2FromSampler2D(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b, i), i.push(")");
               break;
             case "Array1D(3)":
             case "Array2D(3)":
             case "Array3D(3)":
-              i.push(`getMemoryOptimizedVec3(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+              i.push(`getMemoryOptimizedVec3(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b, i), i.push(")");
               break;
             case "ArrayTexture(3)":
-              i.push(`getVec3FromSampler2D(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+              i.push(`getVec3FromSampler2D(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b, i), i.push(")");
               break;
             case "Array1D(4)":
             case "Array2D(4)":
             case "Array3D(4)":
-              i.push(`getMemoryOptimizedVec4(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+              i.push(`getMemoryOptimizedVec4(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b, i), i.push(")");
               break;
             case "ArrayTexture(4)":
             case "HTMLCanvas":
             case "HTMLImage":
             case "HTMLVideo":
-              i.push(`getVec4FromSampler2D(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+              i.push(`getVec4FromSampler2D(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b, i), i.push(")");
               break;
             case "NumberTexture":
             case "Array":
@@ -10899,7 +10629,7 @@ ${w2.join("")};`), i.push(`}
             case "Float":
             case "Integer":
               if (this.precision === "single")
-                i.push(`getMemoryOptimized32(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+                i.push(`getMemoryOptimized32(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b, i), i.push(")");
               else {
                 let C = m === "user" ? this.lookupFunctionArgumentBitRatio(this.name, x2) : this.constantBitRatios[x2];
                 switch (C) {
@@ -10916,11 +10646,11 @@ ${w2.join("")};`), i.push(`}
                   default:
                     throw new Error(`unhandled bit ratio of ${C}`);
                 }
-                this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+                this.memberExpressionXYZ(v, h, b, i), i.push(")");
               }
               break;
             case "MemoryOptimizedNumberTexture":
-              i.push(`getMemoryOptimized32(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b2, i), i.push(")");
+              i.push(`getMemoryOptimized32(${T}, ${T}Size, ${T}Dim, `), this.memberExpressionXYZ(v, h, b, i), i.push(")");
               break;
             case "Matrix(2)":
             case "Matrix(3)":
@@ -10947,15 +10677,15 @@ ${w2.join("")};`), i.push(`}
               break;
           }
           if (this.calledFunctions.indexOf(u) < 0 && this.calledFunctions.push(u), u === "random" && this.plugins && this.plugins.length > 0)
-            for (let w2 = 0; w2 < this.plugins.length; w2++) {
-              let m = this.plugins[w2];
+            for (let w = 0; w < this.plugins.length; w++) {
+              let m = this.plugins[w];
               if (m.functionMatch === "Math.random()" && m.functionReplace)
                 return i.push(m.functionReplace), i;
             }
           if (this.onFunctionCall && this.onFunctionCall(this.name, u, t.arguments), i.push(u), i.push("("), x2)
-            for (let w2 = 0; w2 < t.arguments.length; ++w2) {
-              let m = t.arguments[w2], S = this.getType(m);
-              switch (w2 > 0 && i.push(", "), S) {
+            for (let w = 0; w < t.arguments.length; ++w) {
+              let m = t.arguments[w], S = this.getType(m);
+              switch (w > 0 && i.push(", "), S) {
                 case "Integer":
                   this.castValueToFloat(m, i);
                   break;
@@ -10965,9 +10695,9 @@ ${w2.join("")};`), i.push(`}
               }
             }
           else {
-            let w2 = this.lookupFunctionArgumentTypes(u) || [];
+            let w = this.lookupFunctionArgumentTypes(u) || [];
             for (let m = 0; m < t.arguments.length; ++m) {
-              let S = t.arguments[m], v = w2[m];
+              let S = t.arguments[m], v = w[m];
               m > 0 && i.push(", ");
               let h = this.getType(S);
               switch (v || (this.triggerImplyArgumentType(u, m, h, this), v = h), h) {
@@ -11035,8 +10765,8 @@ ${w2.join("")};`), i.push(`}
                     if (S.type !== "Identifier")
                       throw this.astErrorOutput(`Unhandled argument type ${S.type}`, t);
                     this.triggerImplyArgumentBitRatio(this.name, S.name, u, m);
-                    let b2 = p.sanitizeName(S.name);
-                    i.push(`user_${b2},user_${b2}Size,user_${b2}Dim`);
+                    let b = p.sanitizeName(S.name);
+                    i.push(`user_${b},user_${b}Size,user_${b}Dim`);
                     continue;
                   }
                   break;
@@ -11057,9 +10787,9 @@ ${w2.join("")};`), i.push(`}
             default:
               i.push(`vec${x2}(`);
           }
-          for (let w2 = 0; w2 < x2; ++w2) {
-            w2 > 0 && i.push(", ");
-            let m = t.elements[w2];
+          for (let w = 0; w < x2; ++w) {
+            w > 0 && i.push(", ");
+            let m = t.elements[w];
             this.astGeneric(m, i);
           }
           return i.push(")"), i;
@@ -11086,9 +10816,9 @@ ${w2.join("")};`), i.push(`}
         }
       }
       let l = { Array: "sampler2D", "Array(2)": "vec2", "Array(3)": "vec3", "Array(4)": "vec4", "Matrix(2)": "mat2", "Matrix(3)": "mat3", "Matrix(4)": "mat4", Array2D: "sampler2D", Array3D: "sampler2D", Boolean: "bool", Float: "float", Input: "sampler2D", Integer: "int", Number: "float", LiteralInteger: "float", NumberTexture: "sampler2D", MemoryOptimizedNumberTexture: "sampler2D", "ArrayTexture(1)": "sampler2D", "ArrayTexture(2)": "sampler2D", "ArrayTexture(3)": "sampler2D", "ArrayTexture(4)": "sampler2D", HTMLVideo: "sampler2D", HTMLCanvas: "sampler2D", HTMLImage: "sampler2D", HTMLImageArray: "sampler2DArray" }, n = { "===": "==", "!==": "!=" };
-      y.exports = { WebGLFunctionNode: f2 };
-    }, { "../../utils": 114, "../function-node": 10 }], 39: [function(o2, y, E) {
-      let { WebGLKernelValueBoolean: p } = o2("./kernel-value/boolean"), { WebGLKernelValueFloat: g2 } = o2("./kernel-value/float"), { WebGLKernelValueInteger: f2 } = o2("./kernel-value/integer"), { WebGLKernelValueHTMLImage: l } = o2("./kernel-value/html-image"), { WebGLKernelValueDynamicHTMLImage: n } = o2("./kernel-value/dynamic-html-image"), { WebGLKernelValueHTMLVideo: s } = o2("./kernel-value/html-video"), { WebGLKernelValueDynamicHTMLVideo: t } = o2("./kernel-value/dynamic-html-video"), { WebGLKernelValueSingleInput: i } = o2("./kernel-value/single-input"), { WebGLKernelValueDynamicSingleInput: u } = o2("./kernel-value/dynamic-single-input"), { WebGLKernelValueUnsignedInput: x2 } = o2("./kernel-value/unsigned-input"), { WebGLKernelValueDynamicUnsignedInput: w2 } = o2("./kernel-value/dynamic-unsigned-input"), { WebGLKernelValueMemoryOptimizedNumberTexture: m } = o2("./kernel-value/memory-optimized-number-texture"), { WebGLKernelValueDynamicMemoryOptimizedNumberTexture: S } = o2("./kernel-value/dynamic-memory-optimized-number-texture"), { WebGLKernelValueNumberTexture: v } = o2("./kernel-value/number-texture"), { WebGLKernelValueDynamicNumberTexture: h } = o2("./kernel-value/dynamic-number-texture"), { WebGLKernelValueSingleArray: b2 } = o2("./kernel-value/single-array"), { WebGLKernelValueDynamicSingleArray: T } = o2("./kernel-value/dynamic-single-array"), { WebGLKernelValueSingleArray1DI: C } = o2("./kernel-value/single-array1d-i"), { WebGLKernelValueDynamicSingleArray1DI: V } = o2("./kernel-value/dynamic-single-array1d-i"), { WebGLKernelValueSingleArray2DI: c2 } = o2("./kernel-value/single-array2d-i"), { WebGLKernelValueDynamicSingleArray2DI: a2 } = o2("./kernel-value/dynamic-single-array2d-i"), { WebGLKernelValueSingleArray3DI: k } = o2("./kernel-value/single-array3d-i"), { WebGLKernelValueDynamicSingleArray3DI: A } = o2("./kernel-value/dynamic-single-array3d-i"), { WebGLKernelValueSingleArray2: N } = o2("./kernel-value/single-array2"), { WebGLKernelValueSingleArray3: F } = o2("./kernel-value/single-array3"), { WebGLKernelValueSingleArray4: L } = o2("./kernel-value/single-array4"), { WebGLKernelValueUnsignedArray: K } = o2("./kernel-value/unsigned-array"), { WebGLKernelValueDynamicUnsignedArray: O } = o2("./kernel-value/dynamic-unsigned-array"), X = { unsigned: { dynamic: { Boolean: p, Integer: f2, Float: g2, Array: O, "Array(2)": false, "Array(3)": false, "Array(4)": false, "Array1D(2)": false, "Array1D(3)": false, "Array1D(4)": false, "Array2D(2)": false, "Array2D(3)": false, "Array2D(4)": false, "Array3D(2)": false, "Array3D(3)": false, "Array3D(4)": false, Input: w2, NumberTexture: h, "ArrayTexture(1)": h, "ArrayTexture(2)": h, "ArrayTexture(3)": h, "ArrayTexture(4)": h, MemoryOptimizedNumberTexture: S, HTMLCanvas: n, HTMLImage: n, HTMLImageArray: false, HTMLVideo: t }, static: { Boolean: p, Float: g2, Integer: f2, Array: K, "Array(2)": false, "Array(3)": false, "Array(4)": false, "Array1D(2)": false, "Array1D(3)": false, "Array1D(4)": false, "Array2D(2)": false, "Array2D(3)": false, "Array2D(4)": false, "Array3D(2)": false, "Array3D(3)": false, "Array3D(4)": false, Input: x2, NumberTexture: v, "ArrayTexture(1)": v, "ArrayTexture(2)": v, "ArrayTexture(3)": v, "ArrayTexture(4)": v, MemoryOptimizedNumberTexture: m, HTMLCanvas: l, HTMLImage: l, HTMLImageArray: false, HTMLVideo: s } }, single: { dynamic: { Boolean: p, Integer: f2, Float: g2, Array: T, "Array(2)": N, "Array(3)": F, "Array(4)": L, "Array1D(2)": V, "Array1D(3)": V, "Array1D(4)": V, "Array2D(2)": a2, "Array2D(3)": a2, "Array2D(4)": a2, "Array3D(2)": A, "Array3D(3)": A, "Array3D(4)": A, Input: u, NumberTexture: h, "ArrayTexture(1)": h, "ArrayTexture(2)": h, "ArrayTexture(3)": h, "ArrayTexture(4)": h, MemoryOptimizedNumberTexture: S, HTMLCanvas: n, HTMLImage: n, HTMLImageArray: false, HTMLVideo: t }, static: { Boolean: p, Float: g2, Integer: f2, Array: b2, "Array(2)": N, "Array(3)": F, "Array(4)": L, "Array1D(2)": C, "Array1D(3)": C, "Array1D(4)": C, "Array2D(2)": c2, "Array2D(3)": c2, "Array2D(4)": c2, "Array3D(2)": k, "Array3D(3)": k, "Array3D(4)": k, Input: i, NumberTexture: v, "ArrayTexture(1)": v, "ArrayTexture(2)": v, "ArrayTexture(3)": v, "ArrayTexture(4)": v, MemoryOptimizedNumberTexture: m, HTMLCanvas: l, HTMLImage: l, HTMLImageArray: false, HTMLVideo: s } } };
+      y.exports = { WebGLFunctionNode: f };
+    }, { "../../utils": 114, "../function-node": 10 }], 39: [function(o, y, E) {
+      let { WebGLKernelValueBoolean: p } = o("./kernel-value/boolean"), { WebGLKernelValueFloat: g } = o("./kernel-value/float"), { WebGLKernelValueInteger: f } = o("./kernel-value/integer"), { WebGLKernelValueHTMLImage: l } = o("./kernel-value/html-image"), { WebGLKernelValueDynamicHTMLImage: n } = o("./kernel-value/dynamic-html-image"), { WebGLKernelValueHTMLVideo: s } = o("./kernel-value/html-video"), { WebGLKernelValueDynamicHTMLVideo: t } = o("./kernel-value/dynamic-html-video"), { WebGLKernelValueSingleInput: i } = o("./kernel-value/single-input"), { WebGLKernelValueDynamicSingleInput: u } = o("./kernel-value/dynamic-single-input"), { WebGLKernelValueUnsignedInput: x2 } = o("./kernel-value/unsigned-input"), { WebGLKernelValueDynamicUnsignedInput: w } = o("./kernel-value/dynamic-unsigned-input"), { WebGLKernelValueMemoryOptimizedNumberTexture: m } = o("./kernel-value/memory-optimized-number-texture"), { WebGLKernelValueDynamicMemoryOptimizedNumberTexture: S } = o("./kernel-value/dynamic-memory-optimized-number-texture"), { WebGLKernelValueNumberTexture: v } = o("./kernel-value/number-texture"), { WebGLKernelValueDynamicNumberTexture: h } = o("./kernel-value/dynamic-number-texture"), { WebGLKernelValueSingleArray: b } = o("./kernel-value/single-array"), { WebGLKernelValueDynamicSingleArray: T } = o("./kernel-value/dynamic-single-array"), { WebGLKernelValueSingleArray1DI: C } = o("./kernel-value/single-array1d-i"), { WebGLKernelValueDynamicSingleArray1DI: V } = o("./kernel-value/dynamic-single-array1d-i"), { WebGLKernelValueSingleArray2DI: c } = o("./kernel-value/single-array2d-i"), { WebGLKernelValueDynamicSingleArray2DI: a } = o("./kernel-value/dynamic-single-array2d-i"), { WebGLKernelValueSingleArray3DI: k } = o("./kernel-value/single-array3d-i"), { WebGLKernelValueDynamicSingleArray3DI: A } = o("./kernel-value/dynamic-single-array3d-i"), { WebGLKernelValueSingleArray2: N } = o("./kernel-value/single-array2"), { WebGLKernelValueSingleArray3: F } = o("./kernel-value/single-array3"), { WebGLKernelValueSingleArray4: L } = o("./kernel-value/single-array4"), { WebGLKernelValueUnsignedArray: K } = o("./kernel-value/unsigned-array"), { WebGLKernelValueDynamicUnsignedArray: O } = o("./kernel-value/dynamic-unsigned-array"), X = { unsigned: { dynamic: { Boolean: p, Integer: f, Float: g, Array: O, "Array(2)": false, "Array(3)": false, "Array(4)": false, "Array1D(2)": false, "Array1D(3)": false, "Array1D(4)": false, "Array2D(2)": false, "Array2D(3)": false, "Array2D(4)": false, "Array3D(2)": false, "Array3D(3)": false, "Array3D(4)": false, Input: w, NumberTexture: h, "ArrayTexture(1)": h, "ArrayTexture(2)": h, "ArrayTexture(3)": h, "ArrayTexture(4)": h, MemoryOptimizedNumberTexture: S, HTMLCanvas: n, HTMLImage: n, HTMLImageArray: false, HTMLVideo: t }, static: { Boolean: p, Float: g, Integer: f, Array: K, "Array(2)": false, "Array(3)": false, "Array(4)": false, "Array1D(2)": false, "Array1D(3)": false, "Array1D(4)": false, "Array2D(2)": false, "Array2D(3)": false, "Array2D(4)": false, "Array3D(2)": false, "Array3D(3)": false, "Array3D(4)": false, Input: x2, NumberTexture: v, "ArrayTexture(1)": v, "ArrayTexture(2)": v, "ArrayTexture(3)": v, "ArrayTexture(4)": v, MemoryOptimizedNumberTexture: m, HTMLCanvas: l, HTMLImage: l, HTMLImageArray: false, HTMLVideo: s } }, single: { dynamic: { Boolean: p, Integer: f, Float: g, Array: T, "Array(2)": N, "Array(3)": F, "Array(4)": L, "Array1D(2)": V, "Array1D(3)": V, "Array1D(4)": V, "Array2D(2)": a, "Array2D(3)": a, "Array2D(4)": a, "Array3D(2)": A, "Array3D(3)": A, "Array3D(4)": A, Input: u, NumberTexture: h, "ArrayTexture(1)": h, "ArrayTexture(2)": h, "ArrayTexture(3)": h, "ArrayTexture(4)": h, MemoryOptimizedNumberTexture: S, HTMLCanvas: n, HTMLImage: n, HTMLImageArray: false, HTMLVideo: t }, static: { Boolean: p, Float: g, Integer: f, Array: b, "Array(2)": N, "Array(3)": F, "Array(4)": L, "Array1D(2)": C, "Array1D(3)": C, "Array1D(4)": C, "Array2D(2)": c, "Array2D(3)": c, "Array2D(4)": c, "Array3D(2)": k, "Array3D(3)": k, "Array3D(4)": k, Input: i, NumberTexture: v, "ArrayTexture(1)": v, "ArrayTexture(2)": v, "ArrayTexture(3)": v, "ArrayTexture(4)": v, MemoryOptimizedNumberTexture: m, HTMLCanvas: l, HTMLImage: l, HTMLImageArray: false, HTMLVideo: s } } };
       function B(P, Y, J, q) {
         if (!P)
           throw new Error("type missing");
@@ -11105,9 +10835,9 @@ ${w2.join("")};`), i.push(`}
         return j[P];
       }
       y.exports = { lookupKernelValueType: B, kernelValueMaps: X };
-    }, { "./kernel-value/boolean": 41, "./kernel-value/dynamic-html-image": 42, "./kernel-value/dynamic-html-video": 43, "./kernel-value/dynamic-memory-optimized-number-texture": 44, "./kernel-value/dynamic-number-texture": 45, "./kernel-value/dynamic-single-array": 46, "./kernel-value/dynamic-single-array1d-i": 47, "./kernel-value/dynamic-single-array2d-i": 48, "./kernel-value/dynamic-single-array3d-i": 49, "./kernel-value/dynamic-single-input": 50, "./kernel-value/dynamic-unsigned-array": 51, "./kernel-value/dynamic-unsigned-input": 52, "./kernel-value/float": 53, "./kernel-value/html-image": 54, "./kernel-value/html-video": 55, "./kernel-value/integer": 57, "./kernel-value/memory-optimized-number-texture": 58, "./kernel-value/number-texture": 59, "./kernel-value/single-array": 60, "./kernel-value/single-array1d-i": 61, "./kernel-value/single-array2": 62, "./kernel-value/single-array2d-i": 63, "./kernel-value/single-array3": 64, "./kernel-value/single-array3d-i": 65, "./kernel-value/single-array4": 66, "./kernel-value/single-input": 67, "./kernel-value/unsigned-array": 68, "./kernel-value/unsigned-input": 69 }], 40: [function(o2, y, E) {
-      let { WebGLKernelValue: p } = o2("./index"), { Input: g2 } = o2("../../../input");
-      class f2 extends p {
+    }, { "./kernel-value/boolean": 41, "./kernel-value/dynamic-html-image": 42, "./kernel-value/dynamic-html-video": 43, "./kernel-value/dynamic-memory-optimized-number-texture": 44, "./kernel-value/dynamic-number-texture": 45, "./kernel-value/dynamic-single-array": 46, "./kernel-value/dynamic-single-array1d-i": 47, "./kernel-value/dynamic-single-array2d-i": 48, "./kernel-value/dynamic-single-array3d-i": 49, "./kernel-value/dynamic-single-input": 50, "./kernel-value/dynamic-unsigned-array": 51, "./kernel-value/dynamic-unsigned-input": 52, "./kernel-value/float": 53, "./kernel-value/html-image": 54, "./kernel-value/html-video": 55, "./kernel-value/integer": 57, "./kernel-value/memory-optimized-number-texture": 58, "./kernel-value/number-texture": 59, "./kernel-value/single-array": 60, "./kernel-value/single-array1d-i": 61, "./kernel-value/single-array2": 62, "./kernel-value/single-array2d-i": 63, "./kernel-value/single-array3": 64, "./kernel-value/single-array3d-i": 65, "./kernel-value/single-array4": 66, "./kernel-value/single-input": 67, "./kernel-value/unsigned-array": 68, "./kernel-value/unsigned-input": 69 }], 40: [function(o, y, E) {
+      let { WebGLKernelValue: p } = o("./index"), { Input: g } = o("../../../input");
+      class f extends p {
         checkSize(n, s) {
           if (!this.kernel.validate)
             return;
@@ -11131,7 +10861,7 @@ ${w2.join("")};`), i.push(`}
         getBitRatio(n) {
           if (Array.isArray(n[0]))
             return this.getBitRatio(n[0]);
-          if (n.constructor === g2)
+          if (n.constructor === g)
             return this.getBitRatio(n.value);
           switch (n.constructor) {
             case Uint8ClampedArray:
@@ -11151,10 +10881,10 @@ ${w2.join("")};`), i.push(`}
           this.prevArg && this.prevArg.delete(), this.context.deleteTexture(this.texture);
         }
       }
-      y.exports = { WebGLKernelArray: f2 };
-    }, { "../../../input": 110, "./index": 56 }], 41: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValue: g2 } = o2("./index");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelArray: f };
+    }, { "../../../input": 110, "./index": 56 }], 41: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValue: g } = o("./index");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.uploadValue = n;
         }
@@ -11171,10 +10901,10 @@ ${w2.join("")};`), i.push(`}
           this.origin !== "constants" && this.kernel.setUniform1i(this.id, this.uploadValue = n);
         }
       }
-      y.exports = { WebGLKernelValueBoolean: f2 };
-    }, { "../../../utils": 114, "./index": 56 }], 42: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueHTMLImage: g2 } = o2("./html-image");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueBoolean: f };
+    }, { "../../../utils": 114, "./index": 56 }], 42: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueHTMLImage: g } = o("./html-image");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
@@ -11183,15 +10913,15 @@ ${w2.join("")};`), i.push(`}
           this.checkSize(s, t), this.dimensions = [s, t, 1], this.textureSize = [s, t], this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGLKernelValueDynamicHTMLImage: f2 };
-    }, { "../../../utils": 114, "./html-image": 54 }], 43: [function(o2, y, E) {
-      let { WebGLKernelValueDynamicHTMLImage: p } = o2("./dynamic-html-image");
-      class g2 extends p {
+      y.exports = { WebGLKernelValueDynamicHTMLImage: f };
+    }, { "../../../utils": 114, "./html-image": 54 }], 43: [function(o, y, E) {
+      let { WebGLKernelValueDynamicHTMLImage: p } = o("./dynamic-html-image");
+      class g extends p {
       }
-      y.exports = { WebGLKernelValueDynamicHTMLVideo: g2 };
-    }, { "./dynamic-html-image": 42 }], 44: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueMemoryOptimizedNumberTexture: g2 } = o2("./memory-optimized-number-texture");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueDynamicHTMLVideo: g };
+    }, { "./dynamic-html-image": 42 }], 44: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueMemoryOptimizedNumberTexture: g } = o("./memory-optimized-number-texture");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
@@ -11199,10 +10929,10 @@ ${w2.join("")};`), i.push(`}
           this.dimensions = n.dimensions, this.checkSize(n.size[0], n.size[1]), this.textureSize = n.size, this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGLKernelValueDynamicMemoryOptimizedNumberTexture: f2 };
-    }, { "../../../utils": 114, "./memory-optimized-number-texture": 58 }], 45: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueNumberTexture: g2 } = o2("./number-texture");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueDynamicMemoryOptimizedNumberTexture: f };
+    }, { "../../../utils": 114, "./memory-optimized-number-texture": 58 }], 45: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueNumberTexture: g } = o("./number-texture");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
@@ -11210,10 +10940,10 @@ ${w2.join("")};`), i.push(`}
           this.dimensions = n.dimensions, this.checkSize(n.size[0], n.size[1]), this.textureSize = n.size, this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGLKernelValueDynamicNumberTexture: f2 };
-    }, { "../../../utils": 114, "./number-texture": 59 }], 46: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueSingleArray: g2 } = o2("./single-array");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueDynamicNumberTexture: f };
+    }, { "../../../utils": 114, "./number-texture": 59 }], 46: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueSingleArray: g } = o("./single-array");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
@@ -11221,10 +10951,10 @@ ${w2.join("")};`), i.push(`}
           this.dimensions = p.getDimensions(n, true), this.textureSize = p.getMemoryOptimizedFloatTextureSize(this.dimensions, this.bitRatio), this.uploadArrayLength = this.textureSize[0] * this.textureSize[1] * this.bitRatio, this.checkSize(this.textureSize[0], this.textureSize[1]), this.uploadValue = new Float32Array(this.uploadArrayLength), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGLKernelValueDynamicSingleArray: f2 };
-    }, { "../../../utils": 114, "./single-array": 60 }], 47: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueSingleArray1DI: g2 } = o2("./single-array1d-i");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueDynamicSingleArray: f };
+    }, { "../../../utils": 114, "./single-array": 60 }], 47: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueSingleArray1DI: g } = o("./single-array1d-i");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
@@ -11232,10 +10962,10 @@ ${w2.join("")};`), i.push(`}
           this.setShape(n), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGLKernelValueDynamicSingleArray1DI: f2 };
-    }, { "../../../utils": 114, "./single-array1d-i": 61 }], 48: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueSingleArray2DI: g2 } = o2("./single-array2d-i");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueDynamicSingleArray1DI: f };
+    }, { "../../../utils": 114, "./single-array1d-i": 61 }], 48: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueSingleArray2DI: g } = o("./single-array2d-i");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
@@ -11243,10 +10973,10 @@ ${w2.join("")};`), i.push(`}
           this.setShape(n), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGLKernelValueDynamicSingleArray2DI: f2 };
-    }, { "../../../utils": 114, "./single-array2d-i": 63 }], 49: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueSingleArray3DI: g2 } = o2("./single-array3d-i");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueDynamicSingleArray2DI: f };
+    }, { "../../../utils": 114, "./single-array2d-i": 63 }], 49: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueSingleArray3DI: g } = o("./single-array3d-i");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
@@ -11254,10 +10984,10 @@ ${w2.join("")};`), i.push(`}
           this.setShape(n), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGLKernelValueDynamicSingleArray3DI: f2 };
-    }, { "../../../utils": 114, "./single-array3d-i": 65 }], 50: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueSingleInput: g2 } = o2("./single-input");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueDynamicSingleArray3DI: f };
+    }, { "../../../utils": 114, "./single-array3d-i": 65 }], 50: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueSingleInput: g } = o("./single-input");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
@@ -11266,10 +10996,10 @@ ${w2.join("")};`), i.push(`}
           this.dimensions = new Int32Array([s || 1, t || 1, i || 1]), this.textureSize = p.getMemoryOptimizedFloatTextureSize(this.dimensions, this.bitRatio), this.uploadArrayLength = this.textureSize[0] * this.textureSize[1] * this.bitRatio, this.checkSize(this.textureSize[0], this.textureSize[1]), this.uploadValue = new Float32Array(this.uploadArrayLength), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGLKernelValueDynamicSingleInput: f2 };
-    }, { "../../../utils": 114, "./single-input": 67 }], 51: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueUnsignedArray: g2 } = o2("./unsigned-array");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueDynamicSingleInput: f };
+    }, { "../../../utils": 114, "./single-input": 67 }], 51: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueUnsignedArray: g } = o("./unsigned-array");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
@@ -11279,10 +11009,10 @@ ${w2.join("")};`), i.push(`}
           this.preUploadValue = new s(this.uploadArrayLength), this.uploadValue = new Uint8Array(this.preUploadValue.buffer), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGLKernelValueDynamicUnsignedArray: f2 };
-    }, { "../../../utils": 114, "./unsigned-array": 68 }], 52: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueUnsignedInput: g2 } = o2("./unsigned-input");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueDynamicUnsignedArray: f };
+    }, { "../../../utils": 114, "./unsigned-array": 68 }], 52: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueUnsignedInput: g } = o("./unsigned-input");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
@@ -11293,10 +11023,10 @@ ${w2.join("")};`), i.push(`}
           this.preUploadValue = new u(this.uploadArrayLength), this.uploadValue = new Uint8Array(this.preUploadValue.buffer), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGLKernelValueDynamicUnsignedInput: f2 };
-    }, { "../../../utils": 114, "./unsigned-input": 69 }], 53: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValue: g2 } = o2("./index");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueDynamicUnsignedInput: f };
+    }, { "../../../utils": 114, "./unsigned-input": 69 }], 53: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValue: g } = o("./index");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.uploadValue = n;
         }
@@ -11314,10 +11044,10 @@ ${w2.join("")};`), i.push(`}
           this.origin !== "constants" && this.kernel.setUniform1f(this.id, this.uploadValue = n);
         }
       }
-      y.exports = { WebGLKernelValueFloat: f2 };
-    }, { "../../../utils": 114, "./index": 56 }], 54: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("./array");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueFloat: f };
+    }, { "../../../utils": 114, "./index": 56 }], 54: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("./array");
+      class f extends g {
         constructor(n, s) {
           super(n, s);
           let { width: t, height: i } = n;
@@ -11339,15 +11069,15 @@ ${w2.join("")};`), i.push(`}
           s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, true), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA, s.RGBA, s.UNSIGNED_BYTE, this.uploadValue = n), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGLKernelValueHTMLImage: f2 };
-    }, { "../../../utils": 114, "./array": 40 }], 55: [function(o2, y, E) {
-      let { WebGLKernelValueHTMLImage: p } = o2("./html-image");
-      class g2 extends p {
+      y.exports = { WebGLKernelValueHTMLImage: f };
+    }, { "../../../utils": 114, "./array": 40 }], 55: [function(o, y, E) {
+      let { WebGLKernelValueHTMLImage: p } = o("./html-image");
+      class g extends p {
       }
-      y.exports = { WebGLKernelValueHTMLVideo: g2 };
-    }, { "./html-image": 54 }], 56: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { KernelValue: g2 } = o2("../../kernel-value");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueHTMLVideo: g };
+    }, { "./html-image": 54 }], 56: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { KernelValue: g } = o("../../kernel-value");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.dimensionsId = null, this.sizeId = null, this.initialValueConstructor = n.constructor, this.onRequestTexture = s.onRequestTexture, this.onRequestIndex = s.onRequestIndex, this.uploadValue = null, this.textureSize = null, this.bitRatio = null, this.prevArg = null;
         }
@@ -11384,10 +11114,10 @@ ${w2.join("")};`), i.push(`}
         destroy() {
         }
       }
-      y.exports = { WebGLKernelValue: f2 };
-    }, { "../../../utils": 114, "../../kernel-value": 35 }], 57: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValue: g2 } = o2("./index");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValue: f };
+    }, { "../../../utils": 114, "../../kernel-value": 35 }], 57: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValue: g } = o("./index");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.uploadValue = n;
         }
@@ -11404,10 +11134,10 @@ ${w2.join("")};`), i.push(`}
           this.origin !== "constants" && this.kernel.setUniform1i(this.id, this.uploadValue = n);
         }
       }
-      y.exports = { WebGLKernelValueInteger: f2 };
-    }, { "../../../utils": 114, "./index": 56 }], 58: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("./array"), f2 = "Source and destination textures are the same.  Use immutable = true and manually cleanup kernel output texture memory with texture.delete()";
-      class l extends g2 {
+      y.exports = { WebGLKernelValueInteger: f };
+    }, { "../../../utils": 114, "./index": 56 }], 58: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("./array"), f = "Source and destination textures are the same.  Use immutable = true and manually cleanup kernel output texture memory with texture.delete()";
+      class l extends g {
         constructor(s, t) {
           super(s, t);
           let [i, u] = s.size;
@@ -11436,27 +11166,27 @@ ${w2.join("")};`), i.push(`}
               t.updateTextureArgumentRefs(this, s);
             else {
               if (t.texture.texture === s.texture)
-                throw new Error(f2);
+                throw new Error(f);
               if (t.mappedTextures) {
                 let { mappedTextures: u } = t;
                 for (let x2 = 0; x2 < u.length; x2++)
                   if (u[x2].texture === s.texture)
-                    throw new Error(f2);
+                    throw new Error(f);
               }
             }
           i.activeTexture(this.contextHandle), i.bindTexture(i.TEXTURE_2D, this.uploadValue = s.texture), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGLKernelValueMemoryOptimizedNumberTexture: l, sameError: f2 };
-    }, { "../../../utils": 114, "./array": 40 }], 59: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("./array"), { sameError: f2 } = o2("./memory-optimized-number-texture");
-      class l extends g2 {
+      y.exports = { WebGLKernelValueMemoryOptimizedNumberTexture: l, sameError: f };
+    }, { "../../../utils": 114, "./array": 40 }], 59: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("./array"), { sameError: f } = o("./memory-optimized-number-texture");
+      class l extends g {
         constructor(s, t) {
           super(s, t);
           let [i, u] = s.size;
           this.checkSize(i, u);
-          let { size: x2, dimensions: w2 } = s;
-          this.bitRatio = this.getBitRatio(s), this.dimensions = w2, this.textureSize = x2, this.uploadValue = s.texture, this.forceUploadEachRun = true;
+          let { size: x2, dimensions: w } = s;
+          this.bitRatio = this.getBitRatio(s), this.dimensions = w, this.textureSize = x2, this.uploadValue = s.texture, this.forceUploadEachRun = true;
         }
         setup() {
           this.setupTexture();
@@ -11481,21 +11211,21 @@ ${w2.join("")};`), i.push(`}
               t.updateTextureArgumentRefs(this, s);
             else {
               if (t.texture.texture === s.texture)
-                throw new Error(f2);
+                throw new Error(f);
               if (t.mappedTextures) {
                 let { mappedTextures: u } = t;
                 for (let x2 = 0; x2 < u.length; x2++)
                   if (u[x2].texture === s.texture)
-                    throw new Error(f2);
+                    throw new Error(f);
               }
             }
           i.activeTexture(this.contextHandle), i.bindTexture(i.TEXTURE_2D, this.uploadValue = s.texture), this.kernel.setUniform1i(this.id, this.index);
         }
       }
       y.exports = { WebGLKernelValueNumberTexture: l };
-    }, { "../../../utils": 114, "./array": 40, "./memory-optimized-number-texture": 58 }], 60: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("./array");
-      class f2 extends g2 {
+    }, { "../../../utils": 114, "./array": 40, "./memory-optimized-number-texture": 58 }], 60: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("./array");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.bitRatio = 4, this.dimensions = p.getDimensions(n, true), this.textureSize = p.getMemoryOptimizedFloatTextureSize(this.dimensions, this.bitRatio), this.uploadArrayLength = this.textureSize[0] * this.textureSize[1] * this.bitRatio, this.checkSize(this.textureSize[0], this.textureSize[1]), this.uploadValue = new Float32Array(this.uploadArrayLength);
         }
@@ -11514,10 +11244,10 @@ ${w2.join("")};`), i.push(`}
           p.flattenTo(n, this.uploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.FLOAT, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGLKernelValueSingleArray: f2 };
-    }, { "../../../utils": 114, "./array": 40 }], 61: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("./array");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueSingleArray: f };
+    }, { "../../../utils": 114, "./array": 40 }], 61: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("./array");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.bitRatio = 4, this.setShape(n);
         }
@@ -11540,10 +11270,10 @@ ${w2.join("")};`), i.push(`}
           p.flatten2dArrayTo(n, this.uploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.FLOAT, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGLKernelValueSingleArray1DI: f2 };
-    }, { "../../../utils": 114, "./array": 40 }], 62: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValue: g2 } = o2("./index");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueSingleArray1DI: f };
+    }, { "../../../utils": 114, "./array": 40 }], 62: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValue: g } = o("./index");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.uploadValue = n;
         }
@@ -11560,10 +11290,10 @@ ${w2.join("")};`), i.push(`}
           this.origin !== "constants" && this.kernel.setUniform2fv(this.id, this.uploadValue = n);
         }
       }
-      y.exports = { WebGLKernelValueSingleArray2: f2 };
-    }, { "../../../utils": 114, "./index": 56 }], 63: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("./array");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueSingleArray2: f };
+    }, { "../../../utils": 114, "./index": 56 }], 63: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("./array");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.bitRatio = 4, this.setShape(n);
         }
@@ -11586,10 +11316,10 @@ ${w2.join("")};`), i.push(`}
           p.flatten3dArrayTo(n, this.uploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.FLOAT, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGLKernelValueSingleArray2DI: f2 };
-    }, { "../../../utils": 114, "./array": 40 }], 64: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValue: g2 } = o2("./index");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueSingleArray2DI: f };
+    }, { "../../../utils": 114, "./array": 40 }], 64: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValue: g } = o("./index");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.uploadValue = n;
         }
@@ -11606,10 +11336,10 @@ ${w2.join("")};`), i.push(`}
           this.origin !== "constants" && this.kernel.setUniform3fv(this.id, this.uploadValue = n);
         }
       }
-      y.exports = { WebGLKernelValueSingleArray3: f2 };
-    }, { "../../../utils": 114, "./index": 56 }], 65: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("./array");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueSingleArray3: f };
+    }, { "../../../utils": 114, "./index": 56 }], 65: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("./array");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.bitRatio = 4, this.setShape(n);
         }
@@ -11632,10 +11362,10 @@ ${w2.join("")};`), i.push(`}
           p.flatten4dArrayTo(n, this.uploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.FLOAT, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGLKernelValueSingleArray3DI: f2 };
-    }, { "../../../utils": 114, "./array": 40 }], 66: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValue: g2 } = o2("./index");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueSingleArray3DI: f };
+    }, { "../../../utils": 114, "./array": 40 }], 66: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValue: g } = o("./index");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.uploadValue = n;
         }
@@ -11652,10 +11382,10 @@ ${w2.join("")};`), i.push(`}
           this.origin !== "constants" && this.kernel.setUniform4fv(this.id, this.uploadValue = n);
         }
       }
-      y.exports = { WebGLKernelValueSingleArray4: f2 };
-    }, { "../../../utils": 114, "./index": 56 }], 67: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("./array");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueSingleArray4: f };
+    }, { "../../../utils": 114, "./index": 56 }], 67: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("./array");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.bitRatio = 4;
           let [t, i, u] = n.size;
@@ -11676,10 +11406,10 @@ ${w2.join("")};`), i.push(`}
           p.flattenTo(n.value, this.uploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.FLOAT, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGLKernelValueSingleInput: f2 };
-    }, { "../../../utils": 114, "./array": 40 }], 68: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("./array");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueSingleInput: f };
+    }, { "../../../utils": 114, "./array": 40 }], 68: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("./array");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.bitRatio = this.getBitRatio(n), this.dimensions = p.getDimensions(n, true), this.textureSize = p.getMemoryOptimizedPackedTextureSize(this.dimensions, this.bitRatio), this.uploadArrayLength = this.textureSize[0] * this.textureSize[1] * (4 / this.bitRatio), this.checkSize(this.textureSize[0], this.textureSize[1]), this.TranserArrayType = this.getTransferArrayType(n), this.preUploadValue = new this.TranserArrayType(this.uploadArrayLength), this.uploadValue = new Uint8Array(this.preUploadValue.buffer);
         }
@@ -11698,10 +11428,10 @@ ${w2.join("")};`), i.push(`}
           p.flattenTo(n, this.preUploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.UNSIGNED_BYTE, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGLKernelValueUnsignedArray: f2 };
-    }, { "../../../utils": 114, "./array": 40 }], 69: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("./array");
-      class f2 extends g2 {
+      y.exports = { WebGLKernelValueUnsignedArray: f };
+    }, { "../../../utils": 114, "./array": 40 }], 69: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("./array");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.bitRatio = this.getBitRatio(n);
           let [t, i, u] = n.size;
@@ -11722,18 +11452,18 @@ ${w2.join("")};`), i.push(`}
           p.flattenTo(n.value, this.preUploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.UNSIGNED_BYTE, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGLKernelValueUnsignedInput: f2 };
-    }, { "../../../utils": 114, "./array": 40 }], 70: [function(o2, y, E) {
-      let { GLKernel: p } = o2("../gl/kernel"), { FunctionBuilder: g2 } = o2("../function-builder"), { WebGLFunctionNode: f2 } = o2("./function-node"), { utils: l } = o2("../../utils"), n = o2("../../plugins/math-random-uniformly-distributed"), { fragmentShader: s } = o2("./fragment-shader"), { vertexShader: t } = o2("./vertex-shader"), { glKernelString: i } = o2("../gl/kernel-string"), { lookupKernelValueType: u } = o2("./kernel-value-maps"), x2 = null, w2 = null, m = null, S = null, v = null, h = [n], b2 = [], T = {};
+      y.exports = { WebGLKernelValueUnsignedInput: f };
+    }, { "../../../utils": 114, "./array": 40 }], 70: [function(o, y, E) {
+      let { GLKernel: p } = o("../gl/kernel"), { FunctionBuilder: g } = o("../function-builder"), { WebGLFunctionNode: f } = o("./function-node"), { utils: l } = o("../../utils"), n = o("../../plugins/math-random-uniformly-distributed"), { fragmentShader: s } = o("./fragment-shader"), { vertexShader: t } = o("./vertex-shader"), { glKernelString: i } = o("../gl/kernel-string"), { lookupKernelValueType: u } = o("./kernel-value-maps"), x2 = null, w = null, m = null, S = null, v = null, h = [n], b = [], T = {};
       class C extends p {
         static get isSupported() {
           return x2 !== null || (this.setupFeatureChecks(), x2 = this.isContextMatch(m)), x2;
         }
         static setupFeatureChecks() {
-          typeof document < "u" ? w2 = document.createElement("canvas") : typeof OffscreenCanvas < "u" && (w2 = new OffscreenCanvas(0, 0)), w2 && (m = w2.getContext("webgl") || w2.getContext("experimental-webgl"), !(!m || !m.getExtension) && (S = { OES_texture_float: m.getExtension("OES_texture_float"), OES_texture_float_linear: m.getExtension("OES_texture_float_linear"), OES_element_index_uint: m.getExtension("OES_element_index_uint"), WEBGL_draw_buffers: m.getExtension("WEBGL_draw_buffers") }, v = this.getFeatures()));
+          typeof document < "u" ? w = document.createElement("canvas") : typeof OffscreenCanvas < "u" && (w = new OffscreenCanvas(0, 0)), w && (m = w.getContext("webgl") || w.getContext("experimental-webgl"), !(!m || !m.getExtension) && (S = { OES_texture_float: m.getExtension("OES_texture_float"), OES_texture_float_linear: m.getExtension("OES_texture_float_linear"), OES_element_index_uint: m.getExtension("OES_element_index_uint"), WEBGL_draw_buffers: m.getExtension("WEBGL_draw_buffers") }, v = this.getFeatures()));
         }
-        static isContextMatch(c2) {
-          return typeof WebGLRenderingContext < "u" ? c2 instanceof WebGLRenderingContext : false;
+        static isContextMatch(c) {
+          return typeof WebGLRenderingContext < "u" ? c instanceof WebGLRenderingContext : false;
         }
         static getIsTextureFloat() {
           return Boolean(S.OES_texture_float);
@@ -11747,11 +11477,11 @@ ${w2.join("")};`), i.push(`}
         static getMaxTextureSize() {
           return m.getParameter(m.MAX_TEXTURE_SIZE);
         }
-        static lookupKernelValueType(c2, a2, k, A) {
-          return u(c2, a2, k, A);
+        static lookupKernelValueType(c, a, k, A) {
+          return u(c, a, k, A);
         }
         static get testCanvas() {
-          return w2;
+          return w;
         }
         static get testContext() {
           return m;
@@ -11765,53 +11495,53 @@ ${w2.join("")};`), i.push(`}
         static get vertexShader() {
           return t;
         }
-        constructor(c2, a2) {
-          super(c2, a2), this.program = null, this.pipeline = a2.pipeline, this.endianness = l.systemEndianness(), this.extensions = {}, this.argumentTextureCount = 0, this.constantTextureCount = 0, this.fragShader = null, this.vertShader = null, this.drawBuffersMap = null, this.maxTexSize = null, this.onRequestSwitchKernel = null, this.texture = null, this.mappedTextures = null, this.mergeSettings(c2.settings || a2), this.threadDim = null, this.framebuffer = null, this.buffer = null, this.textureCache = [], this.programUniformLocationCache = {}, this.uniform1fCache = {}, this.uniform1iCache = {}, this.uniform2fCache = {}, this.uniform2fvCache = {}, this.uniform2ivCache = {}, this.uniform3fvCache = {}, this.uniform3ivCache = {}, this.uniform4fvCache = {}, this.uniform4ivCache = {};
+        constructor(c, a) {
+          super(c, a), this.program = null, this.pipeline = a.pipeline, this.endianness = l.systemEndianness(), this.extensions = {}, this.argumentTextureCount = 0, this.constantTextureCount = 0, this.fragShader = null, this.vertShader = null, this.drawBuffersMap = null, this.maxTexSize = null, this.onRequestSwitchKernel = null, this.texture = null, this.mappedTextures = null, this.mergeSettings(c.settings || a), this.threadDim = null, this.framebuffer = null, this.buffer = null, this.textureCache = [], this.programUniformLocationCache = {}, this.uniform1fCache = {}, this.uniform1iCache = {}, this.uniform2fCache = {}, this.uniform2fvCache = {}, this.uniform2ivCache = {}, this.uniform3fvCache = {}, this.uniform3ivCache = {}, this.uniform4fvCache = {}, this.uniform4ivCache = {};
         }
         initCanvas() {
           if (typeof document < "u") {
-            let c2 = document.createElement("canvas");
-            return c2.width = 2, c2.height = 2, c2;
+            let c = document.createElement("canvas");
+            return c.width = 2, c.height = 2, c;
           } else if (typeof OffscreenCanvas < "u")
             return new OffscreenCanvas(0, 0);
         }
         initContext() {
-          let c2 = { alpha: false, depth: false, antialias: false };
-          return this.canvas.getContext("webgl", c2) || this.canvas.getContext("experimental-webgl", c2);
+          let c = { alpha: false, depth: false, antialias: false };
+          return this.canvas.getContext("webgl", c) || this.canvas.getContext("experimental-webgl", c);
         }
-        initPlugins(c2) {
-          let a2 = [], { source: k } = this;
+        initPlugins(c) {
+          let a = [], { source: k } = this;
           if (typeof k == "string")
             for (let A = 0; A < h.length; A++) {
               let N = h[A];
-              k.match(N.functionMatch) && a2.push(N);
+              k.match(N.functionMatch) && a.push(N);
             }
-          else if (typeof k == "object" && c2.pluginNames)
+          else if (typeof k == "object" && c.pluginNames)
             for (let A = 0; A < h.length; A++) {
               let N = h[A];
-              c2.pluginNames.some((L) => L === N.name) && a2.push(N);
+              c.pluginNames.some((L) => L === N.name) && a.push(N);
             }
-          return a2;
+          return a;
         }
         initExtensions() {
           this.extensions = { OES_texture_float: this.context.getExtension("OES_texture_float"), OES_texture_float_linear: this.context.getExtension("OES_texture_float_linear"), OES_element_index_uint: this.context.getExtension("OES_element_index_uint"), WEBGL_draw_buffers: this.context.getExtension("WEBGL_draw_buffers"), WEBGL_color_buffer_float: this.context.getExtension("WEBGL_color_buffer_float") };
         }
-        validateSettings(c2) {
+        validateSettings(c) {
           if (!this.validate) {
             this.texSize = l.getKernelTextureSize({ optimizeFloatMemory: this.optimizeFloatMemory, precision: this.precision }, this.output);
             return;
           }
-          let { features: a2 } = this.constructor;
-          if (this.optimizeFloatMemory === true && !a2.isTextureFloat)
+          let { features: a } = this.constructor;
+          if (this.optimizeFloatMemory === true && !a.isTextureFloat)
             throw new Error("Float textures are not supported");
-          if (this.precision === "single" && !a2.isFloatRead)
+          if (this.precision === "single" && !a.isFloatRead)
             throw new Error("Single precision not supported");
-          if (!this.graphical && this.precision === null && a2.isTextureFloat && (this.precision = a2.isFloatRead ? "single" : "unsigned"), this.subKernels && this.subKernels.length > 0 && !this.extensions.WEBGL_draw_buffers)
+          if (!this.graphical && this.precision === null && a.isTextureFloat && (this.precision = a.isFloatRead ? "single" : "unsigned"), this.subKernels && this.subKernels.length > 0 && !this.extensions.WEBGL_draw_buffers)
             throw new Error("could not instantiate draw buffers extension");
-          if (this.fixIntegerDivisionAccuracy === null ? this.fixIntegerDivisionAccuracy = !a2.isIntegerDivisionAccurate : this.fixIntegerDivisionAccuracy && a2.isIntegerDivisionAccurate && (this.fixIntegerDivisionAccuracy = false), this.checkOutput(), !this.output || this.output.length === 0) {
-            if (c2.length !== 1)
+          if (this.fixIntegerDivisionAccuracy === null ? this.fixIntegerDivisionAccuracy = !a.isIntegerDivisionAccurate : this.fixIntegerDivisionAccuracy && a.isIntegerDivisionAccurate && (this.fixIntegerDivisionAccuracy = false), this.checkOutput(), !this.output || this.output.length === 0) {
+            if (c.length !== 1)
               throw new Error("Auto output only supported for kernels with only one input");
-            let k = l.getVariableType(c2[0], this.strictIntegers);
+            let k = l.getVariableType(c[0], this.strictIntegers);
             switch (k) {
               case "Array":
                 this.output = l.getDimensions(k);
@@ -11822,7 +11552,7 @@ ${w2.join("")};`), i.push(`}
               case "ArrayTexture(2)":
               case "ArrayTexture(3)":
               case "ArrayTexture(4)":
-                this.output = c2[0].output;
+                this.output = c[0].output;
                 break;
               default:
                 throw new Error("Auto output not supported for input type: " + k);
@@ -11834,43 +11564,43 @@ ${w2.join("")};`), i.push(`}
             this.precision === "precision" && (this.precision = "unsigned", console.warn("Cannot use graphical mode and single precision at the same time")), this.texSize = l.clone(this.output);
             return;
           } else
-            this.precision === null && a2.isTextureFloat && (this.precision = "single");
+            this.precision === null && a.isTextureFloat && (this.precision = "single");
           this.texSize = l.getKernelTextureSize({ optimizeFloatMemory: this.optimizeFloatMemory, precision: this.precision }, this.output), this.checkTextureSize();
         }
         updateMaxTexSize() {
-          let { texSize: c2, canvas: a2 } = this;
+          let { texSize: c, canvas: a } = this;
           if (this.maxTexSize === null) {
-            let k = b2.indexOf(a2);
-            k === -1 && (k = b2.length, b2.push(a2), T[k] = [c2[0], c2[1]]), this.maxTexSize = T[k];
+            let k = b.indexOf(a);
+            k === -1 && (k = b.length, b.push(a), T[k] = [c[0], c[1]]), this.maxTexSize = T[k];
           }
-          this.maxTexSize[0] < c2[0] && (this.maxTexSize[0] = c2[0]), this.maxTexSize[1] < c2[1] && (this.maxTexSize[1] = c2[1]);
+          this.maxTexSize[0] < c[0] && (this.maxTexSize[0] = c[0]), this.maxTexSize[1] < c[1] && (this.maxTexSize[1] = c[1]);
         }
-        setupArguments(c2) {
+        setupArguments(c) {
           this.kernelArguments = [], this.argumentTextureCount = 0;
-          let a2 = this.argumentTypes === null;
-          if (a2 && (this.argumentTypes = []), this.argumentSizes = [], this.argumentBitRatios = [], c2.length < this.argumentNames.length)
+          let a = this.argumentTypes === null;
+          if (a && (this.argumentTypes = []), this.argumentSizes = [], this.argumentBitRatios = [], c.length < this.argumentNames.length)
             throw new Error("not enough arguments for kernel");
-          if (c2.length > this.argumentNames.length)
+          if (c.length > this.argumentNames.length)
             throw new Error("too many arguments for kernel");
           let { context: k } = this, A = 0, N = () => this.createTexture(), F = () => this.constantTextureCount + A++, L = (O) => {
             this.switchKernels({ type: "argumentMismatch", needed: O });
           }, K = () => k.TEXTURE0 + this.constantTextureCount + this.argumentTextureCount++;
-          for (let O = 0; O < c2.length; O++) {
-            let X = c2[O], B = this.argumentNames[O], P;
-            a2 ? (P = l.getVariableType(X, this.strictIntegers), this.argumentTypes.push(P)) : P = this.argumentTypes[O];
-            let Y = this.constructor.lookupKernelValueType(P, this.dynamicArguments ? "dynamic" : "static", this.precision, c2[O]);
+          for (let O = 0; O < c.length; O++) {
+            let X = c[O], B = this.argumentNames[O], P;
+            a ? (P = l.getVariableType(X, this.strictIntegers), this.argumentTypes.push(P)) : P = this.argumentTypes[O];
+            let Y = this.constructor.lookupKernelValueType(P, this.dynamicArguments ? "dynamic" : "static", this.precision, c[O]);
             if (Y === null)
-              return this.requestFallback(c2);
+              return this.requestFallback(c);
             let J = new Y(X, { name: B, type: P, tactic: this.tactic, origin: "user", context: k, checkContext: this.checkContext, kernel: this, strictIntegers: this.strictIntegers, onRequestTexture: N, onRequestIndex: F, onUpdateValueMismatch: L, onRequestContextHandle: K });
             this.kernelArguments.push(J), J.setup(), this.argumentSizes.push(J.textureSize), this.argumentBitRatios[O] = J.bitRatio;
           }
         }
         createTexture() {
-          let c2 = this.context.createTexture();
-          return this.textureCache.push(c2), c2;
+          let c = this.context.createTexture();
+          return this.textureCache.push(c), c;
         }
-        setupConstants(c2) {
-          let { context: a2 } = this;
+        setupConstants(c) {
+          let { context: a } = this;
           this.kernelConstants = [], this.forceUploadKernelConstants = [];
           let k = this.constantTypes === null;
           k && (this.constantTypes = {}), this.constantBitRatios = {};
@@ -11880,8 +11610,8 @@ ${w2.join("")};`), i.push(`}
             k ? (L = l.getVariableType(F, this.strictIntegers), this.constantTypes[N] = L) : L = this.constantTypes[N];
             let K = this.constructor.lookupKernelValueType(L, "static", this.precision, F);
             if (K === null)
-              return this.requestFallback(c2);
-            let O = new K(F, { name: N, type: L, tactic: this.tactic, origin: "constants", context: this.context, checkContext: this.checkContext, kernel: this, strictIntegers: this.strictIntegers, onRequestTexture: () => this.createTexture(), onRequestIndex: () => A++, onRequestContextHandle: () => a2.TEXTURE0 + this.constantTextureCount++ });
+              return this.requestFallback(c);
+            let O = new K(F, { name: N, type: L, tactic: this.tactic, origin: "constants", context: this.context, checkContext: this.checkContext, kernel: this, strictIntegers: this.strictIntegers, onRequestTexture: () => this.createTexture(), onRequestIndex: () => A++, onRequestContextHandle: () => a.TEXTURE0 + this.constantTextureCount++ });
             this.constantBitRatios[N] = O.bitRatio, this.kernelConstants.push(O), O.setup(), O.forceUploadEachRun && this.forceUploadKernelConstants.push(O);
           }
         }
@@ -11889,10 +11619,10 @@ ${w2.join("")};`), i.push(`}
           if (this.built || (this.initExtensions(), this.validateSettings(arguments), this.setupConstants(arguments), this.fallbackRequested) || (this.setupArguments(arguments), this.fallbackRequested))
             return;
           this.updateMaxTexSize(), this.translateSource();
-          let c2 = this.pickRenderStrategy(arguments);
-          if (c2)
-            return c2;
-          let { texSize: a2, context: k, canvas: A } = this;
+          let c = this.pickRenderStrategy(arguments);
+          if (c)
+            return c;
+          let { texSize: a, context: k, canvas: A } = this;
           k.enable(k.SCISSOR_TEST), this.pipeline && this.precision === "single" ? (k.viewport(0, 0, this.maxTexSize[0], this.maxTexSize[1]), A.width = this.maxTexSize[0], A.height = this.maxTexSize[1]) : (k.viewport(0, 0, this.maxTexSize[0], this.maxTexSize[1]), A.width = this.maxTexSize[0], A.height = this.maxTexSize[1]);
           let N = this.threadDim = Array.from(this.output);
           for (; N.length < 3; )
@@ -11905,7 +11635,7 @@ ${w2.join("")};`), i.push(`}
           if (!k.getShaderParameter(O, k.COMPILE_STATUS))
             throw new Error("Error compiling fragment shader: " + k.getShaderInfoLog(O));
           let X = this.program = k.createProgram();
-          k.attachShader(X, L), k.attachShader(X, O), k.linkProgram(X), this.framebuffer = k.createFramebuffer(), this.framebuffer.width = a2[0], this.framebuffer.height = a2[1], this.rawValueFramebuffers = {};
+          k.attachShader(X, L), k.attachShader(X, O), k.linkProgram(X), this.framebuffer = k.createFramebuffer(), this.framebuffer.width = a[0], this.framebuffer.height = a[1], this.rawValueFramebuffers = {};
           let B = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), P = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]), Y = B.byteLength, J = this.buffer;
           J ? k.bindBuffer(k.ARRAY_BUFFER, J) : (J = this.buffer = k.createBuffer(), k.bindBuffer(k.ARRAY_BUFFER, J), k.bufferData(k.ARRAY_BUFFER, B.byteLength + P.byteLength, k.STATIC_DRAW)), k.bufferSubData(k.ARRAY_BUFFER, 0, B), k.bufferSubData(k.ARRAY_BUFFER, Y, P);
           let q = k.getAttribLocation(this.program, "aPos");
@@ -11919,26 +11649,26 @@ ${w2.join("")};`), i.push(`}
           this._setupOutputTexture(), this.subKernels !== null && this.subKernels.length > 0 && (this._mappedTextureSwitched = {}, this._setupSubOutputTextures()), this.buildSignature(arguments), this.built = true;
         }
         translateSource() {
-          let c2 = g2.fromKernel(this, f2, { fixIntegerDivisionAccuracy: this.fixIntegerDivisionAccuracy });
-          this.translatedSource = c2.getPrototypeString("kernel"), this.setupReturnTypes(c2);
+          let c = g.fromKernel(this, f, { fixIntegerDivisionAccuracy: this.fixIntegerDivisionAccuracy });
+          this.translatedSource = c.getPrototypeString("kernel"), this.setupReturnTypes(c);
         }
-        setupReturnTypes(c2) {
-          if (!this.graphical && !this.returnType && (this.returnType = c2.getKernelResultType()), this.subKernels && this.subKernels.length > 0)
-            for (let a2 = 0; a2 < this.subKernels.length; a2++) {
-              let k = this.subKernels[a2];
-              k.returnType || (k.returnType = c2.getSubKernelResultType(a2));
+        setupReturnTypes(c) {
+          if (!this.graphical && !this.returnType && (this.returnType = c.getKernelResultType()), this.subKernels && this.subKernels.length > 0)
+            for (let a = 0; a < this.subKernels.length; a++) {
+              let k = this.subKernels[a];
+              k.returnType || (k.returnType = c.getSubKernelResultType(a));
             }
         }
         run() {
-          let { kernelArguments: c2, texSize: a2, forceUploadKernelConstants: k, context: A } = this;
-          A.useProgram(this.program), A.scissor(0, 0, a2[0], a2[1]), this.dynamicOutput && (this.setUniform3iv("uOutputDim", new Int32Array(this.threadDim)), this.setUniform2iv("uTexSize", a2)), this.setUniform2f("ratio", a2[0] / this.maxTexSize[0], a2[1] / this.maxTexSize[1]);
+          let { kernelArguments: c, texSize: a, forceUploadKernelConstants: k, context: A } = this;
+          A.useProgram(this.program), A.scissor(0, 0, a[0], a[1]), this.dynamicOutput && (this.setUniform3iv("uOutputDim", new Int32Array(this.threadDim)), this.setUniform2iv("uTexSize", a)), this.setUniform2f("ratio", a[0] / this.maxTexSize[0], a[1] / this.maxTexSize[1]);
           for (let N = 0; N < k.length; N++) {
             let F = k[N];
             if (F.updateValue(this.constants[F.name]), this.switchingKernels)
               return;
           }
-          for (let N = 0; N < c2.length; N++)
-            if (c2[N].updateValue(arguments[N]), this.switchingKernels)
+          for (let N = 0; N < c.length; N++)
+            if (c[N].updateValue(arguments[N]), this.switchingKernels)
               return;
           if (this.plugins)
             for (let N = 0; N < this.plugins.length; N++) {
@@ -11960,149 +11690,149 @@ ${w2.join("")};`), i.push(`}
           return this.context.RGBA;
         }
         getTextureFormat() {
-          let { context: c2 } = this;
+          let { context: c } = this;
           switch (this.getInternalFormat()) {
-            case c2.RGBA:
-              return c2.RGBA;
+            case c.RGBA:
+              return c.RGBA;
             default:
               throw new Error("Unknown internal format");
           }
         }
         _replaceOutputTexture() {
           if (this.texture.beforeMutate() || this._textureSwitched) {
-            let c2 = this.context;
-            c2.framebufferTexture2D(c2.FRAMEBUFFER, c2.COLOR_ATTACHMENT0, c2.TEXTURE_2D, this.texture.texture, 0), this._textureSwitched = false;
+            let c = this.context;
+            c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0, c.TEXTURE_2D, this.texture.texture, 0), this._textureSwitched = false;
           }
         }
         _setupOutputTexture() {
-          let c2 = this.context, a2 = this.texSize;
+          let c = this.context, a = this.texSize;
           if (this.texture) {
-            c2.framebufferTexture2D(c2.FRAMEBUFFER, c2.COLOR_ATTACHMENT0, c2.TEXTURE_2D, this.texture.texture, 0);
+            c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0, c.TEXTURE_2D, this.texture.texture, 0);
             return;
           }
           let k = this.createTexture();
-          c2.activeTexture(c2.TEXTURE0 + this.constantTextureCount + this.argumentTextureCount), c2.bindTexture(c2.TEXTURE_2D, k), c2.texParameteri(c2.TEXTURE_2D, c2.TEXTURE_WRAP_S, c2.CLAMP_TO_EDGE), c2.texParameteri(c2.TEXTURE_2D, c2.TEXTURE_WRAP_T, c2.CLAMP_TO_EDGE), c2.texParameteri(c2.TEXTURE_2D, c2.TEXTURE_MIN_FILTER, c2.NEAREST), c2.texParameteri(c2.TEXTURE_2D, c2.TEXTURE_MAG_FILTER, c2.NEAREST);
+          c.activeTexture(c.TEXTURE0 + this.constantTextureCount + this.argumentTextureCount), c.bindTexture(c.TEXTURE_2D, k), c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE), c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE), c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST), c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST);
           let A = this.getInternalFormat();
-          this.precision === "single" ? c2.texImage2D(c2.TEXTURE_2D, 0, A, a2[0], a2[1], 0, c2.RGBA, c2.FLOAT, null) : c2.texImage2D(c2.TEXTURE_2D, 0, A, a2[0], a2[1], 0, A, c2.UNSIGNED_BYTE, null), c2.framebufferTexture2D(c2.FRAMEBUFFER, c2.COLOR_ATTACHMENT0, c2.TEXTURE_2D, k, 0), this.texture = new this.TextureConstructor({ texture: k, size: a2, dimensions: this.threadDim, output: this.output, context: this.context, internalFormat: this.getInternalFormat(), textureFormat: this.getTextureFormat(), kernel: this });
+          this.precision === "single" ? c.texImage2D(c.TEXTURE_2D, 0, A, a[0], a[1], 0, c.RGBA, c.FLOAT, null) : c.texImage2D(c.TEXTURE_2D, 0, A, a[0], a[1], 0, A, c.UNSIGNED_BYTE, null), c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0, c.TEXTURE_2D, k, 0), this.texture = new this.TextureConstructor({ texture: k, size: a, dimensions: this.threadDim, output: this.output, context: this.context, internalFormat: this.getInternalFormat(), textureFormat: this.getTextureFormat(), kernel: this });
         }
         _replaceSubOutputTextures() {
-          let c2 = this.context;
-          for (let a2 = 0; a2 < this.mappedTextures.length; a2++) {
-            let k = this.mappedTextures[a2];
-            (k.beforeMutate() || this._mappedTextureSwitched[a2]) && (c2.framebufferTexture2D(c2.FRAMEBUFFER, c2.COLOR_ATTACHMENT0 + a2 + 1, c2.TEXTURE_2D, k.texture, 0), this._mappedTextureSwitched[a2] = false);
+          let c = this.context;
+          for (let a = 0; a < this.mappedTextures.length; a++) {
+            let k = this.mappedTextures[a];
+            (k.beforeMutate() || this._mappedTextureSwitched[a]) && (c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0 + a + 1, c.TEXTURE_2D, k.texture, 0), this._mappedTextureSwitched[a] = false);
           }
         }
         _setupSubOutputTextures() {
-          let c2 = this.context;
+          let c = this.context;
           if (this.mappedTextures) {
             for (let k = 0; k < this.subKernels.length; k++)
-              c2.framebufferTexture2D(c2.FRAMEBUFFER, c2.COLOR_ATTACHMENT0 + k + 1, c2.TEXTURE_2D, this.mappedTextures[k].texture, 0);
+              c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0 + k + 1, c.TEXTURE_2D, this.mappedTextures[k].texture, 0);
             return;
           }
-          let a2 = this.texSize;
-          this.drawBuffersMap = [c2.COLOR_ATTACHMENT0], this.mappedTextures = [];
+          let a = this.texSize;
+          this.drawBuffersMap = [c.COLOR_ATTACHMENT0], this.mappedTextures = [];
           for (let k = 0; k < this.subKernels.length; k++) {
             let A = this.createTexture();
-            this.drawBuffersMap.push(c2.COLOR_ATTACHMENT0 + k + 1), c2.activeTexture(c2.TEXTURE0 + this.constantTextureCount + this.argumentTextureCount + k), c2.bindTexture(c2.TEXTURE_2D, A), c2.texParameteri(c2.TEXTURE_2D, c2.TEXTURE_WRAP_S, c2.CLAMP_TO_EDGE), c2.texParameteri(c2.TEXTURE_2D, c2.TEXTURE_WRAP_T, c2.CLAMP_TO_EDGE), c2.texParameteri(c2.TEXTURE_2D, c2.TEXTURE_MIN_FILTER, c2.NEAREST), c2.texParameteri(c2.TEXTURE_2D, c2.TEXTURE_MAG_FILTER, c2.NEAREST), this.precision === "single" ? c2.texImage2D(c2.TEXTURE_2D, 0, c2.RGBA, a2[0], a2[1], 0, c2.RGBA, c2.FLOAT, null) : c2.texImage2D(c2.TEXTURE_2D, 0, c2.RGBA, a2[0], a2[1], 0, c2.RGBA, c2.UNSIGNED_BYTE, null), c2.framebufferTexture2D(c2.FRAMEBUFFER, c2.COLOR_ATTACHMENT0 + k + 1, c2.TEXTURE_2D, A, 0), this.mappedTextures.push(new this.TextureConstructor({ texture: A, size: a2, dimensions: this.threadDim, output: this.output, context: this.context, internalFormat: this.getInternalFormat(), textureFormat: this.getTextureFormat(), kernel: this }));
+            this.drawBuffersMap.push(c.COLOR_ATTACHMENT0 + k + 1), c.activeTexture(c.TEXTURE0 + this.constantTextureCount + this.argumentTextureCount + k), c.bindTexture(c.TEXTURE_2D, A), c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE), c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE), c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST), c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST), this.precision === "single" ? c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, a[0], a[1], 0, c.RGBA, c.FLOAT, null) : c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, a[0], a[1], 0, c.RGBA, c.UNSIGNED_BYTE, null), c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0 + k + 1, c.TEXTURE_2D, A, 0), this.mappedTextures.push(new this.TextureConstructor({ texture: A, size: a, dimensions: this.threadDim, output: this.output, context: this.context, internalFormat: this.getInternalFormat(), textureFormat: this.getTextureFormat(), kernel: this }));
           }
         }
-        setUniform1f(c2, a2) {
-          if (this.uniform1fCache.hasOwnProperty(c2)) {
-            let A = this.uniform1fCache[c2];
-            if (a2 === A)
+        setUniform1f(c, a) {
+          if (this.uniform1fCache.hasOwnProperty(c)) {
+            let A = this.uniform1fCache[c];
+            if (a === A)
               return;
           }
-          this.uniform1fCache[c2] = a2;
-          let k = this.getUniformLocation(c2);
-          this.context.uniform1f(k, a2);
+          this.uniform1fCache[c] = a;
+          let k = this.getUniformLocation(c);
+          this.context.uniform1f(k, a);
         }
-        setUniform1i(c2, a2) {
-          if (this.uniform1iCache.hasOwnProperty(c2)) {
-            let A = this.uniform1iCache[c2];
-            if (a2 === A)
+        setUniform1i(c, a) {
+          if (this.uniform1iCache.hasOwnProperty(c)) {
+            let A = this.uniform1iCache[c];
+            if (a === A)
               return;
           }
-          this.uniform1iCache[c2] = a2;
-          let k = this.getUniformLocation(c2);
-          this.context.uniform1i(k, a2);
+          this.uniform1iCache[c] = a;
+          let k = this.getUniformLocation(c);
+          this.context.uniform1i(k, a);
         }
-        setUniform2f(c2, a2, k) {
-          if (this.uniform2fCache.hasOwnProperty(c2)) {
-            let N = this.uniform2fCache[c2];
-            if (a2 === N[0] && k === N[1])
+        setUniform2f(c, a, k) {
+          if (this.uniform2fCache.hasOwnProperty(c)) {
+            let N = this.uniform2fCache[c];
+            if (a === N[0] && k === N[1])
               return;
           }
-          this.uniform2fCache[c2] = [a2, k];
-          let A = this.getUniformLocation(c2);
-          this.context.uniform2f(A, a2, k);
+          this.uniform2fCache[c] = [a, k];
+          let A = this.getUniformLocation(c);
+          this.context.uniform2f(A, a, k);
         }
-        setUniform2fv(c2, a2) {
-          if (this.uniform2fvCache.hasOwnProperty(c2)) {
-            let A = this.uniform2fvCache[c2];
-            if (a2[0] === A[0] && a2[1] === A[1])
+        setUniform2fv(c, a) {
+          if (this.uniform2fvCache.hasOwnProperty(c)) {
+            let A = this.uniform2fvCache[c];
+            if (a[0] === A[0] && a[1] === A[1])
               return;
           }
-          this.uniform2fvCache[c2] = a2;
-          let k = this.getUniformLocation(c2);
-          this.context.uniform2fv(k, a2);
+          this.uniform2fvCache[c] = a;
+          let k = this.getUniformLocation(c);
+          this.context.uniform2fv(k, a);
         }
-        setUniform2iv(c2, a2) {
-          if (this.uniform2ivCache.hasOwnProperty(c2)) {
-            let A = this.uniform2ivCache[c2];
-            if (a2[0] === A[0] && a2[1] === A[1])
+        setUniform2iv(c, a) {
+          if (this.uniform2ivCache.hasOwnProperty(c)) {
+            let A = this.uniform2ivCache[c];
+            if (a[0] === A[0] && a[1] === A[1])
               return;
           }
-          this.uniform2ivCache[c2] = a2;
-          let k = this.getUniformLocation(c2);
-          this.context.uniform2iv(k, a2);
+          this.uniform2ivCache[c] = a;
+          let k = this.getUniformLocation(c);
+          this.context.uniform2iv(k, a);
         }
-        setUniform3fv(c2, a2) {
-          if (this.uniform3fvCache.hasOwnProperty(c2)) {
-            let A = this.uniform3fvCache[c2];
-            if (a2[0] === A[0] && a2[1] === A[1] && a2[2] === A[2])
+        setUniform3fv(c, a) {
+          if (this.uniform3fvCache.hasOwnProperty(c)) {
+            let A = this.uniform3fvCache[c];
+            if (a[0] === A[0] && a[1] === A[1] && a[2] === A[2])
               return;
           }
-          this.uniform3fvCache[c2] = a2;
-          let k = this.getUniformLocation(c2);
-          this.context.uniform3fv(k, a2);
+          this.uniform3fvCache[c] = a;
+          let k = this.getUniformLocation(c);
+          this.context.uniform3fv(k, a);
         }
-        setUniform3iv(c2, a2) {
-          if (this.uniform3ivCache.hasOwnProperty(c2)) {
-            let A = this.uniform3ivCache[c2];
-            if (a2[0] === A[0] && a2[1] === A[1] && a2[2] === A[2])
+        setUniform3iv(c, a) {
+          if (this.uniform3ivCache.hasOwnProperty(c)) {
+            let A = this.uniform3ivCache[c];
+            if (a[0] === A[0] && a[1] === A[1] && a[2] === A[2])
               return;
           }
-          this.uniform3ivCache[c2] = a2;
-          let k = this.getUniformLocation(c2);
-          this.context.uniform3iv(k, a2);
+          this.uniform3ivCache[c] = a;
+          let k = this.getUniformLocation(c);
+          this.context.uniform3iv(k, a);
         }
-        setUniform4fv(c2, a2) {
-          if (this.uniform4fvCache.hasOwnProperty(c2)) {
-            let A = this.uniform4fvCache[c2];
-            if (a2[0] === A[0] && a2[1] === A[1] && a2[2] === A[2] && a2[3] === A[3])
+        setUniform4fv(c, a) {
+          if (this.uniform4fvCache.hasOwnProperty(c)) {
+            let A = this.uniform4fvCache[c];
+            if (a[0] === A[0] && a[1] === A[1] && a[2] === A[2] && a[3] === A[3])
               return;
           }
-          this.uniform4fvCache[c2] = a2;
-          let k = this.getUniformLocation(c2);
-          this.context.uniform4fv(k, a2);
+          this.uniform4fvCache[c] = a;
+          let k = this.getUniformLocation(c);
+          this.context.uniform4fv(k, a);
         }
-        setUniform4iv(c2, a2) {
-          if (this.uniform4ivCache.hasOwnProperty(c2)) {
-            let A = this.uniform4ivCache[c2];
-            if (a2[0] === A[0] && a2[1] === A[1] && a2[2] === A[2] && a2[3] === A[3])
+        setUniform4iv(c, a) {
+          if (this.uniform4ivCache.hasOwnProperty(c)) {
+            let A = this.uniform4ivCache[c];
+            if (a[0] === A[0] && a[1] === A[1] && a[2] === A[2] && a[3] === A[3])
               return;
           }
-          this.uniform4ivCache[c2] = a2;
-          let k = this.getUniformLocation(c2);
-          this.context.uniform4iv(k, a2);
+          this.uniform4ivCache[c] = a;
+          let k = this.getUniformLocation(c);
+          this.context.uniform4iv(k, a);
         }
-        getUniformLocation(c2) {
-          return this.programUniformLocationCache.hasOwnProperty(c2) ? this.programUniformLocationCache[c2] : this.programUniformLocationCache[c2] = this.context.getUniformLocation(this.program, c2);
+        getUniformLocation(c) {
+          return this.programUniformLocationCache.hasOwnProperty(c) ? this.programUniformLocationCache[c] : this.programUniformLocationCache[c] = this.context.getUniformLocation(this.program, c);
         }
-        _getFragShaderArtifactMap(c2) {
-          return { HEADER: this._getHeaderString(), LOOP_MAX: this._getLoopMaxString(), PLUGINS: this._getPluginsString(), CONSTANTS: this._getConstantsString(), DECODE32_ENDIANNESS: this._getDecode32EndiannessString(), ENCODE32_ENDIANNESS: this._getEncode32EndiannessString(), DIVIDE_WITH_INTEGER_CHECK: this._getDivideWithIntegerCheckString(), INJECTED_NATIVE: this._getInjectedNative(), MAIN_CONSTANTS: this._getMainConstantsString(), MAIN_ARGUMENTS: this._getMainArgumentsString(c2), KERNEL: this.getKernelString(), MAIN_RESULT: this.getMainResultString(), FLOAT_TACTIC_DECLARATION: this.getFloatTacticDeclaration(), INT_TACTIC_DECLARATION: this.getIntTacticDeclaration(), SAMPLER_2D_TACTIC_DECLARATION: this.getSampler2DTacticDeclaration(), SAMPLER_2D_ARRAY_TACTIC_DECLARATION: this.getSampler2DArrayTacticDeclaration() };
+        _getFragShaderArtifactMap(c) {
+          return { HEADER: this._getHeaderString(), LOOP_MAX: this._getLoopMaxString(), PLUGINS: this._getPluginsString(), CONSTANTS: this._getConstantsString(), DECODE32_ENDIANNESS: this._getDecode32EndiannessString(), ENCODE32_ENDIANNESS: this._getEncode32EndiannessString(), DIVIDE_WITH_INTEGER_CHECK: this._getDivideWithIntegerCheckString(), INJECTED_NATIVE: this._getInjectedNative(), MAIN_CONSTANTS: this._getMainConstantsString(), MAIN_ARGUMENTS: this._getMainArgumentsString(c), KERNEL: this.getKernelString(), MAIN_RESULT: this.getMainResultString(), FLOAT_TACTIC_DECLARATION: this.getFloatTacticDeclaration(), INT_TACTIC_DECLARATION: this.getIntTacticDeclaration(), SAMPLER_2D_TACTIC_DECLARATION: this.getSampler2DTacticDeclaration(), SAMPLER_2D_ARRAY_TACTIC_DECLARATION: this.getSampler2DArrayTacticDeclaration() };
         }
-        _getVertShaderArtifactMap(c2) {
+        _getVertShaderArtifactMap(c) {
           return { FLOAT_TACTIC_DECLARATION: this.getFloatTacticDeclaration(), INT_TACTIC_DECLARATION: this.getIntTacticDeclaration(), SAMPLER_2D_TACTIC_DECLARATION: this.getSampler2DTacticDeclaration(), SAMPLER_2D_ARRAY_TACTIC_DECLARATION: this.getSampler2DArrayTacticDeclaration() };
         }
         _getHeaderString() {
@@ -12115,17 +11845,17 @@ ${w2.join("")};`), i.push(`}
 `;
         }
         _getPluginsString() {
-          return this.plugins ? this.plugins.map((c2) => c2.source && this.source.match(c2.functionMatch) ? c2.source : "").join(`
+          return this.plugins ? this.plugins.map((c) => c.source && this.source.match(c.functionMatch) ? c.source : "").join(`
 `) : `
 `;
         }
         _getConstantsString() {
-          let c2 = [], { threadDim: a2, texSize: k } = this;
-          return this.dynamicOutput ? c2.push("uniform ivec3 uOutputDim", "uniform ivec2 uTexSize") : c2.push(`ivec3 uOutputDim = ivec3(${a2[0]}, ${a2[1]}, ${a2[2]})`, `ivec2 uTexSize = ivec2(${k[0]}, ${k[1]})`), l.linesToString(c2);
+          let c = [], { threadDim: a, texSize: k } = this;
+          return this.dynamicOutput ? c.push("uniform ivec3 uOutputDim", "uniform ivec2 uTexSize") : c.push(`ivec3 uOutputDim = ivec3(${a[0]}, ${a[1]}, ${a[2]})`, `ivec2 uTexSize = ivec2(${k[0]}, ${k[1]})`), l.linesToString(c);
         }
         _getTextureCoordinate() {
-          let c2 = this.subKernels;
-          return c2 === null || c2.length < 1 ? `varying vec2 vTexCoord;
+          let c = this.subKernels;
+          return c === null || c.length < 1 ? `varying vec2 vTexCoord;
 ` : `out vec2 vTexCoord;
 `;
         }
@@ -12159,30 +11889,30 @@ ${w2.join("")};`), i.push(`}
         return number - (divisor * floor(divWithIntCheck(number, divisor)));
       }` : "";
         }
-        _getMainArgumentsString(c2) {
-          let a2 = [], { argumentNames: k } = this;
+        _getMainArgumentsString(c) {
+          let a = [], { argumentNames: k } = this;
           for (let A = 0; A < k.length; A++)
-            a2.push(this.kernelArguments[A].getSource(c2[A]));
-          return a2.join("");
+            a.push(this.kernelArguments[A].getSource(c[A]));
+          return a.join("");
         }
         _getInjectedNative() {
           return this.injectedNative || "";
         }
         _getMainConstantsString() {
-          let c2 = [], { constants: a2 } = this;
-          if (a2) {
+          let c = [], { constants: a } = this;
+          if (a) {
             let k = 0;
-            for (let A in a2)
-              !this.constants.hasOwnProperty(A) || c2.push(this.kernelConstants[k++].getSource(this.constants[A]));
+            for (let A in a)
+              !this.constants.hasOwnProperty(A) || c.push(this.kernelConstants[k++].getSource(this.constants[A]));
           }
-          return c2.join("");
+          return c.join("");
         }
-        getRawValueFramebuffer(c2, a2) {
-          if (this.rawValueFramebuffers[c2] || (this.rawValueFramebuffers[c2] = {}), !this.rawValueFramebuffers[c2][a2]) {
+        getRawValueFramebuffer(c, a) {
+          if (this.rawValueFramebuffers[c] || (this.rawValueFramebuffers[c] = {}), !this.rawValueFramebuffers[c][a]) {
             let k = this.context.createFramebuffer();
-            k.width = c2, k.height = a2, this.rawValueFramebuffers[c2][a2] = k;
+            k.width = c, k.height = a, this.rawValueFramebuffers[c][a] = k;
           }
-          return this.rawValueFramebuffers[c2][a2];
+          return this.rawValueFramebuffers[c][a];
         }
         getKernelResultDeclaration() {
           switch (this.returnType) {
@@ -12204,31 +11934,31 @@ ${w2.join("")};`), i.push(`}
           }
         }
         getKernelString() {
-          let c2 = [this.getKernelResultDeclaration()], { subKernels: a2 } = this;
-          if (a2 !== null)
+          let c = [this.getKernelResultDeclaration()], { subKernels: a } = this;
+          if (a !== null)
             switch (this.returnType) {
               case "Number":
               case "Float":
               case "Integer":
-                for (let k = 0; k < a2.length; k++) {
-                  let A = a2[k];
-                  c2.push(A.returnType === "Integer" ? `int subKernelResult_${A.name} = 0` : `float subKernelResult_${A.name} = 0.0`);
+                for (let k = 0; k < a.length; k++) {
+                  let A = a[k];
+                  c.push(A.returnType === "Integer" ? `int subKernelResult_${A.name} = 0` : `float subKernelResult_${A.name} = 0.0`);
                 }
                 break;
               case "Array(2)":
-                for (let k = 0; k < a2.length; k++)
-                  c2.push(`vec2 subKernelResult_${a2[k].name}`);
+                for (let k = 0; k < a.length; k++)
+                  c.push(`vec2 subKernelResult_${a[k].name}`);
                 break;
               case "Array(3)":
-                for (let k = 0; k < a2.length; k++)
-                  c2.push(`vec3 subKernelResult_${a2[k].name}`);
+                for (let k = 0; k < a.length; k++)
+                  c.push(`vec3 subKernelResult_${a[k].name}`);
                 break;
               case "Array(4)":
-                for (let k = 0; k < a2.length; k++)
-                  c2.push(`vec4 subKernelResult_${a2[k].name}`);
+                for (let k = 0; k < a.length; k++)
+                  c.push(`vec4 subKernelResult_${a[k].name}`);
                 break;
             }
-          return l.linesToString(c2) + this.translatedSource;
+          return l.linesToString(c) + this.translatedSource;
         }
         getMainResultGraphical() {
           return l.linesToString(["  threadId = indexTo3D(index, uOutputDim)", "  kernel()", "  gl_FragColor = actualColor"]);
@@ -12248,121 +11978,121 @@ ${w2.join("")};`), i.push(`}
           return l.linesToString(["  threadId = indexTo3D(index, uOutputDim)", "  kernel()", `  gl_FragData[0] = ${this.useLegacyEncoder ? "legacyEncode32" : "encode32"}(kernelResult)`]);
         }
         getMainResultSubKernelPackedPixels() {
-          let c2 = [];
+          let c = [];
           if (!this.subKernels)
             return "";
-          for (let a2 = 0; a2 < this.subKernels.length; a2++)
-            this.subKernels[a2].returnType === "Integer" ? c2.push(`  gl_FragData[${a2 + 1}] = ${this.useLegacyEncoder ? "legacyEncode32" : "encode32"}(float(subKernelResult_${this.subKernels[a2].name}))`) : c2.push(`  gl_FragData[${a2 + 1}] = ${this.useLegacyEncoder ? "legacyEncode32" : "encode32"}(subKernelResult_${this.subKernels[a2].name})`);
-          return l.linesToString(c2);
+          for (let a = 0; a < this.subKernels.length; a++)
+            this.subKernels[a].returnType === "Integer" ? c.push(`  gl_FragData[${a + 1}] = ${this.useLegacyEncoder ? "legacyEncode32" : "encode32"}(float(subKernelResult_${this.subKernels[a].name}))`) : c.push(`  gl_FragData[${a + 1}] = ${this.useLegacyEncoder ? "legacyEncode32" : "encode32"}(subKernelResult_${this.subKernels[a].name})`);
+          return l.linesToString(c);
         }
         getMainResultMemoryOptimizedFloats() {
-          let c2 = ["  index *= 4"];
+          let c = ["  index *= 4"];
           switch (this.returnType) {
             case "Number":
             case "Integer":
             case "Float":
-              let a2 = ["r", "g", "b", "a"];
-              for (let k = 0; k < a2.length; k++) {
-                let A = a2[k];
-                this.getMainResultKernelMemoryOptimizedFloats(c2, A), this.getMainResultSubKernelMemoryOptimizedFloats(c2, A), k + 1 < a2.length && c2.push("  index += 1");
+              let a = ["r", "g", "b", "a"];
+              for (let k = 0; k < a.length; k++) {
+                let A = a[k];
+                this.getMainResultKernelMemoryOptimizedFloats(c, A), this.getMainResultSubKernelMemoryOptimizedFloats(c, A), k + 1 < a.length && c.push("  index += 1");
               }
               break;
             default:
               throw new Error(`optimized output only usable with Numbers, ${this.returnType} specified`);
           }
-          return l.linesToString(c2);
+          return l.linesToString(c);
         }
-        getMainResultKernelMemoryOptimizedFloats(c2, a2) {
-          c2.push("  threadId = indexTo3D(index, uOutputDim)", "  kernel()", `  gl_FragData[0].${a2} = kernelResult`);
+        getMainResultKernelMemoryOptimizedFloats(c, a) {
+          c.push("  threadId = indexTo3D(index, uOutputDim)", "  kernel()", `  gl_FragData[0].${a} = kernelResult`);
         }
-        getMainResultSubKernelMemoryOptimizedFloats(c2, a2) {
+        getMainResultSubKernelMemoryOptimizedFloats(c, a) {
           if (!this.subKernels)
-            return c2;
+            return c;
           for (let k = 0; k < this.subKernels.length; k++)
-            this.subKernels[k].returnType === "Integer" ? c2.push(`  gl_FragData[${k + 1}].${a2} = float(subKernelResult_${this.subKernels[k].name})`) : c2.push(`  gl_FragData[${k + 1}].${a2} = subKernelResult_${this.subKernels[k].name}`);
+            this.subKernels[k].returnType === "Integer" ? c.push(`  gl_FragData[${k + 1}].${a} = float(subKernelResult_${this.subKernels[k].name})`) : c.push(`  gl_FragData[${k + 1}].${a} = subKernelResult_${this.subKernels[k].name}`);
         }
         getMainResultKernelNumberTexture() {
           return ["  threadId = indexTo3D(index, uOutputDim)", "  kernel()", "  gl_FragData[0][0] = kernelResult"];
         }
         getMainResultSubKernelNumberTexture() {
-          let c2 = [];
+          let c = [];
           if (!this.subKernels)
-            return c2;
-          for (let a2 = 0; a2 < this.subKernels.length; ++a2) {
-            let k = this.subKernels[a2];
-            k.returnType === "Integer" ? c2.push(`  gl_FragData[${a2 + 1}][0] = float(subKernelResult_${k.name})`) : c2.push(`  gl_FragData[${a2 + 1}][0] = subKernelResult_${k.name}`);
+            return c;
+          for (let a = 0; a < this.subKernels.length; ++a) {
+            let k = this.subKernels[a];
+            k.returnType === "Integer" ? c.push(`  gl_FragData[${a + 1}][0] = float(subKernelResult_${k.name})`) : c.push(`  gl_FragData[${a + 1}][0] = subKernelResult_${k.name}`);
           }
-          return c2;
+          return c;
         }
         getMainResultKernelArray2Texture() {
           return ["  threadId = indexTo3D(index, uOutputDim)", "  kernel()", "  gl_FragData[0][0] = kernelResult[0]", "  gl_FragData[0][1] = kernelResult[1]"];
         }
         getMainResultSubKernelArray2Texture() {
-          let c2 = [];
+          let c = [];
           if (!this.subKernels)
-            return c2;
-          for (let a2 = 0; a2 < this.subKernels.length; ++a2)
-            c2.push(`  gl_FragData[${a2 + 1}][0] = subKernelResult_${this.subKernels[a2].name}[0]`, `  gl_FragData[${a2 + 1}][1] = subKernelResult_${this.subKernels[a2].name}[1]`);
-          return c2;
+            return c;
+          for (let a = 0; a < this.subKernels.length; ++a)
+            c.push(`  gl_FragData[${a + 1}][0] = subKernelResult_${this.subKernels[a].name}[0]`, `  gl_FragData[${a + 1}][1] = subKernelResult_${this.subKernels[a].name}[1]`);
+          return c;
         }
         getMainResultKernelArray3Texture() {
           return ["  threadId = indexTo3D(index, uOutputDim)", "  kernel()", "  gl_FragData[0][0] = kernelResult[0]", "  gl_FragData[0][1] = kernelResult[1]", "  gl_FragData[0][2] = kernelResult[2]"];
         }
         getMainResultSubKernelArray3Texture() {
-          let c2 = [];
+          let c = [];
           if (!this.subKernels)
-            return c2;
-          for (let a2 = 0; a2 < this.subKernels.length; ++a2)
-            c2.push(`  gl_FragData[${a2 + 1}][0] = subKernelResult_${this.subKernels[a2].name}[0]`, `  gl_FragData[${a2 + 1}][1] = subKernelResult_${this.subKernels[a2].name}[1]`, `  gl_FragData[${a2 + 1}][2] = subKernelResult_${this.subKernels[a2].name}[2]`);
-          return c2;
+            return c;
+          for (let a = 0; a < this.subKernels.length; ++a)
+            c.push(`  gl_FragData[${a + 1}][0] = subKernelResult_${this.subKernels[a].name}[0]`, `  gl_FragData[${a + 1}][1] = subKernelResult_${this.subKernels[a].name}[1]`, `  gl_FragData[${a + 1}][2] = subKernelResult_${this.subKernels[a].name}[2]`);
+          return c;
         }
         getMainResultKernelArray4Texture() {
           return ["  threadId = indexTo3D(index, uOutputDim)", "  kernel()", "  gl_FragData[0] = kernelResult"];
         }
         getMainResultSubKernelArray4Texture() {
-          let c2 = [];
+          let c = [];
           if (!this.subKernels)
-            return c2;
+            return c;
           switch (this.returnType) {
             case "Number":
             case "Float":
             case "Integer":
-              for (let a2 = 0; a2 < this.subKernels.length; ++a2)
-                this.subKernels[a2].returnType === "Integer" ? c2.push(`  gl_FragData[${a2 + 1}] = float(subKernelResult_${this.subKernels[a2].name})`) : c2.push(`  gl_FragData[${a2 + 1}] = subKernelResult_${this.subKernels[a2].name}`);
+              for (let a = 0; a < this.subKernels.length; ++a)
+                this.subKernels[a].returnType === "Integer" ? c.push(`  gl_FragData[${a + 1}] = float(subKernelResult_${this.subKernels[a].name})`) : c.push(`  gl_FragData[${a + 1}] = subKernelResult_${this.subKernels[a].name}`);
               break;
             case "Array(2)":
-              for (let a2 = 0; a2 < this.subKernels.length; ++a2)
-                c2.push(`  gl_FragData[${a2 + 1}][0] = subKernelResult_${this.subKernels[a2].name}[0]`, `  gl_FragData[${a2 + 1}][1] = subKernelResult_${this.subKernels[a2].name}[1]`);
+              for (let a = 0; a < this.subKernels.length; ++a)
+                c.push(`  gl_FragData[${a + 1}][0] = subKernelResult_${this.subKernels[a].name}[0]`, `  gl_FragData[${a + 1}][1] = subKernelResult_${this.subKernels[a].name}[1]`);
               break;
             case "Array(3)":
-              for (let a2 = 0; a2 < this.subKernels.length; ++a2)
-                c2.push(`  gl_FragData[${a2 + 1}][0] = subKernelResult_${this.subKernels[a2].name}[0]`, `  gl_FragData[${a2 + 1}][1] = subKernelResult_${this.subKernels[a2].name}[1]`, `  gl_FragData[${a2 + 1}][2] = subKernelResult_${this.subKernels[a2].name}[2]`);
+              for (let a = 0; a < this.subKernels.length; ++a)
+                c.push(`  gl_FragData[${a + 1}][0] = subKernelResult_${this.subKernels[a].name}[0]`, `  gl_FragData[${a + 1}][1] = subKernelResult_${this.subKernels[a].name}[1]`, `  gl_FragData[${a + 1}][2] = subKernelResult_${this.subKernels[a].name}[2]`);
               break;
             case "Array(4)":
-              for (let a2 = 0; a2 < this.subKernels.length; ++a2)
-                c2.push(`  gl_FragData[${a2 + 1}][0] = subKernelResult_${this.subKernels[a2].name}[0]`, `  gl_FragData[${a2 + 1}][1] = subKernelResult_${this.subKernels[a2].name}[1]`, `  gl_FragData[${a2 + 1}][2] = subKernelResult_${this.subKernels[a2].name}[2]`, `  gl_FragData[${a2 + 1}][3] = subKernelResult_${this.subKernels[a2].name}[3]`);
+              for (let a = 0; a < this.subKernels.length; ++a)
+                c.push(`  gl_FragData[${a + 1}][0] = subKernelResult_${this.subKernels[a].name}[0]`, `  gl_FragData[${a + 1}][1] = subKernelResult_${this.subKernels[a].name}[1]`, `  gl_FragData[${a + 1}][2] = subKernelResult_${this.subKernels[a].name}[2]`, `  gl_FragData[${a + 1}][3] = subKernelResult_${this.subKernels[a].name}[3]`);
               break;
           }
-          return c2;
+          return c;
         }
-        replaceArtifacts(c2, a2) {
-          return c2.replace(/[ ]*__([A-Z]+[0-9]*([_]?[A-Z]*[0-9]?)*)__;\n/g, (k, A) => {
-            if (a2.hasOwnProperty(A))
-              return a2[A];
+        replaceArtifacts(c, a) {
+          return c.replace(/[ ]*__([A-Z]+[0-9]*([_]?[A-Z]*[0-9]?)*)__;\n/g, (k, A) => {
+            if (a.hasOwnProperty(A))
+              return a[A];
             throw `unhandled artifact ${A}`;
           });
         }
-        getFragmentShader(c2) {
-          return this.compiledFragmentShader !== null ? this.compiledFragmentShader : this.compiledFragmentShader = this.replaceArtifacts(this.constructor.fragmentShader, this._getFragShaderArtifactMap(c2));
+        getFragmentShader(c) {
+          return this.compiledFragmentShader !== null ? this.compiledFragmentShader : this.compiledFragmentShader = this.replaceArtifacts(this.constructor.fragmentShader, this._getFragShaderArtifactMap(c));
         }
-        getVertexShader(c2) {
-          return this.compiledVertexShader !== null ? this.compiledVertexShader : this.compiledVertexShader = this.replaceArtifacts(this.constructor.vertexShader, this._getVertShaderArtifactMap(c2));
+        getVertexShader(c) {
+          return this.compiledVertexShader !== null ? this.compiledVertexShader : this.compiledVertexShader = this.replaceArtifacts(this.constructor.vertexShader, this._getVertShaderArtifactMap(c));
         }
         toString() {
-          let c2 = l.linesToString(["const gl = context"]);
-          return i(this.constructor, arguments, this, c2);
+          let c = l.linesToString(["const gl = context"]);
+          return i(this.constructor, arguments, this, c);
         }
-        destroy(c2) {
+        destroy(c) {
           if (!this.context)
             return;
           this.buffer && this.context.deleteBuffer(this.buffer), this.framebuffer && this.context.deleteFramebuffer(this.framebuffer);
@@ -12395,29 +12125,29 @@ ${w2.join("")};`), i.push(`}
             let k = this.textureCache.pop();
             this.context.deleteTexture(k);
           }
-          if (c2) {
-            let k = b2.indexOf(this.canvas);
-            k >= 0 && (b2[k] = null, T[k] = null);
+          if (c) {
+            let k = b.indexOf(this.canvas);
+            k >= 0 && (b[k] = null, T[k] = null);
           }
           if (this.destroyExtensions(), delete this.context, delete this.canvas, !this.gpu)
             return;
-          let a2 = this.gpu.kernels.indexOf(this);
-          a2 !== -1 && this.gpu.kernels.splice(a2, 1);
+          let a = this.gpu.kernels.indexOf(this);
+          a !== -1 && this.gpu.kernels.splice(a, 1);
         }
         destroyExtensions() {
           this.extensions.OES_texture_float = null, this.extensions.OES_texture_float_linear = null, this.extensions.OES_element_index_uint = null, this.extensions.WEBGL_draw_buffers = null;
         }
-        static destroyContext(c2) {
-          let a2 = c2.getExtension("WEBGL_lose_context");
-          a2 && a2.loseContext();
+        static destroyContext(c) {
+          let a = c.getExtension("WEBGL_lose_context");
+          a && a.loseContext();
         }
         toJSON() {
-          let c2 = super.toJSON();
-          return c2.functionNodes = g2.fromKernel(this, f2).toJSON(), c2.settings.threadDim = this.threadDim, c2;
+          let c = super.toJSON();
+          return c.functionNodes = g.fromKernel(this, f).toJSON(), c.settings.threadDim = this.threadDim, c;
         }
       }
       y.exports = { WebGLKernel: C };
-    }, { "../../plugins/math-random-uniformly-distributed": 112, "../../utils": 114, "../function-builder": 9, "../gl/kernel": 13, "../gl/kernel-string": 12, "./fragment-shader": 37, "./function-node": 38, "./kernel-value-maps": 39, "./vertex-shader": 71 }], 71: [function(o2, y, E) {
+    }, { "../../plugins/math-random-uniformly-distributed": 112, "../../utils": 114, "../function-builder": 9, "../gl/kernel": 13, "../gl/kernel-string": 12, "./fragment-shader": 37, "./function-node": 38, "./kernel-value-maps": 39, "./vertex-shader": 71 }], 71: [function(o, y, E) {
       let p = `__FLOAT_TACTIC_DECLARATION__;
       __INT_TACTIC_DECLARATION__;
       __SAMPLER_2D_TACTIC_DECLARATION__;
@@ -12433,7 +12163,7 @@ ${w2.join("")};`), i.push(`}
         vTexCoord = aTexCoord;
       }`;
       y.exports = { vertexShader: p };
-    }, {}], 72: [function(o2, y, E) {
+    }, {}], 72: [function(o, y, E) {
       let p = `#version 300 es
       __HEADER__;
       __FLOAT_TACTIC_DECLARATION__;
@@ -12882,9 +12612,9 @@ ${w2.join("")};`), i.push(`}
         __MAIN_RESULT__;
       }`;
       y.exports = { fragmentShader: p };
-    }, {}], 73: [function(o2, y, E) {
-      let { utils: p } = o2("../../utils"), { WebGLFunctionNode: g2 } = o2("../web-gl/function-node");
-      class f2 extends g2 {
+    }, {}], 73: [function(o, y, E) {
+      let { utils: p } = o("../../utils"), { WebGLFunctionNode: g } = o("../web-gl/function-node");
+      class f extends g {
         astIdentifierExpression(n, s) {
           if (n.type !== "Identifier")
             throw this.astErrorOutput("IdentifierExpression - not an Identifier", n);
@@ -12892,9 +12622,9 @@ ${w2.join("")};`), i.push(`}
           return n.name === "Infinity" ? s.push("intBitsToFloat(2139095039)") : t === "Boolean" ? this.argumentNames.indexOf(i) > -1 ? s.push(`bool(user_${i})`) : s.push(`user_${i}`) : s.push(`user_${i}`), s;
         }
       }
-      y.exports = { WebGL2FunctionNode: f2 };
-    }, { "../../utils": 114, "../web-gl/function-node": 38 }], 74: [function(o2, y, E) {
-      let { WebGL2KernelValueBoolean: p } = o2("./kernel-value/boolean"), { WebGL2KernelValueFloat: g2 } = o2("./kernel-value/float"), { WebGL2KernelValueInteger: f2 } = o2("./kernel-value/integer"), { WebGL2KernelValueHTMLImage: l } = o2("./kernel-value/html-image"), { WebGL2KernelValueDynamicHTMLImage: n } = o2("./kernel-value/dynamic-html-image"), { WebGL2KernelValueHTMLImageArray: s } = o2("./kernel-value/html-image-array"), { WebGL2KernelValueDynamicHTMLImageArray: t } = o2("./kernel-value/dynamic-html-image-array"), { WebGL2KernelValueHTMLVideo: i } = o2("./kernel-value/html-video"), { WebGL2KernelValueDynamicHTMLVideo: u } = o2("./kernel-value/dynamic-html-video"), { WebGL2KernelValueSingleInput: x2 } = o2("./kernel-value/single-input"), { WebGL2KernelValueDynamicSingleInput: w2 } = o2("./kernel-value/dynamic-single-input"), { WebGL2KernelValueUnsignedInput: m } = o2("./kernel-value/unsigned-input"), { WebGL2KernelValueDynamicUnsignedInput: S } = o2("./kernel-value/dynamic-unsigned-input"), { WebGL2KernelValueMemoryOptimizedNumberTexture: v } = o2("./kernel-value/memory-optimized-number-texture"), { WebGL2KernelValueDynamicMemoryOptimizedNumberTexture: h } = o2("./kernel-value/dynamic-memory-optimized-number-texture"), { WebGL2KernelValueNumberTexture: b2 } = o2("./kernel-value/number-texture"), { WebGL2KernelValueDynamicNumberTexture: T } = o2("./kernel-value/dynamic-number-texture"), { WebGL2KernelValueSingleArray: C } = o2("./kernel-value/single-array"), { WebGL2KernelValueDynamicSingleArray: V } = o2("./kernel-value/dynamic-single-array"), { WebGL2KernelValueSingleArray1DI: c2 } = o2("./kernel-value/single-array1d-i"), { WebGL2KernelValueDynamicSingleArray1DI: a2 } = o2("./kernel-value/dynamic-single-array1d-i"), { WebGL2KernelValueSingleArray2DI: k } = o2("./kernel-value/single-array2d-i"), { WebGL2KernelValueDynamicSingleArray2DI: A } = o2("./kernel-value/dynamic-single-array2d-i"), { WebGL2KernelValueSingleArray3DI: N } = o2("./kernel-value/single-array3d-i"), { WebGL2KernelValueDynamicSingleArray3DI: F } = o2("./kernel-value/dynamic-single-array3d-i"), { WebGL2KernelValueSingleArray2: L } = o2("./kernel-value/single-array2"), { WebGL2KernelValueSingleArray3: K } = o2("./kernel-value/single-array3"), { WebGL2KernelValueSingleArray4: O } = o2("./kernel-value/single-array4"), { WebGL2KernelValueUnsignedArray: X } = o2("./kernel-value/unsigned-array"), { WebGL2KernelValueDynamicUnsignedArray: B } = o2("./kernel-value/dynamic-unsigned-array"), P = { unsigned: { dynamic: { Boolean: p, Integer: f2, Float: g2, Array: B, "Array(2)": false, "Array(3)": false, "Array(4)": false, "Array1D(2)": false, "Array1D(3)": false, "Array1D(4)": false, "Array2D(2)": false, "Array2D(3)": false, "Array2D(4)": false, "Array3D(2)": false, "Array3D(3)": false, "Array3D(4)": false, Input: S, NumberTexture: T, "ArrayTexture(1)": T, "ArrayTexture(2)": T, "ArrayTexture(3)": T, "ArrayTexture(4)": T, MemoryOptimizedNumberTexture: h, HTMLCanvas: n, HTMLImage: n, HTMLImageArray: t, HTMLVideo: u }, static: { Boolean: p, Float: g2, Integer: f2, Array: X, "Array(2)": false, "Array(3)": false, "Array(4)": false, "Array1D(2)": false, "Array1D(3)": false, "Array1D(4)": false, "Array2D(2)": false, "Array2D(3)": false, "Array2D(4)": false, "Array3D(2)": false, "Array3D(3)": false, "Array3D(4)": false, Input: m, NumberTexture: b2, "ArrayTexture(1)": b2, "ArrayTexture(2)": b2, "ArrayTexture(3)": b2, "ArrayTexture(4)": b2, MemoryOptimizedNumberTexture: h, HTMLCanvas: l, HTMLImage: l, HTMLImageArray: s, HTMLVideo: i } }, single: { dynamic: { Boolean: p, Integer: f2, Float: g2, Array: V, "Array(2)": L, "Array(3)": K, "Array(4)": O, "Array1D(2)": a2, "Array1D(3)": a2, "Array1D(4)": a2, "Array2D(2)": A, "Array2D(3)": A, "Array2D(4)": A, "Array3D(2)": F, "Array3D(3)": F, "Array3D(4)": F, Input: w2, NumberTexture: T, "ArrayTexture(1)": T, "ArrayTexture(2)": T, "ArrayTexture(3)": T, "ArrayTexture(4)": T, MemoryOptimizedNumberTexture: h, HTMLCanvas: n, HTMLImage: n, HTMLImageArray: t, HTMLVideo: u }, static: { Boolean: p, Float: g2, Integer: f2, Array: C, "Array(2)": L, "Array(3)": K, "Array(4)": O, "Array1D(2)": c2, "Array1D(3)": c2, "Array1D(4)": c2, "Array2D(2)": k, "Array2D(3)": k, "Array2D(4)": k, "Array3D(2)": N, "Array3D(3)": N, "Array3D(4)": N, Input: x2, NumberTexture: b2, "ArrayTexture(1)": b2, "ArrayTexture(2)": b2, "ArrayTexture(3)": b2, "ArrayTexture(4)": b2, MemoryOptimizedNumberTexture: v, HTMLCanvas: l, HTMLImage: l, HTMLImageArray: s, HTMLVideo: i } } };
+      y.exports = { WebGL2FunctionNode: f };
+    }, { "../../utils": 114, "../web-gl/function-node": 38 }], 74: [function(o, y, E) {
+      let { WebGL2KernelValueBoolean: p } = o("./kernel-value/boolean"), { WebGL2KernelValueFloat: g } = o("./kernel-value/float"), { WebGL2KernelValueInteger: f } = o("./kernel-value/integer"), { WebGL2KernelValueHTMLImage: l } = o("./kernel-value/html-image"), { WebGL2KernelValueDynamicHTMLImage: n } = o("./kernel-value/dynamic-html-image"), { WebGL2KernelValueHTMLImageArray: s } = o("./kernel-value/html-image-array"), { WebGL2KernelValueDynamicHTMLImageArray: t } = o("./kernel-value/dynamic-html-image-array"), { WebGL2KernelValueHTMLVideo: i } = o("./kernel-value/html-video"), { WebGL2KernelValueDynamicHTMLVideo: u } = o("./kernel-value/dynamic-html-video"), { WebGL2KernelValueSingleInput: x2 } = o("./kernel-value/single-input"), { WebGL2KernelValueDynamicSingleInput: w } = o("./kernel-value/dynamic-single-input"), { WebGL2KernelValueUnsignedInput: m } = o("./kernel-value/unsigned-input"), { WebGL2KernelValueDynamicUnsignedInput: S } = o("./kernel-value/dynamic-unsigned-input"), { WebGL2KernelValueMemoryOptimizedNumberTexture: v } = o("./kernel-value/memory-optimized-number-texture"), { WebGL2KernelValueDynamicMemoryOptimizedNumberTexture: h } = o("./kernel-value/dynamic-memory-optimized-number-texture"), { WebGL2KernelValueNumberTexture: b } = o("./kernel-value/number-texture"), { WebGL2KernelValueDynamicNumberTexture: T } = o("./kernel-value/dynamic-number-texture"), { WebGL2KernelValueSingleArray: C } = o("./kernel-value/single-array"), { WebGL2KernelValueDynamicSingleArray: V } = o("./kernel-value/dynamic-single-array"), { WebGL2KernelValueSingleArray1DI: c } = o("./kernel-value/single-array1d-i"), { WebGL2KernelValueDynamicSingleArray1DI: a } = o("./kernel-value/dynamic-single-array1d-i"), { WebGL2KernelValueSingleArray2DI: k } = o("./kernel-value/single-array2d-i"), { WebGL2KernelValueDynamicSingleArray2DI: A } = o("./kernel-value/dynamic-single-array2d-i"), { WebGL2KernelValueSingleArray3DI: N } = o("./kernel-value/single-array3d-i"), { WebGL2KernelValueDynamicSingleArray3DI: F } = o("./kernel-value/dynamic-single-array3d-i"), { WebGL2KernelValueSingleArray2: L } = o("./kernel-value/single-array2"), { WebGL2KernelValueSingleArray3: K } = o("./kernel-value/single-array3"), { WebGL2KernelValueSingleArray4: O } = o("./kernel-value/single-array4"), { WebGL2KernelValueUnsignedArray: X } = o("./kernel-value/unsigned-array"), { WebGL2KernelValueDynamicUnsignedArray: B } = o("./kernel-value/dynamic-unsigned-array"), P = { unsigned: { dynamic: { Boolean: p, Integer: f, Float: g, Array: B, "Array(2)": false, "Array(3)": false, "Array(4)": false, "Array1D(2)": false, "Array1D(3)": false, "Array1D(4)": false, "Array2D(2)": false, "Array2D(3)": false, "Array2D(4)": false, "Array3D(2)": false, "Array3D(3)": false, "Array3D(4)": false, Input: S, NumberTexture: T, "ArrayTexture(1)": T, "ArrayTexture(2)": T, "ArrayTexture(3)": T, "ArrayTexture(4)": T, MemoryOptimizedNumberTexture: h, HTMLCanvas: n, HTMLImage: n, HTMLImageArray: t, HTMLVideo: u }, static: { Boolean: p, Float: g, Integer: f, Array: X, "Array(2)": false, "Array(3)": false, "Array(4)": false, "Array1D(2)": false, "Array1D(3)": false, "Array1D(4)": false, "Array2D(2)": false, "Array2D(3)": false, "Array2D(4)": false, "Array3D(2)": false, "Array3D(3)": false, "Array3D(4)": false, Input: m, NumberTexture: b, "ArrayTexture(1)": b, "ArrayTexture(2)": b, "ArrayTexture(3)": b, "ArrayTexture(4)": b, MemoryOptimizedNumberTexture: h, HTMLCanvas: l, HTMLImage: l, HTMLImageArray: s, HTMLVideo: i } }, single: { dynamic: { Boolean: p, Integer: f, Float: g, Array: V, "Array(2)": L, "Array(3)": K, "Array(4)": O, "Array1D(2)": a, "Array1D(3)": a, "Array1D(4)": a, "Array2D(2)": A, "Array2D(3)": A, "Array2D(4)": A, "Array3D(2)": F, "Array3D(3)": F, "Array3D(4)": F, Input: w, NumberTexture: T, "ArrayTexture(1)": T, "ArrayTexture(2)": T, "ArrayTexture(3)": T, "ArrayTexture(4)": T, MemoryOptimizedNumberTexture: h, HTMLCanvas: n, HTMLImage: n, HTMLImageArray: t, HTMLVideo: u }, static: { Boolean: p, Float: g, Integer: f, Array: C, "Array(2)": L, "Array(3)": K, "Array(4)": O, "Array1D(2)": c, "Array1D(3)": c, "Array1D(4)": c, "Array2D(2)": k, "Array2D(3)": k, "Array2D(4)": k, "Array3D(2)": N, "Array3D(3)": N, "Array3D(4)": N, Input: x2, NumberTexture: b, "ArrayTexture(1)": b, "ArrayTexture(2)": b, "ArrayTexture(3)": b, "ArrayTexture(4)": b, MemoryOptimizedNumberTexture: v, HTMLCanvas: l, HTMLImage: l, HTMLImageArray: s, HTMLVideo: i } } };
       function Y(J, q, j, U) {
         if (!J)
           throw new Error("type missing");
@@ -12911,14 +12641,14 @@ ${w2.join("")};`), i.push(`}
         return oe[J];
       }
       y.exports = { kernelValueMaps: P, lookupKernelValueType: Y };
-    }, { "./kernel-value/boolean": 75, "./kernel-value/dynamic-html-image": 77, "./kernel-value/dynamic-html-image-array": 76, "./kernel-value/dynamic-html-video": 78, "./kernel-value/dynamic-memory-optimized-number-texture": 79, "./kernel-value/dynamic-number-texture": 80, "./kernel-value/dynamic-single-array": 81, "./kernel-value/dynamic-single-array1d-i": 82, "./kernel-value/dynamic-single-array2d-i": 83, "./kernel-value/dynamic-single-array3d-i": 84, "./kernel-value/dynamic-single-input": 85, "./kernel-value/dynamic-unsigned-array": 86, "./kernel-value/dynamic-unsigned-input": 87, "./kernel-value/float": 88, "./kernel-value/html-image": 90, "./kernel-value/html-image-array": 89, "./kernel-value/html-video": 91, "./kernel-value/integer": 92, "./kernel-value/memory-optimized-number-texture": 93, "./kernel-value/number-texture": 94, "./kernel-value/single-array": 95, "./kernel-value/single-array1d-i": 96, "./kernel-value/single-array2": 97, "./kernel-value/single-array2d-i": 98, "./kernel-value/single-array3": 99, "./kernel-value/single-array3d-i": 100, "./kernel-value/single-array4": 101, "./kernel-value/single-input": 102, "./kernel-value/unsigned-array": 103, "./kernel-value/unsigned-input": 104 }], 75: [function(o2, y, E) {
-      let { WebGLKernelValueBoolean: p } = o2("../../web-gl/kernel-value/boolean");
-      class g2 extends p {
+    }, { "./kernel-value/boolean": 75, "./kernel-value/dynamic-html-image": 77, "./kernel-value/dynamic-html-image-array": 76, "./kernel-value/dynamic-html-video": 78, "./kernel-value/dynamic-memory-optimized-number-texture": 79, "./kernel-value/dynamic-number-texture": 80, "./kernel-value/dynamic-single-array": 81, "./kernel-value/dynamic-single-array1d-i": 82, "./kernel-value/dynamic-single-array2d-i": 83, "./kernel-value/dynamic-single-array3d-i": 84, "./kernel-value/dynamic-single-input": 85, "./kernel-value/dynamic-unsigned-array": 86, "./kernel-value/dynamic-unsigned-input": 87, "./kernel-value/float": 88, "./kernel-value/html-image": 90, "./kernel-value/html-image-array": 89, "./kernel-value/html-video": 91, "./kernel-value/integer": 92, "./kernel-value/memory-optimized-number-texture": 93, "./kernel-value/number-texture": 94, "./kernel-value/single-array": 95, "./kernel-value/single-array1d-i": 96, "./kernel-value/single-array2": 97, "./kernel-value/single-array2d-i": 98, "./kernel-value/single-array3": 99, "./kernel-value/single-array3d-i": 100, "./kernel-value/single-array4": 101, "./kernel-value/single-input": 102, "./kernel-value/unsigned-array": 103, "./kernel-value/unsigned-input": 104 }], 75: [function(o, y, E) {
+      let { WebGLKernelValueBoolean: p } = o("../../web-gl/kernel-value/boolean");
+      class g extends p {
       }
-      y.exports = { WebGL2KernelValueBoolean: g2 };
-    }, { "../../web-gl/kernel-value/boolean": 41 }], 76: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGL2KernelValueHTMLImageArray: g2 } = o2("./html-image-array");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueBoolean: g };
+    }, { "../../web-gl/kernel-value/boolean": 41 }], 76: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGL2KernelValueHTMLImageArray: g } = o("./html-image-array");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2DArray ${this.id}`, `uniform ${n} ivec2 ${this.sizeId}`, `uniform ${n} ivec3 ${this.dimensionsId}`]);
@@ -12928,41 +12658,41 @@ ${w2.join("")};`), i.push(`}
           this.checkSize(s, t), this.dimensions = [s, t, n.length], this.textureSize = [s, t], this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicHTMLImageArray: f2 };
-    }, { "../../../utils": 114, "./html-image-array": 89 }], 77: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueDynamicHTMLImage: g2 } = o2("../../web-gl/kernel-value/dynamic-html-image");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicHTMLImageArray: f };
+    }, { "../../../utils": 114, "./html-image-array": 89 }], 77: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueDynamicHTMLImage: g } = o("../../web-gl/kernel-value/dynamic-html-image");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `uniform ${n} ivec2 ${this.sizeId}`, `uniform ${n} ivec3 ${this.dimensionsId}`]);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicHTMLImage: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/dynamic-html-image": 42 }], 78: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGL2KernelValueDynamicHTMLImage: g2 } = o2("./dynamic-html-image");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicHTMLImage: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/dynamic-html-image": 42 }], 78: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGL2KernelValueDynamicHTMLImage: g } = o("./dynamic-html-image");
+      class f extends g {
       }
-      y.exports = { WebGL2KernelValueDynamicHTMLVideo: f2 };
-    }, { "../../../utils": 114, "./dynamic-html-image": 77 }], 79: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueDynamicMemoryOptimizedNumberTexture: g2 } = o2("../../web-gl/kernel-value/dynamic-memory-optimized-number-texture");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicHTMLVideo: f };
+    }, { "../../../utils": 114, "./dynamic-html-image": 77 }], 79: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueDynamicMemoryOptimizedNumberTexture: g } = o("../../web-gl/kernel-value/dynamic-memory-optimized-number-texture");
+      class f extends g {
         getSource() {
           return p.linesToString([`uniform sampler2D ${this.id}`, `uniform ivec2 ${this.sizeId}`, `uniform ivec3 ${this.dimensionsId}`]);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicMemoryOptimizedNumberTexture: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/dynamic-memory-optimized-number-texture": 44 }], 80: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueDynamicNumberTexture: g2 } = o2("../../web-gl/kernel-value/dynamic-number-texture");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicMemoryOptimizedNumberTexture: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/dynamic-memory-optimized-number-texture": 44 }], 80: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueDynamicNumberTexture: g } = o("../../web-gl/kernel-value/dynamic-number-texture");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `uniform ${n} ivec2 ${this.sizeId}`, `uniform ${n} ivec3 ${this.dimensionsId}`]);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicNumberTexture: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/dynamic-number-texture": 45 }], 81: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGL2KernelValueSingleArray: g2 } = o2("../../web-gl2/kernel-value/single-array");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicNumberTexture: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/dynamic-number-texture": 45 }], 81: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGL2KernelValueSingleArray: g } = o("../../web-gl2/kernel-value/single-array");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `uniform ${n} ivec2 ${this.sizeId}`, `uniform ${n} ivec3 ${this.dimensionsId}`]);
@@ -12971,10 +12701,10 @@ ${w2.join("")};`), i.push(`}
           this.dimensions = p.getDimensions(n, true), this.textureSize = p.getMemoryOptimizedFloatTextureSize(this.dimensions, this.bitRatio), this.uploadArrayLength = this.textureSize[0] * this.textureSize[1] * this.bitRatio, this.checkSize(this.textureSize[0], this.textureSize[1]), this.uploadValue = new Float32Array(this.uploadArrayLength), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicSingleArray: f2 };
-    }, { "../../../utils": 114, "../../web-gl2/kernel-value/single-array": 95 }], 82: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGL2KernelValueSingleArray1DI: g2 } = o2("../../web-gl2/kernel-value/single-array1d-i");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicSingleArray: f };
+    }, { "../../../utils": 114, "../../web-gl2/kernel-value/single-array": 95 }], 82: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGL2KernelValueSingleArray1DI: g } = o("../../web-gl2/kernel-value/single-array1d-i");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `uniform ${n} ivec2 ${this.sizeId}`, `uniform ${n} ivec3 ${this.dimensionsId}`]);
@@ -12983,10 +12713,10 @@ ${w2.join("")};`), i.push(`}
           this.setShape(n), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicSingleArray1DI: f2 };
-    }, { "../../../utils": 114, "../../web-gl2/kernel-value/single-array1d-i": 96 }], 83: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGL2KernelValueSingleArray2DI: g2 } = o2("../../web-gl2/kernel-value/single-array2d-i");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicSingleArray1DI: f };
+    }, { "../../../utils": 114, "../../web-gl2/kernel-value/single-array1d-i": 96 }], 83: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGL2KernelValueSingleArray2DI: g } = o("../../web-gl2/kernel-value/single-array2d-i");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `uniform ${n} ivec2 ${this.sizeId}`, `uniform ${n} ivec3 ${this.dimensionsId}`]);
@@ -12995,10 +12725,10 @@ ${w2.join("")};`), i.push(`}
           this.setShape(n), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicSingleArray2DI: f2 };
-    }, { "../../../utils": 114, "../../web-gl2/kernel-value/single-array2d-i": 98 }], 84: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGL2KernelValueSingleArray3DI: g2 } = o2("../../web-gl2/kernel-value/single-array3d-i");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicSingleArray2DI: f };
+    }, { "../../../utils": 114, "../../web-gl2/kernel-value/single-array2d-i": 98 }], 84: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGL2KernelValueSingleArray3DI: g } = o("../../web-gl2/kernel-value/single-array3d-i");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `uniform ${n} ivec2 ${this.sizeId}`, `uniform ${n} ivec3 ${this.dimensionsId}`]);
@@ -13007,10 +12737,10 @@ ${w2.join("")};`), i.push(`}
           this.setShape(n), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicSingleArray3DI: f2 };
-    }, { "../../../utils": 114, "../../web-gl2/kernel-value/single-array3d-i": 100 }], 85: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGL2KernelValueSingleInput: g2 } = o2("../../web-gl2/kernel-value/single-input");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicSingleArray3DI: f };
+    }, { "../../../utils": 114, "../../web-gl2/kernel-value/single-array3d-i": 100 }], 85: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGL2KernelValueSingleInput: g } = o("../../web-gl2/kernel-value/single-input");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `uniform ${n} ivec2 ${this.sizeId}`, `uniform ${n} ivec3 ${this.dimensionsId}`]);
@@ -13020,33 +12750,33 @@ ${w2.join("")};`), i.push(`}
           this.dimensions = new Int32Array([s || 1, t || 1, i || 1]), this.textureSize = p.getMemoryOptimizedFloatTextureSize(this.dimensions, this.bitRatio), this.uploadArrayLength = this.textureSize[0] * this.textureSize[1] * this.bitRatio, this.checkSize(this.textureSize[0], this.textureSize[1]), this.uploadValue = new Float32Array(this.uploadArrayLength), this.kernel.setUniform3iv(this.dimensionsId, this.dimensions), this.kernel.setUniform2iv(this.sizeId, this.textureSize), super.updateValue(n);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicSingleInput: f2 };
-    }, { "../../../utils": 114, "../../web-gl2/kernel-value/single-input": 102 }], 86: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueDynamicUnsignedArray: g2 } = o2("../../web-gl/kernel-value/dynamic-unsigned-array");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicSingleInput: f };
+    }, { "../../../utils": 114, "../../web-gl2/kernel-value/single-input": 102 }], 86: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueDynamicUnsignedArray: g } = o("../../web-gl/kernel-value/dynamic-unsigned-array");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `uniform ${n} ivec2 ${this.sizeId}`, `uniform ${n} ivec3 ${this.dimensionsId}`]);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicUnsignedArray: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/dynamic-unsigned-array": 51 }], 87: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueDynamicUnsignedInput: g2 } = o2("../../web-gl/kernel-value/dynamic-unsigned-input");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicUnsignedArray: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/dynamic-unsigned-array": 51 }], 87: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueDynamicUnsignedInput: g } = o("../../web-gl/kernel-value/dynamic-unsigned-input");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `uniform ${n} ivec2 ${this.sizeId}`, `uniform ${n} ivec3 ${this.dimensionsId}`]);
         }
       }
-      y.exports = { WebGL2KernelValueDynamicUnsignedInput: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/dynamic-unsigned-input": 52 }], 88: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueFloat: g2 } = o2("../../web-gl/kernel-value/float");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueDynamicUnsignedInput: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/dynamic-unsigned-input": 52 }], 88: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueFloat: g } = o("../../web-gl/kernel-value/float");
+      class f extends g {
       }
-      y.exports = { WebGL2KernelValueFloat: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/float": 53 }], 89: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelArray: g2 } = o2("../../web-gl/kernel-value/array");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueFloat: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/float": 53 }], 89: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelArray: g } = o("../../web-gl/kernel-value/array");
+      class f extends g {
         constructor(n, s) {
           super(n, s), this.checkSize(n[0].width, n[0].height), this.dimensions = [n[0].width, n[0].height, n.length], this.textureSize = [n[0].width, n[0].height];
         }
@@ -13070,24 +12800,24 @@ ${w2.join("")};`), i.push(`}
           this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGL2KernelValueHTMLImageArray: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/array": 40 }], 90: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueHTMLImage: g2 } = o2("../../web-gl/kernel-value/html-image");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueHTMLImageArray: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/array": 40 }], 90: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueHTMLImage: g } = o("../../web-gl/kernel-value/html-image");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `${n} ivec2 ${this.sizeId} = ivec2(${this.textureSize[0]}, ${this.textureSize[1]})`, `${n} ivec3 ${this.dimensionsId} = ivec3(${this.dimensions[0]}, ${this.dimensions[1]}, ${this.dimensions[2]})`]);
         }
       }
-      y.exports = { WebGL2KernelValueHTMLImage: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/html-image": 54 }], 91: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGL2KernelValueHTMLImage: g2 } = o2("./html-image");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueHTMLImage: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/html-image": 54 }], 91: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGL2KernelValueHTMLImage: g } = o("./html-image");
+      class f extends g {
       }
-      y.exports = { WebGL2KernelValueHTMLVideo: f2 };
-    }, { "../../../utils": 114, "./html-image": 90 }], 92: [function(o2, y, E) {
-      let { WebGLKernelValueInteger: p } = o2("../../web-gl/kernel-value/integer");
-      class g2 extends p {
+      y.exports = { WebGL2KernelValueHTMLVideo: f };
+    }, { "../../../utils": 114, "./html-image": 90 }], 92: [function(o, y, E) {
+      let { WebGLKernelValueInteger: p } = o("../../web-gl/kernel-value/integer");
+      class g extends p {
         getSource(l) {
           let n = this.getVariablePrecisionString();
           return this.origin === "constants" ? `const ${n} int ${this.id} = ${parseInt(l)};
@@ -13098,28 +12828,28 @@ ${w2.join("")};`), i.push(`}
           this.origin !== "constants" && this.kernel.setUniform1i(this.id, this.uploadValue = l);
         }
       }
-      y.exports = { WebGL2KernelValueInteger: g2 };
-    }, { "../../web-gl/kernel-value/integer": 57 }], 93: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueMemoryOptimizedNumberTexture: g2 } = o2("../../web-gl/kernel-value/memory-optimized-number-texture");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueInteger: g };
+    }, { "../../web-gl/kernel-value/integer": 57 }], 93: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueMemoryOptimizedNumberTexture: g } = o("../../web-gl/kernel-value/memory-optimized-number-texture");
+      class f extends g {
         getSource() {
           let { id: n, sizeId: s, textureSize: t, dimensionsId: i, dimensions: u } = this, x2 = this.getVariablePrecisionString();
           return p.linesToString([`uniform sampler2D ${n}`, `${x2} ivec2 ${s} = ivec2(${t[0]}, ${t[1]})`, `${x2} ivec3 ${i} = ivec3(${u[0]}, ${u[1]}, ${u[2]})`]);
         }
       }
-      y.exports = { WebGL2KernelValueMemoryOptimizedNumberTexture: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/memory-optimized-number-texture": 58 }], 94: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueNumberTexture: g2 } = o2("../../web-gl/kernel-value/number-texture");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueMemoryOptimizedNumberTexture: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/memory-optimized-number-texture": 58 }], 94: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueNumberTexture: g } = o("../../web-gl/kernel-value/number-texture");
+      class f extends g {
         getSource() {
           let { id: n, sizeId: s, textureSize: t, dimensionsId: i, dimensions: u } = this, x2 = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${x2} sampler2D ${n}`, `${x2} ivec2 ${s} = ivec2(${t[0]}, ${t[1]})`, `${x2} ivec3 ${i} = ivec3(${u[0]}, ${u[1]}, ${u[2]})`]);
         }
       }
-      y.exports = { WebGL2KernelValueNumberTexture: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/number-texture": 59 }], 95: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueSingleArray: g2 } = o2("../../web-gl/kernel-value/single-array");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueNumberTexture: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/number-texture": 59 }], 95: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueSingleArray: g } = o("../../web-gl/kernel-value/single-array");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `${n} ivec2 ${this.sizeId} = ivec2(${this.textureSize[0]}, ${this.textureSize[1]})`, `${n} ivec3 ${this.dimensionsId} = ivec3(${this.dimensions[0]}, ${this.dimensions[1]}, ${this.dimensions[2]})`]);
@@ -13133,10 +12863,10 @@ ${w2.join("")};`), i.push(`}
           p.flattenTo(n, this.uploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA32F, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.FLOAT, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGL2KernelValueSingleArray: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/single-array": 60 }], 96: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueSingleArray1DI: g2 } = o2("../../web-gl/kernel-value/single-array1d-i");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueSingleArray: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/single-array": 60 }], 96: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueSingleArray1DI: g } = o("../../web-gl/kernel-value/single-array1d-i");
+      class f extends g {
         updateValue(n) {
           if (n.constructor !== this.initialValueConstructor) {
             this.onUpdateValueMismatch(n.constructor);
@@ -13146,15 +12876,15 @@ ${w2.join("")};`), i.push(`}
           p.flattenTo(n, this.uploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA32F, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.FLOAT, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGL2KernelValueSingleArray1DI: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/single-array1d-i": 61 }], 97: [function(o2, y, E) {
-      let { WebGLKernelValueSingleArray2: p } = o2("../../web-gl/kernel-value/single-array2");
-      class g2 extends p {
+      y.exports = { WebGL2KernelValueSingleArray1DI: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/single-array1d-i": 61 }], 97: [function(o, y, E) {
+      let { WebGLKernelValueSingleArray2: p } = o("../../web-gl/kernel-value/single-array2");
+      class g extends p {
       }
-      y.exports = { WebGL2KernelValueSingleArray2: g2 };
-    }, { "../../web-gl/kernel-value/single-array2": 62 }], 98: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueSingleArray2DI: g2 } = o2("../../web-gl/kernel-value/single-array2d-i");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueSingleArray2: g };
+    }, { "../../web-gl/kernel-value/single-array2": 62 }], 98: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueSingleArray2DI: g } = o("../../web-gl/kernel-value/single-array2d-i");
+      class f extends g {
         updateValue(n) {
           if (n.constructor !== this.initialValueConstructor) {
             this.onUpdateValueMismatch(n.constructor);
@@ -13164,15 +12894,15 @@ ${w2.join("")};`), i.push(`}
           p.flattenTo(n, this.uploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA32F, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.FLOAT, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGL2KernelValueSingleArray2DI: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/single-array2d-i": 63 }], 99: [function(o2, y, E) {
-      let { WebGLKernelValueSingleArray3: p } = o2("../../web-gl/kernel-value/single-array3");
-      class g2 extends p {
+      y.exports = { WebGL2KernelValueSingleArray2DI: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/single-array2d-i": 63 }], 99: [function(o, y, E) {
+      let { WebGLKernelValueSingleArray3: p } = o("../../web-gl/kernel-value/single-array3");
+      class g extends p {
       }
-      y.exports = { WebGL2KernelValueSingleArray3: g2 };
-    }, { "../../web-gl/kernel-value/single-array3": 64 }], 100: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueSingleArray3DI: g2 } = o2("../../web-gl/kernel-value/single-array3d-i");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueSingleArray3: g };
+    }, { "../../web-gl/kernel-value/single-array3": 64 }], 100: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueSingleArray3DI: g } = o("../../web-gl/kernel-value/single-array3d-i");
+      class f extends g {
         updateValue(n) {
           if (n.constructor !== this.initialValueConstructor) {
             this.onUpdateValueMismatch(n.constructor);
@@ -13182,15 +12912,15 @@ ${w2.join("")};`), i.push(`}
           p.flattenTo(n, this.uploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA32F, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.FLOAT, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGL2KernelValueSingleArray3DI: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/single-array3d-i": 65 }], 101: [function(o2, y, E) {
-      let { WebGLKernelValueSingleArray4: p } = o2("../../web-gl/kernel-value/single-array4");
-      class g2 extends p {
+      y.exports = { WebGL2KernelValueSingleArray3DI: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/single-array3d-i": 65 }], 101: [function(o, y, E) {
+      let { WebGLKernelValueSingleArray4: p } = o("../../web-gl/kernel-value/single-array4");
+      class g extends p {
       }
-      y.exports = { WebGL2KernelValueSingleArray4: g2 };
-    }, { "../../web-gl/kernel-value/single-array4": 66 }], 102: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueSingleInput: g2 } = o2("../../web-gl/kernel-value/single-input");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueSingleArray4: g };
+    }, { "../../web-gl/kernel-value/single-array4": 66 }], 102: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueSingleInput: g } = o("../../web-gl/kernel-value/single-input");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `${n} ivec2 ${this.sizeId} = ivec2(${this.textureSize[0]}, ${this.textureSize[1]})`, `${n} ivec3 ${this.dimensionsId} = ivec3(${this.dimensions[0]}, ${this.dimensions[1]}, ${this.dimensions[2]})`]);
@@ -13200,33 +12930,33 @@ ${w2.join("")};`), i.push(`}
           p.flattenTo(n.value, this.uploadValue), s.activeTexture(this.contextHandle), s.bindTexture(s.TEXTURE_2D, this.texture), s.pixelStorei(s.UNPACK_FLIP_Y_WEBGL, false), s.texImage2D(s.TEXTURE_2D, 0, s.RGBA32F, this.textureSize[0], this.textureSize[1], 0, s.RGBA, s.FLOAT, this.uploadValue), this.kernel.setUniform1i(this.id, this.index);
         }
       }
-      y.exports = { WebGL2KernelValueSingleInput: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/single-input": 67 }], 103: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueUnsignedArray: g2 } = o2("../../web-gl/kernel-value/unsigned-array");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueSingleInput: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/single-input": 67 }], 103: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueUnsignedArray: g } = o("../../web-gl/kernel-value/unsigned-array");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `${n} ivec2 ${this.sizeId} = ivec2(${this.textureSize[0]}, ${this.textureSize[1]})`, `${n} ivec3 ${this.dimensionsId} = ivec3(${this.dimensions[0]}, ${this.dimensions[1]}, ${this.dimensions[2]})`]);
         }
       }
-      y.exports = { WebGL2KernelValueUnsignedArray: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/unsigned-array": 68 }], 104: [function(o2, y, E) {
-      let { utils: p } = o2("../../../utils"), { WebGLKernelValueUnsignedInput: g2 } = o2("../../web-gl/kernel-value/unsigned-input");
-      class f2 extends g2 {
+      y.exports = { WebGL2KernelValueUnsignedArray: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/unsigned-array": 68 }], 104: [function(o, y, E) {
+      let { utils: p } = o("../../../utils"), { WebGLKernelValueUnsignedInput: g } = o("../../web-gl/kernel-value/unsigned-input");
+      class f extends g {
         getSource() {
           let n = this.getVariablePrecisionString();
           return p.linesToString([`uniform ${n} sampler2D ${this.id}`, `${n} ivec2 ${this.sizeId} = ivec2(${this.textureSize[0]}, ${this.textureSize[1]})`, `${n} ivec3 ${this.dimensionsId} = ivec3(${this.dimensions[0]}, ${this.dimensions[1]}, ${this.dimensions[2]})`]);
         }
       }
-      y.exports = { WebGL2KernelValueUnsignedInput: f2 };
-    }, { "../../../utils": 114, "../../web-gl/kernel-value/unsigned-input": 69 }], 105: [function(o2, y, E) {
-      let { WebGLKernel: p } = o2("../web-gl/kernel"), { WebGL2FunctionNode: g2 } = o2("./function-node"), { FunctionBuilder: f2 } = o2("../function-builder"), { utils: l } = o2("../../utils"), { fragmentShader: n } = o2("./fragment-shader"), { vertexShader: s } = o2("./vertex-shader"), { lookupKernelValueType: t } = o2("./kernel-value-maps"), i = null, u = null, x2 = null, w2 = null, m = null;
+      y.exports = { WebGL2KernelValueUnsignedInput: f };
+    }, { "../../../utils": 114, "../../web-gl/kernel-value/unsigned-input": 69 }], 105: [function(o, y, E) {
+      let { WebGLKernel: p } = o("../web-gl/kernel"), { WebGL2FunctionNode: g } = o("./function-node"), { FunctionBuilder: f } = o("../function-builder"), { utils: l } = o("../../utils"), { fragmentShader: n } = o("./fragment-shader"), { vertexShader: s } = o("./vertex-shader"), { lookupKernelValueType: t } = o("./kernel-value-maps"), i = null, u = null, x2 = null, w = null, m = null;
       class S extends p {
         static get isSupported() {
           return i !== null || (this.setupFeatureChecks(), i = this.isContextMatch(x2)), i;
         }
         static setupFeatureChecks() {
-          typeof document < "u" ? u = document.createElement("canvas") : typeof OffscreenCanvas < "u" && (u = new OffscreenCanvas(0, 0)), u && (x2 = u.getContext("webgl2"), !(!x2 || !x2.getExtension) && (w2 = { EXT_color_buffer_float: x2.getExtension("EXT_color_buffer_float"), OES_texture_float_linear: x2.getExtension("OES_texture_float_linear") }, m = this.getFeatures()));
+          typeof document < "u" ? u = document.createElement("canvas") : typeof OffscreenCanvas < "u" && (u = new OffscreenCanvas(0, 0)), u && (x2 = u.getContext("webgl2"), !(!x2 || !x2.getExtension) && (w = { EXT_color_buffer_float: x2.getExtension("EXT_color_buffer_float"), OES_texture_float_linear: x2.getExtension("OES_texture_float_linear") }, m = this.getFeatures()));
         }
         static isContextMatch(h) {
           return typeof WebGL2RenderingContext < "u" ? h instanceof WebGL2RenderingContext : false;
@@ -13244,8 +12974,8 @@ ${w2.join("")};`), i.push(`}
         static getMaxTextureSize() {
           return x2.getParameter(x2.MAX_TEXTURE_SIZE);
         }
-        static lookupKernelValueType(h, b2, T, C) {
-          return t(h, b2, T, C);
+        static lookupKernelValueType(h, b, T, C) {
+          return t(h, b, T, C);
         }
         static get testCanvas() {
           return u;
@@ -13274,10 +13004,10 @@ ${w2.join("")};`), i.push(`}
             this.texSize = l.getKernelTextureSize({ optimizeFloatMemory: this.optimizeFloatMemory, precision: this.precision }, this.output);
             return;
           }
-          let { features: b2 } = this.constructor;
-          if (this.precision === "single" && !b2.isFloatRead)
+          let { features: b } = this.constructor;
+          if (this.precision === "single" && !b.isFloatRead)
             throw new Error("Float texture outputs are not supported");
-          if (!this.graphical && this.precision === null && (this.precision = b2.isFloatRead ? "single" : "unsigned"), this.fixIntegerDivisionAccuracy === null ? this.fixIntegerDivisionAccuracy = !b2.isIntegerDivisionAccurate : this.fixIntegerDivisionAccuracy && b2.isIntegerDivisionAccurate && (this.fixIntegerDivisionAccuracy = false), this.checkOutput(), !this.output || this.output.length === 0) {
+          if (!this.graphical && this.precision === null && (this.precision = b.isFloatRead ? "single" : "unsigned"), this.fixIntegerDivisionAccuracy === null ? this.fixIntegerDivisionAccuracy = !b.isIntegerDivisionAccurate : this.fixIntegerDivisionAccuracy && b.isIntegerDivisionAccurate && (this.fixIntegerDivisionAccuracy = false), this.checkOutput(), !this.output || this.output.length === 0) {
             if (h.length !== 1)
               throw new Error("Auto output only supported for kernels with only one input");
             let T = l.getVariableType(h[0], this.strictIntegers);
@@ -13303,11 +13033,11 @@ ${w2.join("")};`), i.push(`}
             this.precision === "single" && (console.warn("Cannot use graphical mode and single precision at the same time"), this.precision = "unsigned"), this.texSize = l.clone(this.output);
             return;
           } else
-            !this.graphical && this.precision === null && b2.isTextureFloat && (this.precision = "single");
+            !this.graphical && this.precision === null && b.isTextureFloat && (this.precision = "single");
           this.texSize = l.getKernelTextureSize({ optimizeFloatMemory: this.optimizeFloatMemory, precision: this.precision }, this.output), this.checkTextureSize();
         }
         translateSource() {
-          let h = f2.fromKernel(this, g2, { fixIntegerDivisionAccuracy: this.fixIntegerDivisionAccuracy });
+          let h = f.fromKernel(this, g, { fixIntegerDivisionAccuracy: this.fixIntegerDivisionAccuracy });
           this.translatedSource = h.getPrototypeString("kernel"), this.setupReturnTypes(h);
         }
         drawBuffers() {
@@ -13356,10 +13086,10 @@ ${w2.join("")};`), i.push(`}
             return;
           }
           h.bindFramebuffer(h.FRAMEBUFFER, this.framebuffer);
-          let b2 = h.createTexture(), T = this.texSize;
-          h.activeTexture(h.TEXTURE0 + this.constantTextureCount + this.argumentTextureCount), h.bindTexture(h.TEXTURE_2D, b2), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_WRAP_S, h.REPEAT), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_WRAP_T, h.REPEAT), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_MIN_FILTER, h.NEAREST), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_MAG_FILTER, h.NEAREST);
+          let b = h.createTexture(), T = this.texSize;
+          h.activeTexture(h.TEXTURE0 + this.constantTextureCount + this.argumentTextureCount), h.bindTexture(h.TEXTURE_2D, b), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_WRAP_S, h.REPEAT), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_WRAP_T, h.REPEAT), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_MIN_FILTER, h.NEAREST), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_MAG_FILTER, h.NEAREST);
           let C = this.getInternalFormat();
-          this.precision === "single" ? h.texStorage2D(h.TEXTURE_2D, 1, C, T[0], T[1]) : h.texImage2D(h.TEXTURE_2D, 0, C, T[0], T[1], 0, C, h.UNSIGNED_BYTE, null), h.framebufferTexture2D(h.FRAMEBUFFER, h.COLOR_ATTACHMENT0, h.TEXTURE_2D, b2, 0), this.texture = new this.TextureConstructor({ texture: b2, size: T, dimensions: this.threadDim, output: this.output, context: this.context, internalFormat: this.getInternalFormat(), textureFormat: this.getTextureFormat(), kernel: this });
+          this.precision === "single" ? h.texStorage2D(h.TEXTURE_2D, 1, C, T[0], T[1]) : h.texImage2D(h.TEXTURE_2D, 0, C, T[0], T[1], 0, C, h.UNSIGNED_BYTE, null), h.framebufferTexture2D(h.FRAMEBUFFER, h.COLOR_ATTACHMENT0, h.TEXTURE_2D, b, 0), this.texture = new this.TextureConstructor({ texture: b, size: T, dimensions: this.threadDim, output: this.output, context: this.context, internalFormat: this.getInternalFormat(), textureFormat: this.getTextureFormat(), kernel: this });
         }
         _setupSubOutputTextures() {
           let h = this.context;
@@ -13368,53 +13098,53 @@ ${w2.join("")};`), i.push(`}
               h.framebufferTexture2D(h.FRAMEBUFFER, h.COLOR_ATTACHMENT0 + T + 1, h.TEXTURE_2D, this.mappedTextures[T].texture, 0);
             return;
           }
-          let b2 = this.texSize;
+          let b = this.texSize;
           this.drawBuffersMap = [h.COLOR_ATTACHMENT0], this.mappedTextures = [];
           for (let T = 0; T < this.subKernels.length; T++) {
             let C = this.createTexture();
             this.drawBuffersMap.push(h.COLOR_ATTACHMENT0 + T + 1), h.activeTexture(h.TEXTURE0 + this.constantTextureCount + this.argumentTextureCount + T), h.bindTexture(h.TEXTURE_2D, C), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_WRAP_S, h.CLAMP_TO_EDGE), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_WRAP_T, h.CLAMP_TO_EDGE), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_MIN_FILTER, h.NEAREST), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_MAG_FILTER, h.NEAREST);
             let V = this.getInternalFormat();
-            this.precision === "single" ? h.texStorage2D(h.TEXTURE_2D, 1, V, b2[0], b2[1]) : h.texImage2D(h.TEXTURE_2D, 0, h.RGBA, b2[0], b2[1], 0, h.RGBA, h.UNSIGNED_BYTE, null), h.framebufferTexture2D(h.FRAMEBUFFER, h.COLOR_ATTACHMENT0 + T + 1, h.TEXTURE_2D, C, 0), this.mappedTextures.push(new this.TextureConstructor({ texture: C, size: b2, dimensions: this.threadDim, output: this.output, context: this.context, internalFormat: this.getInternalFormat(), textureFormat: this.getTextureFormat(), kernel: this }));
+            this.precision === "single" ? h.texStorage2D(h.TEXTURE_2D, 1, V, b[0], b[1]) : h.texImage2D(h.TEXTURE_2D, 0, h.RGBA, b[0], b[1], 0, h.RGBA, h.UNSIGNED_BYTE, null), h.framebufferTexture2D(h.FRAMEBUFFER, h.COLOR_ATTACHMENT0 + T + 1, h.TEXTURE_2D, C, 0), this.mappedTextures.push(new this.TextureConstructor({ texture: C, size: b, dimensions: this.threadDim, output: this.output, context: this.context, internalFormat: this.getInternalFormat(), textureFormat: this.getTextureFormat(), kernel: this }));
           }
         }
         _getHeaderString() {
           return "";
         }
         _getTextureCoordinate() {
-          let h = this.subKernels, b2 = this.getVariablePrecisionString(this.texSize, this.tactic);
-          return h === null || h.length < 1 ? `in ${b2} vec2 vTexCoord;
-` : `out ${b2} vec2 vTexCoord;
+          let h = this.subKernels, b = this.getVariablePrecisionString(this.texSize, this.tactic);
+          return h === null || h.length < 1 ? `in ${b} vec2 vTexCoord;
+` : `out ${b} vec2 vTexCoord;
 `;
         }
         _getMainArgumentsString(h) {
-          let b2 = [], T = this.argumentNames;
+          let b = [], T = this.argumentNames;
           for (let C = 0; C < T.length; C++)
-            b2.push(this.kernelArguments[C].getSource(h[C]));
-          return b2.join("");
+            b.push(this.kernelArguments[C].getSource(h[C]));
+          return b.join("");
         }
         getKernelString() {
-          let h = [this.getKernelResultDeclaration()], b2 = this.subKernels;
-          if (b2 !== null)
+          let h = [this.getKernelResultDeclaration()], b = this.subKernels;
+          if (b !== null)
             switch (h.push("layout(location = 0) out vec4 data0"), this.returnType) {
               case "Number":
               case "Float":
               case "Integer":
-                for (let T = 0; T < b2.length; T++) {
-                  let C = b2[T];
+                for (let T = 0; T < b.length; T++) {
+                  let C = b[T];
                   h.push(C.returnType === "Integer" ? `int subKernelResult_${C.name} = 0` : `float subKernelResult_${C.name} = 0.0`, `layout(location = ${T + 1}) out vec4 data${T + 1}`);
                 }
                 break;
               case "Array(2)":
-                for (let T = 0; T < b2.length; T++)
-                  h.push(`vec2 subKernelResult_${b2[T].name}`, `layout(location = ${T + 1}) out vec4 data${T + 1}`);
+                for (let T = 0; T < b.length; T++)
+                  h.push(`vec2 subKernelResult_${b[T].name}`, `layout(location = ${T + 1}) out vec4 data${T + 1}`);
                 break;
               case "Array(3)":
-                for (let T = 0; T < b2.length; T++)
-                  h.push(`vec3 subKernelResult_${b2[T].name}`, `layout(location = ${T + 1}) out vec4 data${T + 1}`);
+                for (let T = 0; T < b.length; T++)
+                  h.push(`vec3 subKernelResult_${b[T].name}`, `layout(location = ${T + 1}) out vec4 data${T + 1}`);
                 break;
               case "Array(4)":
-                for (let T = 0; T < b2.length; T++)
-                  h.push(`vec4 subKernelResult_${b2[T].name}`, `layout(location = ${T + 1}) out vec4 data${T + 1}`);
+                for (let T = 0; T < b.length; T++)
+                  h.push(`vec4 subKernelResult_${b[T].name}`, `layout(location = ${T + 1}) out vec4 data${T + 1}`);
                 break;
             }
           else
@@ -13442,19 +13172,19 @@ ${w2.join("")};`), i.push(`}
           let h = [];
           if (!this.subKernels)
             return "";
-          for (let b2 = 0; b2 < this.subKernels.length; b2++)
-            this.subKernels[b2].returnType === "Integer" ? h.push(`  data${b2 + 1} = ${this.useLegacyEncoder ? "legacyEncode32" : "encode32"}(float(subKernelResult_${this.subKernels[b2].name}))`) : h.push(`  data${b2 + 1} = ${this.useLegacyEncoder ? "legacyEncode32" : "encode32"}(subKernelResult_${this.subKernels[b2].name})`);
+          for (let b = 0; b < this.subKernels.length; b++)
+            this.subKernels[b].returnType === "Integer" ? h.push(`  data${b + 1} = ${this.useLegacyEncoder ? "legacyEncode32" : "encode32"}(float(subKernelResult_${this.subKernels[b].name}))`) : h.push(`  data${b + 1} = ${this.useLegacyEncoder ? "legacyEncode32" : "encode32"}(subKernelResult_${this.subKernels[b].name})`);
           return l.linesToString(h);
         }
-        getMainResultKernelMemoryOptimizedFloats(h, b2) {
-          h.push("  threadId = indexTo3D(index, uOutputDim)", "  kernel()", `  data0.${b2} = kernelResult`);
+        getMainResultKernelMemoryOptimizedFloats(h, b) {
+          h.push("  threadId = indexTo3D(index, uOutputDim)", "  kernel()", `  data0.${b} = kernelResult`);
         }
-        getMainResultSubKernelMemoryOptimizedFloats(h, b2) {
+        getMainResultSubKernelMemoryOptimizedFloats(h, b) {
           if (!this.subKernels)
             return h;
           for (let T = 0; T < this.subKernels.length; T++) {
             let C = this.subKernels[T];
-            C.returnType === "Integer" ? h.push(`  data${T + 1}.${b2} = float(subKernelResult_${C.name})`) : h.push(`  data${T + 1}.${b2} = subKernelResult_${C.name}`);
+            C.returnType === "Integer" ? h.push(`  data${T + 1}.${b} = float(subKernelResult_${C.name})`) : h.push(`  data${T + 1}.${b} = subKernelResult_${C.name}`);
           }
         }
         getMainResultKernelNumberTexture() {
@@ -13464,9 +13194,9 @@ ${w2.join("")};`), i.push(`}
           let h = [];
           if (!this.subKernels)
             return h;
-          for (let b2 = 0; b2 < this.subKernels.length; ++b2) {
-            let T = this.subKernels[b2];
-            T.returnType === "Integer" ? h.push(`  data${b2 + 1}[0] = float(subKernelResult_${T.name})`) : h.push(`  data${b2 + 1}[0] = subKernelResult_${T.name}`);
+          for (let b = 0; b < this.subKernels.length; ++b) {
+            let T = this.subKernels[b];
+            T.returnType === "Integer" ? h.push(`  data${b + 1}[0] = float(subKernelResult_${T.name})`) : h.push(`  data${b + 1}[0] = subKernelResult_${T.name}`);
           }
           return h;
         }
@@ -13477,9 +13207,9 @@ ${w2.join("")};`), i.push(`}
           let h = [];
           if (!this.subKernels)
             return h;
-          for (let b2 = 0; b2 < this.subKernels.length; ++b2) {
-            let T = this.subKernels[b2];
-            h.push(`  data${b2 + 1}[0] = subKernelResult_${T.name}[0]`, `  data${b2 + 1}[1] = subKernelResult_${T.name}[1]`);
+          for (let b = 0; b < this.subKernels.length; ++b) {
+            let T = this.subKernels[b];
+            h.push(`  data${b + 1}[0] = subKernelResult_${T.name}[0]`, `  data${b + 1}[1] = subKernelResult_${T.name}[1]`);
           }
           return h;
         }
@@ -13490,9 +13220,9 @@ ${w2.join("")};`), i.push(`}
           let h = [];
           if (!this.subKernels)
             return h;
-          for (let b2 = 0; b2 < this.subKernels.length; ++b2) {
-            let T = this.subKernels[b2];
-            h.push(`  data${b2 + 1}[0] = subKernelResult_${T.name}[0]`, `  data${b2 + 1}[1] = subKernelResult_${T.name}[1]`, `  data${b2 + 1}[2] = subKernelResult_${T.name}[2]`);
+          for (let b = 0; b < this.subKernels.length; ++b) {
+            let T = this.subKernels[b];
+            h.push(`  data${b + 1}[0] = subKernelResult_${T.name}[0]`, `  data${b + 1}[1] = subKernelResult_${T.name}[1]`, `  data${b + 1}[2] = subKernelResult_${T.name}[2]`);
           }
           return h;
         }
@@ -13503,8 +13233,8 @@ ${w2.join("")};`), i.push(`}
           let h = [];
           if (!this.subKernels)
             return h;
-          for (let b2 = 0; b2 < this.subKernels.length; ++b2)
-            h.push(`  data${b2 + 1} = subKernelResult_${this.subKernels[b2].name}`);
+          for (let b = 0; b < this.subKernels.length; ++b)
+            h.push(`  data${b + 1} = subKernelResult_${this.subKernels[b].name}`);
           return h;
         }
         destroyExtensions() {
@@ -13512,11 +13242,11 @@ ${w2.join("")};`), i.push(`}
         }
         toJSON() {
           let h = super.toJSON();
-          return h.functionNodes = f2.fromKernel(this, g2).toJSON(), h.settings.threadDim = this.threadDim, h;
+          return h.functionNodes = f.fromKernel(this, g).toJSON(), h.settings.threadDim = this.threadDim, h;
         }
       }
       y.exports = { WebGL2Kernel: S };
-    }, { "../../utils": 114, "../function-builder": 9, "../web-gl/kernel": 70, "./fragment-shader": 72, "./function-node": 73, "./kernel-value-maps": 74, "./vertex-shader": 106 }], 106: [function(o2, y, E) {
+    }, { "../../utils": 114, "../function-builder": 9, "../web-gl/kernel": 70, "./fragment-shader": 72, "./function-node": 73, "./kernel-value-maps": 74, "./vertex-shader": 106 }], 106: [function(o, y, E) {
       let p = `#version 300 es
       __FLOAT_TACTIC_DECLARATION__;
       __INT_TACTIC_DECLARATION__;
@@ -13533,19 +13263,19 @@ ${w2.join("")};`), i.push(`}
         vTexCoord = aTexCoord;
       }`;
       y.exports = { vertexShader: p };
-    }, {}], 107: [function(o2, y, E) {
-      let p = o2("./index"), g2 = p.GPU;
+    }, {}], 107: [function(o, y, E) {
+      let p = o("./index"), g = p.GPU;
       for (let l in p)
-        !p.hasOwnProperty(l) || l !== "GPU" && (g2[l] = p[l]);
-      typeof window < "u" && f2(window), typeof self < "u" && f2(self);
-      function f2(l) {
+        !p.hasOwnProperty(l) || l !== "GPU" && (g[l] = p[l]);
+      typeof window < "u" && f(window), typeof self < "u" && f(self);
+      function f(l) {
         l.GPU || Object.defineProperty(l, "GPU", { get() {
-          return g2;
+          return g;
         } });
       }
       y.exports = p;
-    }, { "./index": 109 }], 108: [function(o2, y, E) {
-      let { gpuMock: p } = o2("gpu-mock.js"), { utils: g2 } = o2("./utils"), { Kernel: f2 } = o2("./backend/kernel"), { CPUKernel: l } = o2("./backend/cpu/kernel"), { HeadlessGLKernel: n } = o2("./backend/headless-gl/kernel"), { WebGL2Kernel: s } = o2("./backend/web-gl2/kernel"), { WebGLKernel: t } = o2("./backend/web-gl/kernel"), { kernelRunShortcut: i } = o2("./kernel-run-shortcut"), u = [n, s, t], x2 = ["gpu", "cpu"], w2 = { headlessgl: n, webgl2: s, webgl: t }, m = true;
+    }, { "./index": 109 }], 108: [function(o, y, E) {
+      let { gpuMock: p } = o("gpu-mock.js"), { utils: g } = o("./utils"), { Kernel: f } = o("./backend/kernel"), { CPUKernel: l } = o("./backend/cpu/kernel"), { HeadlessGLKernel: n } = o("./backend/headless-gl/kernel"), { WebGL2Kernel: s } = o("./backend/web-gl2/kernel"), { WebGLKernel: t } = o("./backend/web-gl/kernel"), { kernelRunShortcut: i } = o("./kernel-run-shortcut"), u = [n, s, t], x2 = ["gpu", "cpu"], w = { headlessgl: n, webgl2: s, webgl: t }, m = true;
       class S {
         static disableValidation() {
           m = false;
@@ -13554,10 +13284,10 @@ ${w2.join("")};`), i.push(`}
           m = true;
         }
         static get isGPUSupported() {
-          return u.some((b2) => b2.isSupported);
+          return u.some((b) => b.isSupported);
         }
         static get isKernelMapSupported() {
-          return u.some((b2) => b2.isSupported && b2.features.kernelMap);
+          return u.some((b) => b.isSupported && b.features.kernelMap);
         }
         static get isOffscreenCanvasSupported() {
           return typeof Worker < "u" && typeof OffscreenCanvas < "u" || typeof importScripts < "u";
@@ -13578,77 +13308,77 @@ ${w2.join("")};`), i.push(`}
           return s.isSupported;
         }
         static get isSinglePrecisionSupported() {
-          return u.some((b2) => b2.isSupported && b2.features.isFloatRead && b2.features.isTextureFloat);
+          return u.some((b) => b.isSupported && b.features.isFloatRead && b.features.isTextureFloat);
         }
-        constructor(b2) {
-          if (b2 = b2 || {}, this.canvas = b2.canvas || null, this.context = b2.context || null, this.mode = b2.mode, this.Kernel = null, this.kernels = [], this.functions = [], this.nativeFunctions = [], this.injectedNative = null, this.mode !== "dev") {
-            if (this.chooseKernel(), b2.functions)
-              for (let T = 0; T < b2.functions.length; T++)
-                this.addFunction(b2.functions[T]);
-            if (b2.nativeFunctions)
-              for (let T in b2.nativeFunctions) {
-                if (!b2.nativeFunctions.hasOwnProperty(T))
+        constructor(b) {
+          if (b = b || {}, this.canvas = b.canvas || null, this.context = b.context || null, this.mode = b.mode, this.Kernel = null, this.kernels = [], this.functions = [], this.nativeFunctions = [], this.injectedNative = null, this.mode !== "dev") {
+            if (this.chooseKernel(), b.functions)
+              for (let T = 0; T < b.functions.length; T++)
+                this.addFunction(b.functions[T]);
+            if (b.nativeFunctions)
+              for (let T in b.nativeFunctions) {
+                if (!b.nativeFunctions.hasOwnProperty(T))
                   continue;
-                let C = b2.nativeFunctions[T], { name: V, source: c2 } = C;
-                this.addNativeFunction(V, c2, C);
+                let C = b.nativeFunctions[T], { name: V, source: c } = C;
+                this.addNativeFunction(V, c, C);
               }
           }
         }
         chooseKernel() {
           if (this.Kernel)
             return;
-          let b2 = null;
+          let b = null;
           if (this.context) {
             for (let T = 0; T < u.length; T++) {
               let C = u[T];
               if (C.isContextMatch(this.context)) {
                 if (!C.isSupported)
                   throw new Error(`Kernel type ${C.name} not supported`);
-                b2 = C;
+                b = C;
                 break;
               }
             }
-            if (b2 === null)
+            if (b === null)
               throw new Error("unknown Context");
           } else if (this.mode) {
-            if (this.mode in w2)
-              (!m || w2[this.mode].isSupported) && (b2 = w2[this.mode]);
+            if (this.mode in w)
+              (!m || w[this.mode].isSupported) && (b = w[this.mode]);
             else if (this.mode === "gpu") {
               for (let T = 0; T < u.length; T++)
                 if (u[T].isSupported) {
-                  b2 = u[T];
+                  b = u[T];
                   break;
                 }
             } else
-              this.mode === "cpu" && (b2 = l);
-            if (!b2)
+              this.mode === "cpu" && (b = l);
+            if (!b)
               throw new Error(`A requested mode of "${this.mode}" and is not supported`);
           } else {
             for (let T = 0; T < u.length; T++)
               if (u[T].isSupported) {
-                b2 = u[T];
+                b = u[T];
                 break;
               }
-            b2 || (b2 = l);
+            b || (b = l);
           }
-          this.mode || (this.mode = b2.mode), this.Kernel = b2;
+          this.mode || (this.mode = b.mode), this.Kernel = b;
         }
-        createKernel(b2, T) {
-          if (typeof b2 > "u")
+        createKernel(b, T) {
+          if (typeof b > "u")
             throw new Error("Missing source parameter");
-          if (typeof b2 != "object" && !g2.isFunction(b2) && typeof b2 != "string")
+          if (typeof b != "object" && !g.isFunction(b) && typeof b != "string")
             throw new Error("source parameter not a function");
           let C = this.kernels;
           if (this.mode === "dev") {
-            let L = p(b2, v(T));
+            let L = p(b, v(T));
             return C.push(L), L;
           }
-          b2 = typeof b2 == "function" ? b2.toString() : b2;
-          let V = {}, c2 = v(T) || {};
-          T && typeof T.argumentTypes == "object" && (c2.argumentTypes = Object.keys(T.argumentTypes).map((L) => T.argumentTypes[L]));
-          function a2(L) {
+          b = typeof b == "function" ? b.toString() : b;
+          let V = {}, c = v(T) || {};
+          T && typeof T.argumentTypes == "object" && (c.argumentTypes = Object.keys(T.argumentTypes).map((L) => T.argumentTypes[L]));
+          function a(L) {
             console.warn("Falling back to CPU");
-            let K = new l(b2, { argumentTypes: F.argumentTypes, constantTypes: F.constantTypes, graphical: F.graphical, loopMaxIterations: F.loopMaxIterations, constants: F.constants, dynamicOutput: F.dynamicOutput, dynamicArgument: F.dynamicArguments, output: F.output, precision: F.precision, pipeline: F.pipeline, immutable: F.immutable, optimizeFloatMemory: F.optimizeFloatMemory, fixIntegerDivisionAccuracy: F.fixIntegerDivisionAccuracy, functions: F.functions, nativeFunctions: F.nativeFunctions, injectedNative: F.injectedNative, subKernels: F.subKernels, strictIntegers: F.strictIntegers, debug: F.debug });
+            let K = new l(b, { argumentTypes: F.argumentTypes, constantTypes: F.constantTypes, graphical: F.graphical, loopMaxIterations: F.loopMaxIterations, constants: F.constants, dynamicOutput: F.dynamicOutput, dynamicArgument: F.dynamicArguments, output: F.output, precision: F.precision, pipeline: F.pipeline, immutable: F.immutable, optimizeFloatMemory: F.optimizeFloatMemory, fixIntegerDivisionAccuracy: F.fixIntegerDivisionAccuracy, functions: F.functions, nativeFunctions: F.nativeFunctions, injectedNative: F.injectedNative, subKernels: F.subKernels, strictIntegers: F.strictIntegers, debug: F.debug });
             K.build.apply(K, L);
             let O = K.run.apply(K, L);
             return F.replaceKernel(K), O;
@@ -13664,68 +13394,68 @@ ${w2.join("")};`), i.push(`}
             let B = O.constructor, P = B.getArgumentTypes(O, K), Y = B.getSignature(O, P), J = V[Y];
             if (J)
               return J.onActivate(O), J;
-            let q = V[Y] = new B(b2, { argumentTypes: P, constantTypes: O.constantTypes, graphical: O.graphical, loopMaxIterations: O.loopMaxIterations, constants: O.constants, dynamicOutput: O.dynamicOutput, dynamicArgument: O.dynamicArguments, context: O.context, canvas: O.canvas, output: X || O.output, precision: O.precision, pipeline: O.pipeline, immutable: O.immutable, optimizeFloatMemory: O.optimizeFloatMemory, fixIntegerDivisionAccuracy: O.fixIntegerDivisionAccuracy, functions: O.functions, nativeFunctions: O.nativeFunctions, injectedNative: O.injectedNative, subKernels: O.subKernels, strictIntegers: O.strictIntegers, debug: O.debug, gpu: O.gpu, validate: m, returnType: O.returnType, tactic: O.tactic, onRequestFallback: a2, onRequestSwitchKernel: k, texture: O.texture, mappedTextures: O.mappedTextures, drawBuffersMap: O.drawBuffersMap });
+            let q = V[Y] = new B(b, { argumentTypes: P, constantTypes: O.constantTypes, graphical: O.graphical, loopMaxIterations: O.loopMaxIterations, constants: O.constants, dynamicOutput: O.dynamicOutput, dynamicArgument: O.dynamicArguments, context: O.context, canvas: O.canvas, output: X || O.output, precision: O.precision, pipeline: O.pipeline, immutable: O.immutable, optimizeFloatMemory: O.optimizeFloatMemory, fixIntegerDivisionAccuracy: O.fixIntegerDivisionAccuracy, functions: O.functions, nativeFunctions: O.nativeFunctions, injectedNative: O.injectedNative, subKernels: O.subKernels, strictIntegers: O.strictIntegers, debug: O.debug, gpu: O.gpu, validate: m, returnType: O.returnType, tactic: O.tactic, onRequestFallback: a, onRequestSwitchKernel: k, texture: O.texture, mappedTextures: O.mappedTextures, drawBuffersMap: O.drawBuffersMap });
             return q.build.apply(q, K), F.replaceKernel(q), C.push(q), q;
           }
-          let A = Object.assign({ context: this.context, canvas: this.canvas, functions: this.functions, nativeFunctions: this.nativeFunctions, injectedNative: this.injectedNative, gpu: this, validate: m, onRequestFallback: a2, onRequestSwitchKernel: k }, c2), N = new this.Kernel(b2, A), F = i(N);
+          let A = Object.assign({ context: this.context, canvas: this.canvas, functions: this.functions, nativeFunctions: this.nativeFunctions, injectedNative: this.injectedNative, gpu: this, validate: m, onRequestFallback: a, onRequestSwitchKernel: k }, c), N = new this.Kernel(b, A), F = i(N);
           return this.canvas || (this.canvas = N.canvas), this.context || (this.context = N.context), C.push(N), F;
         }
         createKernelMap() {
-          let b2, T, C = typeof arguments[arguments.length - 2];
-          if (C === "function" || C === "string" ? (b2 = arguments[arguments.length - 2], T = arguments[arguments.length - 1]) : b2 = arguments[arguments.length - 1], this.mode !== "dev" && (!this.Kernel.isSupported || !this.Kernel.features.kernelMap) && this.mode && x2.indexOf(this.mode) < 0)
+          let b, T, C = typeof arguments[arguments.length - 2];
+          if (C === "function" || C === "string" ? (b = arguments[arguments.length - 2], T = arguments[arguments.length - 1]) : b = arguments[arguments.length - 1], this.mode !== "dev" && (!this.Kernel.isSupported || !this.Kernel.features.kernelMap) && this.mode && x2.indexOf(this.mode) < 0)
             throw new Error(`kernelMap not supported on ${this.Kernel.name}`);
           let V = v(T);
-          if (T && typeof T.argumentTypes == "object" && (V.argumentTypes = Object.keys(T.argumentTypes).map((c2) => T.argumentTypes[c2])), Array.isArray(arguments[0])) {
+          if (T && typeof T.argumentTypes == "object" && (V.argumentTypes = Object.keys(T.argumentTypes).map((c) => T.argumentTypes[c])), Array.isArray(arguments[0])) {
             V.subKernels = [];
-            let c2 = arguments[0];
-            for (let a2 = 0; a2 < c2.length; a2++) {
-              let k = c2[a2].toString(), A = g2.getFunctionNameFromString(k);
-              V.subKernels.push({ name: A, source: k, property: a2 });
+            let c = arguments[0];
+            for (let a = 0; a < c.length; a++) {
+              let k = c[a].toString(), A = g.getFunctionNameFromString(k);
+              V.subKernels.push({ name: A, source: k, property: a });
             }
           } else {
             V.subKernels = [];
-            let c2 = arguments[0];
-            for (let a2 in c2) {
-              if (!c2.hasOwnProperty(a2))
+            let c = arguments[0];
+            for (let a in c) {
+              if (!c.hasOwnProperty(a))
                 continue;
-              let k = c2[a2].toString(), A = g2.getFunctionNameFromString(k);
-              V.subKernels.push({ name: A || a2, source: k, property: a2 });
+              let k = c[a].toString(), A = g.getFunctionNameFromString(k);
+              V.subKernels.push({ name: A || a, source: k, property: a });
             }
           }
-          return this.createKernel(b2, V);
+          return this.createKernel(b, V);
         }
         combineKernels() {
-          let b2 = arguments[0], T = arguments[arguments.length - 1];
-          if (b2.kernel.constructor.mode === "cpu")
+          let b = arguments[0], T = arguments[arguments.length - 1];
+          if (b.kernel.constructor.mode === "cpu")
             return T;
-          let C = arguments[0].canvas, V = arguments[0].context, c2 = arguments.length - 1;
-          for (let a2 = 0; a2 < c2; a2++)
-            arguments[a2].setCanvas(C).setContext(V).setPipeline(true);
+          let C = arguments[0].canvas, V = arguments[0].context, c = arguments.length - 1;
+          for (let a = 0; a < c; a++)
+            arguments[a].setCanvas(C).setContext(V).setPipeline(true);
           return function() {
-            let a2 = T.apply(this, arguments);
-            return a2.toArray ? a2.toArray() : a2;
+            let a = T.apply(this, arguments);
+            return a.toArray ? a.toArray() : a;
           };
         }
-        setFunctions(b2) {
-          return this.functions = b2, this;
+        setFunctions(b) {
+          return this.functions = b, this;
         }
-        setNativeFunctions(b2) {
-          return this.nativeFunctions = b2, this;
+        setNativeFunctions(b) {
+          return this.nativeFunctions = b, this;
         }
-        addFunction(b2, T) {
-          return this.functions.push({ source: b2, settings: T }), this;
+        addFunction(b, T) {
+          return this.functions.push({ source: b, settings: T }), this;
         }
-        addNativeFunction(b2, T, C) {
+        addNativeFunction(b, T, C) {
           if (this.kernels.length > 0)
             throw new Error('Cannot call "addNativeFunction" after "createKernels" has been called.');
-          return this.nativeFunctions.push(Object.assign({ name: b2, source: T }, C)), this;
+          return this.nativeFunctions.push(Object.assign({ name: b, source: T }, C)), this;
         }
-        injectNative(b2) {
-          return this.injectedNative = b2, this;
+        injectNative(b) {
+          return this.injectedNative = b, this;
         }
         destroy() {
-          return new Promise((b2, T) => {
-            this.kernels || b2(), setTimeout(() => {
+          return new Promise((b, T) => {
+            this.kernels || b(), setTimeout(() => {
               try {
                 for (let V = 0; V < this.kernels.length; V++)
                   this.kernels[V].destroy(true);
@@ -13734,7 +13464,7 @@ ${w2.join("")};`), i.push(`}
               } catch (C) {
                 T(C);
               }
-              b2();
+              b();
             }, 0);
           });
         }
@@ -13742,14 +13472,14 @@ ${w2.join("")};`), i.push(`}
       function v(h) {
         if (!h)
           return {};
-        let b2 = Object.assign({}, h);
-        return h.hasOwnProperty("floatOutput") && (g2.warnDeprecated("setting", "floatOutput", "precision"), b2.precision = h.floatOutput ? "single" : "unsigned"), h.hasOwnProperty("outputToTexture") && (g2.warnDeprecated("setting", "outputToTexture", "pipeline"), b2.pipeline = Boolean(h.outputToTexture)), h.hasOwnProperty("outputImmutable") && (g2.warnDeprecated("setting", "outputImmutable", "immutable"), b2.immutable = Boolean(h.outputImmutable)), h.hasOwnProperty("floatTextures") && (g2.warnDeprecated("setting", "floatTextures", "optimizeFloatMemory"), b2.optimizeFloatMemory = Boolean(h.floatTextures)), b2;
+        let b = Object.assign({}, h);
+        return h.hasOwnProperty("floatOutput") && (g.warnDeprecated("setting", "floatOutput", "precision"), b.precision = h.floatOutput ? "single" : "unsigned"), h.hasOwnProperty("outputToTexture") && (g.warnDeprecated("setting", "outputToTexture", "pipeline"), b.pipeline = Boolean(h.outputToTexture)), h.hasOwnProperty("outputImmutable") && (g.warnDeprecated("setting", "outputImmutable", "immutable"), b.immutable = Boolean(h.outputImmutable)), h.hasOwnProperty("floatTextures") && (g.warnDeprecated("setting", "floatTextures", "optimizeFloatMemory"), b.optimizeFloatMemory = Boolean(h.floatTextures)), b;
       }
       y.exports = { GPU: S, kernelOrder: u, kernelTypes: x2 };
-    }, { "./backend/cpu/kernel": 8, "./backend/headless-gl/kernel": 34, "./backend/kernel": 36, "./backend/web-gl/kernel": 70, "./backend/web-gl2/kernel": 105, "./kernel-run-shortcut": 111, "./utils": 114, "gpu-mock.js": 4 }], 109: [function(o2, y, E) {
-      let { GPU: p } = o2("./gpu"), { alias: g2 } = o2("./alias"), { utils: f2 } = o2("./utils"), { Input: l, input: n } = o2("./input"), { Texture: s } = o2("./texture"), { FunctionBuilder: t } = o2("./backend/function-builder"), { FunctionNode: i } = o2("./backend/function-node"), { CPUFunctionNode: u } = o2("./backend/cpu/function-node"), { CPUKernel: x2 } = o2("./backend/cpu/kernel"), { HeadlessGLKernel: w2 } = o2("./backend/headless-gl/kernel"), { WebGLFunctionNode: m } = o2("./backend/web-gl/function-node"), { WebGLKernel: S } = o2("./backend/web-gl/kernel"), { kernelValueMaps: v } = o2("./backend/web-gl/kernel-value-maps"), { WebGL2FunctionNode: h } = o2("./backend/web-gl2/function-node"), { WebGL2Kernel: b2 } = o2("./backend/web-gl2/kernel"), { kernelValueMaps: T } = o2("./backend/web-gl2/kernel-value-maps"), { GLKernel: C } = o2("./backend/gl/kernel"), { Kernel: V } = o2("./backend/kernel"), { FunctionTracer: c2 } = o2("./backend/function-tracer"), a2 = o2("./plugins/math-random-uniformly-distributed");
-      y.exports = { alias: g2, CPUFunctionNode: u, CPUKernel: x2, GPU: p, FunctionBuilder: t, FunctionNode: i, HeadlessGLKernel: w2, Input: l, input: n, Texture: s, utils: f2, WebGL2FunctionNode: h, WebGL2Kernel: b2, webGL2KernelValueMaps: T, WebGLFunctionNode: m, WebGLKernel: S, webGLKernelValueMaps: v, GLKernel: C, Kernel: V, FunctionTracer: c2, plugins: { mathRandom: a2 } };
-    }, { "./alias": 5, "./backend/cpu/function-node": 6, "./backend/cpu/kernel": 8, "./backend/function-builder": 9, "./backend/function-node": 10, "./backend/function-tracer": 11, "./backend/gl/kernel": 13, "./backend/headless-gl/kernel": 34, "./backend/kernel": 36, "./backend/web-gl/function-node": 38, "./backend/web-gl/kernel": 70, "./backend/web-gl/kernel-value-maps": 39, "./backend/web-gl2/function-node": 73, "./backend/web-gl2/kernel": 105, "./backend/web-gl2/kernel-value-maps": 74, "./gpu": 108, "./input": 110, "./plugins/math-random-uniformly-distributed": 112, "./texture": 113, "./utils": 114 }], 110: [function(o2, y, E) {
+    }, { "./backend/cpu/kernel": 8, "./backend/headless-gl/kernel": 34, "./backend/kernel": 36, "./backend/web-gl/kernel": 70, "./backend/web-gl2/kernel": 105, "./kernel-run-shortcut": 111, "./utils": 114, "gpu-mock.js": 4 }], 109: [function(o, y, E) {
+      let { GPU: p } = o("./gpu"), { alias: g } = o("./alias"), { utils: f } = o("./utils"), { Input: l, input: n } = o("./input"), { Texture: s } = o("./texture"), { FunctionBuilder: t } = o("./backend/function-builder"), { FunctionNode: i } = o("./backend/function-node"), { CPUFunctionNode: u } = o("./backend/cpu/function-node"), { CPUKernel: x2 } = o("./backend/cpu/kernel"), { HeadlessGLKernel: w } = o("./backend/headless-gl/kernel"), { WebGLFunctionNode: m } = o("./backend/web-gl/function-node"), { WebGLKernel: S } = o("./backend/web-gl/kernel"), { kernelValueMaps: v } = o("./backend/web-gl/kernel-value-maps"), { WebGL2FunctionNode: h } = o("./backend/web-gl2/function-node"), { WebGL2Kernel: b } = o("./backend/web-gl2/kernel"), { kernelValueMaps: T } = o("./backend/web-gl2/kernel-value-maps"), { GLKernel: C } = o("./backend/gl/kernel"), { Kernel: V } = o("./backend/kernel"), { FunctionTracer: c } = o("./backend/function-tracer"), a = o("./plugins/math-random-uniformly-distributed");
+      y.exports = { alias: g, CPUFunctionNode: u, CPUKernel: x2, GPU: p, FunctionBuilder: t, FunctionNode: i, HeadlessGLKernel: w, Input: l, input: n, Texture: s, utils: f, WebGL2FunctionNode: h, WebGL2Kernel: b, webGL2KernelValueMaps: T, WebGLFunctionNode: m, WebGLKernel: S, webGLKernelValueMaps: v, GLKernel: C, Kernel: V, FunctionTracer: c, plugins: { mathRandom: a } };
+    }, { "./alias": 5, "./backend/cpu/function-node": 6, "./backend/cpu/kernel": 8, "./backend/function-builder": 9, "./backend/function-node": 10, "./backend/function-tracer": 11, "./backend/gl/kernel": 13, "./backend/headless-gl/kernel": 34, "./backend/kernel": 36, "./backend/web-gl/function-node": 38, "./backend/web-gl/kernel": 70, "./backend/web-gl/kernel-value-maps": 39, "./backend/web-gl2/function-node": 73, "./backend/web-gl2/kernel": 105, "./backend/web-gl2/kernel-value-maps": 74, "./gpu": 108, "./input": 110, "./plugins/math-random-uniformly-distributed": 112, "./texture": 113, "./utils": 114 }], 110: [function(o, y, E) {
       class p {
         constructor(l, n) {
           this.value = l, Array.isArray(n) ? this.size = n : (this.size = new Int32Array(3), n.z ? this.size = new Int32Array([n.x, n.y, n.z]) : n.y ? this.size = new Int32Array([n.x, n.y]) : this.size = new Int32Array([n.x]));
@@ -13764,17 +13494,17 @@ ${w2.join("")};`), i.push(`}
             throw new Error(`Input size ${this.value.length} does not match ${s}`);
         }
         toArray() {
-          let { utils: l } = o2("./utils"), [n, s, t] = this.size;
+          let { utils: l } = o("./utils"), [n, s, t] = this.size;
           return t ? l.erectMemoryOptimized3DFloat(this.value.subarray ? this.value : new Float32Array(this.value), n, s, t) : s ? l.erectMemoryOptimized2DFloat(this.value.subarray ? this.value : new Float32Array(this.value), n, s) : this.value;
         }
       }
-      function g2(f2, l) {
-        return new p(f2, l);
+      function g(f, l) {
+        return new p(f, l);
       }
-      y.exports = { Input: p, input: g2 };
-    }, { "./utils": 114 }], 111: [function(o2, y, E) {
-      let { utils: p } = o2("./utils");
-      function g2(l) {
+      y.exports = { Input: p, input: g };
+    }, { "./utils": 114 }], 111: [function(o, y, E) {
+      let { utils: p } = o("./utils");
+      function g(l) {
         let n = function() {
           return l.build.apply(l, arguments), n = function() {
             let t = l.run.apply(l, arguments);
@@ -13796,10 +13526,10 @@ ${w2.join("")};`), i.push(`}
             }
           });
         }, s.replaceKernel = function(t) {
-          l = t, f2(l, s);
-        }, f2(l, s), s;
+          l = t, f(l, s);
+        }, f(l, s), s;
       }
-      function f2(l, n) {
+      function f(l, n) {
         if (n.kernel) {
           n.kernel = l;
           return;
@@ -13817,8 +13547,8 @@ ${w2.join("")};`), i.push(`}
         }
         n.kernel = l;
       }
-      y.exports = { kernelRunShortcut: g2 };
-    }, { "./utils": 114 }], 112: [function(o2, y, E) {
+      y.exports = { kernelRunShortcut: g };
+    }, { "./utils": 114 }], 112: [function(o, y, E) {
       let t = { name: "math-random-uniformly-distributed", onBeforeRun: (i) => {
         i.setUniform1f("randomSeed1", Math.random()), i.setUniform1f("randomSeed2", Math.random());
       }, functionMatch: "Math.random()", functionReplace: "nrand(vTexCoord)", functionReturnType: "Number", source: `// https://www.shadertoy.com/view/4t2SDh
@@ -13839,10 +13569,10 @@ ${w2.join("")};`), i.push(`}
         return result;
       }` };
       y.exports = t;
-    }, {}], 113: [function(o2, y, E) {
+    }, {}], 113: [function(o, y, E) {
       class p {
-        constructor(f2) {
-          let { texture: l, size: n, dimensions: s, output: t, context: i, type: u = "NumberTexture", kernel: x2, internalFormat: w2, textureFormat: m } = f2;
+        constructor(f) {
+          let { texture: l, size: n, dimensions: s, output: t, context: i, type: u = "NumberTexture", kernel: x2, internalFormat: w, textureFormat: m } = f;
           if (!t)
             throw new Error('settings property "output" required.');
           if (!i)
@@ -13851,7 +13581,7 @@ ${w2.join("")};`), i.push(`}
             throw new Error('settings property "texture" required.');
           if (!x2)
             throw new Error('settings property "kernel" required.');
-          this.texture = l, l._refs ? l._refs++ : l._refs = 1, this.size = n, this.dimensions = s, this.output = t, this.context = i, this.kernel = x2, this.type = u, this._deleted = false, this.internalFormat = w2, this.textureFormat = m;
+          this.texture = l, l._refs ? l._refs++ : l._refs = 1, this.size = n, this.dimensions = s, this.output = t, this.context = i, this.kernel = x2, this.type = u, this._deleted = false, this.internalFormat = w, this.textureFormat = m;
         }
         toArray() {
           throw new Error(`Not implemented on ${this.constructor.name}`);
@@ -13867,9 +13597,9 @@ ${w2.join("")};`), i.push(`}
         }
       }
       y.exports = { Texture: p };
-    }, {}], 114: [function(o2, y, E) {
-      let p = o2("acorn"), { Input: g2 } = o2("./input"), { Texture: f2 } = o2("./texture"), l = /function ([^(]*)/, n = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, s = /([^\s,]+)/g, t = { systemEndianness() {
-        return w2;
+    }, {}], 114: [function(o, y, E) {
+      let p = o("acorn"), { Input: g } = o("./input"), { Texture: f } = o("./texture"), l = /function ([^(]*)/, n = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, s = /([^\s,]+)/g, t = { systemEndianness() {
+        return w;
       }, getSystemEndianness() {
         let m = new ArrayBuffer(4), S = new Uint32Array(m), v = new Uint8Array(m);
         if (S[0] = 3735928559, v[0] === 239)
@@ -13906,9 +13636,9 @@ ${w2.join("")};`), i.push(`}
             return "Boolean";
           case Number:
             return S && Number.isInteger(m) ? "Integer" : "Float";
-          case f2:
+          case f:
             return m.type;
-          case g2:
+          case g:
             return "Input";
         }
         switch (m.nodeName) {
@@ -13921,7 +13651,7 @@ ${w2.join("")};`), i.push(`}
         }
         return m.hasOwnProperty("type") ? m.type : "Unknown";
       }, getKernelTextureSize(m, S) {
-        let [v, h, b2] = S, T = (v || 1) * (h || 1) * (b2 || 1);
+        let [v, h, b] = S, T = (v || 1) * (h || 1) * (b || 1);
         return m.optimizeFloatMemory && m.precision === "single" && (v = T = Math.ceil(T / 4)), h > 1 && v * h === T ? new Int32Array([v, h]) : t.closestSquareDimensions(T);
       }, closestSquareDimensions(m) {
         let S = Math.sqrt(m), v = Math.ceil(S), h = Math.floor(S);
@@ -13932,20 +13662,20 @@ ${w2.join("")};`), i.push(`}
         let h = t.roundTo((m[0] || 1) * (m[1] || 1) * (m[2] || 1) * (m[3] || 1), 4) / S;
         return t.closestSquareDimensions(h);
       }, getMemoryOptimizedPackedTextureSize(m, S) {
-        let [v, h, b2] = m, C = t.roundTo((v || 1) * (h || 1) * (b2 || 1), 4) / (4 / S);
+        let [v, h, b] = m, C = t.roundTo((v || 1) * (h || 1) * (b || 1), 4) / (4 / S);
         return t.closestSquareDimensions(C);
       }, roundTo(m, S) {
         return Math.floor((m + S - 1) / S) * S;
       }, getDimensions(m, S) {
         let v;
         if (t.isArray(m)) {
-          let h = [], b2 = m;
-          for (; t.isArray(b2); )
-            h.push(b2.length), b2 = b2[0];
+          let h = [], b = m;
+          for (; t.isArray(b); )
+            h.push(b.length), b = b[0];
           v = h.reverse();
-        } else if (m instanceof f2)
+        } else if (m instanceof f)
           v = m.output;
-        else if (m instanceof g2)
+        else if (m instanceof g)
           v = m.size;
         else
           throw new Error(`Unknown dimensions of ${m}`);
@@ -13960,14 +13690,14 @@ ${w2.join("")};`), i.push(`}
       }, flatten3dArrayTo(m, S) {
         let v = 0;
         for (let h = 0; h < m.length; h++)
-          for (let b2 = 0; b2 < m[h].length; b2++)
-            S.set(m[h][b2], v), v += m[h][b2].length;
+          for (let b = 0; b < m[h].length; b++)
+            S.set(m[h][b], v), v += m[h][b].length;
       }, flatten4dArrayTo(m, S) {
         let v = 0;
         for (let h = 0; h < m.length; h++)
-          for (let b2 = 0; b2 < m[h].length; b2++)
-            for (let T = 0; T < m[h][b2].length; T++)
-              S.set(m[h][b2][T], v), v += m[h][b2][T].length;
+          for (let b = 0; b < m[h].length; b++)
+            for (let T = 0; T < m[h][b].length; T++)
+              S.set(m[h][b][T], v), v += m[h][b][T].length;
       }, flattenTo(m, S) {
         t.isArray(m[0]) ? t.isArray(m[0][0]) ? t.isArray(m[0][0][0]) ? t.flatten4dArrayTo(m, S) : t.flatten3dArrayTo(m, S) : t.flatten2dArrayTo(m, S) : S.set(m);
       }, splitArray(m, S) {
@@ -13976,14 +13706,14 @@ ${w2.join("")};`), i.push(`}
           v.push(new m.constructor(m.buffer, h * 4 + m.byteOffset, S));
         return v;
       }, getAstString(m, S) {
-        let v = Array.isArray(m) ? m : m.split(/\r?\n/g), h = S.loc.start, b2 = S.loc.end, T = [];
-        if (h.line === b2.line)
-          T.push(v[h.line - 1].substring(h.column, b2.column));
+        let v = Array.isArray(m) ? m : m.split(/\r?\n/g), h = S.loc.start, b = S.loc.end, T = [];
+        if (h.line === b.line)
+          T.push(v[h.line - 1].substring(h.column, b.column));
         else {
           T.push(v[h.line - 1].slice(h.column));
-          for (let C = h.line; C < b2.line; C++)
+          for (let C = h.line; C < b.line; C++)
             T.push(v[C]);
-          T.push(v[b2.line - 1].slice(0, b2.column));
+          T.push(v[b.line - 1].slice(0, b.column));
         }
         return T.join(`
 `);
@@ -14001,251 +13731,251 @@ ${w2.join("")};`), i.push(`}
       }, warnDeprecated(m, S, v) {
         console.warn(v ? `You are using a deprecated ${m} "${S}". It has been replaced with "${v}". Fixing, but please upgrade as it will soon be removed.` : `You are using a deprecated ${m} "${S}". It has been removed. Fixing, but please upgrade as it will soon be removed.`);
       }, flipPixels: (m, S, v) => {
-        let h = v / 2 | 0, b2 = S * 4, T = new Uint8ClampedArray(S * 4), C = m.slice(0);
+        let h = v / 2 | 0, b = S * 4, T = new Uint8ClampedArray(S * 4), C = m.slice(0);
         for (let V = 0; V < h; ++V) {
-          let c2 = V * b2, a2 = (v - V - 1) * b2;
-          T.set(C.subarray(c2, c2 + b2)), C.copyWithin(c2, a2, a2 + b2), C.set(T, a2);
+          let c = V * b, a = (v - V - 1) * b;
+          T.set(C.subarray(c, c + b)), C.copyWithin(c, a, a + b), C.set(T, a);
         }
         return C;
       }, erectPackedFloat: (m, S) => m.subarray(0, S), erect2DPackedFloat: (m, S, v) => {
         let h = new Array(v);
-        for (let b2 = 0; b2 < v; b2++) {
-          let T = b2 * S, C = T + S;
-          h[b2] = m.subarray(T, C);
+        for (let b = 0; b < v; b++) {
+          let T = b * S, C = T + S;
+          h[b] = m.subarray(T, C);
         }
         return h;
       }, erect3DPackedFloat: (m, S, v, h) => {
-        let b2 = new Array(h);
+        let b = new Array(h);
         for (let T = 0; T < h; T++) {
           let C = new Array(v);
           for (let V = 0; V < v; V++) {
-            let c2 = T * v * S + V * S, a2 = c2 + S;
-            C[V] = m.subarray(c2, a2);
+            let c = T * v * S + V * S, a = c + S;
+            C[V] = m.subarray(c, a);
           }
-          b2[T] = C;
+          b[T] = C;
         }
-        return b2;
+        return b;
       }, erectMemoryOptimizedFloat: (m, S) => m.subarray(0, S), erectMemoryOptimized2DFloat: (m, S, v) => {
         let h = new Array(v);
-        for (let b2 = 0; b2 < v; b2++) {
-          let T = b2 * S;
-          h[b2] = m.subarray(T, T + S);
+        for (let b = 0; b < v; b++) {
+          let T = b * S;
+          h[b] = m.subarray(T, T + S);
         }
         return h;
       }, erectMemoryOptimized3DFloat: (m, S, v, h) => {
-        let b2 = new Array(h);
+        let b = new Array(h);
         for (let T = 0; T < h; T++) {
           let C = new Array(v);
           for (let V = 0; V < v; V++) {
-            let c2 = T * v * S + V * S;
-            C[V] = m.subarray(c2, c2 + S);
+            let c = T * v * S + V * S;
+            C[V] = m.subarray(c, c + S);
           }
-          b2[T] = C;
+          b[T] = C;
         }
-        return b2;
+        return b;
       }, erectFloat: (m, S) => {
         let v = new Float32Array(S), h = 0;
-        for (let b2 = 0; b2 < S; b2++)
-          v[b2] = m[h], h += 4;
+        for (let b = 0; b < S; b++)
+          v[b] = m[h], h += 4;
         return v;
       }, erect2DFloat: (m, S, v) => {
-        let h = new Array(v), b2 = 0;
+        let h = new Array(v), b = 0;
         for (let T = 0; T < v; T++) {
           let C = new Float32Array(S);
           for (let V = 0; V < S; V++)
-            C[V] = m[b2], b2 += 4;
+            C[V] = m[b], b += 4;
           h[T] = C;
         }
         return h;
       }, erect3DFloat: (m, S, v, h) => {
-        let b2 = new Array(h), T = 0;
+        let b = new Array(h), T = 0;
         for (let C = 0; C < h; C++) {
           let V = new Array(v);
-          for (let c2 = 0; c2 < v; c2++) {
-            let a2 = new Float32Array(S);
+          for (let c = 0; c < v; c++) {
+            let a = new Float32Array(S);
             for (let k = 0; k < S; k++)
-              a2[k] = m[T], T += 4;
-            V[c2] = a2;
+              a[k] = m[T], T += 4;
+            V[c] = a;
           }
-          b2[C] = V;
+          b[C] = V;
         }
-        return b2;
+        return b;
       }, erectArray2: (m, S) => {
-        let v = new Array(S), h = S * 4, b2 = 0;
+        let v = new Array(S), h = S * 4, b = 0;
         for (let T = 0; T < h; T += 4)
-          v[b2++] = m.subarray(T, T + 2);
+          v[b++] = m.subarray(T, T + 2);
         return v;
       }, erect2DArray2: (m, S, v) => {
-        let h = new Array(v), b2 = S * 4;
+        let h = new Array(v), b = S * 4;
         for (let T = 0; T < v; T++) {
-          let C = new Array(S), V = T * b2, c2 = 0;
-          for (let a2 = 0; a2 < b2; a2 += 4)
-            C[c2++] = m.subarray(a2 + V, a2 + V + 2);
+          let C = new Array(S), V = T * b, c = 0;
+          for (let a = 0; a < b; a += 4)
+            C[c++] = m.subarray(a + V, a + V + 2);
           h[T] = C;
         }
         return h;
       }, erect3DArray2: (m, S, v, h) => {
-        let b2 = S * 4, T = new Array(h);
+        let b = S * 4, T = new Array(h);
         for (let C = 0; C < h; C++) {
           let V = new Array(v);
-          for (let c2 = 0; c2 < v; c2++) {
-            let a2 = new Array(S), k = C * b2 * v + c2 * b2, A = 0;
-            for (let N = 0; N < b2; N += 4)
-              a2[A++] = m.subarray(N + k, N + k + 2);
-            V[c2] = a2;
+          for (let c = 0; c < v; c++) {
+            let a = new Array(S), k = C * b * v + c * b, A = 0;
+            for (let N = 0; N < b; N += 4)
+              a[A++] = m.subarray(N + k, N + k + 2);
+            V[c] = a;
           }
           T[C] = V;
         }
         return T;
       }, erectArray3: (m, S) => {
-        let v = new Array(S), h = S * 4, b2 = 0;
+        let v = new Array(S), h = S * 4, b = 0;
         for (let T = 0; T < h; T += 4)
-          v[b2++] = m.subarray(T, T + 3);
+          v[b++] = m.subarray(T, T + 3);
         return v;
       }, erect2DArray3: (m, S, v) => {
-        let h = S * 4, b2 = new Array(v);
+        let h = S * 4, b = new Array(v);
         for (let T = 0; T < v; T++) {
-          let C = new Array(S), V = T * h, c2 = 0;
-          for (let a2 = 0; a2 < h; a2 += 4)
-            C[c2++] = m.subarray(a2 + V, a2 + V + 3);
-          b2[T] = C;
+          let C = new Array(S), V = T * h, c = 0;
+          for (let a = 0; a < h; a += 4)
+            C[c++] = m.subarray(a + V, a + V + 3);
+          b[T] = C;
         }
-        return b2;
+        return b;
       }, erect3DArray3: (m, S, v, h) => {
-        let b2 = S * 4, T = new Array(h);
+        let b = S * 4, T = new Array(h);
         for (let C = 0; C < h; C++) {
           let V = new Array(v);
-          for (let c2 = 0; c2 < v; c2++) {
-            let a2 = new Array(S), k = C * b2 * v + c2 * b2, A = 0;
-            for (let N = 0; N < b2; N += 4)
-              a2[A++] = m.subarray(N + k, N + k + 3);
-            V[c2] = a2;
+          for (let c = 0; c < v; c++) {
+            let a = new Array(S), k = C * b * v + c * b, A = 0;
+            for (let N = 0; N < b; N += 4)
+              a[A++] = m.subarray(N + k, N + k + 3);
+            V[c] = a;
           }
           T[C] = V;
         }
         return T;
       }, erectArray4: (m, S) => {
-        let v = new Array(m), h = S * 4, b2 = 0;
+        let v = new Array(m), h = S * 4, b = 0;
         for (let T = 0; T < h; T += 4)
-          v[b2++] = m.subarray(T, T + 4);
+          v[b++] = m.subarray(T, T + 4);
         return v;
       }, erect2DArray4: (m, S, v) => {
-        let h = S * 4, b2 = new Array(v);
+        let h = S * 4, b = new Array(v);
         for (let T = 0; T < v; T++) {
-          let C = new Array(S), V = T * h, c2 = 0;
-          for (let a2 = 0; a2 < h; a2 += 4)
-            C[c2++] = m.subarray(a2 + V, a2 + V + 4);
-          b2[T] = C;
+          let C = new Array(S), V = T * h, c = 0;
+          for (let a = 0; a < h; a += 4)
+            C[c++] = m.subarray(a + V, a + V + 4);
+          b[T] = C;
         }
-        return b2;
+        return b;
       }, erect3DArray4: (m, S, v, h) => {
-        let b2 = S * 4, T = new Array(h);
+        let b = S * 4, T = new Array(h);
         for (let C = 0; C < h; C++) {
           let V = new Array(v);
-          for (let c2 = 0; c2 < v; c2++) {
-            let a2 = new Array(S), k = C * b2 * v + c2 * b2, A = 0;
-            for (let N = 0; N < b2; N += 4)
-              a2[A++] = m.subarray(N + k, N + k + 4);
-            V[c2] = a2;
+          for (let c = 0; c < v; c++) {
+            let a = new Array(S), k = C * b * v + c * b, A = 0;
+            for (let N = 0; N < b; N += 4)
+              a[A++] = m.subarray(N + k, N + k + 4);
+            V[c] = a;
           }
           T[C] = V;
         }
         return T;
       }, flattenFunctionToString: (m, S) => {
-        let { findDependency: v, thisLookup: h, doNotDefine: b2 } = S, T = S.flattened;
+        let { findDependency: v, thisLookup: h, doNotDefine: b } = S, T = S.flattened;
         T || (T = S.flattened = {});
-        let C = p.parse(m), V = [], c2 = 0;
-        function a2(A) {
+        let C = p.parse(m), V = [], c = 0;
+        function a(A) {
           if (Array.isArray(A)) {
             let N = [];
             for (let F = 0; F < A.length; F++)
-              N.push(a2(A[F]));
+              N.push(a(A[F]));
             return N.join("");
           }
           switch (A.type) {
             case "Program":
-              return a2(A.body) + (A.body[0].type === "VariableDeclaration" ? ";" : "");
+              return a(A.body) + (A.body[0].type === "VariableDeclaration" ? ";" : "");
             case "FunctionDeclaration":
-              return `function ${A.id.name}(${A.params.map(a2).join(", ")}) ${a2(A.body)}`;
+              return `function ${A.id.name}(${A.params.map(a).join(", ")}) ${a(A.body)}`;
             case "BlockStatement": {
               let F = [];
-              c2 += 2;
+              c += 2;
               for (let L = 0; L < A.body.length; L++) {
-                let K = a2(A.body[L]);
-                K && F.push(" ".repeat(c2) + K, `;
+                let K = a(A.body[L]);
+                K && F.push(" ".repeat(c) + K, `;
 `);
               }
-              return c2 -= 2, `{
+              return c -= 2, `{
 ${F.join("")}}`;
             }
             case "VariableDeclaration":
-              let N = t.normalizeDeclarations(A).map(a2).filter((F) => F !== null);
+              let N = t.normalizeDeclarations(A).map(a).filter((F) => F !== null);
               return N.length < 1 ? "" : `${A.kind} ${N.join(",")}`;
             case "VariableDeclarator":
-              return A.init.object && A.init.object.type === "ThisExpression" ? h(A.init.property.name, true) ? `${A.id.name} = ${a2(A.init)}` : null : `${A.id.name} = ${a2(A.init)}`;
+              return A.init.object && A.init.object.type === "ThisExpression" ? h(A.init.property.name, true) ? `${A.id.name} = ${a(A.init)}` : null : `${A.id.name} = ${a(A.init)}`;
             case "CallExpression": {
               if (A.callee.property.name === "subarray")
-                return `${a2(A.callee.object)}.${a2(A.callee.property)}(${A.arguments.map((F) => a2(F)).join(", ")})`;
+                return `${a(A.callee.object)}.${a(A.callee.property)}(${A.arguments.map((F) => a(F)).join(", ")})`;
               if (A.callee.object.name === "gl" || A.callee.object.name === "context")
-                return `${a2(A.callee.object)}.${a2(A.callee.property)}(${A.arguments.map((F) => a2(F)).join(", ")})`;
+                return `${a(A.callee.object)}.${a(A.callee.property)}(${A.arguments.map((F) => a(F)).join(", ")})`;
               if (A.callee.object.type === "ThisExpression")
-                return V.push(v("this", A.callee.property.name)), `${A.callee.property.name}(${A.arguments.map((F) => a2(F)).join(", ")})`;
+                return V.push(v("this", A.callee.property.name)), `${A.callee.property.name}(${A.arguments.map((F) => a(F)).join(", ")})`;
               if (A.callee.object.name) {
                 let F = v(A.callee.object.name, A.callee.property.name);
-                return F === null ? `${A.callee.object.name}.${A.callee.property.name}(${A.arguments.map((L) => a2(L)).join(", ")})` : (V.push(F), `${A.callee.property.name}(${A.arguments.map((L) => a2(L)).join(", ")})`);
+                return F === null ? `${A.callee.object.name}.${A.callee.property.name}(${A.arguments.map((L) => a(L)).join(", ")})` : (V.push(F), `${A.callee.property.name}(${A.arguments.map((L) => a(L)).join(", ")})`);
               } else {
                 if (A.callee.object.type === "MemberExpression")
-                  return `${a2(A.callee.object)}.${A.callee.property.name}(${A.arguments.map((F) => a2(F)).join(", ")})`;
+                  return `${a(A.callee.object)}.${A.callee.property.name}(${A.arguments.map((F) => a(F)).join(", ")})`;
                 throw new Error("unknown ast.callee");
               }
             }
             case "ReturnStatement":
-              return `return ${a2(A.argument)}`;
+              return `return ${a(A.argument)}`;
             case "BinaryExpression":
-              return `(${a2(A.left)}${A.operator}${a2(A.right)})`;
+              return `(${a(A.left)}${A.operator}${a(A.right)})`;
             case "UnaryExpression":
-              return A.prefix ? `${A.operator} ${a2(A.argument)}` : `${a2(A.argument)} ${A.operator}`;
+              return A.prefix ? `${A.operator} ${a(A.argument)}` : `${a(A.argument)} ${A.operator}`;
             case "ExpressionStatement":
-              return `${a2(A.expression)}`;
+              return `${a(A.expression)}`;
             case "SequenceExpression":
-              return `(${a2(A.expressions)})`;
+              return `(${a(A.expressions)})`;
             case "ArrowFunctionExpression":
-              return `(${A.params.map(a2).join(", ")}) => ${a2(A.body)}`;
+              return `(${A.params.map(a).join(", ")}) => ${a(A.body)}`;
             case "Literal":
               return A.raw;
             case "Identifier":
               return A.name;
             case "MemberExpression":
-              return A.object.type === "ThisExpression" ? h(A.property.name) : A.computed ? `${a2(A.object)}[${a2(A.property)}]` : a2(A.object) + "." + a2(A.property);
+              return A.object.type === "ThisExpression" ? h(A.property.name) : A.computed ? `${a(A.object)}[${a(A.property)}]` : a(A.object) + "." + a(A.property);
             case "ThisExpression":
               return "this";
             case "NewExpression":
-              return `new ${a2(A.callee)}(${A.arguments.map((F) => a2(F)).join(", ")})`;
+              return `new ${a(A.callee)}(${A.arguments.map((F) => a(F)).join(", ")})`;
             case "ForStatement":
-              return `for (${a2(A.init)};${a2(A.test)};${a2(A.update)}) ${a2(A.body)}`;
+              return `for (${a(A.init)};${a(A.test)};${a(A.update)}) ${a(A.body)}`;
             case "AssignmentExpression":
-              return `${a2(A.left)}${A.operator}${a2(A.right)}`;
+              return `${a(A.left)}${A.operator}${a(A.right)}`;
             case "UpdateExpression":
-              return `${a2(A.argument)}${A.operator}`;
+              return `${a(A.argument)}${A.operator}`;
             case "IfStatement":
-              return `if (${a2(A.test)}) ${a2(A.consequent)}`;
+              return `if (${a(A.test)}) ${a(A.consequent)}`;
             case "ThrowStatement":
-              return `throw ${a2(A.argument)}`;
+              return `throw ${a(A.argument)}`;
             case "ObjectPattern":
-              return A.properties.map(a2).join(", ");
+              return A.properties.map(a).join(", ");
             case "ArrayPattern":
-              return A.elements.map(a2).join(", ");
+              return A.elements.map(a).join(", ");
             case "DebuggerStatement":
               return "debugger;";
             case "ConditionalExpression":
-              return `${a2(A.test)}?${a2(A.consequent)}:${a2(A.alternate)}`;
+              return `${a(A.test)}?${a(A.consequent)}:${a(A.alternate)}`;
             case "Property":
               if (A.kind === "init")
-                return a2(A.key);
+                return a(A.key);
           }
           throw new Error(`unhandled ast.type of ${A.type}`);
         }
-        let k = a2(C);
+        let k = a(C);
         if (V.length > 0) {
           let A = [];
           for (let N = 0; N < V.length; N++) {
@@ -14263,14 +13993,14 @@ ${F.join("")}}`;
         for (let v = 0; v < m.declarations.length; v++) {
           let h = m.declarations[v];
           if (h.id && h.id.type === "ObjectPattern" && h.id.properties) {
-            let { properties: b2 } = h.id;
-            for (let T = 0; T < b2.length; T++) {
-              let C = b2[T];
+            let { properties: b } = h.id;
+            for (let T = 0; T < b.length; T++) {
+              let C = b[T];
               if (C.value.type === "ObjectPattern" && C.value.properties)
                 for (let V = 0; V < C.value.properties.length; V++) {
-                  let c2 = C.value.properties[V];
-                  if (c2.type === "Property")
-                    S.push({ type: "VariableDeclarator", id: { type: "Identifier", name: c2.key.name }, init: { type: "MemberExpression", object: { type: "MemberExpression", object: h.init, property: { type: "Identifier", name: C.key.name }, computed: false }, property: { type: "Identifier", name: c2.key.name }, computed: false } });
+                  let c = C.value.properties[V];
+                  if (c.type === "Property")
+                    S.push({ type: "VariableDeclarator", id: { type: "Identifier", name: c.key.name }, init: { type: "MemberExpression", object: { type: "MemberExpression", object: h.init, property: { type: "Identifier", name: C.key.name }, computed: false }, property: { type: "Identifier", name: c.key.name }, computed: false } });
                   else
                     throw new Error("unexpected state");
                 }
@@ -14280,9 +14010,9 @@ ${F.join("")}}`;
                 throw new Error("unexpected state");
             }
           } else if (h.id && h.id.type === "ArrayPattern" && h.id.elements) {
-            let { elements: b2 } = h.id;
-            for (let T = 0; T < b2.length; T++) {
-              let C = b2[T];
+            let { elements: b } = h.id;
+            for (let T = 0; T < b.length; T++) {
+              let C = b[T];
               if (C.type === "Identifier")
                 S.push({ type: "VariableDeclarator", id: { type: "Identifier", name: C.name }, init: { type: "MemberExpression", object: h.init, property: { type: "Literal", value: T, raw: T.toString(), start: C.start, end: C.end }, computed: true } });
               else
@@ -14297,33 +14027,33 @@ ${F.join("")}}`;
           return V[this.thread.y][this.thread.x].r * 255;
         }, { output: [S.width, S.height], precision: "unsigned", argumentTypes: { a: "HTMLImage" } }), h = m.createKernel(function(V) {
           return V[this.thread.y][this.thread.x].g * 255;
-        }, { output: [S.width, S.height], precision: "unsigned", argumentTypes: { a: "HTMLImage" } }), b2 = m.createKernel(function(V) {
+        }, { output: [S.width, S.height], precision: "unsigned", argumentTypes: { a: "HTMLImage" } }), b = m.createKernel(function(V) {
           return V[this.thread.y][this.thread.x].b * 255;
         }, { output: [S.width, S.height], precision: "unsigned", argumentTypes: { a: "HTMLImage" } }), T = m.createKernel(function(V) {
           return V[this.thread.y][this.thread.x].a * 255;
-        }, { output: [S.width, S.height], precision: "unsigned", argumentTypes: { a: "HTMLImage" } }), C = [v(S), h(S), b2(S), T(S)];
-        return C.rKernel = v, C.gKernel = h, C.bKernel = b2, C.aKernel = T, C.gpu = m, C;
+        }, { output: [S.width, S.height], precision: "unsigned", argumentTypes: { a: "HTMLImage" } }), C = [v(S), h(S), b(S), T(S)];
+        return C.rKernel = v, C.gKernel = h, C.bKernel = b, C.aKernel = T, C.gpu = m, C;
       }, splitRGBAToCanvases: (m, S, v, h) => {
-        let b2 = m.createKernel(function(c2) {
-          let a2 = c2[this.thread.y][this.thread.x];
-          this.color(a2.r / 255, 0, 0, 255);
+        let b = m.createKernel(function(c) {
+          let a = c[this.thread.y][this.thread.x];
+          this.color(a.r / 255, 0, 0, 255);
         }, { output: [v, h], graphical: true, argumentTypes: { v: "Array2D(4)" } });
-        b2(S);
-        let T = m.createKernel(function(c2) {
-          let a2 = c2[this.thread.y][this.thread.x];
-          this.color(0, a2.g / 255, 0, 255);
+        b(S);
+        let T = m.createKernel(function(c) {
+          let a = c[this.thread.y][this.thread.x];
+          this.color(0, a.g / 255, 0, 255);
         }, { output: [v, h], graphical: true, argumentTypes: { v: "Array2D(4)" } });
         T(S);
-        let C = m.createKernel(function(c2) {
-          let a2 = c2[this.thread.y][this.thread.x];
-          this.color(0, 0, a2.b / 255, 255);
+        let C = m.createKernel(function(c) {
+          let a = c[this.thread.y][this.thread.x];
+          this.color(0, 0, a.b / 255, 255);
         }, { output: [v, h], graphical: true, argumentTypes: { v: "Array2D(4)" } });
         C(S);
-        let V = m.createKernel(function(c2) {
-          let a2 = c2[this.thread.y][this.thread.x];
-          this.color(255, 255, 255, a2.a / 255);
+        let V = m.createKernel(function(c) {
+          let a = c[this.thread.y][this.thread.x];
+          this.color(255, 255, 255, a.a / 255);
         }, { output: [v, h], graphical: true, argumentTypes: { v: "Array2D(4)" } });
-        return V(S), [b2.canvas, T.canvas, C.canvas, V.canvas];
+        return V(S), [b.canvas, T.canvas, C.canvas, V.canvas];
       }, getMinifySafeName: (m) => {
         try {
           let S = p.parse(`const value = ${m.toString()}`), { init: v } = S.body[0].declarations[0];
@@ -14333,7 +14063,7 @@ ${F.join("")}}`;
         }
       }, sanitizeName: function(m) {
         return i.test(m) && (m = m.replace(i, "S_S")), u.test(m) ? m = m.replace(u, "U_U") : x2.test(m) && (m = m.replace(x2, "u_u")), m;
-      } }, i = /\$/, u = /__/, x2 = /_/, w2 = t.getSystemEndianness();
+      } }, i = /\$/, u = /__/, x2 = /_/, w = t.getSystemEndianness();
       y.exports = { utils: t };
     }, { "./input": 110, "./texture": 113, acorn: 1 }] }, {}, [107])(107);
   });
@@ -14351,14 +14081,14 @@ function si(M, I) {
 function ri(M, I) {
   return M / I;
 }
-function ai(M, I, $, o2) {
-  return [M + $, I + o2];
+function ai(M, I, $, o) {
+  return [M + $, I + o];
 }
-function oi(M, I, $, o2) {
-  return [M - $, I - o2];
+function oi(M, I, $, o) {
+  return [M - $, I - o];
 }
-function ui(M, I, $, o2) {
-  return [M * $ - I * o2, M * o2 + I * $];
+function ui(M, I, $, o) {
+  return [M * $ - I * o, M * o + I * $];
 }
 function li(M, I) {
   let $ = Math.exp(M);
@@ -14379,232 +14109,232 @@ function ci(M) {
   }
 }
 function Je(M, I) {
-  for (var $ = 0, o2 = 0; o2 < I; o2++)
-    $ += M[o2];
+  for (var $ = 0, o = 0; o < I; o++)
+    $ += M[o];
   return $ / I;
 }
 function Qe(M, I, $) {
-  for (var o2 = 0, y = 0; y < $; y++)
-    o2 += (M[y] - I) * (M[y] - I);
-  return Math.sqrt(o2);
+  for (var o = 0, y = 0; y < $; y++)
+    o += (M[y] - I) * (M[y] - I);
+  return Math.sqrt(o);
 }
 function pi(M, I, $) {
-  for (var o2 = 0, y = 0, E = 0; E < $; E++)
-    y = M[E] - I, o2 += y * y;
-  return o2 / $;
+  for (var o = 0, y = 0, E = 0; E < $; E++)
+    y = M[E] - I, o += y * y;
+  return o / $;
 }
 function fi(M, I, $) {
-  for (var o2 = 0, y = 0, E = 0; E < $; E++)
-    y = M[E] - I, o2 += y * y;
-  return Math.sqrt(o2 / $);
+  for (var o = 0, y = 0, E = 0; E < $; E++)
+    y = M[E] - I, o += y * y;
+  return Math.sqrt(o / $);
 }
-function qe(M, I, $, o2, y, E, p, g2) {
-  for (var f2 = 0, l = 0; l < p; l++) {
-    var n = l + g2, s = 0;
-    n < p && (s = o2[n]), f2 += (M[l] - I) * (s - y);
+function qe(M, I, $, o, y, E, p, g) {
+  for (var f = 0, l = 0; l < p; l++) {
+    var n = l + g, s = 0;
+    n < p && (s = o[n]), f += (M[l] - I) * (s - y);
   }
-  return f2 / ($ * E);
+  return f / ($ * E);
 }
 function di(M, I, $) {
-  for (var o2 = 0, y = 0; y < I; y++)
-    o2 += Math.exp(M[y]);
-  return Math.exp(M[$]) / o2;
+  for (var o = 0, y = 0; y < I; y++)
+    o += Math.exp(M[y]);
+  return Math.exp(M[$]) / o;
 }
 function $e(M, I, $) {
-  for (var o2 = 0, y = 0, E = 1 / I, p = 6.28318530718 * $ * E, g2 = 0; g2 < I; g2++) {
-    var f2 = p * g2;
-    o2 = o2 + M[g2] * Math.cos(f2), y = y - M[g2] * Math.sin(f2);
+  for (var o = 0, y = 0, E = 1 / I, p = 6.28318530718 * $ * E, g = 0; g < I; g++) {
+    var f = p * g;
+    o = o + M[g] * Math.cos(f), y = y - M[g] * Math.sin(f);
   }
-  return [o2 * E, y * E];
+  return [o * E, y * E];
 }
-function et(M, I, $, o2) {
-  for (var y = 0, E = 0, p = 1 / I, g2 = 6.28318530718 * $ * p, f2 = 0; f2 < I; f2++) {
-    var l = g2 * f2;
-    y = y + M[f2 + (I - 1) * o2] * Math.cos(l), E = E - M[f2 + (I - 1) * o2] * Math.sin(l);
+function et(M, I, $, o) {
+  for (var y = 0, E = 0, p = 1 / I, g = 6.28318530718 * $ * p, f = 0; f < I; f++) {
+    var l = g * f;
+    y = y + M[f + (I - 1) * o] * Math.cos(l), E = E - M[f + (I - 1) * o] * Math.sin(l);
   }
   return [y * p, E * p];
 }
-function Me(M, I, $, o2) {
-  var y = 0, E = 0, p = 1 / I, g2 = 6.28318530718 * $ * p, f2 = 1, l = 0, n = o2 * 0.25;
+function Me(M, I, $, o) {
+  var y = 0, E = 0, p = 1 / I, g = 6.28318530718 * $ * p, f = 1, l = 0, n = o * 0.25;
   if ($ <= n)
     for (; $ <= n; )
-      n = n * 0.5, f2 += 1;
-  for (var s = 0; s < I; s += f2) {
+      n = n * 0.5, f += 1;
+  for (var s = 0; s < I; s += f) {
     var t = s;
     t > I && (t = I);
-    var i = g2 * t;
+    var i = g * t;
     y = y + M[t] * Math.cos(i), E = E - M[t] * Math.sin(i), l += 1;
   }
   return [y / l, E / l];
 }
-function wt(M, I, $, o2, y) {
-  var E = 0, p = 0, g2 = 1 / I, f2 = 6.28318530718 * $ * g2, l = 1, n = 0, s = y * 0.25;
+function wt(M, I, $, o, y) {
+  var E = 0, p = 0, g = 1 / I, f = 6.28318530718 * $ * g, l = 1, n = 0, s = y * 0.25;
   if ($ <= s)
     for (; $ <= s; )
       s = s * 0.5, l += 1;
   for (var t = 0; t < I; t += l) {
     var i = t;
     i > I && (i = I);
-    var u = f2 * i;
-    E = E + M[i + (I - 1) * o2] * Math.cos(u), p = p - M[i + (I - 1) * o2] * Math.sin(u), n += 1;
+    var u = f * i;
+    E = E + M[i + (I - 1) * o] * Math.cos(u), p = p - M[i + (I - 1) * o] * Math.sin(u), n += 1;
   }
   return [E / n, p / n];
 }
 function Be(M, I, $) {
-  for (var o2 = 0, y = 0, E = 1 / I, p = 6.28318530718 * $ * E, g2 = 0; g2 < I; g2++) {
-    var f2 = p * g2;
-    o2 = o2 + M[g2] * Math.cos(f2), y = M[g2] * Math.sin(f2) - y;
+  for (var o = 0, y = 0, E = 1 / I, p = 6.28318530718 * $ * E, g = 0; g < I; g++) {
+    var f = p * g;
+    o = o + M[g] * Math.cos(f), y = M[g] * Math.sin(f) - y;
   }
-  return [o2 * E, y * E];
+  return [o * E, y * E];
 }
-function Et(M, I, $, o2) {
-  for (var y = 0, E = 0, p = 1 / I, g2 = 6.28318530718 * $ * p, f2 = 0; f2 < I; f2++) {
-    var l = g2 * f2;
-    y = y + M[f2 + (I - 1) * o2] * Math.cos(l), E = M[f2 + (I - 1) * o2] * Math.sin(l) - E;
+function Et(M, I, $, o) {
+  for (var y = 0, E = 0, p = 1 / I, g = 6.28318530718 * $ * p, f = 0; f < I; f++) {
+    var l = g * f;
+    y = y + M[f + (I - 1) * o] * Math.cos(l), E = M[f + (I - 1) * o] * Math.sin(l) - E;
   }
   return [y * p, E * p];
 }
-function We(M, I, $, o2) {
-  var y = 0, E = 0, p = 1 / I, g2 = 6.28318530718 * $ * p, f2 = 1, l = 0, n = o2 * 0.25;
+function We(M, I, $, o) {
+  var y = 0, E = 0, p = 1 / I, g = 6.28318530718 * $ * p, f = 1, l = 0, n = o * 0.25;
   if ($ <= n)
     for (; $ <= n; )
-      n = n * 0.5, f2 += 1;
-  for (var s = 0; s < I; s += f2) {
+      n = n * 0.5, f += 1;
+  for (var s = 0; s < I; s += f) {
     var t = s;
     t > I && (t = I);
-    var i = g2 * t;
+    var i = g * t;
     y = y + M[t] * Math.cos(i), E = M[t] * Math.sin(i) - E, l += 1;
   }
   return [y / l, E / l];
 }
-function It(M, I, $, o2, y) {
-  var E = 0, p = 0, g2 = 1 / I, f2 = 6.28318530718 * $ * g2, l = 1, n = 0, s = y * 0.25;
+function It(M, I, $, o, y) {
+  var E = 0, p = 0, g = 1 / I, f = 6.28318530718 * $ * g, l = 1, n = 0, s = y * 0.25;
   if ($ <= s)
     for (; $ <= s; )
       s = s * 0.5, l += 1;
   for (var t = 0; t < I; t += l) {
     var i = t;
     i > I && (i = I);
-    var u = f2 * i;
-    E = E + M[i + (I - 1) * o2] * Math.cos(u), p = M[i + (I - 1) * o2] * Math.sin(u) - p, n += 1;
+    var u = f * i;
+    E = E + M[i + (I - 1) * o] * Math.cos(u), p = M[i + (I - 1) * o] * Math.sin(u) - p, n += 1;
   }
   return [E / n, p / n];
 }
 function mi(M, I) {
-  var $ = Math.floor(this.thread.x / I) * 2, o2 = this.thread.x - Math.floor(this.thread.x / I) * I, y = Je(M[$], I), E = Je(M[$ + 1], I), p = Qe(M[$], y, I), g2 = Qe(M[$ + 1], E, I), f2 = qe(M[$], y, p, M[$ + 1], E, g2, I, o2);
-  return f2;
+  var $ = Math.floor(this.thread.x / I) * 2, o = this.thread.x - Math.floor(this.thread.x / I) * I, y = Je(M[$], I), E = Je(M[$ + 1], I), p = Qe(M[$], y, I), g = Qe(M[$ + 1], E, I), f = qe(M[$], y, p, M[$ + 1], E, g, I, o);
+  return f;
 }
-function xi(M, I, $, o2) {
-  var y = Math.floor(this.thread.x / I) * 2, E = this.thread.x - Math.floor(this.thread.x / I) * I, p = $[y], g2 = $[y + 1], f2 = o2[y], l = o2[y + 1], n = qe(M[y], p, f2, M[y + 1], g2, l, I, E);
+function xi(M, I, $, o) {
+  var y = Math.floor(this.thread.x / I) * 2, E = this.thread.x - Math.floor(this.thread.x / I) * I, p = $[y], g = $[y + 1], f = o[y], l = o[y + 1], n = qe(M[y], p, f, M[y + 1], g, l, I, E);
   return n;
 }
 function gi(M, I, $) {
-  var o2 = $e(M, I, this.thread.x);
-  return xe(o2[0], o2[1]) * $;
+  var o = $e(M, I, this.thread.x);
+  return xe(o[0], o[1]) * $;
 }
 function yi(M, I, $) {
-  var o2 = Be(M, I, this.thread.x);
-  return xe(o2[0], o2[1]) * $;
+  var o = Be(M, I, this.thread.x);
+  return xe(o[0], o[1]) * $;
 }
-function bi(M, I, $, o2) {
-  var y = Me(M, I, this.thread.x, o2);
+function bi(M, I, $, o) {
+  var y = Me(M, I, this.thread.x, o);
   return xe(y[0], y[1]) * $;
 }
-function Ti(M, I, $, o2) {
-  var y = We(M, I, this.thread.x, o2);
+function Ti(M, I, $, o) {
+  var y = We(M, I, this.thread.x, o);
   return xe(y[0], y[1]) * $;
 }
 function vi(M, I) {
-  var $ = this.output.x, o2 = $e(M[this.thread.y], $, this.thread.x);
-  return xe(o2[0], o2[1]) * I;
+  var $ = this.output.x, o = $e(M[this.thread.y], $, this.thread.x);
+  return xe(o[0], o[1]) * I;
 }
 function Si(M, I, $) {
-  var o2 = [0, 0];
+  var o = [0, 0];
   if (this.thread.x <= I)
-    o2 = $e(M, I, this.thread.x);
+    o = $e(M, I, this.thread.x);
   else {
     var y = Math.floor(this.thread.x / I);
-    o2 = et(M, I, this.thread.x - y * I, y);
+    o = et(M, I, this.thread.x - y * I, y);
   }
-  return xe(o2[0], o2[1]) * $;
+  return xe(o[0], o[1]) * $;
 }
-function _i(M, I, $, o2) {
+function _i(M, I, $, o) {
   var y = [0, 0];
   if (this.thread.x <= I)
-    y = Me(M, I, this.thread.x, o2);
+    y = Me(M, I, this.thread.x, o);
   else {
     var E = Math.floor(this.thread.x / I);
-    y = wt(M, I, this.thread.x - E * I, E, o2);
+    y = wt(M, I, this.thread.x - E * I, E, o);
   }
   return xe(y[0], y[1]) * $;
 }
-function wi(M, I, $, o2, y) {
-  var E = [0, 0], p = this.thread.x / I * (o2 - $) + $;
+function wi(M, I, $, o, y) {
+  var E = [0, 0], p = this.thread.x / I * (o - $) + $;
   return E = $e(M, I, p), xe(E[0], E[1]) * y;
 }
-function Ei(M, I, $, o2, y) {
-  var E = [0, 0], p = this.thread.x / I * (o2 - $) + $;
+function Ei(M, I, $, o, y) {
+  var E = [0, 0], p = this.thread.x / I * (o - $) + $;
   return E = Me(M, I, p), xe(E[0], E[1]) * y;
 }
-function Ii(M, I, $, o2, y) {
-  var E = [0, 0], p = this.thread.x / I * (o2 - $) + $;
+function Ii(M, I, $, o, y) {
+  var E = [0, 0], p = this.thread.x / I * (o - $) + $;
   return E = Be(M, I, p), xe(E[0], E[1]) * y;
 }
-function ki(M, I, $, o2, y) {
-  var E = [0, 0], p = this.thread.x / I * (o2 - $) + $;
+function ki(M, I, $, o, y) {
+  var E = [0, 0], p = this.thread.x / I * (o - $) + $;
   return E = We(M, I, p), xe(E[0], E[1]) * y;
 }
-function Ai(M, I, $, o2, y) {
+function Ai(M, I, $, o, y) {
   var E = [0, 0];
   if (this.thread.x < I) {
-    var p = this.thread.x / I * (o2 - $) + $;
+    var p = this.thread.x / I * (o - $) + $;
     E = $e(M, I, p);
   } else {
-    var g2 = Math.floor(this.thread.x / I), p = (this.thread.x - g2 * I) / I * (o2 - $) + $;
-    E = et(M, I, p - g2 * I, g2);
+    var g = Math.floor(this.thread.x / I), p = (this.thread.x - g * I) / I * (o - $) + $;
+    E = et(M, I, p - g * I, g);
   }
   return xe(E[0], E[1]) * y;
 }
-function Di(M, I, $, o2, y) {
+function Di(M, I, $, o, y) {
   var E = [0, 0];
   if (this.thread.x < I) {
-    var p = this.thread.x / I * (o2 - $) + $;
+    var p = this.thread.x / I * (o - $) + $;
     E = Me(M, I, p, I);
   } else {
-    var g2 = Math.floor(this.thread.x / I), p = (this.thread.x - g2 * I) / I * (o2 - $) + $;
-    E = wt(M, I, p - g2 * I, g2, I);
+    var g = Math.floor(this.thread.x / I), p = (this.thread.x - g * I) / I * (o - $) + $;
+    E = wt(M, I, p - g * I, g, I);
   }
   return xe(E[0], E[1]) * y;
 }
-function Ci(M, I, $, o2, y) {
+function Ci(M, I, $, o, y) {
   var E = [0, 0];
   if (this.thread.x < I) {
-    var p = this.thread.x / I * (o2 - $) + $;
+    var p = this.thread.x / I * (o - $) + $;
     E = Be(M, I, p);
   } else {
-    var g2 = Math.floor(this.thread.x / I), p = (this.thread.x - g2 * I) / I * (o2 - $) + $;
-    E = Et(M, I, p - g2 * I, g2);
+    var g = Math.floor(this.thread.x / I), p = (this.thread.x - g * I) / I * (o - $) + $;
+    E = Et(M, I, p - g * I, g);
   }
   return xe(E[0] * 2, E[1] * 2) * y;
 }
-function Fi(M, I, $, o2, y) {
+function Fi(M, I, $, o, y) {
   var E = [0, 0];
   if (this.thread.x < I) {
-    var p = this.thread.x / I * (o2 - $) + $;
+    var p = this.thread.x / I * (o - $) + $;
     E = We(M, I, p);
   } else {
-    var g2 = Math.floor(this.thread.x / I), p = (this.thread.x - g2 * I) / I * (o2 - $) + $;
-    E = It(M, I, p - g2 * I, g2);
+    var g = Math.floor(this.thread.x / I), p = (this.thread.x - g * I) / I * (o - $) + $;
+    E = It(M, I, p - g * I, g);
   }
   return xe(E[0] * 2, E[1] * 2) * y;
 }
-function $i(M, I, $, o2) {
+function $i(M, I, $, o) {
   for (var y = $ * Math.floor(this.thread.x / I), E = M[y][this.thread.x], p = 0; p < $; p++)
     E *= M[p][this.thread.x];
-  return E * o2;
+  return E * o;
 }
-function Li(M, I, $, o2, y) {
-  let E = (Math.sqrt(y) - 1) / 2, p = 2 * E + 1, g2 = 0, f2 = 0, l = 0, n = -E, s = 0;
+function Li(M, I, $, o, y) {
+  let E = (Math.sqrt(y) - 1) / 2, p = 2 * E + 1, g = 0, f = 0, l = 0, n = -E, s = 0;
   for (; n <= E; ) {
     if (this.thread.x + n < 0 || this.thread.x + n >= I) {
       n++;
@@ -14617,15 +14347,15 @@ function Li(M, I, $, o2, y) {
         continue;
       }
       s = (t + E) * p + n + E;
-      let i = o2[s], u = M[this.thread.y + n][this.thread.x + t];
-      g2 += u.r * i, f2 += u.g * i, l += u.b * i, t++;
+      let i = o[s], u = M[this.thread.y + n][this.thread.x + t];
+      g += u.r * i, f += u.g * i, l += u.b * i, t++;
     }
     n++;
   }
-  this.color(g2, f2, l);
+  this.color(g, f, l);
 }
-function Ri(M, I, $, o2, y, E) {
-  let p = 0, g2 = 0, f2 = 0;
+function Ri(M, I, $, o, y, E) {
+  let p = 0, g = 0, f = 0;
   for (var l = 0; l < E; l++) {
     let n = y[l], s = (Math.sqrt(n) - 1) / 2, t = 2 * s + 1, i = -s, u = 0;
     for (; i <= s; ) {
@@ -14640,13 +14370,13 @@ function Ri(M, I, $, o2, y, E) {
           continue;
         }
         u = (x2 + s) * t + i + s;
-        let w2 = o2[l][u], m = M[this.thread.y + i][this.thread.x + x2];
-        p += m.r * w2, g2 += m.g * w2, f2 += m.b * w2, x2++;
+        let w = o[l][u], m = M[this.thread.y + i][this.thread.x + x2];
+        p += m.r * w, g += m.g * w, f += m.b * w, x2++;
       }
       i++;
     }
   }
-  this.color(p, g2, f2);
+  this.color(p, g, f);
 }
 function Mi(M) {
   return M[this.thread.y][this.thread.x];
@@ -14654,12 +14384,12 @@ function Mi(M) {
 var me = { correlogramsKern: mi, correlogramsPCKern: xi, dftKern: gi, idftKern: yi, fftKern: bi, ifftKern: Ti, dft_windowedKern: wi, idft_windowedKern: Ii, fft_windowedKern: Ei, ifft_windowedKern: ki, listdft2DKern: vi, listdft1DKern: Si, listfft1DKern: _i, listfft1D_windowedKern: Di, listdft1D_windowedKern: Ai, listidft1D_windowedKern: Ci, listifft1D_windowedKern: Fi, bulkArrayMulKern: $i, multiImgConv2DKern: Ri, ImgConv2DKern: Li, transpose2DKern: Mi };
 var kt = [ii, ni, si, ri, ai, oi, ui, li, xe, hi, ci, Je, Qe, pi, fi, qe, di, $e, et, Be, Et, Me, We, It];
 function fe(M, I, $ = { setDynamicOutput: true, setDynamicArguments: true, setPipeline: true, setImmutable: true, setGraphical: false }) {
-  let o2 = M.createKernel(I);
-  return $.setDynamicOutput && o2.setDynamicOutput(true), $.output && o2.setOutput($.output), $.setDynamicArguments && o2.setDynamicArguments(true), $.setPipeline && o2.setPipeline(true), $.setImmutable && o2.setImmutable(true), $.setGraphical && o2.setGraphical(true), o2;
+  let o = M.createKernel(I);
+  return $.setDynamicOutput && o.setDynamicOutput(true), $.output && o.setOutput($.output), $.setDynamicArguments && o.setDynamicArguments(true), $.setPipeline && o.setPipeline(true), $.setImmutable && o.setImmutable(true), $.setGraphical && o.setGraphical(true), o;
 }
-function Vi(M, I, $ = { output: [300, 300], setDynamicArguments: true, setDynamicOutput: true, setPipeline: false, setImmutable: true, setGraphical: true }, o2) {
+function Vi(M, I, $ = { output: [300, 300], setDynamicArguments: true, setDynamicOutput: true, setPipeline: false, setImmutable: true, setGraphical: true }, o) {
   let y = fe(M, I, $), E = y.canvas;
-  return typeof o2 == "string" ? document.getElementById(toAppend).appendChild(E) : o2 ? toAppend.appendChild(E) : document.body.appendChild(E), y;
+  return typeof o == "string" ? document.getElementById(toAppend).appendChild(E) : o ? toAppend.appendChild(E) : document.body.appendChild(E), y;
 }
 var At = class {
   constructor(I = new GPU()) {
@@ -14670,43 +14400,43 @@ var At = class {
     this.gpu.addFunction(I);
   }
   addKernel(I = "", $ = function() {
-  }, o2) {
-    return this.kernels.get(I) ? (console.error("Kernel already exists"), false) : (this.kernels.set(I, fe(this.gpu, $, o2)), true);
+  }, o) {
+    return this.kernels.get(I) ? (console.error("Kernel already exists"), false) : (this.kernels.set(I, fe(this.gpu, $, o)), true);
   }
-  addCanvasKernel(I, $, o2, y) {
+  addCanvasKernel(I, $, o, y) {
     if (this.kernels.get(I))
       return console.error("Kernel already exists"), false;
     {
-      let p = Vi(this.gpu, $, o2, y);
+      let p = Vi(this.gpu, $, o, y);
       return this.kernels.set(I, p), p;
     }
   }
-  combineKernels(I, $ = [], o2 = function() {
+  combineKernels(I, $ = [], o = function() {
   }) {
     if (this.kernels.get(I))
       return console.error("Kernel already exists"), false;
     {
-      $.forEach((p, g2) => {
+      $.forEach((p, g) => {
         if (typeof p == "string") {
-          let f2 = this.kernels.get(p);
-          if (f2)
-            $[g2] = f2;
+          let f = this.kernels.get(p);
+          if (f)
+            $[g] = f;
           else
             return false;
         } else
           typeof p == "function" && (this.kernels.get(p.name) || this.addKernel(p.name, p));
       });
-      let E = this.gpu.combineKernels(...$, o2);
+      let E = this.gpu.combineKernels(...$, o);
       return this.kernels.set(I, E), E;
     }
   }
   callKernel(I = "", $ = []) {
-    let o2, y = this.kernels.get(I);
-    return y ? (o2 = y(...$), o2) : (console.error("Kernel not found"), false);
+    let o, y = this.kernels.get(I);
+    return y ? (o = y(...$), o) : (console.error("Kernel not found"), false);
   }
-  callCanvasKernel(I = "", $ = [], o2 = []) {
+  callCanvasKernel(I = "", $ = [], o = []) {
     let y, E = this.kernels.get(I);
-    return E ? (o2.length === 2 && E.setOutput(o2), y = E(...$), y) : (console.error("Kernel not found"), false);
+    return E ? (o.length === 2 && E.setOutput(o), y = E(...$), y) : (console.error("Kernel not found"), false);
   }
   hasKernel(I = "") {
     return !!this.kernels.get(I);
@@ -14715,36 +14445,36 @@ var At = class {
     kt.forEach((y) => this.gpu.addFunction(y)), this.correlograms = fe(this.gpu, me.correlogramsKern), this.correlogramsPC = fe(this.gpu, me.correlogramsPCKern), this.dft = fe(this.gpu, me.dftKern), this.idft = fe(this.gpu, me.idftKern), this.dft_windowed = fe(this.gpu, me.dft_windowedKern), this.idft_windowed = fe(this.gpu, me.idft_windowedKern), this.fft = fe(this.gpu, me.fftKern), this.ifft = fe(this.gpu, me.ifftKern), this.fft_windowed = fe(this.gpu, me.fft_windowedKern), this.ifft_windowed = fe(this.gpu, me.ifft_windowedKern), this.listdft2D = fe(this.gpu, me.listdft2DKern), this.listdft1D = fe(this.gpu, me.listdft1DKern), this.listdft1D_windowed = fe(this.gpu, me.listdft1D_windowedKern), this.listfft1D = fe(this.gpu, me.listfft1DKern), this.listfft1D_windowed = fe(this.gpu, me.listfft1D_windowedKern), this.listidft1D_windowed = fe(this.gpu, me.listidft1D_windowedKern), this.listifft1D_windowed = fe(this.gpu, me.listifft1D_windowedKern), this.bulkArrayMul = fe(this.gpu, me.bulkArrayMulKern), [{ name: "correlograms", krnl: this.correlograms }, { name: "correlogramsPC", krnl: this.correlogramsPC }, { name: "dft", krnl: this.dft }, { name: "idft", krnl: this.idft }, { name: "dft_windowed", krnl: this.idft_windowed }, { name: "fft", krnl: this.fft }, { name: "ifft", krnl: this.ifft }, { name: "fft_windowed", krnl: this.fft_windowed }, { name: "ifft_windowed", krnl: this.ifft_windowed }, { name: "listdft2D", krnl: this.listdft2D }, { name: "listdft1D", krnl: this.listdft1D }, { name: "listdft1D_windowed", krnl: this.listdft1D_windowed }, { name: "listfft1D", krnl: this.listfft1D }, { name: "listfft1D_windowed", krnl: this.listfft1D_windowed }, { name: "listidft1D_windowed", krnl: this.listidft1D_windowed }, { name: "listifft1D_windowed", krnl: this.listifft1D_windowed }, { name: "bulkArrayMul", krnl: this.bulkArrayMul }].forEach((y) => {
       this.kernels.set(y.name, y);
     });
-    let $ = (y, E, p, g2, f2) => {
-      var l = this.fft_windowed(y, E, p, g2, f2, 0), n = this.ifft_windowed(l, E, p, g2, f2);
+    let $ = (y, E, p, g, f) => {
+      var l = this.fft_windowed(y, E, p, g, f, 0), n = this.ifft_windowed(l, E, p, g, f);
       return n;
-    }, o2 = (y, E, p, g2, f2) => {
-      var l = this.listdft1D_windowed(y, E, p, g2, f2, new Array(Math.ceil(y / E)).fill(0)), n = this.listifft1D_windowed(l, E, p, g2, f2);
+    }, o = (y, E, p, g, f) => {
+      var l = this.listdft1D_windowed(y, E, p, g, f, new Array(Math.ceil(y / E)).fill(0)), n = this.listifft1D_windowed(l, E, p, g, f);
       return n;
     };
-    this.gpuCoherence = (y, E, p, g2, f2) => {
-      var l = this.correlograms(y), n = this.listfft1D_windowed(l, E, p, g2, f2, new Array(Math.ceil(y / E)).fill(0)), s = this.bulkArrayMul(n, E, 5, 1);
+    this.gpuCoherence = (y, E, p, g, f) => {
+      var l = this.correlograms(y), n = this.listfft1D_windowed(l, E, p, g, f, new Array(Math.ceil(y / E)).fill(0)), s = this.bulkArrayMul(n, E, 5, 1);
       return s;
     };
   }
-  gpuXCors(I, $ = false, o2 = false) {
+  gpuXCors(I, $ = false, o = false) {
     var y;
     if ($ === true) {
       var E = [], p = [];
       I.forEach((u, x2) => {
-        E.push(u.reduce((w2, m) => m += w2) / u.length), p.push(Math.sqrt(E[x2].reduce((w2, m) => w2 += Math.pow(m - mean1, 2))));
+        E.push(u.reduce((w, m) => m += w) / u.length), p.push(Math.sqrt(E[x2].reduce((w, m) => w += Math.pow(m - mean1, 2))));
       });
-      for (var g2 = [], f2 = [], l = [], n = 0; n < I.length; n++)
+      for (var g = [], f = [], l = [], n = 0; n < I.length; n++)
         for (var s = n; s < I.length; s++)
-          l.push(...I[n], ...I[s]), g2.push(E[n], E[s]), f2.push(p[n], p[s]);
-      this.correlogramsPC.setOutput([l.length]), this.correlogramsPC.setLoopMaxIterations(I[0].length * 2), y = this.correlogramsPC(l, I[0].length, g2, f2);
+          l.push(...I[n], ...I[s]), g.push(E[n], E[s]), f.push(p[n], p[s]);
+      this.correlogramsPC.setOutput([l.length]), this.correlogramsPC.setLoopMaxIterations(I[0].length * 2), y = this.correlogramsPC(l, I[0].length, g, f);
     } else {
       for (var l = [], n = 0; n < I.length; n++)
         for (var s = n; s < I.length; s++)
           l.push(...I[n], ...I[s]);
       this.correlograms.setOutput([l.length]), this.correlograms.setLoopMaxIterations(I[0].length * 2), y = this.correlograms(l, I[0].length);
     }
-    if (o2 === true)
+    if (o === true)
       return y;
     var t = y.toArray();
     y.delete();
@@ -14752,133 +14482,133 @@ var At = class {
       i.push(t.splice(0, I[0].length));
     return i;
   }
-  gpuDFT(I, $, o2 = 1, y = false) {
+  gpuDFT(I, $, o = 1, y = false) {
     var E = I.length, p = E / $;
     this.dft.setOutput([I.length]), this.dft.setLoopMaxIterations(E);
-    var g2 = this.dft(I, E, o2), f2 = null;
+    var g = this.dft(I, E, o), f = null;
     if (y === false) {
-      var l = this.makeFrequencyDistribution(E, p), n = g2.toArray();
-      return g2.delete(), [l, this.orderMagnitudes(n)];
+      var l = this.makeFrequencyDistribution(E, p), n = g.toArray();
+      return g.delete(), [l, this.orderMagnitudes(n)];
     } else {
-      var s = g2;
-      return g2.delete(), s;
+      var s = g;
+      return g.delete(), s;
     }
   }
-  MultiChannelDFT(I, $, o2 = 1, y = false) {
+  MultiChannelDFT(I, $, o = 1, y = false) {
     var E = [];
     I.forEach((i) => {
       E.push(...i);
     });
-    var p = I[0].length, g2 = p / $;
+    var p = I[0].length, g = p / $;
     this.listdft1D.setOutput([E.length]), this.listdft1D.setLoopMaxIterations(p);
-    var f2 = this.listdft1D(E, p, o2);
+    var f = this.listdft1D(E, p, o);
     if (y === false) {
-      var l = [], n = this.makeFrequencyDistribution(p, g2);
-      E = f2.toArray();
+      var l = [], n = this.makeFrequencyDistribution(p, g);
+      E = f.toArray();
       for (var s = 0; s < E.length; s += p)
         l.push(this.orderMagnitudes([...E.slice(s, s + p)]));
-      return f2.delete(), [n, l];
+      return f.delete(), [n, l];
     } else {
-      var t = f2;
-      return f2.delete(), t;
+      var t = f;
+      return f.delete(), t;
     }
   }
-  MultiChannelDFT_Bandpass(I = [], $, o2, y, E = 1, p = false) {
-    var g2 = [];
+  MultiChannelDFT_Bandpass(I = [], $, o, y, E = 1, p = false) {
+    var g = [];
     I.forEach((i) => {
-      g2.push(...i);
+      g.push(...i);
     });
-    var f2 = y * 2, l = I[0].length, n = l / $;
-    this.listdft1D_windowed.setOutput([g2.length]), this.listdft1D_windowed.setLoopMaxIterations(l);
-    var s = this.listdft1D_windowed(g2, n, o2, f2, E);
+    var f = y * 2, l = I[0].length, n = l / $;
+    this.listdft1D_windowed.setOutput([g.length]), this.listdft1D_windowed.setLoopMaxIterations(l);
+    var s = this.listdft1D_windowed(g, n, o, f, E);
     if (p === true)
       return s;
-    g2 = s.toArray(), s.delete();
-    var t = this.bandPassWindow(o2, y, n);
-    return [t, this.orderBPMagnitudes(g2, $, n, l)];
+    g = s.toArray(), s.delete();
+    var t = this.bandPassWindow(o, y, n);
+    return [t, this.orderBPMagnitudes(g, $, n, l)];
   }
-  gpuFFT(I, $, o2 = 1, g2, E = false) {
-    var p = I.length, g2 = p / $;
+  gpuFFT(I, $, o = 1, g, E = false) {
+    var p = I.length, g = p / $;
     this.fft.setOutput([I.length]), this.fft.setLoopMaxIterations(p);
-    var f2 = this.fft(I, p, o2, g2), l = null;
+    var f = this.fft(I, p, o, g), l = null;
     if (E === false) {
-      var n = this.makeFrequencyDistribution(p, g2), s = f2.toArray();
-      return f2.delete(), [n, this.orderMagnitudes(s)];
+      var n = this.makeFrequencyDistribution(p, g), s = f.toArray();
+      return f.delete(), [n, this.orderMagnitudes(s)];
     } else {
-      var t = f2;
-      return f2.delete(), t;
+      var t = f;
+      return f.delete(), t;
     }
   }
-  MultiChannelFFT(I, $, o2 = 1, y = false) {
+  MultiChannelFFT(I, $, o = 1, y = false) {
     var E = [];
     I.forEach((i) => {
       E.push(...i);
     });
-    var p = I[0].length, g2 = p / $;
+    var p = I[0].length, g = p / $;
     this.listfft1D.setOutput([E.length]), this.listfft1D.setLoopMaxIterations(p);
-    var f2 = this.listfft1D(E, p, o2, g2);
+    var f = this.listfft1D(E, p, o, g);
     if (y === false) {
-      var l = [], n = this.makeFrequencyDistribution(p, g2);
-      E = f2.toArray();
+      var l = [], n = this.makeFrequencyDistribution(p, g);
+      E = f.toArray();
       for (var s = 0; s < E.length; s += p)
         l.push(this.orderMagnitudes([...E.slice(s, s + p)]));
-      return f2.delete(), [n, l];
+      return f.delete(), [n, l];
     } else {
-      var t = f2;
-      return f2.delete(), t;
+      var t = f;
+      return f.delete(), t;
     }
   }
-  MultiChannelFFT_Bandpass(I = [], $, o2, y, E = 1, p = false) {
-    var g2 = [];
+  MultiChannelFFT_Bandpass(I = [], $, o, y, E = 1, p = false) {
+    var g = [];
     I.forEach((i) => {
-      g2.push(...i);
+      g.push(...i);
     });
-    var f2 = y * 2, l = I[0].length, n = l / $;
-    this.listfft1D_windowed.setOutput([g2.length]), this.listfft1D_windowed.setLoopMaxIterations(l);
-    var s = this.listfft1D_windowed(g2, n, o2, f2, E);
+    var f = y * 2, l = I[0].length, n = l / $;
+    this.listfft1D_windowed.setOutput([g.length]), this.listfft1D_windowed.setLoopMaxIterations(l);
+    var s = this.listfft1D_windowed(g, n, o, f, E);
     if (p === true)
       return s;
-    g2 = s.toArray(), s.delete();
-    var t = this.bandPassWindow(o2, y, n);
-    return [t, this.orderBPMagnitudes(g2, $, n, l)];
+    g = s.toArray(), s.delete();
+    var t = this.bandPassWindow(o, y, n);
+    return [t, this.orderBPMagnitudes(g, $, n, l)];
   }
   orderMagnitudes(I) {
     return [...I.slice(Math.ceil(I.length * 0.5), I.length), ...I.slice(0, Math.ceil(I.length * 0.5))];
   }
   makeFrequencyDistribution(I, $) {
-    for (var o2 = I, y = $ / o2, E = [], p = -o2 / 2; p < o2 / 2; p++) {
-      var g2 = p * y;
-      E.push(g2);
+    for (var o = I, y = $ / o, E = [], p = -o / 2; p < o / 2; p++) {
+      var g = p * y;
+      E.push(g);
     }
     return E;
   }
-  orderBPMagnitudes(I, $, o2, y) {
+  orderBPMagnitudes(I, $, o, y) {
     for (var E = [], p = 0; p < I.length; p += y)
       E.push([...I.slice(p, Math.ceil(y * 0.5 + p))]);
-    var g2 = [], f2 = 1 / o2;
+    var g = [], f = 1 / o;
     return $ > 1 ? (E.forEach((l, n) => {
-      g2.push([]);
+      g.push([]);
       for (var s = 1 / Math.max(...l), t = 0; t < l.length; t++)
         if (t == 0)
-          g2[n] = l.slice(t, Math.floor(o2)), t = Math.floor(o2);
+          g[n] = l.slice(t, Math.floor(o)), t = Math.floor(o);
         else {
-          var i = t - Math.floor(Math.floor(t * f2) * o2) - 1;
-          g2[n][i] = g2[n][i] * l[t - 1] * s;
+          var i = t - Math.floor(Math.floor(t * f) * o) - 1;
+          g[n][i] = g[n][i] * l[t - 1] * s;
         }
-      g2[n] = [...g2[n].slice(0, Math.ceil(g2[n].length * 0.5))];
-    }), g2) : E;
+      g[n] = [...g[n].slice(0, Math.ceil(g[n].length * 0.5))];
+    }), g) : E;
   }
-  bandPassWindow(I, $, o2, y = true) {
+  bandPassWindow(I, $, o, y = true) {
     var E = $ * 2;
-    let p = (E - I) / o2;
-    var g2 = [];
+    let p = (E - I) / o;
+    var g = [];
     if (y === true)
-      for (var f2 = 0; f2 < Math.ceil(0.5 * o2); f2 += p)
-        g2.push(I + (E - I) * f2 / o2);
+      for (var f = 0; f < Math.ceil(0.5 * o); f += p)
+        g.push(I + (E - I) * f / o);
     else
-      for (var f2 = -Math.ceil(0.5 * o2); f2 < Math.ceil(0.5 * o2); f2 += p)
-        g2.push(I + (E - I) * f2 / o2);
-    return g2;
+      for (var f = -Math.ceil(0.5 * o); f < Math.ceil(0.5 * o); f += p)
+        g.push(I + (E - I) * f / o);
+    return g;
   }
 };
 
@@ -14912,7 +14642,7 @@ var _Math2 = class {
     return sum / arr.length;
   }
   static mode(arr) {
-    return arr.sort((a2, b2) => arr.filter((v) => v === a2).length - arr.filter((v) => v === b2).length).pop();
+    return arr.sort((a, b) => arr.filter((v) => v === a).length - arr.filter((v) => v === b).length).pop();
   }
   static std(arr, mean = void 0) {
     let avg = mean;
@@ -14960,7 +14690,7 @@ var _Math2 = class {
   }
   static variance(arr) {
     var mean = this.mean(arr);
-    return arr.reduce((a2, b2) => a2 + (b2 - mean) ** 2, 0) / arr.length;
+    return arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length;
   }
   static dot(vec1, vec2) {
     var dot = 0;
@@ -14978,29 +14708,29 @@ var _Math2 = class {
   }
   static magnitude(vec) {
     var sqrd = 0;
-    vec.forEach((c2) => {
-      sqrd += c2 * c2;
+    vec.forEach((c) => {
+      sqrd += c * c;
     });
     return Math.sqrt(sqrd);
   }
   static distance(point1, point2) {
     var dsqrd = 0;
-    point1.forEach((c2, i) => {
-      dsqrd += (point2[i] - c2) * (point2[i] - c2);
+    point1.forEach((c, i) => {
+      dsqrd += (point2[i] - c) * (point2[i] - c);
     });
     return Math.sqrt(dsqrd);
   }
   static midpoint(point1 = [1, 2, 3], point2 = [3, 4, 5]) {
-    return point1.map((c2, i) => {
-      return (c2 + point2[i]) * 0.5;
+    return point1.map((c, i) => {
+      return (c + point2[i]) * 0.5;
     });
   }
   static normalize(vec) {
     var norm = 0;
     norm = this.magnitude(vec);
     var vecn = new Array(vec.length);
-    vec.forEach((c2, i) => {
-      vecn[i] = c2 * norm;
+    vec.forEach((c, i) => {
+      vecn[i] = c * norm;
     });
     return vecn;
   }
@@ -15018,14 +14748,14 @@ var _Math2 = class {
     }
     return arr.map((v) => (v - min) / (max - min));
   }
-  static quadraticFormula(a2, b2, c2) {
-    let bbmac4 = Math.sqrt(b2 * b2 - 4 * a2 * c2);
+  static quadraticFormula(a, b, c) {
+    let bbmac4 = Math.sqrt(b * b - 4 * a * c);
     if (!isNaN(bbmac4))
       return ["complex", "complex"];
-    let _a2 = 1 / (2 * a2);
+    let _a2 = 1 / (2 * a);
     if (bbmac4 === 0)
-      return [b2 * _a2];
-    let nb = -b2;
+      return [b * _a2];
+    let nb = -b;
     return [(nb + bbmac4) * _a2, (nb - bbmac4) * _a2];
   }
   static newtonsMethod(foo = (x2) => {
@@ -15046,14 +14776,14 @@ var _Math2 = class {
         let slope2 = (guess2 - guess) / (xn12 - xn);
       }
       let idx;
-      let f2 = roots.find((root, i2) => {
+      let f = roots.find((root, i2) => {
         if (Math.abs(xn1 - root) < precision) {
           idx = i2;
           return true;
         }
       });
-      if (f2)
-        roots[idx] = (xn1 + f2) * 0.5;
+      if (f)
+        roots[idx] = (xn1 + f) * 0.5;
       else
         roots.push(xn1);
     }
@@ -15061,8 +14791,8 @@ var _Math2 = class {
   }
   static makeVec(point1, point2) {
     var vec = [];
-    point1.forEach((c2, i) => {
-      vec.push(point2[i] - c2);
+    point1.forEach((c, i) => {
+      vec.push(point2[i] - c);
     });
     return vec;
   }
@@ -15249,14 +14979,14 @@ var _Math2 = class {
   static transpose(mat) {
     return mat[0].map((_, colIndex) => mat.map((row) => row[colIndex]));
   }
-  static matmul(a2, b2) {
-    var aNumRows = a2.length, aNumCols = a2[0].length, bNumRows = b2.length, bNumCols = b2[0].length, m = new Array(aNumRows);
+  static matmul(a, b) {
+    var aNumRows = a.length, aNumCols = a[0].length, bNumRows = b.length, bNumCols = b[0].length, m = new Array(aNumRows);
     for (var r = 0; r < aNumRows; ++r) {
       m[r] = new Array(bNumCols);
-      for (var c2 = 0; c2 < bNumCols; ++c2) {
-        m[r][c2] = 0;
+      for (var c = 0; c < bNumCols; ++c) {
+        m[r][c] = 0;
         for (var i = 0; i < aNumCols; ++i) {
-          m[r][c2] += a2[r][i] * b2[i][c2];
+          m[r][c] += a[r][i] * b[i][c];
         }
       }
     }
@@ -15272,30 +15002,30 @@ var _Math2 = class {
     }
     return m;
   }
-  static matadd(a2, b2) {
+  static matadd(a, b) {
     let m = [];
-    for (let i = 0; i < a2.length; i++) {
+    for (let i = 0; i < a.length; i++) {
       m[i] = [];
-      for (var j = 0; j < a2[0].length; j++) {
-        m[i][j] = a2[i][j] + b2[i][j];
+      for (var j = 0; j < a[0].length; j++) {
+        m[i][j] = a[i][j] + b[i][j];
       }
     }
     return m;
   }
-  static matsub(a2, b2) {
+  static matsub(a, b) {
     let m = [];
-    for (let i = 0; i < a2.length; i++) {
+    for (let i = 0; i < a.length; i++) {
       m[i] = [];
-      for (var j = 0; j < a2[0].length; j++) {
-        m[i][j] = a2[i][j] - b2[i][j];
+      for (var j = 0; j < a[0].length; j++) {
+        m[i][j] = a[i][j] - b[i][j];
       }
     }
     return m;
   }
   static histogram(arr = [], binSize = 1, nBins = void 0) {
     let copy = [...arr];
-    copy.sort(function(a2, b2) {
-      return a2 - b2;
+    copy.sort(function(a, b) {
+      return a - b;
     });
     let binStart = Math.min(...copy);
     if (typeof nBins === "number") {
@@ -15440,10 +15170,10 @@ var _Math2 = class {
     var aNumRows = matproducts.length, aNumCols = matproducts[0].length, bNumRows = matproductstransposed.length, bNumCols = matproductstransposed[0].length, m = new Array(aNumRows);
     for (var r = 0; r < aNumRows; ++r) {
       m[r] = new Array(bNumCols);
-      for (var c2 = 0; c2 < bNumCols; ++c2) {
-        m[r][c2] = 0;
+      for (var c = 0; c < bNumCols; ++c) {
+        m[r][c] = 0;
         for (var i = 0; i < aNumCols; ++i) {
-          m[r][c2] += matproducts[r][i] * matproductstransposed[i][c2] / (mat[0].length - 1);
+          m[r][c] += matproducts[r][i] * matproductstransposed[i][c] / (mat[0].length - 1);
         }
       }
     }
@@ -15534,9 +15264,9 @@ var _Math2 = class {
       for (let x2 = 0; x2 < mat2d2[y].length; x2++) {
         let G = 0;
         let _G = 0;
-        for (let b2 = 0; b2 < mat2d2.length; b2++) {
-          for (let a2 = 0; a2 < mat2d2[b2].length; a2++) {
-            G += mat2d2[y][x2] * mat2d2[mat2d2.length - 1 - b2][mat2d2[y].length - 1 - a2];
+        for (let b = 0; b < mat2d2.length; b++) {
+          for (let a = 0; a < mat2d2[b].length; a++) {
+            G += mat2d2[y][x2] * mat2d2[mat2d2.length - 1 - b][mat2d2[y].length - 1 - a];
             _G += mat2d2[y][x2] * mat2d2[mat2d2.length - 1][mat2d2[y].length - 1];
           }
         }
@@ -15551,9 +15281,9 @@ var _Math2 = class {
       result.push([]);
       for (let x2 = 0; x2 < mat2d1[y].length; x2++) {
         let G = 0;
-        for (let b2 = 0; b2 < mat2d2.length; b2++) {
-          for (let a2 = 0; a2 < mat2d2[b2].length; a2++) {
-            G += mat2d1[y][x2] * mat2d2[mat2d2.length - 1 - b2][mat2d2[y].length - 1 - a2];
+        for (let b = 0; b < mat2d2.length; b++) {
+          for (let a = 0; a < mat2d2[b].length; a++) {
+            G += mat2d1[y][x2] * mat2d2[mat2d2.length - 1 - b][mat2d2[y].length - 1 - a];
           }
         }
         result[y][x2] = G;
@@ -15568,9 +15298,9 @@ var _Math2 = class {
       for (let x2 = 0; x2 < mat2d1[y].length; x2++) {
         let G = 0;
         let _G = 0;
-        for (let b2 = 0; b2 < mat2d2.length; b2++) {
-          for (let a2 = 0; a2 < mat2d2[b2].length; a2++) {
-            G += mat2d1[y][x2] * mat2d2[mat2d.length - 1 - b2][mat2d2[y].length - 1 - a2];
+        for (let b = 0; b < mat2d2.length; b++) {
+          for (let a = 0; a < mat2d2[b].length; a++) {
+            G += mat2d1[y][x2] * mat2d2[mat2d.length - 1 - b][mat2d2[y].length - 1 - a];
             _G += mat2d1[y][x2] * mat2d2[mat2d2.length - 1][mat2d2[y].length - 1];
           }
         }
@@ -15819,7 +15549,7 @@ var _Math2 = class {
   }
   static getPeakThreshold(arr, peakIndices, thresholdVar) {
     let threshold;
-    let filtered = arr.filter((o2, i) => {
+    let filtered = arr.filter((o, i) => {
       if (peakIndices.indexOf(i) > -1)
         return true;
     });
@@ -16078,15 +15808,15 @@ __publicField2(Math2, "dintegral", (func = (x2, y) => {
   return volume;
 });
 __publicField2(Math2, "tintegral", (func = (x2, y, z) => {
-  let w2 = x2 + y + z;
-  return w2;
+  let w = x2 + y + z;
+  return w;
 }, range = [[], [], []], stepx = 0.01, stepy = stepx, stepz = stepx) => {
   let volume = 0;
   for (let i = range[0][0] + stepx; i < range[0][1]; i += stepx) {
     for (let j = range[1][0] + stepy; j < range[1][1]; j += stepy) {
       for (let k = range[2][0] + stepz; k < range[2][1]; k += stepz) {
-        let w2 = func(i, j, k);
-        volume += w2 * stepx * stepy * stepz;
+        let w = func(i, j, k);
+        volume += w * stepx * stepy * stepz;
       }
     }
   }
@@ -16114,9 +15844,9 @@ __publicField2(Math2, "autocorrelation2d", (mat2d2) => {
     result.push([]);
     for (let x2 = 0; x2 < mat2d2[y].length; x2++) {
       let G = 0;
-      for (let b2 = 0; b2 < mat2d2.length; b2++) {
-        for (let a2 = 0; a2 < mat2d2[b2].length; a2++) {
-          G += mat2d2[y][x2] * mat2d2[mat2d2.length - 1 - b2][mat2d2[y].length - 1 - a2];
+      for (let b = 0; b < mat2d2.length; b++) {
+        for (let a = 0; a < mat2d2[b].length; a++) {
+          G += mat2d2[y][x2] * mat2d2[mat2d2.length - 1 - b][mat2d2[y].length - 1 - a];
         }
       }
       result[y][x2] = G;
@@ -17622,8 +17352,8 @@ var Router = class {
               } else
                 delete connections[protocol][info];
             } else if (obj.wss) {
-              obj.wss.clients.forEach((c2) => {
-                c2.send(message);
+              obj.wss.clients.forEach((c) => {
+                c.send(message);
               });
               sent = true;
             } else if (obj.sessions) {
@@ -18135,8 +17865,8 @@ var UserRouter = class extends Router {
                       obj.channels[firstchannel].send(message);
                     }
                   } else if (obj.wss) {
-                    obj.wss.clients.forEach((c2) => {
-                      c2.send(message);
+                    obj.wss.clients.forEach((c) => {
+                      c.send(message);
                     });
                   } else if (obj.sessions) {
                     if (channel)
@@ -19082,26 +18812,18 @@ var UserRouter = class extends Router {
   }
 };
 export {
-  ButtonNode,
-  CanvasNode,
-  CircleCanvasNode,
   DOMService,
   E2EEService,
   ElementProxyReceiver,
   EventDispatcher,
   GPUService,
   Graph,
-  GraphElement,
   GraphNode,
   HTTPfrontend,
-  InputNode,
-  NodeElement,
-  PlaceNode,
   ProxyManager,
   Router,
   SSEfrontend,
   Service,
-  TemplateNode,
   UserRouter,
   WSSfrontend,
   WebRTCfrontend,

@@ -2,7 +2,6 @@ export * from './Graph';
 export * from './services/Service';
 export * from './services/unsafe/Unsafe.service';
 export * from './services/dom/DOM.service';
-export * from './services/dom/components/index';
 export * from './services/e2ee/E2EE.service';
 export * from './services/gpu/GPU.service';
 export * from './services/http/HTTP.browser';

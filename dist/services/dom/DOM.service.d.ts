@@ -1,6 +1,13 @@
-import { DOMElement } from "fragelement";
-import { GraphNode } from '../../Graph';
-import { Routes, Service } from "../Service";
+import { DOMElement } from "./DOMElement";
+import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph';
+import { RouteProp, Routes, Service, ServiceMessage } from "../Service";
+export declare type ElementProps = {
+    tagName?: string;
+    element?: HTMLElement;
+    style?: CSSStyleDeclaration;
+    parentNode?: string | HTMLElement;
+    id?: string;
+};
 export declare type ElementInfo = {
     element: HTMLElement;
     node: GraphNode;
@@ -48,8 +55,20 @@ export declare type CanvasElementInfo = {
     class: any;
     node: GraphNode;
 } & DOMElementProps;
-export declare class DOMService extends Service {
+export declare type DOMRouteProp = (ElementProps & GraphNodeProperties) | (DOMElementProps & GraphNodeProperties) | (CanvasElementProps & GraphNodeProperties);
+export declare type DOMRoutes = {
+    [key: string]: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void) | ({
+        aliases?: string[];
+    } & GraphNodeProperties) | RouteProp | DOMRouteProp;
+};
+export declare class DOMService extends Graph {
+    routes: DOMRoutes;
+    firstLoad: boolean;
     name: string;
+    keepState: boolean;
+    constructor(routes?: DOMRoutes, name?: string, props?: {
+        [key: string]: any;
+    });
     elements: {
         [key: string]: ElementInfo;
     };
@@ -65,8 +84,8 @@ export declare class DOMService extends Service {
         style?: CSSStyleDeclaration;
         parentNode?: string | HTMLElement;
         id?: string;
-    }, generateChildElementNodes?: boolean) => ElementInfo;
-    addComponent: (options?: {
+    } & GraphNodeProperties, generateChildElementNodes?: boolean) => ElementInfo;
+    addComponent: (options: {
         tagName?: string;
         template?: string | ((props: any) => string);
         parentNode?: string | HTMLElement;
@@ -80,9 +99,8 @@ export declare class DOMService extends Service {
             [key: string]: any;
         };
         id?: string;
-    }, generateChildElementNodes?: boolean) => DOMElementInfo;
+    } & GraphNodeProperties, generateChildElementNodes?: boolean) => DOMElementInfo;
     addCanvasComponent: (options: {
-        [key: string]: any;
         tagName?: string;
         context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent';
         draw: (props: any, self: DOMElement) => void;
@@ -100,9 +118,20 @@ export declare class DOMService extends Service {
             [key: string]: any;
         };
         id?: string;
-    }) => CanvasElementInfo;
+    } & GraphNodeProperties) => CanvasElementInfo;
+    load: (routes?: any) => DOMRoutes;
+    unload: (routes?: Service | Routes | any) => DOMRoutes;
+    handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;
+    handleServiceMessage(message: ServiceMessage): any;
+    handleGraphNodeCall(route: string | GraphNode, args: any, origin?: string | GraphNode | Graph): any;
+    transmit: (...args: any[]) => any | void;
+    receive: (...args: any[]) => any | void;
+    pipe: (source: GraphNode | string, destination: string, endpoint?: string | any, origin?: string, method?: string, callback?: (res: any) => any | void) => number;
+    pipeOnce: (source: GraphNode | string, destination: string, endpoint?: string | any, origin?: string, method?: string, callback?: (res: any) => any | void) => void;
     terminate: (element: string | DOMElement | HTMLElement | DOMElementInfo | CanvasElementInfo) => boolean;
-    routes: Routes;
+    isTypedArray(x: any): boolean;
+    recursivelyAssign: (target: any, obj: any) => any;
+    defaultRoutes: DOMRoutes;
 }
 /**
  * Usage

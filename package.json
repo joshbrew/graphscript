@@ -1,6 +1,6 @@
 {
     "name": "graphscript",
-    "version": "0.0.18",
+    "version": "0.0.19",
     "description": "Barebones esbuild and test node server implementation. For building",
     "main": "dist/index.js",
     "module": "dist/index.esm.js",
@@ -27,7 +27,6 @@
         "brainsatplay-data": "^0.0.48",
         "brainsatplay-math": "^0.0.22",
         "bson-objectid": "^2.0.3",
-        "fragelement": "^1.3.16",
         "gpujsutils": "^1.0.8",
         "web-worker": "^1.2.0",
         "ws": "^8.7.0"
