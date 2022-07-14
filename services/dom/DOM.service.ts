@@ -206,7 +206,7 @@ export class DOMService extends Graph {
             oncreate = options.oncreate;
             onresize = options.onresize;
             ondelete = options.ondelete;
-            renderonchanged = options.renderonchanged as any;;
+            renderonchanged = options.renderonchanged as any;
         }
 
         if(!options.tagName) options.tagName = `custom-element${Math.random()*1000000000000000}`;
@@ -297,7 +297,7 @@ export class DOMService extends Graph {
             oncreate = options.oncreate;
             onresize = options.onresize;
             ondelete = options.ondelete;
-            renderonchanged = options.renderonchanged as any;;
+            renderonchanged = options.renderonchanged as any;
         }
 
         if(!options.tagName) options.tagName = `custom-element${Math.random()*1000000000000000}`;
