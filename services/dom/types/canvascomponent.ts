@@ -3,7 +3,7 @@ import { DOMElement } from "../DOMElement"
 import { GraphNode, GraphNodeProperties } from "../../../Graph"
 
 export type CanvasElementProps = {
-    draw:((props:any,self:DOMElement)=>string),
+    draw:((self:DOMElement,info:CanvasElementInfo)=>string),
     context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent',
     width?:string,
     height?:string,

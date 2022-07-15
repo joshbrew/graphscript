@@ -3186,9 +3186,9 @@ var DOMService = class extends Graph {
       element.id = options2.id;
       if (options2.style)
         Object.assign(element.style, options2.style);
-      if (options2.innerHTML)
+      if (options2.innerHTML && element.innerHTML !== options2.innerHTML)
         element.innerHTML = options2.innerHTML;
-      if (options2.innerText)
+      if (options2.innerText && element.innerText !== options2.innerText)
         element.innerText = options2.innerText;
       if (options2.attributes)
         Object.assign(element, options2.attributes);
