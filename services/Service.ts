@@ -124,6 +124,36 @@ export class Service extends Graph {
             this.firstLoad = false;
         }
 
+        //load any children into routes too if tags exist
+        for(const route in routes) {
+            let childrenIter = (route:RouteProp) => {
+                if(route?.children) {
+                    if(Array.isArray(route.children)) {
+                        route.children.forEach((c) => {
+                            if(typeof c === 'object') {
+                                if(c.tag) {
+                                    routes[c.tag] = c;
+                                } else if (c.id) {
+                                    c.tag = c.id;
+                                    routes[c.tag] = c;
+                                    childrenIter(routes[c.tag]);
+                                }
+                            }
+                        });
+                    } else if (typeof route.children === 'object') {
+                        if(route.children.tag) {
+                            routes[route.children.tag] = route.children;
+                        } else if(route.children.id) {
+                            route.children.tag = route.children.id;
+                            routes[route.children.tag] = route.children;
+                            childrenIter(routes[route.children.tag]);
+                        }
+                    }
+                }
+            }
+            childrenIter(routes[route]);
+        }
+
         for(const route in routes) {
             if(typeof routes[route] === 'object') {
                 let r = routes[route] as RouteProp;
