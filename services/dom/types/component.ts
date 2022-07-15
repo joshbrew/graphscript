@@ -6,11 +6,11 @@ export type DOMElementProps = {
     template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
     parentNode?:string|HTMLElement,
     styles?:string, //will use the shadow DOM automatically in this case
-    oncreate?:(props:any,self:DOMElement)=>void,
-    onresize?:(props:any,self:DOMElement)=>void,
-    ondelete?:(props:any,self:DOMElement)=>void,
-    onchanged?:(props:any,self:DOMElement)=>void,
-    renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
+    oncreate?:(self:DOMElement,props:any)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
+    onresize?:(self:DOMElement,props:any)=>void,
+    ondelete?:(self:DOMElement,props:any)=>void,
+    onchanged?:(props:any)=>void,
+    renderonchanged?:boolean|((self:DOMElement,props:any)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
     id?:string
 }
 
@@ -20,6 +20,7 @@ export type DOMElementInfo = { //returned from addComponent
     node:GraphNode,
     divs:any[]
 } & DOMElementProps
+
 
 export type ComponentOptions = {
     tagName?:string,

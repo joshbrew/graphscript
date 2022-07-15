@@ -1,4 +1,4 @@
-import { DOMElementInfo, DOMElementProps } from "./dom"
+import { DOMElementProps } from "./component"
 import { DOMElement } from "../DOMElement"
 import { GraphNode, GraphNodeProperties } from "../../../Graph"
 
@@ -8,7 +8,7 @@ export type CanvasElementProps = {
     width?:string,
     height?:string,
     style?:string
-} & DOMElementInfo
+} & DOMElementProps
 
 export type CanvasElementInfo = { //returned from addCanvasComponent
     element:DOMElement & {canvas:HTMLCanvasElement, context:RenderingContext},
@@ -24,6 +24,7 @@ export type CanvasElementInfo = { //returned from addCanvasComponent
     node:GraphNode
 } & DOMElementProps
 
+
 export type CanvasOptions = {
     tagName?:string, //custom element tagName, requires a '-' in the tag or it gets added to the end
     context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent', //
@@ -33,11 +34,11 @@ export type CanvasOptions = {
     style?:CSSStyleDeclaration, //canvas inline style string
     parentNode?:string|HTMLElement,
     styles?:string, //stylesheet text, goes inside a <style> tag. This will use the shadow DOM automatically in this case
-    oncreate?:(props:any,self:DOMElement)=>void,
-    onresize?:(props:any,self:DOMElement)=>void,
-    ondelete?:(props:any,self:DOMElement)=>void,
-    onchanged?:(props:any,self:DOMElement)=>void,
-    renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
+    oncreate?:(self:DOMElement,props:any)=>void,
+    onresize?:(self:DOMElement,props:any)=>void,
+    ondelete?:(self:DOMElement,props:any)=>void,
+    onchanged?:(props:any)=>void,
+    renderonchanged?:boolean|((self:DOMElement,props:any)=>void),
     props?:{[key:string]:any}
     id?:string
 } & GraphNodeProperties

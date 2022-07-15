@@ -10,9 +10,6 @@ export type ElementProps = {
     onresize?:(ev,self:HTMLElement,info:ElementInfo)=>void,
     ondelete?:(self:HTMLElement,info:ElementInfo)=>void,
     id?:string
-
-    innerHTML?: string,
-    innerText?: string
 }
 
 export type ElementInfo = { //returned from addElement
