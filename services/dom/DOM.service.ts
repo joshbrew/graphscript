@@ -82,7 +82,7 @@ export class DOMService extends Graph {
                 return props;
             },
             ...options
-        });
+        },undefined,this);
 
         this.add(node);
         
@@ -194,7 +194,7 @@ export class DOMService extends Graph {
                 return props;
             },
             ...completeOptions
-        });
+        },undefined,this);
 
         this.add(node);
 
@@ -263,7 +263,7 @@ export class DOMService extends Graph {
                 return props;
             },
             ...completeOptions
-        });
+        },undefined,this);
 
         this.add(node);
 

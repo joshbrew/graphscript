@@ -3135,7 +3135,7 @@
             return props;
           },
           ...options2
-        });
+        }, void 0, this);
         this.add(node);
         let divs = Array.from(elm.querySelectorAll("*"));
         if (generateChildElementNodes) {
@@ -3238,7 +3238,7 @@
             return props;
           },
           ...completeOptions
-        });
+        }, void 0, this);
         this.add(node);
         this.components[completeOptions.id] = {
           element: elm,
@@ -3298,7 +3298,7 @@
             return props;
           },
           ...completeOptions
-        });
+        }, void 0, this);
         this.add(node);
         let canvas = elm.querySelector("canvas");
         if (completeOptions.style)
