@@ -28,11 +28,11 @@ export type DOMElementProps = {
     template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
     parentNode?:string|HTMLElement,
     styles?:string, //will use the shadow DOM automatically in this case
-    oncreate?:(props:any,self:DOMElement)=>void,
-    onresize?:(props:any,self:DOMElement)=>void,
-    ondelete?:(props:any,self:DOMElement)=>void,
-    onchanged?:(props:any,self:DOMElement)=>void,
-    renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
+    oncreate?:(self:DOMElement,props:any)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
+    onresize?:(self:DOMElement,props:any)=>void,
+    ondelete?:(self:DOMElement,props:any)=>void,
+    onchanged?:(props:any)=>void,
+    renderonchanged?:boolean|((self:DOMElement,props:any)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
     id?:string
 }
 
@@ -208,11 +208,11 @@ export class DOMService extends Graph {
             template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
             parentNode?:string|HTMLElement,
             styles?:string, //will use the shadow DOM automatically in this case
-            oncreate?:(props:any,self:DOMElement)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
-            onresize?:(props:any,self:DOMElement)=>void,
-            ondelete?:(props:any,self:DOMElement)=>void,
-            onchanged?:(props:any,self:DOMElement)=>void,
-            renderonchanged?:boolean|((props:any,self:DOMElement)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
+            oncreate?:(self:DOMElement,props:any)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
+            onresize?:(self:DOMElement,props:any)=>void,
+            ondelete?:(self:DOMElement,props:any)=>void,
+            onchanged?:(props:any)=>void,
+            renderonchanged?:boolean|((self:DOMElement,props:any)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
             props?:{[key:string]:any},
             id?:string
         } & GraphNodeProperties,
@@ -296,11 +296,11 @@ export class DOMService extends Graph {
             style?:CSSStyleDeclaration, //canvas inline style string
             parentNode?:string|HTMLElement,
             styles?:string, //stylesheet text, goes inside a <style> tag. This will use the shadow DOM automatically in this case
-            oncreate?:(props:any,self:DOMElement)=>void,
-            onresize?:(props:any,self:DOMElement)=>void,
-            ondelete?:(props:any,self:DOMElement)=>void,
-            onchanged?:(props:any,self:DOMElement)=>void,
-            renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
+            oncreate?:(self:DOMElement,props:any)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
+            onresize?:(self:DOMElement,props:any)=>void,
+            ondelete?:(self:DOMElement,props:any)=>void,
+            onchanged?:(props:any)=>void,
+            renderonchanged?:boolean|((self:DOMElement,props:any)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
             props?:{[key:string]:any}
             id?:string
         } & GraphNodeProperties
@@ -461,9 +461,6 @@ export class DOMService extends Graph {
         for(const route in routes) {
             if(typeof routes[route] === 'object') {
                 let r = routes[route] as RouteProp | DOMRouteProp;
-                for(const prop in r) {
-                    r[prop.toLowerCase()] = r[prop]; //ensure existence of lower case copies of route props for our method handler
-                }
                 if(r.template) { //assume its a component node
                     this.addComponent(routes[route]);
                 }
@@ -868,7 +865,7 @@ export class DOMService extends Graph {
 //             color: red;
 //         }
 //     `, //or load a css file (if bundling, scss also supported natively in esbuild)
-//     oncreate:(props:any,self:DOMElement) => { 
+//     oncreate:(self:DOMElement,props:any) => { 
 //         let button = self.querySelector('button');
 //         button.onclick = (ev) => { alert('Hello World!'); }
 //     }
@@ -876,7 +873,7 @@ export class DOMService extends Graph {
 
 // let ccomp = router.html.addCanvasComponent({
 //     context:'2d',
-//     draw:(props:any,self:DOMElement)=>{
+//     draw:(self:DOMElement,props:any)=>{
 //         let canvas = self.canvas as HTMLCanvasElement;
 //         let context = self.context as CanvasRenderingContext2D;
 

@@ -127,9 +127,6 @@ export class Service extends Graph {
         for(const route in routes) {
             if(typeof routes[route] === 'object') {
                 let r = routes[route] as RouteProp;
-                for(const prop in r) {
-                    r[prop.toLowerCase()] = r[prop]; //ensure existence of lower case copies of route props for our method handler
-                }
                 if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
                     if(typeof r.get == 'object') {
                         

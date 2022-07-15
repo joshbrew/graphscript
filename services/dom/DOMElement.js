@@ -8,11 +8,11 @@ export class DOMElement extends HTMLElement {
     useShadow = false; //can set to attach a shadow DOM instead (local styles)
     styles; //can set a style sheet which will toggle the shadow dom by default
   
-    oncreate; //(props,self) => {}  fires on element creation (e.g. to set up logic)
-    onresize; //(props,self) => {} fires on window resize
-    ondelete; //(props,self) => {} fires after element is deleted
-    onchanged; //(props,self) => {} fires when props change
-    renderonchanged=false; //(props,self) => {} fires after rerendering on props change
+    oncreate; //(self,props) => {}  fires on element creation (e.g. to set up logic)
+    onresize; //(self,props) => {} fires on window resize
+    ondelete; //(self,props) => {} fires after element is deleted
+    onchanged; //(props) => {} fires when props change
+    renderonchanged=false; //(self,props) => {} fires after rerendering on props change
 
     FRAGMENT;
     attachedShadow = false;
@@ -89,7 +89,7 @@ export class DOMElement extends HTMLElement {
             if(typeof this.renderonchanged === 'number') this.unsubscribeTrigger(this.renderonchanged);
             if(typeof rpc === 'string') rpc = parseFunctionFromText(rpc);
             if(typeof rpc === 'function') {
-                this.renderonchanged = this.state.subscribeTrigger('props', (p)=>{this.render(p); rpc(p,this);}); //rerender then call the onchanged function if provided
+                this.renderonchanged = this.state.subscribeTrigger('props', (p)=>{this.render(p); rpc(this,p);}); //rerender then call the onchanged function if provided
             }
             else if(rpc != false) this.renderonchanged = this.state.subscribeTrigger('props',this.render); //just rerender automatically if set to true instead of a function
         }
@@ -106,7 +106,7 @@ export class DOMElement extends HTMLElement {
 
             this.template = options.template; //function or string;
 
-            if(typeof template === 'function') this.templateString = this.template(this.props); //can pass a function
+            if(typeof template === 'function') this.templateString = this.template(this.props,this); //can pass a function
             else this.templateString = template;
             
             //render the new template
@@ -215,7 +215,7 @@ export class DOMElement extends HTMLElement {
             if(this.ONRESIZE) {
                 try { window.removeEventListener('resize',this.ONRESIZE); } catch(err) {}
             }
-            this.ONRESIZE = (ev) => { this.onresize(this.props,this); this.dispatchEvent(resizeevent); } 
+            this.ONRESIZE = (ev) => { this.onresize(this,this.props); this.dispatchEvent(resizeevent); } 
             window.addEventListener('resize',this.ONRESIZE);       
         }
 
@@ -225,7 +225,7 @@ export class DOMElement extends HTMLElement {
                 if(this.ONRESIZE) window.removeEventListener('resize',this.ONRESIZE);
                 this.state.unsubscribeTrigger('props');
                 this.dispatchEvent(deleted);
-                ondelete(props,this);
+                ondelete(this,props);
             }
         }
 
@@ -239,7 +239,7 @@ export class DOMElement extends HTMLElement {
             if(typeof this.renderonchanged === 'number') this.unsubscribeTrigger(this.renderonchanged);
             if(typeof rpc === 'string') rpc = parseFunctionFromText(rpc);
             if(typeof rpc === 'function') {
-                this.renderonchanged = this.state.subscribeTrigger('props', (p)=>{this.render(p); rpc(p);}); //rerender then call the onchanged function if provided
+                this.renderonchanged = this.state.subscribeTrigger('props', (p)=>{this.render(p); rpc(this,p);}); //rerender then call the onchanged function if provided
             }
             else if(rpc !== false) this.renderonchanged = this.state.subscribeTrigger('props',this.render); //just rerender
         }
@@ -258,7 +258,7 @@ export class DOMElement extends HTMLElement {
 
     render = (props=this.props) => {
 
-        if(typeof this.template === 'function') this.templateString = this.template(props); //can pass a function
+        if(typeof this.template === 'function') this.templateString = this.template(props, this); //can pass a function
         else this.templateString = this.template;
 
         //this.innerHTML = this.templateString;
@@ -284,7 +284,7 @@ export class DOMElement extends HTMLElement {
         let rendered = new CustomEvent('rendered', {detail: { props:this.props, self:this }});
         this.dispatchEvent('rendered');
         
-        if(this.oncreate) this.oncreate(props,this); //set scripted behaviors
+        if(this.oncreate) this.oncreate(this,props); //set scripted behaviors
     }
 
     state = {
