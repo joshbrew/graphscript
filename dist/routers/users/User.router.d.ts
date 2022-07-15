@@ -1,4 +1,4 @@
-import { GraphNode, GraphNodeProperties } from "../../Graph";
+import { Graph, GraphNode, GraphNodeProperties } from "../../Graph";
 import { Protocol, Router } from "../Router";
 import { Routes, Service, ServiceMessage } from "../../services/Service";
 export declare type UserProps = {
@@ -120,8 +120,8 @@ export declare class UserRouter extends Router {
             [key: string]: SharedSessionProps;
         };
     };
-    constructor(services: (Service | Routes | any)[] | {
-        [key: string]: Service | Routes | any;
+    constructor(services: (Service | Graph | Routes | any)[] | {
+        [key: string]: Service | Graph | Routes | any;
     } | any[]);
     runAs: (node: string | GraphNode, userId: string | UserProps | (UserProps & GraphNode) | undefined, ...args: any[]) => any;
     pipeAs: (source: string | GraphNode, destination: string, transmitter: Protocol | string, userId: string | UserProps | (UserProps & GraphNode) | undefined, method: string, callback: (res: any) => any | void) => number | false;

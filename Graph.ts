@@ -1122,9 +1122,13 @@ export class Graph {
                     node.nodes.set(node.children);
                 }
             } else if (Array.isArray(node.children)) {
-                node.children.forEach((c,i) => {if(typeof c === 'string') {
-                    if(this.nodes.get(c)) {node.children[i] = this.nodes.get(c); node.nodes.set(node.children[i].tag,node.children[i]); }
-                }})
+                node.children.forEach((c,i) => {
+                    if(typeof c === 'string') {
+                        if(this.nodes.get(c)) {
+                            node.children[i] = this.nodes.get(c); node.nodes.set(node.children[i].tag,node.children[i]); 
+                        }
+                    }
+                })
             }
         })
 

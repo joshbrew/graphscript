@@ -1,12 +1,12 @@
 /// <reference types="node" />
-import { GraphNode } from "../Graph";
+import { Graph, GraphNode } from "../Graph";
 import { Routes, Service, ServiceMessage } from '../services/Service';
 export declare type Protocol = 'http' | 'wss' | 'sse' | 'webrtc' | 'osc' | 'worker' | 'ble' | 'serial' | 'unsafe' | 'struct' | 'fs' | 'lsl' | 'hdf5' | 'unity' | 'e2ee';
 export declare class Router {
     id: string;
     service: Service;
     run: (node: string | GraphNode, ...args: any[]) => any;
-    _run: (node: string | GraphNode, origin?: string | GraphNode | import("../Graph").Graph, ...args: any[]) => any;
+    _run: (node: string | GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
     add: (node?: GraphNode | import("../Graph").GraphNodeProperties | import("../Graph").OperatorType | ((...args: any[]) => any), fromTree?: boolean) => GraphNode | import("../Graph").GraphNodeProperties;
     remove: (node: string | GraphNode) => string | GraphNode;
     stopNode: (node: string | GraphNode) => void;
@@ -36,10 +36,10 @@ export declare class Router {
         [key: string]: Service;
     };
     [key: string]: any;
-    constructor(services?: (Service | Routes | any)[] | {
-        [key: string]: Service | Routes | any;
+    constructor(services?: (Service | Graph | Routes | any)[] | {
+        [key: string]: Service | Graph | Routes | any;
     } | any[]);
-    load: (service: Service | Routes | {
+    load: (service: Graph | Routes | {
         name: string;
         module: any;
     } | any) => Service;

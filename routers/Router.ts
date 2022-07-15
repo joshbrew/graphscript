@@ -1,4 +1,4 @@
-import { GraphNode } from "../Graph";
+import { Graph, GraphNode } from "../Graph";
 import { Routes, Service, ServiceMessage } from '../services/Service';
 //should match existing service names, services have matching frontend and backend names as well
 export type Protocol = 'http'|'wss'|'sse'|'webrtc'|'osc'|'worker'|'ble'|'serial'|'unsafe'|'struct'|'fs'|'lsl'|'hdf5'|'unity'|'e2ee'; //??? could make alternates too like express etc. services, everything is pluggable. 
@@ -31,7 +31,7 @@ export class Router { //instead of extending acyclicgraph or service again we ar
 
     [key:string]:any;
 
-    constructor(services?:(Service|Routes|any)[]|{[key:string]:Service|Routes|any}|any[]) { //preferably pass services but you can pass route objects in too to just add more base routes
+    constructor(services?:(Service|Graph|Routes|any)[]|{[key:string]:Service|Graph|Routes|any}|any[]) { //preferably pass services but you can pass route objects in too to just add more base routes
         this.load(this.defaultRoutes);
         if(this.routes) 
             if(Object.keys(this.routes).length > 0)
@@ -45,16 +45,16 @@ export class Router { //instead of extending acyclicgraph or service again we ar
         
     }
 
-    load = (service:Service|Routes|{name:string,module:any}|any) => { //load a service class instance or service prototoype class
-        if(!(service instanceof Service) && typeof service === 'function')    //class
+    load = (service:Graph|Routes|{name:string,module:any}|any) => { //load a service class instance or service prototoype class
+        if(!(service instanceof Graph) && typeof service === 'function')    //class
         {   
             service = new service(undefined, service.name); //we can instantiate a class)
             service.load();
         }
         else if(!service) return;
 
-        if(service instanceof Service) {
-            this.services[service.name] = service;
+        if(service instanceof Graph && service.name) {
+            (this.services as Service)[service.name] = service;
         } else {
             if(service.constructor.name === 'Object') {
                 let name = Object.prototype.toString.call(service);
