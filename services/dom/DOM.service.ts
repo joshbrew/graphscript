@@ -8,7 +8,11 @@ export type ElementProps = {
     tagName?:string, //e.g. 'div', 'canvas'
     element?:HTMLElement, //alternatively set an element
     style?:CSSStyleDeclaration,
+    attributes?:{[key:string]:any}, //specify any attributes/values
     parentNode?:string|HTMLElement,
+    oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
+    onresize?:(ev,self:HTMLElement,info:ElementInfo)=>void,
+    ondelete?:(self:HTMLElement,info:ElementInfo)=>void,
     id?:string
 }
 
@@ -17,7 +21,7 @@ export type ElementInfo = { //returned from addElement
     node:GraphNode,
     parentNode:HTMLElement,
     divs:any[]
-}
+} & ElementProps;
 
 export type DOMElementProps = {
     tagName?:string, //custom node tag name, requires a '-' in it 
@@ -110,7 +114,11 @@ export class DOMService extends Graph {
             tagName?:string, //e.g. 'div', 'canvas'
             element?:HTMLElement, //alternatively set an element
             style?:CSSStyleDeclaration,
+            attributes?:{[key:string]:any}, //specify any attributes/values
             parentNode?:string|HTMLElement,
+            oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
+            onresize?:(ev,self:HTMLElement,info:ElementInfo)=>void,
+            ondelete?:(self:HTMLElement,info:ElementInfo)=>void,
             id?:string
         } & GraphNodeProperties,
         generateChildElementNodes=false
@@ -134,6 +142,12 @@ export class DOMService extends Graph {
         if(!elm) return undefined;
 
         if(options.style) Object.assign(elm.style,options.style);
+
+        if(options.attributes) {
+            for(const key in options.attributes) {
+                elm[key] = options.attributes[key];
+            }
+        }
 
         if(!options.id) options.id = `${elm.tagName}${Math.floor(Math.random()*1000000000000000)}`;
         elm.id = options.id;
@@ -166,7 +180,6 @@ export class DOMService extends Graph {
         });
 
         this.add(node);
-
         
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
         if(generateChildElementNodes) { //convert all child divs to additional nodes
@@ -174,6 +187,14 @@ export class DOMService extends Graph {
         }
 
         this.elements[options.id] = {element:elm, node, parentNode:options.parentNode, divs};
+
+        if(options.onresize) {
+            let onresize = options.onresize;
+            options.onresize = (ev) => { onresize(ev, elm, this.elements[options.id]) };
+            window.addEventListener('resize', options.onresize as EventListener);
+        }
+        if(options.oncreate) options.oncreate(elm,this.elements[options.id]);
+
 
         return this.elements[options.id] as ElementInfo;
 
@@ -685,7 +706,9 @@ export class DOMService extends Graph {
             if(this.elements[element].divs)
                 this.elements[element].divs.forEach((d) => this.terminate(d));
             let temp = this.elements[element].element;
-            delete this.elements[element]
+            if(this.elements[element].onresize) window.removeEventListener('resize',this.elements[element].onresize as EventListener);
+            if(this.elements[element].ondelete) this.elements[element].ondelete(temp,this.elements[element]);
+            delete this.elements[element];
             element = temp;
         }
         

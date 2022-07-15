@@ -6,7 +6,13 @@ export declare type ElementProps = {
     tagName?: string;
     element?: HTMLElement;
     style?: CSSStyleDeclaration;
+    attributes?: {
+        [key: string]: any;
+    };
     parentNode?: string | HTMLElement;
+    oncreate?: (self: HTMLElement, info: ElementInfo) => void;
+    onresize?: (ev: any, self: HTMLElement, info: ElementInfo) => void;
+    ondelete?: (self: HTMLElement, info: ElementInfo) => void;
     id?: string;
 };
 export declare type ElementInfo = {
@@ -14,7 +20,7 @@ export declare type ElementInfo = {
     node: GraphNode;
     parentNode: HTMLElement;
     divs: any[];
-};
+} & ElementProps;
 export declare type DOMElementProps = {
     tagName?: string;
     template?: string | ((props: any) => string);
@@ -83,7 +89,13 @@ export declare class DOMService extends Graph {
         tagName?: string;
         element?: HTMLElement;
         style?: CSSStyleDeclaration;
+        attributes?: {
+            [key: string]: any;
+        };
         parentNode?: string | HTMLElement;
+        oncreate?: (self: HTMLElement, info: ElementInfo) => void;
+        onresize?: (ev: any, self: HTMLElement, info: ElementInfo) => void;
+        ondelete?: (self: HTMLElement, info: ElementInfo) => void;
         id?: string;
     } & GraphNodeProperties, generateChildElementNodes?: boolean) => ElementInfo;
     addComponent: (options: {
