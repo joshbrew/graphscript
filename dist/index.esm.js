@@ -3175,6 +3175,8 @@ var DOMService = class extends Graph {
         options2.id = `${options2.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
       if (!options2.id && options2.tag)
         options2.id = options2.tag;
+      if (!options2.tag && options2.id)
+        options2.tag = options2.id;
       if (!options2.id)
         options2.id = options2.tagName;
       if (typeof options2.parentNode === "string")
@@ -3380,12 +3382,16 @@ var DOMService = class extends Graph {
         if (typeof routes[route] === "object") {
           let r = routes[route];
           if (r.template) {
+            if (!routes[route].tag)
+              routes[route].tag = route;
             this.addComponent(routes[route]);
-          }
-          if (r.context) {
+          } else if (r.context) {
+            if (!routes[route].tag)
+              routes[route].tag = route;
             this.addCanvasComponent(routes[route]);
-          }
-          if (r.tagName || r.element) {
+          } else if (r.tagName || r.element) {
+            if (!routes[route].tag)
+              routes[route].tag = route;
             this.addElement(routes[route]);
           }
           if (r.get) {
