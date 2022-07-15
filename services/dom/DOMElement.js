@@ -495,9 +495,9 @@ export function parseFunctionFromText(method) {
             }
             else {
                 try {
-                    newFunc = eval(newFuncHead + newFuncBody + "}");
+                    newFunc = (0,eval)(newFuncHead + newFuncBody + "}");
                 } catch(err) {
-                    newFunc = eval(method); //try just evaluating the method
+                    newFunc = (0,eval)(method); //try just evaluating the method
                 }
             }
         }

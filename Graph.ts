@@ -1,15 +1,29 @@
-//another method
+// Fixed for bundled functions that may not have parentheses
+var ARGUMENT_NAMES = /([^,]*)/g;
+
 export function getFnParamInfo(fn):Map<string, any>{
-    var fstr = fn.toString();
-    const matches = fstr.match(/\(.*?\)/)[0].replace(/[()]/gi,'').split(',');
+    var fstr = fn.toString()
+    const firstBracket = fstr.indexOf('{')
+    const closePar = fstr.indexOf(')')
+    let innerMatch
+    if (firstBracket === -1 || closePar < firstBracket) innerMatch = fstr.slice(fstr.indexOf('(')+1, fstr.indexOf(')')) // general functions
+    else innerMatch = fstr.match(/([a-zA-Z]\w*|\([a-zA-Z]\w*(,\s*[a-zA-Z]\w*)*\)) =>/)?.[1] // arrow without parentheses (bundled)
+
+    const matches = innerMatch.match(ARGUMENT_NAMES).filter(e => !!e)
     const info = new Map()
     matches.forEach(v => {
-        const arr = v.split('=')
-        if (arr[0]) info.set(arr[0],  (0, eval)(arr[1]))
+        let [name, value] = v.split('=')
+        name = name.trim()
+        try {
+            if (name) info.set(name,  (0, eval)(value))
+        } catch (e) {
+            console.error('failed to parse argument info', e)
+        }
     })
 
     return info
 }
+
 
 export function getFnParamNames(fn):string[]{ //https://stackoverflow.com/questions/9091838/get-function-parameter-names-for-interface-purposes
     var fstr = fn.toString();
