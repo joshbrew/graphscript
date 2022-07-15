@@ -2,68 +2,12 @@ import { DOMElement } from "./DOMElement"; //https://github.com/joshbrew/DOMElem
 import { Graph, GraphNode, GraphNodeProperties, OperatorType, stringifyWithCircularRefs } from '../../Graph';
 import { RouteProp, Routes, Service, ServiceMessage } from "../Service";
 
+import {CompleteOptions} from './types/general';
+import {ElementOptions, ElementInfo, ElementProps} from './types/element';
+import {DOMElementProps, ComponentOptions, DOMElementInfo} from './types/dom';
+import {CanvasElementProps, CanvasOptions, CanvasElementInfo} from './types/canvas';
+
 //alternative base service that additioanlly allows 'DOMRoutes' to be loaded which can tie in html and webcomponent blocks
-
-export type ElementProps = {
-    tagName?:string, //e.g. 'div', 'canvas'
-    element?:HTMLElement, //alternatively set an element
-    style?:CSSStyleDeclaration,
-    attributes?:{[key:string]:any}, //specify any attributes/values
-    parentNode?:string|HTMLElement,
-    oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
-    onresize?:(ev,self:HTMLElement,info:ElementInfo)=>void,
-    ondelete?:(self:HTMLElement,info:ElementInfo)=>void,
-    id?:string
-}
-
-export type ElementInfo = { //returned from addElement
-    element:HTMLElement,
-    node:GraphNode,
-    parentNode:HTMLElement,
-    divs:any[]
-} & ElementProps;
-
-export type DOMElementProps = {
-    tagName?:string, //custom node tag name, requires a '-' in it 
-    template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
-    parentNode?:string|HTMLElement,
-    styles?:string, //will use the shadow DOM automatically in this case
-    oncreate?:(props:any,self:DOMElement)=>void,
-    onresize?:(props:any,self:DOMElement)=>void,
-    ondelete?:(props:any,self:DOMElement)=>void,
-    onchanged?:(props:any,self:DOMElement)=>void,
-    renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
-    id?:string
-}
-
-export type DOMElementInfo = { //returned from addComponent
-    element:DOMElement,
-    class:any, //the customized DOMElement class
-    node:GraphNode,
-    divs:any[]
-} & DOMElementProps
-
-export type CanvasElementProps = {
-    draw:((props:any,self:DOMElement)=>string),
-    context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent',
-    width?:string,
-    height?:string,
-    style?:string
-} & DOMElementProps
-
-export type CanvasElementInfo = { //returned from addCanvasComponent
-    element:DOMElement & {canvas:HTMLCanvasElement, context:RenderingContext},
-    draw:((props:any,self:DOMElement)=>void),
-    canvas:HTMLCanvasElement,
-    context:RenderingContext,
-    animating:boolean,
-    animation:any,
-    width?:string,
-    height?:string,
-    style?:string,
-    class:any, //the customized DOMElement class
-    node:GraphNode
-} & DOMElementProps
 
 export type DOMRouteProp = 
     (ElementProps & GraphNodeProperties) |
@@ -99,7 +43,7 @@ export class DOMService extends Graph {
     
     elements:{
         [key:string]:ElementInfo
-    }
+    } = {}
 
     components:{
         [key:string]:DOMElementInfo|CanvasElementInfo
@@ -107,55 +51,15 @@ export class DOMService extends Graph {
 
     templates:{ //pass these in as options for quicker iteration
         [key:string]:DOMElementProps|CanvasElementProps
-    }
+    } = {}
 
     addElement=(
-        options:{
-            tagName?:string, //e.g. 'div', 'canvas'
-            element?:HTMLElement, //alternatively set an element
-            style?:CSSStyleDeclaration,
-            attributes?:{[key:string]:any}, //specify any attributes/values e.g. innerHTML, onclick,...
-            parentNode?:string|HTMLElement,
-            oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
-            onresize?:(ev,self:HTMLElement,info:ElementInfo)=>void,
-            ondelete?:(self:HTMLElement,info:ElementInfo)=>void,
-            id?:string
-        } & GraphNodeProperties,
+        options: ElementOptions,
         generateChildElementNodes=false
         
     )=>{
 
-        let elm:HTMLElement;
-
-        if(!options.id && options.tag) options.id = options.tag;
-
-        if(options.element) {
-            if(typeof options.element === 'string') {
-                elm = document.querySelector(options.element); //get first element by tag or id 
-                if(!elm) elm = document.getElementById(options.element); 
-            }
-            else elm = options.element;
-        }
-        else if (options.tagName) elm = document.createElement(options.tagName);
-        else if(options.id && document.getElementById(options.id)) elm = document.getElementById(options.id);
-
-        if(!elm) return undefined;
-
-        if(options.style) Object.assign(elm.style,options.style);
-
-        if(options.attributes) {
-            for(const key in options.attributes) {
-                elm[key] = options.attributes[key];
-            }
-        }
-
-        if(!options.id) options.id = `${elm.tagName}${Math.floor(Math.random()*1000000000000000)}`;
-        elm.id = options.id;
-
-        if(typeof options.parentNode === 'string') options.parentNode = document.body;
-        if(!options.parentNode) options.parentNode = document.body;
-
-        if(!elm.parentNode) options.parentNode.appendChild(elm);
+        let elm:HTMLElement = this.createElement(options)
 
         let node = new GraphNode({
             element:elm,   
@@ -186,7 +90,7 @@ export class DOMService extends Graph {
             divs = divs.map((d:HTMLElement,i) => this.addElement({element:d}));
         }
 
-        this.elements[options.id] = {element:elm, node, parentNode:options.parentNode, divs};
+        this.elements[options.id] = {element:elm, node, parentNode: (options as CompleteOptions).parentNode, divs};
 
         if(options.onresize) {
             let onresize = options.onresize;
@@ -197,25 +101,52 @@ export class DOMService extends Graph {
 
 
         return this.elements[options.id] as ElementInfo;
+    }
 
+
+    createElement = (options: ElementOptions) => {
+
+        let elm: HTMLElement
+
+        if(options.element) {
+            if(typeof options.element === 'string') {
+                elm = document.querySelector(options.element); //get first element by tag or id 
+                if(!elm) elm = document.getElementById(options.element); 
+            }
+            else elm = options.element;
+        }
+        else if (options.tagName) elm = document.createElement(options.tagName);
+        else if(options.id && document.getElementById(options.id)) elm = document.getElementById(options.id);
+
+        if(!elm) return undefined;
+        this.updateOptions(options, elm)
+
+        elm.id = options.id;
+        if(options.style) Object.assign(elm.style,options.style);
+        if(options.innerHTML) elm.innerHTML = options.innerHTML
+        else if(options.innerText) elm.innerText = options.innerText
+                
+        return elm
+    }
+
+    updateOptions = (options, element): CompleteOptions => {
+
+        if(!options.id) options.id = `${options.tagName ?? 'element'}${Math.floor(Math.random()*1000000000000000)}`;
+
+        if(!options.id && options.tag) options.id = options.tag;
+        if(!options.id) options.id = options.tagName;
+
+        if(typeof options.parentNode === 'string') options.parentNode = document.body;
+        if(!options.parentNode) options.parentNode = document.body;
+        if(!element.parentNode) options.parentNode.appendChild(element);
+
+        return options
     }
 
     //create an element that is tied to a specific node, multiple elements can aggregate
     // with the node
     addComponent=(
-        options:{
-            tagName?:string,
-            template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
-            parentNode?:string|HTMLElement,
-            styles?:string, //will use the shadow DOM automatically in this case
-            oncreate?:(props:any,self:DOMElement)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
-            onresize?:(props:any,self:DOMElement)=>void,
-            ondelete?:(props:any,self:DOMElement)=>void,
-            onchanged?:(props:any,self:DOMElement)=>void,
-            renderonchanged?:boolean|((props:any,self:DOMElement)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
-            props?:{[key:string]:any},
-            id?:string
-        } & GraphNodeProperties,
+        options: ComponentOptions,
         generateChildElementNodes=true
     )=>{
         
@@ -234,17 +165,9 @@ export class DOMService extends Graph {
 
         CustomElement.addElement(options.tagName); 
 
-        if(!options.id && options.tag) options.id = options.tag;
-        if(!options.id) options.id = options.tagName;
-
-        if(typeof options.parentNode === 'string') options.parentNode = document.body;
-        if(!options.parentNode) options.parentNode = document.body;
-
         let elm = document.createElement(options.tagName);
-
-        if(!elm.parentNode) options.parentNode.appendChild(elm);  //this instantiates the DOMElement
-
-        this.templates[options.id] = options;
+        let completeOptions = this.updateOptions(options, elm) as DOMElementProps
+        this.templates[completeOptions.id] = completeOptions;
 
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
         if(generateChildElementNodes) { //convert all child divs to additional nodes
@@ -269,41 +192,25 @@ export class DOMService extends Graph {
                     
                 return props;
             },
-            ...options
+            ...completeOptions
         });
 
         this.add(node);
 
-        this.components[options.id] = {
+        this.components[completeOptions.id] = {
             element:elm as any,
             class:CustomElement,
             node,
             divs,
-            ...options
+            ...completeOptions
         };
 
-        return this.components[options.id] as DOMElementInfo;
+        return this.components[completeOptions.id] as DOMElementInfo;
     }
 
     //create a canvas with a draw loop that can respond to props
     addCanvasComponent=(
-        options:{
-            tagName?:string, //custom element tagName, requires a '-' in the tag or it gets added to the end
-            context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent', //
-            draw:((props:any,self:DOMElement)=>void), //string or function that passes the modifiable props on the element (the graph node properties)
-            width?:string, //e.g. '300px'
-            height?:string, //e.g. '300px'
-            style?:CSSStyleDeclaration, //canvas inline style string
-            parentNode?:string|HTMLElement,
-            styles?:string, //stylesheet text, goes inside a <style> tag. This will use the shadow DOM automatically in this case
-            oncreate?:(props:any,self:DOMElement)=>void,
-            onresize?:(props:any,self:DOMElement)=>void,
-            ondelete?:(props:any,self:DOMElement)=>void,
-            onchanged?:(props:any,self:DOMElement)=>void,
-            renderonchanged?:boolean|((props:any,self:DOMElement)=>void),
-            props?:{[key:string]:any}
-            id?:string
-        } & GraphNodeProperties
+        options: CanvasOptions
     ) => {
 
         options.template = `<canvas `;
@@ -323,26 +230,19 @@ export class DOMService extends Graph {
 
         if(!options.tagName) options.tagName = `custom-element${Math.random()*1000000000000000}`;
 
-        CustomElement.addElement(options.tagName); 
-
-        if(!options.id && options.tag) options.id = options.tag;
-        if(!options.id) options.id = options.tagName;
-
-        if(typeof options.parentNode === 'string') options.parentNode = document.body;
-        if(!options.parentNode) options.parentNode = document.body;
-        
+        CustomElement.addElement(options.tagName);         
         let elm = document.createElement(options.tagName);
+        const completeOptions = this.updateOptions(options, elm) as CanvasElementProps
 
-        if(!elm.parentNode) options.parentNode.appendChild(elm); //this instantiates the DOMElement
 
         let animation = () => { //default animation
-            if((this.components[options.id as string] as CanvasElementInfo)?.animating) {
-                (this.components[options.id as string] as CanvasElementInfo).draw(this.components[options.id as string].element.props,this.components[options.id as string].element);
+            if((this.components[completeOptions.id as string] as CanvasElementInfo)?.animating) {
+                (this.components[completeOptions.id as string] as CanvasElementInfo).draw(this.components[options.id as string].element.props,this.components[options.id as string].element);
                 requestAnimationFrame(animation);
             }
         }
 
-        this.templates[options.id] = options;
+        this.templates[completeOptions.id] = completeOptions;
                 
         let node = new GraphNode({
             element:elm,   
@@ -361,26 +261,26 @@ export class DOMService extends Graph {
                     }
                 return props;
             },
-            ...options
+            ...completeOptions
         });
 
         this.add(node);
 
         let canvas = elm.querySelector('canvas');
-        if(options.style) Object.assign(canvas.style,options.style); //assign the style object
+        if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object
 
-        let context = (canvas as HTMLCanvasElement).getContext(options.context);
+        let context = (canvas as HTMLCanvasElement).getContext(completeOptions.context);
 
-        this.components[options.id] = {
+        this.components[completeOptions.id] = {
             element:elm,
             class:CustomElement,
-            template:options.template,
+            template:completeOptions.template,
             canvas,
             node,
-            ...options
+            ...completeOptions
         } as any;
 
-        (this.components[options.id] as CanvasElementInfo).context = context;
+        (this.components[completeOptions.id] as CanvasElementInfo).context = context;
 
         (elm as any).canvas = canvas; //make sure everything is accessible;
         (elm as any).context = context; 
@@ -389,7 +289,7 @@ export class DOMService extends Graph {
 
         node.runAnimation(animation); //update the animation by calling this function again or setting node.animation manually
 
-        return this.components[options.id] as CanvasElementInfo;
+        return this.components[completeOptions.id] as CanvasElementInfo;
 
     }
     
