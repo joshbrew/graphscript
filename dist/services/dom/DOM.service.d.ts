@@ -120,7 +120,7 @@ export declare class DOMService extends Graph {
         };
         id?: string;
     } & GraphNodeProperties) => CanvasElementInfo;
-    load: (routes?: any) => DOMRoutes;
+    load: (routes?: any, enumRoutes?: boolean) => DOMRoutes;
     unload: (routes?: Service | Routes | any) => DOMRoutes;
     handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;
     handleServiceMessage(message: ServiceMessage): any;

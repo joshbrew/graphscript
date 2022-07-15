@@ -59,7 +59,10 @@ export class Service extends Graph {
     }
 
     
-    load = (routes?:Service|Routes|{name:string,module:{[key:string]:any}}|any) => {    
+    load = (
+        routes?:Service|Routes|{name:string,module:{[key:string]:any}}|any, 
+        enumRoutes:boolean=true //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
+    ) => {    
         if(!routes && !this.firstLoad) return;
         //console.log(this.routes);
         let service;
@@ -68,7 +71,8 @@ export class Service extends Graph {
                 let mod = routes;
                 routes = {};
                 Object.getOwnPropertyNames(routes.module).forEach((prop) => { //iterate through 
-                    routes[mod.name+'/'+prop] = routes.module[prop];
+                    if(enumRoutes) routes[mod.name+'/'+prop] = routes.module[prop];
+                    else routes[prop] =  routes.module[prop];
                 });
             } else { //it's a service prototype... probably
                 service = new routes();
@@ -91,7 +95,8 @@ export class Service extends Graph {
                 let module = routes;
                 routes = {};
                 Object.getOwnPropertyNames(module).forEach((route) => {
-                    routes[name+'/'+route] = module[route];
+                    if(enumRoutes) routes[name+'/'+route] = module[route];
+                    else routes[route] = module[route];
                 });
             }
         }
