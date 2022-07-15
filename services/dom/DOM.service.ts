@@ -128,6 +128,7 @@ export class DOMService extends Graph {
         if(!options.id) options.id = `${options.tagName ?? 'element'}${Math.floor(Math.random()*1000000000000000)}`;
 
         if(!options.id && options.tag) options.id = options.tag;
+        if(!options.tag && options.id) options.tag = options.id;
         if(!options.id) options.id = options.tagName;
 
         if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
@@ -361,15 +362,20 @@ export class DOMService extends Graph {
         for(const route in routes) {
             if(typeof routes[route] === 'object') {
                 let r = routes[route] as RouteProp | DOMRouteProp;
+                
                 if(r.template) { //assume its a component node
+                    if(!routes[route].tag) routes[route].tag = route;
                     this.addComponent(routes[route]);
                 }
-                if(r.context) { //assume its a canvas node
+                else if(r.context) { //assume its a canvas node
+                    if(!routes[route].tag) routes[route].tag = route;
                     this.addCanvasComponent(routes[route]);
                 }
-                if(r.tagName || r.element) { //assume its an element node
+                else if(r.tagName || r.element) { //assume its an element node
+                    if(!routes[route].tag) routes[route].tag = route;
                     this.addElement(routes[route]);
                 }
+
                 if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
                     if(typeof r.get == 'object') {
                         
