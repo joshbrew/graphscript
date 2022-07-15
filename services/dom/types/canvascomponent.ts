@@ -12,7 +12,7 @@ export type CanvasElementProps = {
 
 export type CanvasElementInfo = { //returned from addCanvasComponent
     element:DOMElement & {canvas:HTMLCanvasElement, context:RenderingContext},
-    draw:((props:any,self:DOMElement)=>void),
+    draw:((self:DOMElement,info:CanvasElementInfo)=>void),
     canvas:HTMLCanvasElement,
     context:RenderingContext,
     animating:boolean,
@@ -28,7 +28,7 @@ export type CanvasElementInfo = { //returned from addCanvasComponent
 export type CanvasOptions = {
     tagName?:string, //custom element tagName, requires a '-' in the tag or it gets added to the end
     context:'2d'|'webgl'|'webgl2'|'bitmaprenderer'|'experimental-webgl'|'xrpresent', //
-    draw:((props:any,self:DOMElement)=>void), //string or function that passes the modifiable props on the element (the graph node properties)
+    draw:((self:DOMElement,info:CanvasElementInfo)=>void), //string or function that passes the modifiable props on the element (the graph node properties)
     width?:string, //e.g. '300px'
     height?:string, //e.g. '300px'
     style?:CSSStyleDeclaration, //canvas inline style string

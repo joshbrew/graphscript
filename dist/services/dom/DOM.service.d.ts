@@ -2,66 +2,10 @@
 import { DOMElement } from "./DOMElement";
 import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph';
 import { RouteProp, Routes, Service, ServiceMessage } from "../Service";
-export declare type ElementProps = {
-    tagName?: string;
-    element?: HTMLElement;
-    style?: CSSStyleDeclaration;
-    attributes?: {
-        [key: string]: any;
-    };
-    parentNode?: string | HTMLElement;
-    oncreate?: (self: HTMLElement, info: ElementInfo) => void;
-    onresize?: (ev: any, self: HTMLElement, info: ElementInfo) => void;
-    ondelete?: (self: HTMLElement, info: ElementInfo) => void;
-    id?: string;
-};
-export declare type ElementInfo = {
-    element: HTMLElement;
-    node: GraphNode;
-    parentNode: HTMLElement;
-    divs: any[];
-} & ElementProps;
-export declare type DOMElementProps = {
-    tagName?: string;
-    template?: string | ((props: any) => string);
-    parentNode?: string | HTMLElement;
-    styles?: string;
-    oncreate?: (props: any, self: DOMElement) => void;
-    onresize?: (props: any, self: DOMElement) => void;
-    ondelete?: (props: any, self: DOMElement) => void;
-    onchanged?: (props: any, self: DOMElement) => void;
-    renderonchanged?: boolean | ((props: any, self: DOMElement) => void);
-    id?: string;
-};
-export declare type DOMElementInfo = {
-    element: DOMElement;
-    class: any;
-    node: GraphNode;
-    divs: any[];
-} & DOMElementProps;
-export declare type CanvasElementProps = {
-    draw: ((props: any, self: DOMElement) => string);
-    context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent';
-    width?: string;
-    height?: string;
-    style?: string;
-} & DOMElementProps;
-export declare type CanvasElementInfo = {
-    element: DOMElement & {
-        canvas: HTMLCanvasElement;
-        context: RenderingContext;
-    };
-    draw: ((props: any, self: DOMElement) => void);
-    canvas: HTMLCanvasElement;
-    context: RenderingContext;
-    animating: boolean;
-    animation: any;
-    width?: string;
-    height?: string;
-    style?: string;
-    class: any;
-    node: GraphNode;
-} & DOMElementProps;
+import { CompleteOptions } from './types/general';
+import { ElementOptions, ElementInfo, ElementProps } from './types/element';
+import { DOMElementProps, ComponentOptions, DOMElementInfo } from './types/component';
+import { CanvasElementProps, CanvasOptions, CanvasElementInfo } from './types/canvascomponent';
 export declare type DOMRouteProp = (ElementProps & GraphNodeProperties) | (DOMElementProps & GraphNodeProperties) | (CanvasElementProps & GraphNodeProperties);
 export declare type DOMRoutes = {
     [key: string]: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void) | ({
@@ -73,6 +17,7 @@ export declare class DOMService extends Graph {
     firstLoad: boolean;
     name: string;
     keepState: boolean;
+    parentNode: HTMLElement;
     constructor(routes?: DOMRoutes, name?: string, props?: {
         [key: string]: any;
     });
@@ -85,53 +30,11 @@ export declare class DOMService extends Graph {
     templates: {
         [key: string]: DOMElementProps | CanvasElementProps;
     };
-    addElement: (options: {
-        tagName?: string;
-        element?: HTMLElement;
-        style?: CSSStyleDeclaration;
-        attributes?: {
-            [key: string]: any;
-        };
-        parentNode?: string | HTMLElement;
-        oncreate?: (self: HTMLElement, info: ElementInfo) => void;
-        onresize?: (ev: any, self: HTMLElement, info: ElementInfo) => void;
-        ondelete?: (self: HTMLElement, info: ElementInfo) => void;
-        id?: string;
-    } & GraphNodeProperties, generateChildElementNodes?: boolean) => ElementInfo;
-    addComponent: (options: {
-        tagName?: string;
-        template?: string | ((props: any) => string);
-        parentNode?: string | HTMLElement;
-        styles?: string;
-        oncreate?: (props: any, self: DOMElement) => void;
-        onresize?: (props: any, self: DOMElement) => void;
-        ondelete?: (props: any, self: DOMElement) => void;
-        onchanged?: (props: any, self: DOMElement) => void;
-        renderonchanged?: boolean | ((props: any, self: DOMElement) => void);
-        props?: {
-            [key: string]: any;
-        };
-        id?: string;
-    } & GraphNodeProperties, generateChildElementNodes?: boolean) => DOMElementInfo;
-    addCanvasComponent: (options: {
-        tagName?: string;
-        context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent';
-        draw: (props: any, self: DOMElement) => void;
-        width?: string;
-        height?: string;
-        style?: CSSStyleDeclaration;
-        parentNode?: string | HTMLElement;
-        styles?: string;
-        oncreate?: (props: any, self: DOMElement) => void;
-        onresize?: (props: any, self: DOMElement) => void;
-        ondelete?: (props: any, self: DOMElement) => void;
-        onchanged?: (props: any, self: DOMElement) => void;
-        renderonchanged?: boolean | ((props: any, self: DOMElement) => void);
-        props?: {
-            [key: string]: any;
-        };
-        id?: string;
-    } & GraphNodeProperties) => CanvasElementInfo;
+    addElement: (options: ElementOptions, generateChildElementNodes?: boolean) => ElementInfo;
+    createElement: (options: ElementOptions) => HTMLElement;
+    updateOptions: (options: any, element: any) => CompleteOptions;
+    addComponent: (options: ComponentOptions, generateChildElementNodes?: boolean) => DOMElementInfo;
+    addCanvasComponent: (options: CanvasOptions) => CanvasElementInfo;
     load: (routes?: any, enumRoutes?: boolean) => DOMRoutes;
     unload: (routes?: Service | Routes | any) => DOMRoutes;
     handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;

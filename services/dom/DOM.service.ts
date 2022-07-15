@@ -35,6 +35,7 @@ export class DOMService extends Graph {
     firstLoad = true;
     name:string=`html`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
+    parentNode:HTMLElement=document.body; //default parent elements for elements added
 
     constructor(routes?:DOMRoutes, name?:string,props?:{[key:string]:any}) {
         super(undefined,name,props);
@@ -56,8 +57,7 @@ export class DOMService extends Graph {
 
     addElement=(
         options: ElementOptions,
-        generateChildElementNodes=false
-        
+        generateChildElementNodes=false      
     )=>{
 
         let elm:HTMLElement = this.createElement(options)
@@ -100,10 +100,8 @@ export class DOMService extends Graph {
         }
         if(options.oncreate) options.oncreate(elm,this.elements[options.id]);
 
-
         return this.elements[options.id] as ElementInfo;
     }
-
 
     createElement = (options: ElementOptions) => {
 
@@ -120,14 +118,9 @@ export class DOMService extends Graph {
         else if(options.id && document.getElementById(options.id)) elm = document.getElementById(options.id);
 
         if(!elm) return undefined;
-        this.updateOptions(options, elm)
+        this.updateOptions(options, elm);
 
-        elm.id = options.id;
-        if(options.style) Object.assign(elm.style,options.style);
-        if(options.innerHTML) elm.innerHTML = options.innerHTML
-        else if(options.innerText) elm.innerText = options.innerText
-                
-        return elm
+        return elm;
     }
 
     updateOptions = (options, element): CompleteOptions => {
@@ -137,11 +130,17 @@ export class DOMService extends Graph {
         if(!options.id && options.tag) options.id = options.tag;
         if(!options.id) options.id = options.tagName;
 
-        if(typeof options.parentNode === 'string') options.parentNode = document.body;
-        if(!options.parentNode) options.parentNode = document.body;
+        if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
+        if(!options.parentNode) options.parentNode = this.parentNode;
         if(!element.parentNode) options.parentNode.appendChild(element);
+        
+        element.id = options.id;
+        if(options.style) Object.assign(element.style,options.style);
+        if(options.innerHTML) element.innerHTML = options.innerHTML;
+        if(options.innerText) element.innerText = options.innerText;
+        if(options.attributes) Object.assign(element,options.attributes);
 
-        return options
+        return options;
     }
 
     //create an element that is tied to a specific node, multiple elements can aggregate
@@ -238,7 +237,7 @@ export class DOMService extends Graph {
 
         let animation = () => { //default animation
             if((this.components[completeOptions.id as string] as CanvasElementInfo)?.animating) {
-                (this.components[completeOptions.id as string] as CanvasElementInfo).draw(this.components[options.id as string].element.props,this.components[options.id as string].element);
+                (this.components[completeOptions.id as string] as CanvasElementInfo).draw(this.components[completeOptions.id as string].element,this.components[completeOptions.id as string] as CanvasElementInfo);
                 requestAnimationFrame(animation);
             }
         }
