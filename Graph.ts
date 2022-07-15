@@ -924,41 +924,46 @@ export class GraphNode {
          
     convertChildrenToNodes = (n:GraphNode) => {
         if( n?.children instanceof GraphNode ) { 
-            if(!this.graph?.nodes.get(n.tag)) this.graph.nodes.set(n.tag,n);
-            if(!this.nodes.get(n.tag)) this.nodes.set(n.tag,n); 
+            if(!n.graph?.nodes.get(n.tag)) n.graph.nodes.set(n.tag,n);
+            if(!n.nodes.get(n.tag)) n.nodes.set(n.tag,n); 
         }
         else if (Array.isArray(n.children)) {
             for(let i = 0; i < n.children.length; i++) {
                 if(n.children[i] instanceof GraphNode) { 
-                    if(!this.graph?.nodes.get(n.children[i].tag)) this.graph.nodes.set(n.children[i].tag,n.children[i]);
-                    if(!this.nodes.get(n.children[i].tag)) this.nodes.set(n.children[i].tag,n.children[i]);
+                    if(!n.graph?.nodes.get(n.children[i].tag)) n.graph.nodes.set(n.children[i].tag,n.children[i]);
+                    if(!n.nodes.get(n.children[i].tag)) n.nodes.set(n.children[i].tag,n.children[i]);
+                    if(!(n.children[i].tag in n)) n[n.children[i].tag] = n.children[i].tag; //set it as a property by name too as an additional easy accessor;
                     continue; 
                 }
                 else if(typeof n.children[i] === 'object' || typeof n.children[i] === 'function') {
-                    n.children[i] = new GraphNode(n.children[i],n,this.graph);
-                    this.nodes.set(n.children[i].tag,n.children[i]);
-                    this.convertChildrenToNodes(n.children[i]);
+                    n.children[i] = new GraphNode(n.children[i],n,n.graph);
+                    n.nodes.set(n.children[i].tag,n.children[i]);
+                    if(!(n.children[i].tag in n)) n[n.children[i].tag] = n.children[i].tag; //set it as a property by name too as an additional easy accessor;
+                    n.convertChildrenToNodes(n.children[i]);
                 } 
                 else if (typeof n.children[i] === 'string') {
-                    if(this.graph && this.graph.get(n.children[i])) {
-                        n.children[i] = this.graph.get(n.children[i]); //try graph scope
-                        if(!this.nodes.get(n.children[i].tag)) this.nodes.set(n.children[i].tag,n.children[i]);
+                    if(n.graph && n.graph.get(n.children[i])) {
+                        n.children[i] = n.graph.get(n.children[i]); //try graph scope
+                        if(!n.nodes.get(n.children[i].tag)) n.nodes.set(n.children[i].tag,n.children[i]);
+                        if(!(n.children[i].tag in n)) n[n.children[i].tag] = n.children[i].tag; //set it as a property by name too as an additional easy accessor;
                     }
-                    if(!n.children[i] && this.nodes.get(n.children[i])) n.children[i] = this.nodes.get(n.children[i]); //try local scope
+                    if(!n.children[i] && n.nodes.get(n.children[i])) n.children[i] = n.nodes.get(n.children[i]); //try local scope
                 }
             }
         }
         else if(typeof n.children === 'object' || typeof n.children === 'function') {
-            n.children = new GraphNode(n.children,n,this.graph);
-            this.nodes.set(n.children.tag,n.children);
-            this.convertChildrenToNodes(n.children);
+            n.children = new GraphNode(n.children,n,n.graph);
+            n.nodes.set(n.children.tag,n.children);
+            if(!(n.children.tag in n)) n[n.children.tag] = n.children.tag; //set it as a property by name too as an additional easy accessor;
+            n.convertChildrenToNodes(n.children);
         } 
         else if (typeof n.children === 'string') {
-            if(this.graph && this.graph.get(n.children)) {
-                n.children = this.graph.get(n.children); //try graph scope
-                if(!this.nodes.get(n.children.tag)) this.nodes.set(n.children.tag,n.children);
+            if(n.graph && n.graph.get(n.children)) {
+                n.children = n.graph.get(n.children); //try graph scope
+                if(!n.nodes.get(n.children.tag)) n.nodes.set(n.children.tag,n.children);
+                if(!n[n.children.tag]) n[n.children.tag] = n.children.tag; //set it as a property by name too as an additional easy accessor;
             }
-            if(!n.children && this.nodes.get(n.children)) n.children = this.nodes.get(n.children); //try local scope
+            if(!n.children && n.nodes.get(n.children)) n.children = n.nodes.get(n.children); //try local scope
         }
         return n.children;
     }
@@ -1129,12 +1134,20 @@ export class Graph {
                 if(this.nodes.get(node.children)) {
                     node.children = [node.children];
                     node.nodes.set(node.children);
+                    if(node.children[0] instanceof GraphNode) {
+                        if(node.children[0].tag && !(node.children[0].tag in node)) {
+                            node[node.children[0].tag] = node.children[0];
+                        }
+                    }
                 }
             } else if (Array.isArray(node.children)) {
                 node.children.forEach((c,i) => {
                     if(typeof c === 'string') {
                         if(this.nodes.get(c)) {
                             node.children[i] = this.nodes.get(c); node.nodes.set(node.children[i].tag,node.children[i]); 
+                            if(node.children[i].tag && !(node.children[i].tag in node)) {
+                                node[node.children[i].tag] = node.children[i];
+                            }
                         }
                     }
                 })
