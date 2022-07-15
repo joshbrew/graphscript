@@ -251,6 +251,15 @@ export class GraphNode {
                 if(source.delay) properties.delay = source.delay;
                 if(source.tag) properties.tag = source.tag;
                 
+                this.nodes = source.nodes;
+                if(graph) {
+                    source.nodes.forEach((n) => {
+                        if(!graph.nodes.get(n.tag)) graph.nodes.set(n.tag,n);
+                    });
+                    graph.nodes.forEach((n) => {
+                        if(!this.nodes.get(n.tag)) this.nodes.set(n.tag,n);
+                    });
+                } //make sure node references get passed around correctly
             }
 
             if(properties.tag) {
@@ -1129,6 +1138,12 @@ export class Graph {
                         }
                     }
                 })
+            }
+            if(typeof node.parent === 'string') {
+                if(this.nodes.get(node.parent)) {
+                    node.parent = node.parent;
+                    node.nodes.set(node.parent);
+                }
             }
         })
 
