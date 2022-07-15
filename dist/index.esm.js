@@ -3135,7 +3135,6 @@ var DOMService = class extends Graph {
         },
         ...options2
       }, void 0, this);
-      this.add(node);
       let divs = Array.from(elm.querySelectorAll("*"));
       if (generateChildElementNodes) {
         divs = divs.map((d, i) => this.addElement({ element: d }));
@@ -3238,7 +3237,6 @@ var DOMService = class extends Graph {
         },
         ...completeOptions
       }, void 0, this);
-      this.add(node);
       this.components[completeOptions.id] = {
         element: elm,
         class: CustomElement,
@@ -3298,7 +3296,6 @@ var DOMService = class extends Graph {
         },
         ...completeOptions
       }, void 0, this);
-      this.add(node);
       let canvas = elm.querySelector("canvas");
       if (completeOptions.style)
         Object.assign(canvas.style, completeOptions.style);

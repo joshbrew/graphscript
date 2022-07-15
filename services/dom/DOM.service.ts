@@ -83,8 +83,6 @@ export class DOMService extends Graph {
             },
             ...options
         },undefined,this);
-
-        this.add(node);
         
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
         if(generateChildElementNodes) { //convert all child divs to additional nodes
@@ -196,8 +194,6 @@ export class DOMService extends Graph {
             ...completeOptions
         },undefined,this);
 
-        this.add(node);
-
         this.components[completeOptions.id] = {
             element:elm as any,
             class:CustomElement,
@@ -264,8 +260,6 @@ export class DOMService extends Graph {
             },
             ...completeOptions
         },undefined,this);
-
-        this.add(node);
 
         let canvas = elm.querySelector('canvas');
         if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object
