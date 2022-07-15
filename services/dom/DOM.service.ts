@@ -114,7 +114,7 @@ export class DOMService extends Graph {
             tagName?:string, //e.g. 'div', 'canvas'
             element?:HTMLElement, //alternatively set an element
             style?:CSSStyleDeclaration,
-            attributes?:{[key:string]:any}, //specify any attributes/values e.g. innerHTML
+            attributes?:{[key:string]:any}, //specify any attributes/values e.g. innerHTML, onclick,...
             parentNode?:string|HTMLElement,
             oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
             onresize?:(ev,self:HTMLElement,info:ElementInfo)=>void,
