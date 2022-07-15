@@ -14,7 +14,7 @@ export type DOMElementProps = {
     innerText?:string,
     innerHTML?:string,
     id?:string
-}
+} & GraphNodeProperties
 
 export type DOMElementInfo = { //returned from addComponent
     element:DOMElement,

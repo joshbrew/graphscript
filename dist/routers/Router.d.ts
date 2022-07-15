@@ -7,7 +7,7 @@ export declare class Router {
     service: Service;
     run: (node: string | GraphNode, ...args: any[]) => any;
     _run: (node: string | GraphNode, origin?: string | GraphNode | import("../Graph").Graph, ...args: any[]) => any;
-    add: (node?: GraphNode | import("../Graph").GraphNodeProperties | import("../Graph").OperatorType | ((...args: any[]) => any)) => GraphNode | import("../Graph").GraphNodeProperties;
+    add: (node?: GraphNode | import("../Graph").GraphNodeProperties | import("../Graph").OperatorType | ((...args: any[]) => any), fromTree?: boolean) => GraphNode | import("../Graph").GraphNodeProperties;
     remove: (node: string | GraphNode) => string | GraphNode;
     stopNode: (node: string | GraphNode) => void;
     subscribe: (node: string | GraphNode, callback: (res: any) => void) => number;

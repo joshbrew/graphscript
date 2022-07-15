@@ -62,6 +62,9 @@ export class DOMService extends Graph {
 
         let elm:HTMLElement = this.createElement(options)
 
+        let oncreate = options.oncreate;
+        delete options.oncreate; //so it doesnt trigger on the node
+
         let node = new GraphNode({
             element:elm,   
             operator:(node,origin,props:{[key:string]:any})=>{ 
@@ -96,7 +99,7 @@ export class DOMService extends Graph {
             options.onresize = (ev) => { onresize(ev, elm, this.elements[options.id]) };
             window.addEventListener('resize', options.onresize as EventListener);
         }
-        if(options.oncreate) options.oncreate(elm,this.elements[options.id]);
+        if(oncreate) oncreate(elm,this.elements[options.id]);
 
         return this.elements[options.id] as ElementInfo;
     }
@@ -159,6 +162,7 @@ export class DOMService extends Graph {
             ondelete = options.ondelete;
             renderonchanged = options.renderonchanged as any;
         }
+        delete options.oncreate; //so it doesnt trigger on the node
 
         if(!options.tagName) options.tagName = `custom-element${Math.random()*1000000000000000}`;
 
@@ -224,6 +228,7 @@ export class DOMService extends Graph {
             ondelete = options.ondelete;
             renderonchanged = options.renderonchanged as any;
         }
+        delete options.oncreate; //so it doesnt trigger on the node
 
         if(!options.tagName) options.tagName = `custom-element${Math.random()*1000000000000000}`;
 
@@ -259,7 +264,7 @@ export class DOMService extends Graph {
                 return props;
             },
             ...completeOptions
-        },undefined,this);
+        }, undefined,this);
 
         let canvas = elm.querySelector('canvas');
         if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object
@@ -362,6 +367,7 @@ export class DOMService extends Graph {
                             if(typeof c === 'object') {
                                 if(c.tag) {
                                     routes[c.tag] = c;
+                                    childrenIter(routes[c.tag]);
                                 } else if (c.id) {
                                     c.tag = c.id;
                                     routes[c.tag] = c;
@@ -372,11 +378,12 @@ export class DOMService extends Graph {
                     } else if (typeof route.children === 'object') {
                         if(route.children.tag) {
                             routes[route.children.tag] = route.children;
+                            childrenIter(routes[route.children.tag]);
                         } else if(route.children.id) {
                             route.children.tag = route.children.id;
                             routes[route.children.tag] = route.children;
                             childrenIter(routes[route.children.tag]);
-                        }
+                        } 
                     }
                 }
             }

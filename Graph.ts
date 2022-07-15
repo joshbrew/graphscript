@@ -109,6 +109,7 @@ export type GraphNodeProperties = {
     loop?:false|number, //milliseconds or false, run the operation on a loop?
     animation?: OperatorType, //if it outputs something not undefined it will trigger parent/child operators
     looper?: OperatorType, //if it outputs something not undefined it will trigger parent/child operators
+    oncreate?:(self:GraphNode)=>void //do something after initializing the node, if loaded in a graph it only runs after setTree
     DEBUGNODE?:boolean // print a console.time and the result for a node by tag, run DEBUGNODES on a GraphNode or Graph to toggle debug on all attached nodes.
     [key:string]:any //add whatever variables and utilities
 }; //can specify properties of the element which can be subscribed to for changes.
@@ -325,6 +326,8 @@ export class GraphNode {
             }
         
             if(this.children) this.convertChildrenToNodes(this);
+        
+            if(!graph && properties.oncreate) properties.oncreate(this);
         }
         else return properties;
       
@@ -1075,20 +1078,22 @@ export class Graph {
     }
 
     //converts all children nodes and tag references to GraphNodes also
-    add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void) ={}) => {
+    add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void) ={}, fromTree=false) => {
         let props = node;
         if(!(node instanceof GraphNode)) node = new GraphNode(props,undefined,this); 
         if(node.tag) this.tree[node.tag] = props; //set the head node prototype in the tree object
+        if(!fromTree && node.oncreate) node.oncreate(node);
         return node;
     }
 
     setTree = (tree:Tree = this.tree) => {
         if(!tree) return;
 
+        let oncreate = {};
         for(const node in tree) { //add any nodes not added yet, assuming we aren't overwriting the same tags to the tree.
             if(!this.nodes.get(node)) {
                 if(typeof tree[node] === 'function') {
-                    this.add({tag:node, operator:tree[node] as OperatorType|((...args)=>any|void)});
+                    this.add({tag:node, operator:tree[node] as OperatorType|((...args)=>any|void)},true);
                 }
                 else if (typeof tree[node] === 'object' && !Array.isArray(tree[node])) {
                     if(!(tree[node] as any).tag) (tree[node] as any).tag = node;
@@ -1100,10 +1105,19 @@ export class Graph {
                     }
                 } else {
                     //we are trying to load something like a number or array in this case so lets make it a node that just returns the value
-                    this.add({tag:node,operator:(self,origin,...args) => {return tree[node];}});
+                    this.add({tag:node,operator:(self,origin,...args) => {return tree[node];}},true);
+                }
+                if(this.nodes.get(node)?.oncreate) {
+                    oncreate[node] = this.nodes.get(node).oncreate
                 }
             }
         }
+
+        for(const key in oncreate) {
+            oncreate[key](this.nodes.get(key)); //now run the oncreate callbacks
+        }
+
+
     }
 
     get = (tag:string) => {

@@ -34,6 +34,7 @@ export declare type GraphNodeProperties = {
     loop?: false | number;
     animation?: OperatorType;
     looper?: OperatorType;
+    oncreate?: (self: GraphNode) => void;
     DEBUGNODE?: boolean;
     [key: string]: any;
 };
@@ -152,7 +153,7 @@ export declare class Graph {
     constructor(tree?: Tree, tag?: string, props?: {
         [key: string]: any;
     });
-    add: (node?: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void)) => GraphNode | GraphNodeProperties;
+    add: (node?: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void), fromTree?: boolean) => GraphNode | GraphNodeProperties;
     setTree: (tree?: Tree) => void;
     get: (tag: string) => any;
     run: (node: string | GraphNode, ...args: any[]) => any;
