@@ -9,6 +9,8 @@ export type ElementProps = {
     oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
     onresize?:(ev,self:HTMLElement,info:ElementInfo)=>void,
     ondelete?:(self:HTMLElement,info:ElementInfo)=>void,
+    innerText?:string,
+    innerHTML?:string,
     id?:string
 }
 
@@ -28,5 +30,7 @@ export type ElementOptions = {
     oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
     onresize?:(ev,self:HTMLElement,info:ElementInfo)=>void,
     ondelete?:(self:HTMLElement,info:ElementInfo)=>void,
+    innerText?:string,
+    innerHTML?:string,
     id?:string
 } & GraphNodeProperties

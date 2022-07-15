@@ -11,6 +11,8 @@ export type DOMElementProps = {
     ondelete?:(self:DOMElement,props:any)=>void,
     onchanged?:(props:any)=>void,
     renderonchanged?:boolean|((self:DOMElement,props:any)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
+    innerText?:string,
+    innerHTML?:string,
     id?:string
 }
 
@@ -33,5 +35,7 @@ export type ComponentOptions = {
     onchanged?:(props:any,self:DOMElement)=>void,
     renderonchanged?:boolean|((props:any,self:DOMElement)=>void), //set true to auto refresh the element render (it re-appends a new fragment in its container)
     props?:{[key:string]:any},
+    innerText?:string,
+    innerHTML?:string,
     id?:string
 } & GraphNodeProperties

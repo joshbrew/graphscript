@@ -10,6 +10,8 @@ export declare type DOMElementProps = {
     ondelete?: (self: DOMElement, props: any) => void;
     onchanged?: (props: any) => void;
     renderonchanged?: boolean | ((self: DOMElement, props: any) => void);
+    innerText?: string;
+    innerHTML?: string;
     id?: string;
 };
 export declare type DOMElementInfo = {
@@ -31,5 +33,7 @@ export declare type ComponentOptions = {
     props?: {
         [key: string]: any;
     };
+    innerText?: string;
+    innerHTML?: string;
     id?: string;
 } & GraphNodeProperties;
