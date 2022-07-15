@@ -84,7 +84,7 @@ export class DOMService extends Graph {
     // front of the route like 'http/createServer'.
     routes:DOMRoutes={}
     firstLoad = true;
-    name:string=`service${Math.floor(Math.random()*100000000000000)}`;
+    name:string=`html`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
 
     constructor(routes?:DOMRoutes, name?:string,props?:{[key:string]:any}) {
