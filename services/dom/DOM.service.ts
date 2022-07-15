@@ -40,7 +40,10 @@ export class DOMService extends Graph {
     constructor(routes?:DOMRoutes, name?:string,props?:{[key:string]:any}) {
         super(undefined,name,props);
         if(name) this.name = name;
-        if(routes) this.load(routes); //now process the routes for the acyclic graph to load them as graph nodes :-D
+        if(Array.isArray(routes)) {
+            routes.forEach((r) => {this.load(r);})
+        }
+        else if(routes) this.load(routes); //now process the routes for the acyclic graph to load them as graph nodes :-D
     }
     
     elements:{
