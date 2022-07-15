@@ -187,7 +187,7 @@ export class DOMService extends Graph {
             template?:string|((props:any)=>string), //string or function that passes the modifiable props on the element (the graph node properties)
             parentNode?:string|HTMLElement,
             styles?:string, //will use the shadow DOM automatically in this case
-            oncreate?:(props:any,self:DOMElement)=>void,
+            oncreate?:(props:any,self:DOMElement)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
             onresize?:(props:any,self:DOMElement)=>void,
             ondelete?:(props:any,self:DOMElement)=>void,
             onchanged?:(props:any,self:DOMElement)=>void,
