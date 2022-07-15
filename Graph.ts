@@ -1082,7 +1082,9 @@ export class Graph {
         let props = node;
         if(!(node instanceof GraphNode)) node = new GraphNode(props,undefined,this); 
         if(node.tag) this.tree[node.tag] = props; //set the head node prototype in the tree object
-        if(!fromTree && node.oncreate) node.oncreate(node);
+        if(!fromTree) {
+            if(node.oncreate) node.oncreate(node);
+        } 
         return node;
     }
 
@@ -1112,6 +1114,19 @@ export class Graph {
                 }
             }
         }
+
+        this.nodes.forEach((node) => { //swap any child strings out for the proper nodes
+            if(typeof node.children === 'string') {
+                if(this.nodes.get(node.children)) {
+                    node.children = [node.children];
+                    node.nodes.set(node.children);
+                }
+            } else if (Array.isArray(node.children)) {
+                node.children.forEach((c,i) => {if(typeof c === 'string') {
+                    if(this.nodes.get(c)) {node.children[i] = this.nodes.get(c); node.nodes.set(node.children[i].tag,node.children[i]); }
+                }})
+            }
+        })
 
         for(const key in oncreate) {
             oncreate[key](this.nodes.get(key)); //now run the oncreate callbacks
