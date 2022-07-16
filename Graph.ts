@@ -358,7 +358,7 @@ export class GraphNode {
             let checkParentHasChildMapped = (node,child,depth=0) => {
                 if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
                         if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
-                    if(node.parent.parent && depth !== node.graph?.size) {
+                    if(node.parent.parent && depth < node.graph?.size) {
                         checkParentHasChildMapped(node.parent, child, depth++);
                     }
                 }
@@ -1081,7 +1081,7 @@ export class Graph {
             let checkParentHasChildMapped = (node,child,depth=0) => { //could get stuck in infinite loop
                 if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
                         if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
-                    if(node.parent.parent && depth !== this.nodes?.size) {
+                    if(node.parent.parent && depth < this.nodes?.size) {
                         checkParentHasChildMapped(node.parent, child, depth++);
                     }
                 }
