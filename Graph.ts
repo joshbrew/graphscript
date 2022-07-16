@@ -365,7 +365,7 @@ export class GraphNode {
             }
             if(this.parent instanceof GraphNode) checkParentHasChildMapped(this.parent,this);
             
-            if(!graph && this.oncreate) this.oncreate(this);
+            if(!graph && typeof this.oncreate === 'function') this.oncreate(this);
         }
         else return properties;
       
