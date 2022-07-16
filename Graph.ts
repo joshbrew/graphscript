@@ -891,9 +891,11 @@ export class GraphNode {
                             if(c.stopNode) c.stopNode();
                             if(c.tag) {
                                 if(this.nodes.get(c.tag)) this.nodes.delete(c.tag);
+                                if(this[c.tag] instanceof GraphNode) delete this[c.tag];
                             }
                             this.nodes.forEach((n) => {
                                 if(n.nodes.get(c.tag)) n.nodes.delete(c.tag);
+                                if(n[c.tag] instanceof GraphNode) delete n[c.tag];
                             });
                             recursivelyRemove(c);
                         })
@@ -902,9 +904,11 @@ export class GraphNode {
                         if(node.stopNode) node.stopNode();
                         if(node.tag) {
                             if(this.nodes.get(node.tag)) this.nodes.delete(node.tag);
+                            if(this[node.tag] instanceof GraphNode) delete this[node.tag];
                         }
                         this.nodes.forEach((n) => {
                             if(n.nodes.get(node.tag)) n.nodes.delete(node.tag);
+                            if(n[node.tag] instanceof GraphNode) delete n[node.tag];
                         });
                         recursivelyRemove(node);
                     }
@@ -913,8 +917,12 @@ export class GraphNode {
             if(node.stopNode) node.stopNode();
             if(node.tag) {
                 this.nodes.delete(node.tag);
+                if(this[node.tag] instanceof GraphNode) delete this[node.tag];
                 this.nodes.forEach((n) => {
-                    if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
+                    if((node as GraphNode)?.tag) {
+                        if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
+                        if(n[(node as GraphNode).tag] instanceof GraphNode) delete n[(node as GraphNode).tag];
+                    }
                 });
                 recursivelyRemove(node);
                 if(this.graph) this.graph.removeTree(node); //remove from parent graph too 
