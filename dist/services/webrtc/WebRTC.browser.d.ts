@@ -37,7 +37,9 @@ export declare class WebRTCfrontend extends Service {
     iceServers: {
         urls: string[];
     }[];
-    constructor(routes?: Routes, name?: string, iceServers?: {
+    constructor(routes?: Routes | Routes[], name?: string, props?: {
+        [key: string]: any;
+    }, loadDefaultRoutes?: boolean, iceServers?: {
         urls: string[];
     }[]);
     createStream: (options: {

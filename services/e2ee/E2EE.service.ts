@@ -18,10 +18,15 @@ export class E2EEService extends Service {
     encryptedkeys?:string;
     secret?:string; 
 
-    constructor(routes?:Routes, name?:string, keys?:{ //match ids to decryption keys then attempt to reroute the data
+    constructor(
+        routes?:Routes|Routes[], 
+        name?:string, 
+        props?:{[key:string]:any}, 
+        loadDefaultRoutes?:boolean ,
+        keys?:{ //match ids to decryption keys then attempt to reroute the data
         [key:string]:{ key:string, _id?:string } //if method undefined, default to AES (the one that is considered most secure/general)
     }, secureKeys?:boolean, secret?:string) {
-        super(routes, name);
+        super(routes, name, props, loadDefaultRoutes);
 
         if(keys) {
             if(secureKeys && secret) {

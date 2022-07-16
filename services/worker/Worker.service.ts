@@ -29,8 +29,13 @@ export class WorkerService extends Service {
 
     threadRot = 0; //thread rotation if not specifying
 
-    constructor(routes?:Routes, name?:string, ) {
-        super(routes, name);
+    constructor(
+        routes?:Routes|Routes[], 
+        name?:string, 
+        props?:{[key:string]:any}, 
+        loadDefaultRoutes?:boolean
+    ) {
+        super(routes, name, props, loadDefaultRoutes);
         this.load(proxyWorkerRoutes); //add support for element proxying
     }
 

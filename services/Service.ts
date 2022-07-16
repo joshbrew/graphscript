@@ -53,7 +53,7 @@ export class Service extends Graph {
     name:string=`service${Math.floor(Math.random()*100000000000000)}`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
 
-    constructor(routes?:Routes|Routes[], name?:string,props?:{[key:string]:any}, loadDefaultRoutes:boolean=true) {
+    constructor(routes?:Routes|Routes[], name?:string, props?:{[key:string]:any}, loadDefaultRoutes:boolean=true) {
         super(undefined,name,props);
         this.loadDefaultRoutes = loadDefaultRoutes;
         if(name) this.name = name;

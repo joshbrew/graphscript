@@ -18,7 +18,9 @@ export declare class WorkerService extends Service {
         [key: string]: WorkerInfo;
     };
     threadRot: number;
-    constructor(routes?: Routes, name?: string);
+    constructor(routes?: Routes | Routes[], name?: string, props?: {
+        [key: string]: any;
+    }, loadDefaultRoutes?: boolean);
     addWorker: (options: {
         url: URL | string;
         _id?: string;

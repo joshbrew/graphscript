@@ -46,7 +46,8 @@ export class WebRTCfrontend extends Service {
         { urls: ['stun:stun4.l.google.com:19302'] }
     ];
 
-    constructor(routes?:Routes, name?:string, iceServers?:{urls:string[]}[] ) {
+    constructor(routes?:Routes|Routes[], name?:string, props?:{[key:string]:any}, loadDefaultRoutes?:boolean, iceServers?:{urls:string[]}[] ) {
+        super(routes, name, props, loadDefaultRoutes);
         super(routes, name);
 
         if(iceServers) this.iceServers = iceServers;

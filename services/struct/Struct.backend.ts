@@ -58,13 +58,18 @@ export class StructBackend extends Service {
     mode: 'local' | 'mongodb' | string 
     useAuths: boolean = true //check if the user querying has the correct permissions 
 
-    constructor(routes?:Routes,name?:string, options?:{
+    constructor(
+        routes?:Routes|Routes[], 
+        name?:string, 
+        props?:{[key:string]:any}, 
+        loadDefaultRoutes?:boolean, 
+        options?:{
         users?:{[key:string]:{_id:string, [key:string]:any}},
         mode?:'local' | 'mongodb' | string,
         db?:any, //mongodb instance (mongoose)
         collections?:CollectionsType
     }) {
-        super(routes,name);
+        super(routes,name,props,loadDefaultRoutes);
         if(options?.users) this.users = options.users; //set the reference so this keeps concurrent with the user router
         if(options?.db) this.mode = (this.db) ? ((options.mode) ? options.mode : 'local') : 'local'
         if(options?.collections) this.collections = options.collections;

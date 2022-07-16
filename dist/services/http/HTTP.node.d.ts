@@ -49,7 +49,9 @@ export declare class HTTPbackend extends Service {
     mimeTypes: {
         [key: string]: string;
     };
-    constructor(routes?: Routes, name?: string, settings?: {
+    constructor(routes?: Routes | Routes[], name?: string, props?: {
+        [key: string]: any;
+    }, loadDefaultRoutes?: boolean, settings?: {
         host?: string;
         port?: number;
         protocol?: 'http' | 'https';

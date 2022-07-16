@@ -69,8 +69,14 @@ export class HTTPbackend extends Service {
         '.php':'application/x-httpd-php', '.rtf':'application/rtf', '.swf':'application/x-shockwave-flash', '.7z':'application/x-7z-compressed', '.3gp':'video/3gpp'
     };
 
-    constructor(routes?:Routes, name?:string, settings?:{ host?:string, port?:number, protocol?:'http'|'https', certpath?:string, keypath?:string }) {
-        super(routes, name);
+    constructor(
+        routes?:Routes|Routes[], 
+        name?:string, 
+        props?:{[key:string]:any}, 
+        loadDefaultRoutes?:boolean,
+        settings?:{ host?:string, port?:number, protocol?:'http'|'https', certpath?:string, keypath?:string }
+    ) {
+        super(routes, name, props, loadDefaultRoutes);
 
         if(settings) {
             if(settings.protocol === 'https') {

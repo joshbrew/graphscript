@@ -22,7 +22,6 @@ export declare class WSSfrontend extends Service {
     sockets: {
         [key: string]: WebSocketInfo;
     };
-    constructor(routes?: Routes, name?: string);
     openWS: (options?: WebSocketProps) => WebSocketInfo;
     transmit: (data: string | ArrayBufferLike | Blob | ArrayBufferView | ServiceMessage, ws: WebSocket) => boolean;
     terminate: (ws: WebSocket | string) => boolean;

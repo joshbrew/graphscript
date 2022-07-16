@@ -38,7 +38,12 @@ export class DOMService extends Graph {
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
     parentNode:HTMLElement=document.body; //default parent elements for elements added
 
-    constructor(routes?:DOMRoutes|DOMRoutes[], name?:string,props?:{[key:string]:any}, loadDefaultRoutes:boolean=true) {
+    constructor(
+        routes?:DOMRoutes|DOMRoutes[], 
+        name?:string,
+        props?:{[key:string]:any}, 
+        loadDefaultRoutes:boolean=true
+    ) {
         super(undefined,name,props);
         this.loadDefaultRoutes = loadDefaultRoutes;
 

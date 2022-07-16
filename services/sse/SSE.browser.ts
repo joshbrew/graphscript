@@ -27,10 +27,6 @@ export class SSEfrontend extends Service {
         [key:string]:EventSourceInfo
     }={}
 
-    constructor(routes?:Routes, name?:string) {
-        super(routes, name);
-    }
-
     openSSE = (
         options:EventSourceProps
     ) => {

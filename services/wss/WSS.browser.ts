@@ -29,10 +29,6 @@ export class WSSfrontend extends Service {
         [key:string]:WebSocketInfo
     } = { }
 
-    constructor(routes?:Routes, name?:string) {
-        super(routes, name);
-    }
-
     openWS = (
         options:WebSocketProps = {
             host:'localhost',

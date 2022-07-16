@@ -10,7 +10,9 @@ export declare class E2EEService extends Service {
     securedKeys: boolean;
     encryptedkeys?: string;
     secret?: string;
-    constructor(routes?: Routes, name?: string, keys?: {
+    constructor(routes?: Routes | Routes[], name?: string, props?: {
+        [key: string]: any;
+    }, loadDefaultRoutes?: boolean, keys?: {
         [key: string]: {
             key: string;
             _id?: string;

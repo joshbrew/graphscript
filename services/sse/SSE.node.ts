@@ -34,10 +34,6 @@ export class SSEbackend extends Service {
         [key:string]:{ _id:string, session:Session<SessionState>, served:SSESessionInfo }
     }={}
 
-    constructor(routes?:Routes, name?:string) {
-        super(routes, name);
-    }
-
     setupSSE = (options:SSEProps) => {
 
         const server = options.server; 

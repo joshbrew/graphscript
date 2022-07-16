@@ -20,8 +20,14 @@ export class StructFrontend extends Service {
     collections = this.tablet.collections;
     id: string = randomId()
 
-    constructor(user:Partial<UserStruct>, routes?:Routes, name?:string) {
-        super(routes, name);
+    constructor(
+        routes?:Routes|Routes[], 
+        name?:string, 
+        props?:{[key:string]:any}, 
+        loadDefaultRoutes?:boolean, 
+        user?:Partial<UserStruct>
+    ) {
+        super(routes, name, props, loadDefaultRoutes);
 
         if (user instanceof Object && Object.keys(user).length > 0) this.setupUser(user) // Declares currentUser
     }

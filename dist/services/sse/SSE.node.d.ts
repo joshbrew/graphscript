@@ -31,7 +31,6 @@ export declare class SSEbackend extends Service {
             served: SSESessionInfo;
         };
     };
-    constructor(routes?: Routes, name?: string);
     setupSSE: (options: SSEProps) => false | SSESessionInfo;
     transmit: (data: string | ServiceMessage, path: string, channel: string) => void;
     terminate: (path: string | SSEProps) => void;

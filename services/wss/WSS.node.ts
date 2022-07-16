@@ -63,10 +63,6 @@ export class WSSbackend extends Service {
         [key:string]:SocketInfo
     }={};
 
-    constructor(routes?:Routes, name?:string) {
-        super(routes, name);
-    }
-
     setupWSS = (
         options:SocketServerProps,
     ) => {

@@ -52,7 +52,6 @@ export declare class WSSbackend extends Service {
     sockets: {
         [key: string]: SocketInfo;
     };
-    constructor(routes?: Routes, name?: string);
     setupWSS: (options: SocketServerProps) => SocketServerInfo;
     openWS: (options: SocketProps) => WebSocket;
     transmit: (message: string | ArrayBufferLike | Blob | ArrayBufferView | Buffer[] | ServiceMessage, ws: WebSocketServer | WebSocket) => void;
