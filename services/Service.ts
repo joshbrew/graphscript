@@ -47,7 +47,7 @@ export type ServiceOptions = {
     routes?:Routes|Routes[], 
     name?:string, 
     props?:{[key:string]:any}, 
-    loadDefaultRoutes:boolean,
+    loadDefaultRoutes?:boolean,
     [key:string]:any
 };
 

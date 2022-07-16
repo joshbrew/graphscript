@@ -39,7 +39,7 @@ export declare type ServiceOptions = {
     props?: {
         [key: string]: any;
     };
-    loadDefaultRoutes: boolean;
+    loadDefaultRoutes?: boolean;
     [key: string]: any;
 };
 export declare class Service extends Graph {
