@@ -475,37 +475,39 @@ export class DOMService extends Graph {
             if(typeof routes[route] === 'object') {
                 let r = routes[route] as RouteProp | DOMRouteProp;
                 
-                if(r.template) { //assume its a component node
-                    if(!routes[route].tag) routes[route].tag = route;
-                    this.addComponent(routes[route]);
-                }
-                else if(r.context) { //assume its a canvas node
-                    if(!routes[route].tag) routes[route].tag = route;
-                    this.addCanvasComponent(routes[route]);
-                }
-                else if(r.tagName || r.element) { //assume its an element node
-                    if(!routes[route].tag) routes[route].tag = route;
-                    this.addElement(routes[route]);
-                }
-
-                if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
-                    if(typeof r.get == 'object') {
-                        
+                if(typeof r === 'object') {
+                    if(r.template) { //assume its a component node
+                        if(!routes[route].tag) routes[route].tag = route;
+                        this.addComponent(routes[route]);
                     }
-                }
-                if(r.post) {}
-                if(r.delete) {}
-                if(r.put) {}
-                if(r.head) {}
-                if(r.patch) {}
-                if(r.options) {}
-                if(r.connect) {}
-                if(r.trace) {}
+                    else if(r.context) { //assume its a canvas node
+                        if(!routes[route].tag) routes[route].tag = route;
+                        this.addCanvasComponent(routes[route]);
+                    }
+                    else if(r.tagName || r.element) { //assume its an element node
+                        if(!routes[route].tag) routes[route].tag = route;
+                        this.addElement(routes[route]);
+                    }
 
-                if(r.post && !r.operator) {
-                    routes[route].operator = r.post;
-                } else if (!r.operator && typeof r.get == 'function') {
-                    routes[route].operator = r.get;
+                    if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
+                        if(typeof r.get == 'object') {
+                            
+                        }
+                    }
+                    if(r.post) {}
+                    if(r.delete) {}
+                    if(r.put) {}
+                    if(r.head) {}
+                    if(r.patch) {}
+                    if(r.options) {}
+                    if(r.connect) {}
+                    if(r.trace) {}
+
+                    if(r.post && !r.operator) {
+                        routes[route].operator = r.post;
+                    } else if (!r.operator && typeof r.get == 'function') {
+                        routes[route].operator = r.get;
+                    }
                 }
                 if(this.routes[route]) {
                     if(typeof this.routes[route] === 'object') Object.assign(this.routes[route],routes[route]);

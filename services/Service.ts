@@ -164,24 +164,27 @@ export class Service extends Graph {
         for(const route in routes) {
             if(typeof routes[route] === 'object') {
                 let r = routes[route] as RouteProp;
-                if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
-                    if(typeof r.get == 'object') {
-                        
-                    }
-                }
-                if(r.post) {}
-                if(r.delete) {}
-                if(r.put) {}
-                if(r.head) {}
-                if(r.patch) {}
-                if(r.options) {}
-                if(r.connect) {}
-                if(r.trace) {}
 
-                if(r.post && !r.operator) {
-                    routes[route].operator = r.post;
-                } else if (!r.operator && typeof r.get == 'function') {
-                    routes[route].operator = r.get;
+                if(typeof r === 'object') {
+                    if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
+                        if(typeof r.get == 'object') {
+                            
+                        }
+                    }
+                    if(r.post) {}
+                    if(r.delete) {}
+                    if(r.put) {}
+                    if(r.head) {}
+                    if(r.patch) {}
+                    if(r.options) {}
+                    if(r.connect) {}
+                    if(r.trace) {}
+
+                    if(r.post && !r.operator) {
+                        routes[route].operator = r.post;
+                    } else if (!r.operator && typeof r.get == 'function') {
+                        routes[route].operator = r.get;
+                    }
                 }
                 if(this.routes[route]) {
                     if(typeof this.routes[route] === 'object') Object.assign(this.routes[route],routes[route]);
