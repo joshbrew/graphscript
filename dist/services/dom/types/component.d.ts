@@ -2,14 +2,14 @@ import { DOMElement } from "../DOMElement";
 import { GraphNode, GraphNodeProperties } from "../../../Graph";
 export declare type DOMElementProps = {
     tagName?: string;
-    template?: string | ((props: any) => string);
+    template?: string | ((props: any) => string | HTMLElement) | HTMLElement;
     parentNode?: string | HTMLElement;
     styles?: string;
-    oncreate?: (self: DOMElement, props: any) => void;
-    onresize?: (self: DOMElement, props: any) => void;
-    ondelete?: (self: DOMElement, props: any) => void;
+    oncreate?: (self: DOMElement, info?: DOMElementInfo) => void;
+    onresize?: (self: DOMElement, info?: DOMElementInfo) => void;
+    ondelete?: (self: DOMElement, info?: DOMElementInfo) => void;
     onchanged?: (props: any) => void;
-    renderonchanged?: boolean | ((self: DOMElement, props: any) => void);
+    renderonchanged?: boolean | ((self: DOMElement, info: DOMElementInfo) => void);
     innerText?: string;
     innerHTML?: string;
     id?: string;
@@ -22,14 +22,14 @@ export declare type DOMElementInfo = {
 } & DOMElementProps;
 export declare type ComponentOptions = {
     tagName?: string;
-    template?: string | ((props: any) => string);
+    template?: string | ((props: any) => string | HTMLElement) | HTMLElement;
     parentNode?: string | HTMLElement;
     styles?: string;
-    oncreate?: (props: any, self: DOMElement) => void;
-    onresize?: (props: any, self: DOMElement) => void;
-    ondelete?: (props: any, self: DOMElement) => void;
-    onchanged?: (props: any, self: DOMElement) => void;
-    renderonchanged?: boolean | ((props: any, self: DOMElement) => void);
+    oncreate?: (self: DOMElement, info?: DOMElementInfo) => void;
+    onresize?: (self: DOMElement, info?: DOMElementInfo) => void;
+    ondelete?: (self: DOMElement, info?: DOMElementInfo) => void;
+    onchanged?: (props: any) => void;
+    renderonchanged?: boolean | ((self: DOMElement, info: DOMElementInfo) => void);
     props?: {
         [key: string]: any;
     };

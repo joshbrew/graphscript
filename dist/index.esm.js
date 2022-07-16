@@ -2231,8 +2231,8 @@ function createNode(operator, parentNode, props, graph) {
 
 // services/Service.ts
 var Service = class extends Graph {
-  constructor(options2) {
-    super(void 0, options2.name, options2.props);
+  constructor(options) {
+    super(void 0, options.name, options.props);
     this.routes = {};
     this.loadDefaultRoutes = true;
     this.name = `service${Math.floor(Math.random() * 1e14)}`;
@@ -2588,16 +2588,16 @@ var Service = class extends Graph {
       handleServiceMessage: this.handleServiceMessage,
       handleGraphNodeCall: this.handleGraphNodeCall
     };
-    if ("loadDefaultRoutes" in options2)
-      this.loadDefaultRoutes = options2.loadDefaultRoutes;
-    if (options2.name)
-      this.name = options2.name;
-    if (Array.isArray(options2.routes)) {
-      options2.routes.forEach((r) => {
+    if ("loadDefaultRoutes" in options)
+      this.loadDefaultRoutes = options.loadDefaultRoutes;
+    if (options.name)
+      this.name = options.name;
+    if (Array.isArray(options.routes)) {
+      options.routes.forEach((r) => {
         this.load(r);
       });
-    } else if (options2.routes)
-      this.load(options2.routes);
+    } else if (options.routes)
+      this.load(options.routes);
   }
   handleServiceMessage(message) {
     let call;
@@ -2673,7 +2673,7 @@ var unsafeRoutes = {
 var DOMElement = class extends HTMLElement {
   constructor() {
     super();
-    __publicField(this, "template", (props) => {
+    __publicField(this, "template", (props, self2 = this) => {
       return `<div> Custom Fragment Props: ${JSON.stringify(props)} </div>`;
     });
     __publicField(this, "props", {});
@@ -2694,11 +2694,18 @@ var DOMElement = class extends HTMLElement {
     });
     __publicField(this, "render", (props = this.props) => {
       if (typeof this.template === "function")
-        this.templateString = this.template(props, this);
+        this.templateResult = this.template(props, this);
       else
-        this.templateString = this.template;
+        this.templateResult = this.template;
       const t = document.createElement("template");
-      t.innerHTML = this.templateString;
+      if (typeof this.templateResult === "string")
+        t.innerHTML = this.templateResult;
+      else if (this.templateResult instanceof HTMLElement) {
+        if (this.templateResult.parentNode) {
+          this.templateResult.parentNode.removeChild(this.templateResult);
+        }
+        t.appendChild(this.templateResult);
+      }
       const fragment = t.content;
       if (this.FRAGMENT) {
         if (this.useShadow) {
@@ -2870,11 +2877,7 @@ var DOMElement = class extends HTMLElement {
       this.state.setState({ props: this.props });
     } else if (name2 === "template") {
       let template = val;
-      this.template = options.template;
-      if (typeof template === "function")
-        this.templateString = this.template(this.props, this);
-      else
-        this.templateString = template;
+      this.template = template;
       this.render(this.props);
       let created = new CustomEvent("created", { detail: { props: this.props } });
       this.dispatchEvent(created);
@@ -3132,8 +3135,8 @@ function parseFunctionFromText2(method) {
 
 // services/dom/DOM.service.ts
 var DOMService = class extends Graph {
-  constructor(options2, parentNode) {
-    super(void 0, options2.name, options2.props);
+  constructor(options, parentNode) {
+    super(void 0, options.name, options.props);
     this.routes = {};
     this.loadDefaultRoutes = true;
     this.name = `dom${Math.floor(Math.random() * 1e15)}`;
@@ -3142,10 +3145,10 @@ var DOMService = class extends Graph {
     this.elements = {};
     this.components = {};
     this.templates = {};
-    this.addElement = (options2, generateChildElementNodes = false) => {
-      let elm = this.createElement(options2);
-      let oncreate = options2.oncreate;
-      delete options2.oncreate;
+    this.addElement = (options, generateChildElementNodes = false) => {
+      let elm = this.createElement(options);
+      let oncreate = options.oncreate;
+      delete options.oncreate;
       let node = new GraphNode({
         element: elm,
         operator: (node2, origin, props) => {
@@ -3165,94 +3168,118 @@ var DOMService = class extends Graph {
             }
           return props;
         },
-        ...options2
+        ...options
       }, void 0, this);
       let divs = Array.from(elm.querySelectorAll("*"));
       if (generateChildElementNodes) {
         divs = divs.map((d, i) => this.addElement({ element: d }));
       }
-      this.elements[options2.id] = { element: elm, node, parentNode: options2.parentNode, divs };
-      if (options2.onresize) {
-        let onresize = options2.onresize;
-        options2.onresize = (ev2) => {
-          onresize(ev2, elm, this.elements[options2.id]);
+      this.elements[options.id] = { element: elm, node, parentNode: options.parentNode, divs };
+      if (options.onresize) {
+        let onresize = options.onresize;
+        options.onresize = (ev2) => {
+          onresize(ev2, elm, this.elements[options.id]);
         };
-        window.addEventListener("resize", options2.onresize);
+        window.addEventListener("resize", options.onresize);
       }
       if (!elm.parentNode) {
         setTimeout(() => {
-          if (typeof options2.parentNode === "object")
-            options2.parentNode.appendChild(elm);
+          if (typeof options.parentNode === "object")
+            options.parentNode.appendChild(elm);
           if (oncreate)
-            oncreate(elm, this.elements[options2.id]);
+            oncreate(elm, this.elements[options.id]);
         }, 0.01);
       }
-      return this.elements[options2.id];
+      return this.elements[options.id];
     };
-    this.createElement = (options2) => {
+    this.createElement = (options) => {
       let elm;
-      if (options2.element) {
-        if (typeof options2.element === "string") {
-          elm = document.querySelector(options2.element);
+      if (options.element) {
+        if (typeof options.element === "string") {
+          elm = document.querySelector(options.element);
           if (!elm)
-            elm = document.getElementById(options2.element);
+            elm = document.getElementById(options.element);
         } else
-          elm = options2.element;
-      } else if (options2.tagName)
-        elm = document.createElement(options2.tagName);
-      else if (options2.id && document.getElementById(options2.id))
-        elm = document.getElementById(options2.id);
+          elm = options.element;
+      } else if (options.tagName)
+        elm = document.createElement(options.tagName);
+      else if (options.id && document.getElementById(options.id))
+        elm = document.getElementById(options.id);
       if (!elm)
         return void 0;
-      this.updateOptions(options2, elm);
+      this.updateOptions(options, elm);
       return elm;
     };
-    this.updateOptions = (options2, element) => {
-      if (!options2.id)
-        options2.id = `${options2.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
-      if (!options2.id && options2.tag)
-        options2.id = options2.tag;
-      if (!options2.tag && options2.id)
-        options2.tag = options2.id;
-      if (!options2.id)
-        options2.id = options2.tagName;
-      if (typeof options2.parentNode === "string")
-        options2.parentNode = document.getElementById(options2.parentNode);
-      if (!options2.parentNode) {
+    this.updateOptions = (options, element) => {
+      if (!options.id)
+        options.id = `${options.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
+      if (!options.id && options.tag)
+        options.id = options.tag;
+      if (!options.tag && options.id)
+        options.tag = options.id;
+      if (!options.id)
+        options.id = options.tagName;
+      if (typeof options.parentNode === "string")
+        options.parentNode = document.getElementById(options.parentNode);
+      if (!options.parentNode) {
         if (!this.parentNode)
           this.parentNode = document.body;
-        options2.parentNode = this.parentNode;
+        options.parentNode = this.parentNode;
       }
-      element.id = options2.id;
-      if (options2.style)
-        Object.assign(element.style, options2.style);
-      if (options2.innerHTML && element.innerHTML !== options2.innerHTML)
-        element.innerHTML = options2.innerHTML;
-      if (options2.innerText && element.innerText !== options2.innerText)
-        element.innerText = options2.innerText;
-      if (options2.attributes)
-        Object.assign(element, options2.attributes);
-      return options2;
+      element.id = options.id;
+      if (options.style)
+        Object.assign(element.style, options.style);
+      if (options.innerHTML && element.innerHTML !== options.innerHTML)
+        element.innerHTML = options.innerHTML;
+      if (options.innerText && element.innerText !== options.innerText)
+        element.innerText = options.innerText;
+      if (options.attributes)
+        Object.assign(element, options.attributes);
+      return options;
     };
-    this.addComponent = (options2, generateChildElementNodes = true) => {
+    this.addComponent = (options, generateChildElementNodes = true) => {
+      if (options.oncreate) {
+        let oncreate = options.oncreate;
+        options.oncreate = (self2) => {
+          oncreate(self2, options);
+        };
+      }
+      if (options.onresize) {
+        let onresize = options.onresize;
+        options.onresize = (self2) => {
+          onresize(self2, options);
+        };
+      }
+      if (options.ondelete) {
+        let ondelete = options.ondelete;
+        options.ondelete = (self2) => {
+          ondelete(self2, options);
+        };
+      }
+      if (typeof options.renderonchanged === "function") {
+        let renderonchanged = options.renderonchanged;
+        options.renderonchanged = (self2) => {
+          renderonchanged(self2, options);
+        };
+      }
       class CustomElement extends DOMElement {
         constructor() {
           super(...arguments);
-          this.props = options2.props;
-          this.styles = options2.styles;
-          this.template = options2.template;
-          this.oncreate = options2.oncreate;
-          this.onresize = options2.onresize;
-          this.ondelete = options2.ondelete;
-          this.renderonchanged = options2.renderonchanged;
+          this.props = options.props;
+          this.styles = options.styles;
+          this.template = options.template;
+          this.oncreate = options.oncreate;
+          this.onresize = options.onresize;
+          this.ondelete = options.ondelete;
+          this.renderonchanged = options.renderonchanged;
         }
       }
-      delete options2.oncreate;
-      if (!options2.tagName)
-        options2.tagName = `custom-element${Math.random() * 1e15}`;
-      CustomElement.addElement(options2.tagName);
-      let elm = document.createElement(options2.tagName);
-      let completeOptions = this.updateOptions(options2, elm);
+      delete options.oncreate;
+      if (!options.tagName)
+        options.tagName = `custom-element${Math.random() * 1e15}`;
+      CustomElement.addElement(options.tagName);
+      let elm = document.createElement(options.tagName);
+      let completeOptions = this.updateOptions(options, elm);
       this.templates[completeOptions.id] = completeOptions;
       let divs = Array.from(elm.querySelectorAll("*"));
       if (generateChildElementNodes) {
@@ -3286,37 +3313,64 @@ var DOMService = class extends Graph {
       };
       if (!elm.parentNode) {
         setTimeout(() => {
-          if (typeof options2.parentNode === "object")
-            options2.parentNode.appendChild(elm);
+          if (typeof options.parentNode === "object")
+            options.parentNode.appendChild(elm);
         }, 0.01);
       }
       return this.components[completeOptions.id];
     };
-    this.addCanvasComponent = (options2) => {
-      options2.template = `<canvas `;
-      if (options2.width)
-        options2.template += `width="${options2.width}"`;
-      if (options2.height)
-        options2.template += `height="${options2.height}"`;
-      options2.template += ` ></canvas>`;
+    this.addCanvasComponent = (options) => {
+      if (!options.canvas) {
+        options.template = `<canvas `;
+        if (options.width)
+          options.template += `width="${options.width}"`;
+        if (options.height)
+          options.template += `height="${options.height}"`;
+        options.template += ` ></canvas>`;
+      } else
+        options.template = options.canvas;
+      if (options.oncreate) {
+        let oncreate = options.oncreate;
+        options.oncreate = (self2) => {
+          oncreate(self2, options);
+        };
+      }
+      if (options.onresize) {
+        let onresize = options.onresize;
+        options.onresize = (self2) => {
+          onresize(self2, options);
+        };
+      }
+      if (options.ondelete) {
+        let ondelete = options.ondelete;
+        options.ondelete = (self2) => {
+          ondelete(self2, options);
+        };
+      }
+      if (typeof options.renderonchanged === "function") {
+        let renderonchanged = options.renderonchanged;
+        options.renderonchanged = (self2) => {
+          renderonchanged(self2, options);
+        };
+      }
       class CustomElement extends DOMElement {
         constructor() {
           super(...arguments);
-          this.props = options2.props;
-          this.styles = options2.styles;
-          this.template = options2.template;
-          this.oncreate = options2.oncreate;
-          this.onresize = options2.onresize;
-          this.ondelete = options2.ondelete;
-          this.renderonchanged = options2.renderonchanged;
+          this.props = options.props;
+          this.styles = options.styles;
+          this.template = options.template;
+          this.oncreate = options.oncreate;
+          this.onresize = options.onresize;
+          this.ondelete = options.ondelete;
+          this.renderonchanged = options.renderonchanged;
         }
       }
-      delete options2.oncreate;
-      if (!options2.tagName)
-        options2.tagName = `custom-element${Math.random() * 1e15}`;
-      CustomElement.addElement(options2.tagName);
-      let elm = document.createElement(options2.tagName);
-      const completeOptions = this.updateOptions(options2, elm);
+      delete options.oncreate;
+      if (!options.tagName)
+        options.tagName = `custom-element${Math.random() * 1e15}`;
+      CustomElement.addElement(options.tagName);
+      let elm = document.createElement(options.tagName);
+      const completeOptions = this.updateOptions(options, elm);
       let animation = () => {
         if (this.components[completeOptions.id]?.animating) {
           this.components[completeOptions.id].draw(this.components[completeOptions.id].element, this.components[completeOptions.id]);
@@ -3346,7 +3400,11 @@ var DOMService = class extends Graph {
       let canvas = elm.querySelector("canvas");
       if (completeOptions.style)
         Object.assign(canvas.style, completeOptions.style);
-      let context = canvas.getContext(completeOptions.context);
+      let context;
+      if (typeof completeOptions.context === "object")
+        context = options.context;
+      else if (typeof completeOptions.context === "string")
+        context = canvas.getContext(completeOptions.context);
       this.components[completeOptions.id] = {
         element: elm,
         class: CustomElement,
@@ -3362,8 +3420,8 @@ var DOMService = class extends Graph {
       node.context = context;
       if (!elm.parentNode) {
         setTimeout(() => {
-          if (typeof options2.parentNode === "object")
-            options2.parentNode.appendChild(elm);
+          if (typeof options.parentNode === "object")
+            options.parentNode.appendChild(elm);
         }, 0.01);
       }
       node.runAnimation(animation);
@@ -3769,20 +3827,20 @@ var DOMService = class extends Graph {
       addComponent: this.addComponent,
       addCanvasComponent: this.addCanvasComponent
     };
-    if ("loadDefaultRoutes" in options2)
-      this.loadDefaultRoutes = options2.loadDefaultRoutes;
-    if (options2.name)
-      this.name = options2.name;
+    if ("loadDefaultRoutes" in options)
+      this.loadDefaultRoutes = options.loadDefaultRoutes;
+    if (options.name)
+      this.name = options.name;
     if (parentNode instanceof HTMLElement)
       this.parentNode = parentNode;
-    else if (options2.parentNode instanceof HTMLElement)
+    else if (options.parentNode instanceof HTMLElement)
       this.parentNode = parentNode;
-    if (Array.isArray(options2.routes)) {
-      options2.routes.forEach((r) => {
+    if (Array.isArray(options.routes)) {
+      options.routes.forEach((r) => {
         this.load(r);
       });
-    } else if (options2.routes)
-      this.load(options2.routes);
+    } else if (options.routes)
+      this.load(options.routes);
   }
   handleServiceMessage(message) {
     let call;
@@ -3830,8 +3888,8 @@ var DOMService = class extends Graph {
 // services/e2ee/E2EE.service.ts
 var import_sjcl = __toESM(require_sjcl());
 var E2EEService = class extends Service {
-  constructor(options2, keys, secureKeys, secret) {
-    super(options2);
+  constructor(options, keys, secureKeys, secret) {
+    super(options);
     this.name = "e2ee";
     this.securedKeys = false;
     this.addKey = (key, _id) => {
@@ -15998,11 +16056,11 @@ var GPUService = class extends Service {
       if (typeof fn === "function")
         this.gpu.addFunction(fn);
     };
-    this.addKernel = (name2, fn, options2) => {
+    this.addKernel = (name2, fn, options) => {
       if (typeof fn === "string")
         fn = parseFunctionFromText(fn);
       if (typeof fn === "function")
-        this.gpu.addKernel(name2, fn, options2);
+        this.gpu.addKernel(name2, fn, options);
     };
     this.callKernel = (name2, ...args) => {
       this.gpu.callKernel(name2, ...args);
@@ -16088,31 +16146,31 @@ var HTTPfrontend = class extends Service {
     this.name = "http";
     this.fetchProxied = false;
     this.listening = {};
-    this.request = (options2) => {
+    this.request = (options) => {
       const xhr = new XMLHttpRequest();
-      if (options2.responseType)
-        xhr.responseType = options2.responseType;
+      if (options.responseType)
+        xhr.responseType = options.responseType;
       else
-        options2.responseType = "json";
-      if (options2.mimeType) {
-        xhr.overrideMimeType(options2.mimeType);
+        options.responseType = "json";
+      if (options.mimeType) {
+        xhr.overrideMimeType(options.mimeType);
       }
-      if (options2.onload)
-        xhr.addEventListener("load", options2.onload, false);
-      if (options2.onprogress)
-        xhr.addEventListener("progress", options2.onprogress, false);
-      if (options2.onabort)
-        xhr.addEventListener("abort", options2.onabort, false);
-      if (options2.onloadend)
-        xhr.addEventListener("loadend", options2.onloadend, false);
-      if (options2.onerror)
-        xhr.addEventListener("error", options2.onerror, false);
-      xhr.open(options2.method, options2.url, true, options2.user, options2.pass);
-      if (!options2.onerror)
+      if (options.onload)
+        xhr.addEventListener("load", options.onload, false);
+      if (options.onprogress)
+        xhr.addEventListener("progress", options.onprogress, false);
+      if (options.onabort)
+        xhr.addEventListener("abort", options.onabort, false);
+      if (options.onloadend)
+        xhr.addEventListener("loadend", options.onloadend, false);
+      if (options.onerror)
+        xhr.addEventListener("error", options.onerror, false);
+      xhr.open(options.method, options.url, true, options.user, options.pass);
+      if (!options.onerror)
         xhr.onerror = function() {
           xhr.abort();
         };
-      xhr.send(options2.data);
+      xhr.send(options.data);
       return xhr;
     };
     this.get = (url2 = "http://localhost:8080/ping", type = "", mimeType) => {
@@ -16283,19 +16341,19 @@ var SSEfrontend = class extends Service {
     super(...arguments);
     this.name = "sse";
     this.eventsources = {};
-    this.openSSE = (options2) => {
-      let source = new EventSource(options2.url);
+    this.openSSE = (options) => {
+      let source = new EventSource(options.url);
       let sse = {
         source,
         type: "eventsource",
-        ...options2
+        ...options
       };
-      if (!("keepState" in options2))
-        options2.keepState = true;
-      if (!options2.events)
-        options2.events = {};
-      if (!options2.events.message) {
-        options2.events.message = (ev2, sse2) => {
+      if (!("keepState" in options))
+        options.keepState = true;
+      if (!options.events)
+        options.events = {};
+      if (!options.events.message) {
+        options.events.message = (ev2, sse2) => {
           let data = ev2.data;
           if (data) {
             if (typeof data === "string") {
@@ -16310,45 +16368,45 @@ var SSEfrontend = class extends Service {
                 data = JSON.parse(data);
                 if (data.route === "setId" && sse2) {
                   sse2._id = data.args;
-                  options2.events.message = (ev3, sse3) => {
+                  options.events.message = (ev3, sse3) => {
                     const result2 = this.receive(ev3.data, sse3);
-                    if (options2.keepState)
-                      this.setState({ [options2.url]: result2 });
+                    if (options.keepState)
+                      this.setState({ [options.url]: result2 });
                   };
                 }
               }
             }
           }
           const result = this.receive(ev2.data, sse2);
-          if (options2.keepState)
-            this.setState({ [options2.url]: result });
+          if (options.keepState)
+            this.setState({ [options.url]: result });
         };
       }
-      if (!options2.events.error)
-        options2.events.error = (ev2, sse2) => {
+      if (!options.events.error)
+        options.events.error = (ev2, sse2) => {
           this.terminate(sse2);
-          delete this.eventsources[options2.url];
+          delete this.eventsources[options.url];
         };
-      if (options2.events) {
-        if (!options2.evoptions)
-          options2.evoptions = false;
-        for (const key in options2.events) {
-          if (typeof options2.events[key] !== "function") {
-            options2.events[key] = (ev2) => {
+      if (options.events) {
+        if (!options.evoptions)
+          options.evoptions = false;
+        for (const key in options.events) {
+          if (typeof options.events[key] !== "function") {
+            options.events[key] = (ev2) => {
               const result = this.receive(ev2.data, sse);
-              if (options2.keepState)
-                this.setState({ [options2.url]: result });
+              if (options.keepState)
+                this.setState({ [options.url]: result });
             };
           } else {
-            let l = options2.events[key];
-            options2.events[key] = (ev2) => {
+            let l = options.events[key];
+            options.events[key] = (ev2) => {
               l(ev2, sse);
             };
           }
-          source.addEventListener(key, options2.events[key], options2.evoptions);
+          source.addEventListener(key, options.events[key], options.evoptions);
         }
       }
-      this.eventsources[options2.url] = sse;
+      this.eventsources[options.url] = sse;
       return sse;
     };
     this.terminate = (sse) => {
@@ -16382,7 +16440,7 @@ var WSSfrontend = class extends Service {
     super(...arguments);
     this.name = "wss";
     this.sockets = {};
-    this.openWS = (options2 = {
+    this.openWS = (options = {
       host: "localhost",
       port: 7e3,
       path: void 0,
@@ -16392,25 +16450,25 @@ var WSSfrontend = class extends Service {
           delete this.sockets[ev2.target.url];
       }
     }) => {
-      let protocol = options2.protocol;
+      let protocol = options.protocol;
       if (!protocol)
         protocol = "ws";
-      let address = `${protocol}://${options2.host}`;
-      if (!("keepState" in options2))
-        options2.keepState = true;
-      if (options2.port)
-        address += ":" + options2.port;
-      if (options2.path && !options2.path?.startsWith("/"))
+      let address = `${protocol}://${options.host}`;
+      if (!("keepState" in options))
+        options.keepState = true;
+      if (options.port)
+        address += ":" + options.port;
+      if (options.path && !options.path?.startsWith("/"))
         address += "/";
-      if (options2.path)
-        address += options2.path;
+      if (options.path)
+        address += options.path;
       if (this.sockets[address]?.socket) {
         if (this.sockets[address].socket.readyState === this.sockets[address].socket.OPEN)
           this.sockets[address].socket.close();
       }
       const socket = new WebSocket(address);
-      if (!options2.onmessage) {
-        options2.onmessage = (data, ws, wsinfo) => {
+      if (!options.onmessage) {
+        options.onmessage = (data, ws, wsinfo) => {
           if (data) {
             if (typeof data === "string") {
               let substr = data.substring(0, 8);
@@ -16424,9 +16482,9 @@ var WSSfrontend = class extends Service {
                 data = JSON.parse(data);
                 if (data.route === "setId") {
                   this.sockets[address]._id = data.args;
-                  options2.onmessage = (data2, ws2, wsinfo2) => {
+                  options.onmessage = (data2, ws2, wsinfo2) => {
                     let res2 = this.receive(data2);
-                    if (options2.keepState)
+                    if (options.keepState)
                       this.setState({ [address]: res2 });
                   };
                 }
@@ -16434,32 +16492,32 @@ var WSSfrontend = class extends Service {
             }
           }
           let res = this.receive(data);
-          if (options2.keepState)
+          if (options.keepState)
             this.setState({ [address]: res });
         };
       }
-      if (options2.onmessage) {
+      if (options.onmessage) {
         socket.addEventListener("message", (ev2) => {
-          options2.onmessage(ev2.data, socket, this.sockets[address]);
+          options.onmessage(ev2.data, socket, this.sockets[address]);
         });
       }
-      if (options2.onopen)
+      if (options.onopen)
         socket.addEventListener("open", (ev2) => {
-          options2.onopen(ev2, socket, this.sockets[address]);
+          options.onopen(ev2, socket, this.sockets[address]);
         });
-      if (options2.onclose)
+      if (options.onclose)
         socket.addEventListener("close", (ev2) => {
-          options2.onclose(ev2, socket, this.sockets[address]);
+          options.onclose(ev2, socket, this.sockets[address]);
         });
-      if (options2.onerror)
+      if (options.onerror)
         socket.addEventListener("error", (ev2) => {
-          options2.onerror(ev2, socket, this.sockets[address]);
+          options.onerror(ev2, socket, this.sockets[address]);
         });
       this.sockets[address] = {
         socket,
         address,
         type: "socket",
-        ...options2
+        ...options
       };
       return this.sockets[address];
     };
@@ -16555,8 +16613,8 @@ var WSSfrontend = class extends Service {
 
 // services/webrtc/WebRTC.browser.ts
 var WebRTCfrontend = class extends Service {
-  constructor(options2, iceServers) {
-    super(options2);
+  constructor(options, iceServers) {
+    super(options);
     this.name = "webrtc";
     this.rtc = {};
     this.iceServers = [
@@ -16566,141 +16624,141 @@ var WebRTCfrontend = class extends Service {
       { urls: ["stun:stun3.l.google.com:19302"] },
       { urls: ["stun:stun4.l.google.com:19302"] }
     ];
-    this.createStream = (options2) => {
+    this.createStream = (options) => {
       let stream = new MediaStream();
-      for (const key in options2) {
-        let track = options2[key].track;
+      for (const key in options) {
+        let track = options[key].track;
         if (!(track instanceof MediaStreamTrack) && typeof track === "object") {
           track = new MediaStreamTrack();
-          track.applyConstraints(options2[key].track);
+          track.applyConstraints(options[key].track);
           stream.addTrack(track);
         }
         if (track instanceof MediaStreamTrack) {
           stream.addTrack(track);
-          track.onmute = options2[key].onmute;
-          track.onunmute = options2[key].onunmute;
-          track.onended = options2[key].onended;
+          track.onmute = options[key].onmute;
+          track.onunmute = options[key].onunmute;
+          track.onended = options[key].onended;
         }
       }
       return stream;
     };
-    this.openRTC = async (options2) => {
-      if (!options2)
-        options2 = {};
-      if (!options2._id)
-        options2._id = `rtc${Math.floor(Math.random() * 1e15)}`;
-      if (!options2.config)
-        options2.config = { iceServers: this.iceServers };
-      let rtcTransmit = new RTCPeerConnection(options2.config);
-      let rtcReceive = new RTCPeerConnection(options2.config);
-      if (!options2.channels)
-        options2.channels = { "data": true };
-      if (options2.channels) {
-        for (const channel in options2.channels) {
-          if (options2.channels[channel] instanceof RTCDataChannel) {
-          } else if (typeof options2.channels[channel] === "object") {
-            options2.channels[channel] = this.addDataChannel(rtcTransmit, channel, options2.channels[channel]);
+    this.openRTC = async (options) => {
+      if (!options)
+        options = {};
+      if (!options._id)
+        options._id = `rtc${Math.floor(Math.random() * 1e15)}`;
+      if (!options.config)
+        options.config = { iceServers: this.iceServers };
+      let rtcTransmit = new RTCPeerConnection(options.config);
+      let rtcReceive = new RTCPeerConnection(options.config);
+      if (!options.channels)
+        options.channels = { "data": true };
+      if (options.channels) {
+        for (const channel in options.channels) {
+          if (options.channels[channel] instanceof RTCDataChannel) {
+          } else if (typeof options.channels[channel] === "object") {
+            options.channels[channel] = this.addDataChannel(rtcTransmit, channel, options.channels[channel]);
           } else
-            options2.channels[channel] = this.addDataChannel(rtcTransmit, channel);
+            options.channels[channel] = this.addDataChannel(rtcTransmit, channel);
         }
       }
-      if (!this.rtc[options2._id]) {
-        this.rtc[options2._id] = {
+      if (!this.rtc[options._id]) {
+        this.rtc[options._id] = {
           rtcTransmit,
           rtcReceive,
-          _id: options2._id,
-          ...options2
+          _id: options._id,
+          ...options
         };
       } else {
-        Object.assign(this.rtc[options2._id], options2);
+        Object.assign(this.rtc[options._id], options);
       }
-      if (!options2.ondatachannel)
-        options2.ondatachannel = (ev2) => {
-          this.rtc[options2._id].channels[ev2.channel.label] = ev2.channel;
-          if (!options2.ondata)
+      if (!options.ondatachannel)
+        options.ondatachannel = (ev2) => {
+          this.rtc[options._id].channels[ev2.channel.label] = ev2.channel;
+          if (!options.ondata)
             ev2.channel.onmessage = (mev) => {
-              this.receive(mev.data, ev2.channel, this.rtc[options2._id]);
+              this.receive(mev.data, ev2.channel, this.rtc[options._id]);
             };
           else
             ev2.channel.onmessage = (mev) => {
-              options2.ondata(mev.data, ev2.channel, this.rtc[options2._id]);
+              options.ondata(mev.data, ev2.channel, this.rtc[options._id]);
             };
         };
-      rtcTransmit.ontrack = options2.ontrack;
-      rtcTransmit.onicecandidate = options2.onicecandidate;
-      rtcTransmit.onicecandidateerror = options2.onicecandidateerror;
-      rtcTransmit.ondatachannel = options2.ondatachannel;
-      rtcTransmit.onnegotiationneeded = options2.onnegotiationneeded;
-      rtcTransmit.oniceconnectionstatechange = options2.oniceconnectionstatechange;
-      rtcTransmit.onconnectionstatechange = options2.onconnectionstatechange;
-      rtcReceive.ontrack = options2.ontrack;
-      rtcReceive.onicecandidate = options2.onicecandidate;
-      rtcReceive.onicecandidateerror = options2.onicecandidateerror;
-      rtcReceive.ondatachannel = options2.ondatachannel;
-      rtcReceive.onnegotiationneeded = options2.onnegotiationneeded;
-      rtcReceive.oniceconnectionstatechange = options2.oniceconnectionstatechange;
-      rtcReceive.onconnectionstatechange = options2.onconnectionstatechange;
-      if (options2.hostdescription && !options2.peerdescription) {
-        if (!options2.onicecandidate)
-          options2.onicecandidate = (ev2) => {
+      rtcTransmit.ontrack = options.ontrack;
+      rtcTransmit.onicecandidate = options.onicecandidate;
+      rtcTransmit.onicecandidateerror = options.onicecandidateerror;
+      rtcTransmit.ondatachannel = options.ondatachannel;
+      rtcTransmit.onnegotiationneeded = options.onnegotiationneeded;
+      rtcTransmit.oniceconnectionstatechange = options.oniceconnectionstatechange;
+      rtcTransmit.onconnectionstatechange = options.onconnectionstatechange;
+      rtcReceive.ontrack = options.ontrack;
+      rtcReceive.onicecandidate = options.onicecandidate;
+      rtcReceive.onicecandidateerror = options.onicecandidateerror;
+      rtcReceive.ondatachannel = options.ondatachannel;
+      rtcReceive.onnegotiationneeded = options.onnegotiationneeded;
+      rtcReceive.oniceconnectionstatechange = options.oniceconnectionstatechange;
+      rtcReceive.onconnectionstatechange = options.onconnectionstatechange;
+      if (options.hostdescription && !options.peerdescription) {
+        if (!options.onicecandidate)
+          options.onicecandidate = (ev2) => {
             if (ev2.candidate) {
               let icecandidate = ev2.candidate;
-              if (!this.rtc[options2._id].peercandidates)
-                this.rtc[options2._id].peercandidates = {};
-              this.rtc[options2._id].peercandidates[`peercandidate${Math.floor(Math.random() * 1e15)}`] = icecandidate;
+              if (!this.rtc[options._id].peercandidates)
+                this.rtc[options._id].peercandidates = {};
+              this.rtc[options._id].peercandidates[`peercandidate${Math.floor(Math.random() * 1e15)}`] = icecandidate;
             }
           };
         return await new Promise((res, rej) => {
-          options2.hostdescription.sdp = options2.hostdescription.sdp.replaceAll("rn", `\r
+          options.hostdescription.sdp = options.hostdescription.sdp.replaceAll("rn", `\r
 `);
-          rtcReceive.setRemoteDescription(options2.hostdescription).then((desc) => {
-            if (options2.hostcandidates) {
-              for (const prop in options2.hostcandidates) {
-                rtcReceive.addIceCandidate(options2.hostcandidates[prop]);
+          rtcReceive.setRemoteDescription(options.hostdescription).then((desc) => {
+            if (options.hostcandidates) {
+              for (const prop in options.hostcandidates) {
+                rtcReceive.addIceCandidate(options.hostcandidates[prop]);
               }
             }
-            rtcReceive.createAnswer(options2.answer).then((answer) => {
+            rtcReceive.createAnswer(options.answer).then((answer) => {
               rtcReceive.setLocalDescription(answer).then(() => {
-                this.rtc[options2._id].peerdescription = { type: rtcReceive.localDescription.type, sdp: rtcReceive.localDescription.sdp };
-                res(this.rtc[options2._id]);
+                this.rtc[options._id].peerdescription = { type: rtcReceive.localDescription.type, sdp: rtcReceive.localDescription.sdp };
+                res(this.rtc[options._id]);
               });
             });
           });
         });
       }
-      if (options2.peerdescription) {
+      if (options.peerdescription) {
         return await new Promise((res, rej) => {
-          options2.peerdescription.sdp = options2.peerdescription.sdp.replaceAll("rn", `\r
+          options.peerdescription.sdp = options.peerdescription.sdp.replaceAll("rn", `\r
 `);
-          rtcReceive.setRemoteDescription(options2.peerdescription).then(() => {
-            if (options2.peercandidates) {
-              for (const prop in options2.peercandidates) {
-                rtcReceive.addIceCandidate(options2.peercandidates[prop]);
+          rtcReceive.setRemoteDescription(options.peerdescription).then(() => {
+            if (options.peercandidates) {
+              for (const prop in options.peercandidates) {
+                rtcReceive.addIceCandidate(options.peercandidates[prop]);
               }
             }
-            res(this.rtc[options2._id]);
+            res(this.rtc[options._id]);
           });
         });
       }
-      if (!options2.onicecandidate && !this.rtc[options2._id]?.onicecandidate)
-        options2.onicecandidate = (ev2) => {
+      if (!options.onicecandidate && !this.rtc[options._id]?.onicecandidate)
+        options.onicecandidate = (ev2) => {
           if (ev2.candidate) {
             let icecandidate = ev2.candidate;
-            if (!this.rtc[options2._id].hostcandidates)
-              this.rtc[options2._id].hostcandidates = {};
-            this.rtc[options2._id].hostcandidates[`hostcandidate${Math.floor(Math.random() * 1e15)}`] = icecandidate;
+            if (!this.rtc[options._id].hostcandidates)
+              this.rtc[options._id].hostcandidates = {};
+            this.rtc[options._id].hostcandidates[`hostcandidate${Math.floor(Math.random() * 1e15)}`] = icecandidate;
           }
         };
       return await new Promise((res, rej) => {
-        rtcTransmit.createOffer(options2.offer).then((offer) => {
+        rtcTransmit.createOffer(options.offer).then((offer) => {
           rtcTransmit.setLocalDescription(offer).then(() => {
-            this.rtc[options2._id].hostdescription = { type: offer.type, sdp: offer.sdp };
-            res(this.rtc[options2._id]);
+            this.rtc[options._id].hostdescription = { type: offer.type, sdp: offer.sdp };
+            res(this.rtc[options._id]);
           });
         });
       });
     };
-    this.addUserMedia = (rtc, options2 = {
+    this.addUserMedia = (rtc, options = {
       audio: false,
       video: {
         optional: [
@@ -16714,7 +16772,7 @@ var WebRTCfrontend = class extends Service {
       }
     }) => {
       let senders = [];
-      navigator.mediaDevices.getUserMedia(options2).then((stream) => {
+      navigator.mediaDevices.getUserMedia(options).then((stream) => {
         let tracks = stream.getTracks();
         tracks.forEach((track) => {
           senders.push(rtc.addTrack(track, stream));
@@ -16730,8 +16788,8 @@ var WebRTCfrontend = class extends Service {
       rtc.removeTrack(sender);
       return true;
     };
-    this.addDataChannel = (rtc, name2, options2) => {
-      return rtc.createDataChannel(name2, options2);
+    this.addDataChannel = (rtc, name2, options) => {
+      return rtc.createDataChannel(name2, options);
     };
     this.transmit = (data, channel, id) => {
       if (typeof data === "object" || typeof data === "number")
@@ -17073,23 +17131,23 @@ var proxyWorkerRoutes = {
 // services/worker/Worker.service.ts
 var import_web_worker = __toESM(require_browser());
 var WorkerService = class extends Service {
-  constructor(options2) {
-    super(options2);
+  constructor(options) {
+    super(options);
     this.name = "worker";
     this.workers = {};
     this.threadRot = 0;
-    this.addWorker = (options2) => {
-      if (options2.url) {
-        let worker = new import_web_worker.default(options2.url);
-        if (!options2._id)
-          options2._id = `worker${Math.floor(Math.random() * 1e15)}`;
+    this.addWorker = (options) => {
+      if (options.url) {
+        let worker = new import_web_worker.default(options.url);
+        if (!options._id)
+          options._id = `worker${Math.floor(Math.random() * 1e15)}`;
         let send = (message, transfer) => {
           return this.transmit(message, worker, transfer);
         };
         let request = (message, transfer, origin, method) => {
           return new Promise((res, rej) => {
             let callbackId = Math.random();
-            let req = { route: "runRequest", args: [message, options2._id, callbackId] };
+            let req = { route: "runRequest", args: [message, options._id, callbackId] };
             if (origin)
               req.origin = origin;
             if (method)
@@ -17106,23 +17164,23 @@ var WorkerService = class extends Service {
             this.transmit(req, worker, transfer);
           });
         };
-        if (!options2.onmessage)
-          options2.onmessage = (ev2) => {
+        if (!options.onmessage)
+          options.onmessage = (ev2) => {
             let res = this.receive(ev2.data);
-            this.setState({ [options2._id]: res });
+            this.setState({ [options._id]: res });
           };
-        if (!options2.onerror) {
-          options2.onerror = (ev2) => {
+        if (!options.onerror) {
+          options.onerror = (ev2) => {
             console.error(ev2.data);
           };
         }
-        worker.onmessage = options2.onmessage;
-        worker.onerror = options2.onerror;
-        this.workers[options2._id] = {
+        worker.onmessage = options.onmessage;
+        worker.onerror = options.onerror;
+        this.workers[options._id] = {
           worker,
           send,
           request,
-          ...options2
+          ...options
         };
       }
       return false;
@@ -17259,29 +17317,29 @@ var workerCanvasRoutes = {
     worker.postMessage(message, [offscreen]);
     return _id;
   },
-  receiveCanvas: (self2, origin, options2) => {
+  receiveCanvas: (self2, origin, options) => {
     if (!self2.graph.CANVASES)
       self2.graph.CANVASES = {};
-    self2.graph.CANVASES[options2._id] = {
-      _id: options2._id,
-      canvas: options2.offscreen,
-      context: options2.offscreen.getContext(options2.context),
-      animation: options2.animation,
+    self2.graph.CANVASES[options._id] = {
+      _id: options._id,
+      canvas: options.offscreen,
+      context: options.offscreen.getContext(options.context),
+      animation: options.animation,
       animating: false
     };
-    if (typeof self2.graph.CANVASES[options2._id].animation === "string") {
-      self2.graph.CANVASES[options2._id].animation = parseFunctionFromText(self2.graph.CANVASES[options2._id].animation);
+    if (typeof self2.graph.CANVASES[options._id].animation === "string") {
+      self2.graph.CANVASES[options._id].animation = parseFunctionFromText(self2.graph.CANVASES[options._id].animation);
     }
-    if (typeof self2.graph.CANVASES[options2._id].animation === "function") {
+    if (typeof self2.graph.CANVASES[options._id].animation === "function") {
       let draw = (canvas, context) => {
-        if (self2.graph.CANVASES[options2._id].animating)
+        if (self2.graph.CANVASES[options._id].animating)
           requestAnimationFrame(() => {
-            self2.graph.CANVASES[options2._id].animation(canvas, context);
+            self2.graph.CANVASES[options._id].animation(canvas, context);
           });
       };
-      draw(self2.graph.CANVASES[options2._id].canvas, self2.graph.CANVASES[options2._id].context);
+      draw(self2.graph.CANVASES[options._id].canvas, self2.graph.CANVASES[options._id].context);
     }
-    return self2.graph.CANVASES[options2._id];
+    return self2.graph.CANVASES[options._id];
   },
   setDraw: (self2, origin, _id, drawfn) => {
     let canvasopts = self2.graph.CANVASES[_id];
@@ -18212,18 +18270,18 @@ var UserRouter = class extends Router {
       delete this.users[user._id];
       return true;
     };
-    this.updateUser = (user, options2) => {
+    this.updateUser = (user, options) => {
       if (typeof user === "string")
         user = this.users[user];
       if (!user)
         return false;
-      this._initConnections(options2);
-      if (options2._id !== user._id) {
+      this._initConnections(options);
+      if (options._id !== user._id) {
         delete this.users[user._id];
-        user._id = options2._id;
+        user._id = options._id;
         this.users[user._id] = user;
       }
-      this.recursivelyAssign(this.users[user._id], options2);
+      this.recursivelyAssign(this.users[user._id], options);
       return user;
     };
     this.setUser = (user, props) => {
@@ -18341,94 +18399,94 @@ var UserRouter = class extends Router {
         }
       }
     };
-    this.openPrivateSession = (options2 = {}, userId) => {
+    this.openPrivateSession = (options = {}, userId) => {
       if (typeof userId === "object")
         userId = userId._id;
-      if (!options2._id) {
-        options2._id = `private${Math.floor(Math.random() * 1e15)}`;
-        if (this.sessions.private[options2._id]) {
-          delete options2._id;
-          this.openPrivateSession(options2, userId);
+      if (!options._id) {
+        options._id = `private${Math.floor(Math.random() * 1e15)}`;
+        if (this.sessions.private[options._id]) {
+          delete options._id;
+          this.openPrivateSession(options, userId);
         }
       }
-      if (options2._id) {
+      if (options._id) {
         if (userId) {
-          if (!options2.settings)
-            options2.settings = { listener: userId, source: userId, propnames: { latency: true }, admins: { [userId]: true }, ownerId: userId };
-          if (!options2.settings.listener)
-            options2.settings.listener = userId;
-          if (!options2.settings.source)
-            options2.settings.source = userId;
+          if (!options.settings)
+            options.settings = { listener: userId, source: userId, propnames: { latency: true }, admins: { [userId]: true }, ownerId: userId };
+          if (!options.settings.listener)
+            options.settings.listener = userId;
+          if (!options.settings.source)
+            options.settings.source = userId;
           if (!this.users[userId].sessions)
             this.users[userId].sessions = {};
-          this.users[userId].sessions[options2._id] = options2;
+          this.users[userId].sessions[options._id] = options;
         }
-        if (!options2.data)
-          options2.data = {};
-        if (this.sessions.private[options2._id]) {
-          return this.updateSession(options2, userId);
-        } else if (options2.settings?.listener && options2.settings.source)
-          this.sessions.private[options2._id] = options2;
+        if (!options.data)
+          options.data = {};
+        if (this.sessions.private[options._id]) {
+          return this.updateSession(options, userId);
+        } else if (options.settings?.listener && options.settings.source)
+          this.sessions.private[options._id] = options;
       }
-      return options2;
+      return options;
     };
-    this.openSharedSession = (options2, userId) => {
+    this.openSharedSession = (options, userId) => {
       if (typeof userId === "object")
         userId = userId._id;
-      if (!options2._id) {
-        options2._id = `shared${Math.floor(Math.random() * 1e15)}`;
-        if (this.sessions.shared[options2._id]) {
-          delete options2._id;
-          this.openSharedSession(options2, userId);
+      if (!options._id) {
+        options._id = `shared${Math.floor(Math.random() * 1e15)}`;
+        if (this.sessions.shared[options._id]) {
+          delete options._id;
+          this.openSharedSession(options, userId);
         }
       }
-      if (options2._id) {
+      if (options._id) {
         if (typeof userId === "string") {
-          if (!options2.settings)
-            options2.settings = { name: "shared", propnames: { latency: true }, users: { [userId]: true }, admins: { [userId]: true }, ownerId: userId };
-          if (!options2.settings.users)
-            options2.settings.users = { [userId]: true };
-          if (!options2.settings.admins)
-            options2.settings.admins = { [userId]: true };
-          if (!options2.settings.ownerId)
-            options2.settings.ownerId = userId;
+          if (!options.settings)
+            options.settings = { name: "shared", propnames: { latency: true }, users: { [userId]: true }, admins: { [userId]: true }, ownerId: userId };
+          if (!options.settings.users)
+            options.settings.users = { [userId]: true };
+          if (!options.settings.admins)
+            options.settings.admins = { [userId]: true };
+          if (!options.settings.ownerId)
+            options.settings.ownerId = userId;
           if (!this.users[userId].sessions)
             this.users[userId].sessions = {};
-          this.users[userId].sessions[options2._id] = options2;
-        } else if (!options2.settings)
-          options2.settings = { name: "shared", propnames: { latency: true }, users: {} };
-        if (!options2.data)
-          options2.data = { private: {}, shared: {} };
-        if (!options2.settings.name)
-          options2.name = options2.id;
-        if (this.sessions.shared[options2._id]) {
-          return this.updateSession(options2, userId);
+          this.users[userId].sessions[options._id] = options;
+        } else if (!options.settings)
+          options.settings = { name: "shared", propnames: { latency: true }, users: {} };
+        if (!options.data)
+          options.data = { private: {}, shared: {} };
+        if (!options.settings.name)
+          options.name = options.id;
+        if (this.sessions.shared[options._id]) {
+          return this.updateSession(options, userId);
         } else
-          this.sessions.shared[options2._id] = options2;
+          this.sessions.shared[options._id] = options;
       }
-      return options2;
+      return options;
     };
-    this.updateSession = (options2, userId) => {
+    this.updateSession = (options, userId) => {
       if (typeof userId === "object")
         userId = userId._id;
       let session;
-      if (options2._id && typeof userId === "string") {
-        session = this.sessions.private[options2._id];
+      if (options._id && typeof userId === "string") {
+        session = this.sessions.private[options._id];
         if (!session)
-          session = this.sessions.shared[options2._id];
-        if (this.sesh.private[options2._id]) {
-          let sesh = this.sessions.shared[options2._id];
+          session = this.sessions.shared[options._id];
+        if (this.sesh.private[options._id]) {
+          let sesh = this.sessions.shared[options._id];
           if (sesh.settings && (sesh?.settings.source === userId || sesh.settings.admins?.[userId] || sesh.settings.moderators?.[userId] || sesh.settings.ownerId === userId)) {
-            return Object.assign(this.session.shared[options2._id], options2);
+            return Object.assign(this.session.shared[options._id], options);
           }
-        } else if (options2.settings?.source) {
-          return this.openPrivateSession(options2, userId);
+        } else if (options.settings?.source) {
+          return this.openPrivateSession(options, userId);
         } else
-          return this.openSharedSession(options2, userId);
+          return this.openSharedSession(options, userId);
       }
       return false;
     };
-    this.joinSession = (sessionId, userId, options2) => {
+    this.joinSession = (sessionId, userId, options) => {
       if (typeof userId === "object")
         userId = userId._id;
       if (!userId)
@@ -18440,24 +18498,24 @@ var UserRouter = class extends Router {
             return false;
         }
         if (sesh.settings?.password) {
-          if (!options2?.settings?.password)
+          if (!options?.settings?.password)
             return false;
-          if (options2.settings.password !== sesh.settings.password)
+          if (options.settings.password !== sesh.settings.password)
             return false;
         }
         sesh.settings.users[userId] = true;
         if (!this.users[userId].sessions)
           this.users[userId].sessions = {};
         this.users[userId].sessions[sessionId] = sesh;
-        if (options2) {
-          return this.updateSession(options2, userId);
+        if (options) {
+          return this.updateSession(options, userId);
         }
         ;
         return sesh;
-      } else if (options2?.source || options2?.listener)
-        return this.openPrivateSession(options2, userId);
-      else if (options2)
-        return this.openSharedSession(options2, userId);
+      } else if (options?.source || options?.listener)
+        return this.openPrivateSession(options, userId);
+      else if (options)
+        return this.openSharedSession(options, userId);
       return false;
     };
     this.leaveSession = (sessionId, userId, clear = true) => {

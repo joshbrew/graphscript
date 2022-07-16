@@ -1,7 +1,7 @@
 //from 'fragelement' on npm by Joshua Brewster (AGPL v3.0)
 export class DOMElement extends HTMLElement { 
 
-    template = (props) => {
+    template = (props, self=this) => { //return a string or html node
         return `<div> Custom Fragment Props: ${JSON.stringify(props)} </div>`
     }; //override the default template string by extending the class, or use options.template if calling the base class
     props = {};
@@ -104,10 +104,7 @@ export class DOMElement extends HTMLElement {
 
             let template = val;
 
-            this.template = options.template; //function or string;
-
-            if(typeof template === 'function') this.templateString = this.template(this.props,this); //can pass a function
-            else this.templateString = template;
+            this.template = template; //function or string;
             
             //render the new template
             this.render(this.props);
@@ -258,13 +255,21 @@ export class DOMElement extends HTMLElement {
 
     render = (props=this.props) => {
 
-        if(typeof this.template === 'function') this.templateString = this.template(props, this); //can pass a function
-        else this.templateString = this.template;
+        if(typeof this.template === 'function') this.templateResult = this.template(props, this); //can pass a function
+        else this.templateResult = this.template;
 
-        //this.innerHTML = this.templateString;
+        //this.innerHTML = this.templateResult;
 
         const t = document.createElement('template');
-        t.innerHTML = this.templateString;
+
+        if(typeof this.templateResult === 'string') t.innerHTML = this.templateResult;
+        else if(this.templateResult instanceof HTMLElement) {
+            if(this.templateResult.parentNode) {
+                this.templateResult.parentNode.removeChild(this.templateResult); //swap to the new component
+            }
+            t.appendChild(this.templateResult);
+        }
+
         const fragment = t.content;
 
         if(this.FRAGMENT) { //will reappend the fragment without reappending the whole node if already rendered once

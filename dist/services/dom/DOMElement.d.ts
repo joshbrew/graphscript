@@ -4,7 +4,7 @@ export function parseFunctionFromText(method: any): any;
 export class DOMElement extends HTMLElement {
     static get tag(): string;
     static addElement(tag?: string, cls?: typeof DOMElement, extend?: any): void;
-    template: (props: any) => string;
+    template: (props: any, self?: DOMElement) => string;
     props: {};
     useShadow: boolean;
     styles: any;
@@ -19,10 +19,10 @@ export class DOMElement extends HTMLElement {
     get observedAttributes(): string[];
     attributeChangedCallback(name: any, old: any, val: any): void;
     ONRESIZE: (ev: any) => void;
-    templateString: any;
     connectedCallback(): void;
     delete: () => void;
     render: (props?: {}) => void;
+    templateResult: string;
     state: {
         pushToState: {};
         data: {};

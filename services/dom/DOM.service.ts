@@ -170,6 +170,30 @@ export class DOMService extends Graph {
         generateChildElementNodes=true
     )=>{
         
+        if(options.oncreate) {
+            let oncreate = options.oncreate;
+            (options.oncreate as any) = (self:DOMElement) => {
+                oncreate(self, options as DOMElementInfo);
+            }
+        }
+        if(options.onresize) {
+            let onresize = options.onresize;
+            (options.onresize as any) = (self:DOMElement) => {
+                onresize(self, options as DOMElementInfo);
+            }
+        }
+        if(options.ondelete) {
+            let ondelete = options.ondelete;
+            (options.ondelete as any) = (self:DOMElement) => {
+                ondelete(self, options as DOMElementInfo);
+            }
+        }
+        if(typeof options.renderonchanged === 'function') {
+            let renderonchanged = options.renderonchanged;
+            (options.renderonchanged as any) = (self:DOMElement) => {
+                renderonchanged(self, options as DOMElementInfo);
+            }
+        }
 
         class CustomElement extends DOMElement {
             props = options.props;
@@ -180,7 +204,8 @@ export class DOMService extends Graph {
             ondelete = options.ondelete;
             renderonchanged = options.renderonchanged as any;
         }
-        delete options.oncreate; //so it doesnt trigger on the node
+
+        delete options.oncreate; //so it doesn't trigger on the node
 
         if(!options.tagName) options.tagName = `custom-element${Math.random()*1000000000000000}`;
 
@@ -195,26 +220,30 @@ export class DOMService extends Graph {
             divs = divs.map((d:HTMLElement) => this.addElement({element:d}));
         }
      
-        let node = new GraphNode({
-            element:elm,   
-            operator:(node,origin,props:{[key:string]:any})=>{ 
-                if(typeof props === 'object') 
-                    for(const key in props) { 
-                        if(node.element) {
-                            if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
-                                { //attempt to execute a function with arguments
-                                    if(Array.isArray(props[key]))
-                                        node.element[key](...props[key]);
-                                    else node.element[key](props[key]);
-                                } 
-                            else node.element[key] = props[key]; 
+        let node = new GraphNode(
+            {
+                element:elm,   
+                operator:(node,origin,props:{[key:string]:any})=>{ 
+                    if(typeof props === 'object') 
+                        for(const key in props) { 
+                            if(node.element) {
+                                if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
+                                    { //attempt to execute a function with arguments
+                                        if(Array.isArray(props[key]))
+                                            node.element[key](...props[key]);
+                                        else node.element[key](props[key]);
+                                    } 
+                                else node.element[key] = props[key]; 
+                            }
                         }
-                    }
-                    
-                return props;
+                        
+                    return props;
+                },
+                ...completeOptions
             },
-            ...completeOptions
-        },undefined,this);
+            undefined,
+            this
+        );
 
         this.components[completeOptions.id] = {
             element:elm as any,
@@ -239,10 +268,38 @@ export class DOMService extends Graph {
         options: CanvasOptions
     ) => {
 
-        options.template = `<canvas `;
-        if(options.width) options.template += `width="${options.width}"`;
-        if(options.height) options.template += `height="${options.height}"`;
-        options.template+=` ></canvas>`;
+        if(!options.canvas) {
+            options.template = `<canvas `;
+            if(options.width) options.template += `width="${options.width}"`;
+            if(options.height) options.template += `height="${options.height}"`;
+            options.template+=` ></canvas>`;
+        } else options.template = options.canvas;
+                
+        if(options.oncreate) {
+            let oncreate = options.oncreate;
+            (options.oncreate as any) = (self:DOMElement) => {
+                oncreate(self, options as any);
+            }
+        }
+        if(options.onresize) {
+            let onresize = options.onresize;
+            (options.onresize as any) = (self:DOMElement) => {
+                onresize(self, options as any);
+            }
+        }
+        if(options.ondelete) {
+            let ondelete = options.ondelete;
+            (options.ondelete as any) = (self:DOMElement) => {
+                ondelete(self, options as any);
+            }
+        }
+        if(typeof options.renderonchanged === 'function') {
+            let renderonchanged = options.renderonchanged;
+            (options.renderonchanged as any) = (self:DOMElement) => {
+                renderonchanged(self, options as any);
+            }
+        }
+
         
         class CustomElement extends DOMElement {
             props = options.props;
@@ -294,7 +351,9 @@ export class DOMService extends Graph {
         let canvas = elm.querySelector('canvas');
         if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object
 
-        let context = (canvas as HTMLCanvasElement).getContext(completeOptions.context);
+        let context;
+        if(typeof completeOptions.context === 'object') context = options.context;
+        else if(typeof completeOptions.context === 'string') context = (canvas as HTMLCanvasElement).getContext(completeOptions.context);
 
         this.components[completeOptions.id] = {
             element:elm,
