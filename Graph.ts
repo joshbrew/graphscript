@@ -1149,12 +1149,21 @@ export class Graph {
         }
 
         this.nodes.forEach((node) => { //swap any child strings out for the proper nodes
+            
+            let checkParentHasChildMapped = (node,child) => {
+                if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
+                        if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
+                    if(node.parent.parent) {
+                        checkParentHasChildMapped(node.parent, child);
+                    }
+                }
+            }
+            
             if(typeof node.children === 'string') {
                 if(this.nodes.get(node.children)) {
                     node.children = [node.children];
                     node.nodes.set(node.children[0].tag,node.children[0]);
-                    if(node.parent instanceof GraphNode && !node.parent.nodes.get(node.children[0].tag)) 
-                        node.parent.nodes.set(node.children[0].tag, node.children[0]);
+                    checkParentHasChildMapped(node,node.children[0]);
                     if(node.children[0] instanceof GraphNode) {
                         if(node.children[0].tag && !(node.children[0].tag in node)) {
                             node[node.children[0].tag] = node.children[0];
@@ -1166,8 +1175,7 @@ export class Graph {
                     if(typeof c === 'string') {
                         if(this.nodes.get(c)) {
                             node.children[i] = this.nodes.get(c); node.nodes.set(node.children[i].tag,node.children[i]); 
-                            if(node.parent instanceof GraphNode && !node.parent.nodes.get(node.children[i].tag)) 
-                                node.parent.nodes.set(node.children[i].tag, node.children[i]);
+                            checkParentHasChildMapped(node,node.children[i]);
                             if(node.children[i].tag && !(node.children[i].tag in node)) {
                                 node[node.children[i].tag] = node.children[i];
                             }
