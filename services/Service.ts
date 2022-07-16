@@ -79,7 +79,7 @@ export class Service extends Graph {
                     if(enumRoutes) routes[mod.name+'/'+prop] = routes.module[prop];
                     else routes[prop] =  routes.module[prop];
                 });
-            } else { //it's a service prototype... probably
+            } else if (typeof routes === 'function') { //it's a service prototype... probably
                 service = new routes();
                 service.load();
                 routes = service.routes;
