@@ -346,7 +346,17 @@ export class GraphNode {
             }
         
             if(this.children) this.convertChildrenToNodes(this);
-        
+                                
+            let checkParentHasChildMapped = (node,child) => {
+                if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
+                        if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
+                    if(node.parent.parent) {
+                        checkParentHasChildMapped(node.parent, child);
+                    }
+                }
+            }
+            if(this.parent instanceof GraphNode) checkParentHasChildMapped(this.parent,this);
+            
             if(!graph && properties.oncreate) properties.oncreate(this);
         }
         else return properties;
