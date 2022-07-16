@@ -108,7 +108,15 @@ export class DOMService extends Graph {
             options.onresize = (ev) => { onresize(ev, elm, this.elements[options.id]) };
             window.addEventListener('resize', options.onresize as EventListener);
         }
-        if(oncreate) oncreate(elm,this.elements[options.id]);
+
+        
+        if(!elm.parentNode) {
+            setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
+                if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
+                if(oncreate) oncreate(elm,this.elements[options.id]);
+            },0.01);
+        }
+
 
         return this.elements[options.id] as ElementInfo;
     }
@@ -142,15 +150,16 @@ export class DOMService extends Graph {
         if(!options.id) options.id = options.tagName;
 
         if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
-        if(!options.parentNode) options.parentNode = this.parentNode;
-        if(!element.parentNode) options.parentNode.appendChild(element);
-        
+        if(!options.parentNode) {        
+            if(!this.parentNode) this.parentNode = document.body;
+            options.parentNode = this.parentNode;
+        }
+       
         element.id = options.id;
         if(options.style) Object.assign(element.style,options.style);
         if(options.innerHTML && element.innerHTML !== options.innerHTML) element.innerHTML = options.innerHTML;
         if(options.innerText && element.innerText !== options.innerText) element.innerText = options.innerText;
         if(options.attributes) Object.assign(element,options.attributes);
-
         return options;
     }
 
@@ -214,6 +223,13 @@ export class DOMService extends Graph {
             divs,
             ...completeOptions
         };
+
+                
+        if(!elm.parentNode) {
+            setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync tree/route loading calls are finished
+                if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
+            },0.01);
+        }
 
         return this.components[completeOptions.id] as DOMElementInfo;
     }
@@ -295,7 +311,13 @@ export class DOMService extends Graph {
         (elm as any).context = context; 
         node.canvas = canvas; //make sure everything is accessible;
         node.context = context;
-
+      
+        if(!elm.parentNode) {
+            setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync tree/route loading calls are finished
+                if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
+            },0.01);
+        }
+        
         node.runAnimation(animation); //update the animation by calling this function again or setting node.animation manually
 
         return this.components[completeOptions.id] as CanvasElementInfo;

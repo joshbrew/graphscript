@@ -3180,8 +3180,14 @@
           };
           window.addEventListener("resize", options2.onresize);
         }
-        if (oncreate)
-          oncreate(elm, this.elements[options2.id]);
+        if (!elm.parentNode) {
+          setTimeout(() => {
+            if (typeof options2.parentNode === "object")
+              options2.parentNode.appendChild(elm);
+            if (oncreate)
+              oncreate(elm, this.elements[options2.id]);
+          }, 0.01);
+        }
         return this.elements[options2.id];
       };
       this.createElement = (options2) => {
@@ -3213,10 +3219,11 @@
           options2.id = options2.tagName;
         if (typeof options2.parentNode === "string")
           options2.parentNode = document.getElementById(options2.parentNode);
-        if (!options2.parentNode)
+        if (!options2.parentNode) {
+          if (!this.parentNode)
+            this.parentNode = document.body;
           options2.parentNode = this.parentNode;
-        if (!element.parentNode)
-          options2.parentNode.appendChild(element);
+        }
         element.id = options2.id;
         if (options2.style)
           Object.assign(element.style, options2.style);
@@ -3278,6 +3285,12 @@
           divs,
           ...completeOptions
         };
+        if (!elm.parentNode) {
+          setTimeout(() => {
+            if (typeof options2.parentNode === "object")
+              options2.parentNode.appendChild(elm);
+          }, 0.01);
+        }
         return this.components[completeOptions.id];
       };
       this.addCanvasComponent = (options2) => {
@@ -3348,6 +3361,12 @@
         elm.context = context;
         node.canvas = canvas;
         node.context = context;
+        if (!elm.parentNode) {
+          setTimeout(() => {
+            if (typeof options2.parentNode === "object")
+              options2.parentNode.appendChild(elm);
+          }, 0.01);
+        }
         node.runAnimation(animation);
         return this.components[completeOptions.id];
       };
