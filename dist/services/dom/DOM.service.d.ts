@@ -14,13 +14,13 @@ export declare type DOMRoutes = {
 };
 export declare class DOMService extends Graph {
     routes: DOMRoutes;
-    firstLoad: boolean;
+    loadDefaultRoutes: boolean;
     name: string;
     keepState: boolean;
     parentNode: HTMLElement;
-    constructor(routes?: DOMRoutes, name?: string, props?: {
+    constructor(routes?: DOMRoutes | DOMRoutes[], name?: string, props?: {
         [key: string]: any;
-    });
+    }, loadDefaultRoutes?: boolean);
     elements: {
         [key: string]: ElementInfo;
     };

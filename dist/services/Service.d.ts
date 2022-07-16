@@ -35,12 +35,12 @@ export declare type ServiceMessage = {
 };
 export declare class Service extends Graph {
     routes: Routes;
-    firstLoad: boolean;
+    loadDefaultRoutes: boolean;
     name: string;
     keepState: boolean;
-    constructor(routes?: Routes, name?: string, props?: {
+    constructor(routes?: Routes | Routes[], name?: string, props?: {
         [key: string]: any;
-    });
+    }, loadDefaultRoutes?: boolean);
     load: (routes?: any, enumRoutes?: boolean) => Routes;
     unload: (routes?: Service | Routes | any) => Routes;
     handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;

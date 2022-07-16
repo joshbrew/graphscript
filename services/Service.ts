@@ -49,12 +49,13 @@ export class Service extends Graph {
     //routes denote paths and properties callable across interfaces and inherited by parent services (adding the service name in the 
     // front of the route like 'http/createServer'.
     routes:Routes={}
-    firstLoad = true;
+    loadDefaultRoutes = true;
     name:string=`service${Math.floor(Math.random()*100000000000000)}`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
 
-    constructor(routes?:Routes, name?:string,props?:{[key:string]:any}) {
+    constructor(routes?:Routes|Routes[], name?:string,props?:{[key:string]:any}, loadDefaultRoutes:boolean=true) {
         super(undefined,name,props);
+        this.loadDefaultRoutes = loadDefaultRoutes;
         if(name) this.name = name;
         
         if(Array.isArray(routes)) {
@@ -68,7 +69,7 @@ export class Service extends Graph {
         routes?:Service|Graph|Routes|{name:string,module:{[key:string]:any}}|any, 
         enumRoutes:boolean=true //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
     ) => {    
-        if(!routes && !this.firstLoad) return;
+        if(!routes && !this.loadDefaultRoutes) return;
         //console.log(this.routes);
         let service;
         if(!(routes instanceof Graph) && (routes as any)?.name) { //class prototype
@@ -119,7 +120,7 @@ export class Service extends Graph {
             }
         } 
         
-        if(this.firstLoad) {
+        if(this.loadDefaultRoutes) {
             let rts = Object.assign({},this.defaultRoutes); //load all default routes
             if(routes) {
                 Object.assign(rts,this.routes); //then load declared routesin this object
@@ -127,7 +128,7 @@ export class Service extends Graph {
             } else routes = Object.assign(rts,this.routes); //then load declared routesin this object
             
             //console.log(this.name,this.routes,routes);
-            this.firstLoad = false;
+            this.loadDefaultRoutes = false;
         }
 
         //load any children into routes too if tags exist

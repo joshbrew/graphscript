@@ -66,7 +66,7 @@ export class Router { //instead of extending acyclicgraph or service again we ar
             } else this.services[service.constructor.name] = service; 
         }
         
-        this.service.load(service);
+        this.service.load(service,linkServices);
         
         if(linkServices) {
             for(const name in this.services) { //tie node references together across service node maps so they can call each other
