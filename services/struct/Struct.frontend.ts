@@ -10,6 +10,8 @@ export const pseudoObjectId = (m = Math, d = Date, h = 16, s = s => m.floor(s).t
 
 export type UserStruct = UserProps & ProfileStruct;
 
+//intended for use with a UserRouter
+
 export class StructFrontend extends Service {
     name='structs'
 

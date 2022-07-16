@@ -45,7 +45,7 @@ export class Router { //instead of extending acyclicgraph or service again we ar
         
     }
 
-    load = (service:Graph|Routes|{name:string,module:any}|any) => { //load a service class instance or service prototoype class
+    load = (service:Graph|Routes|{name:string,module:any}|any, linkServices:boolean=true) => { //load a service class instance or service prototoype class
         if(!(service instanceof Graph) && typeof service === 'function')    //class
         {   
             service = new service(undefined, service.name); //we can instantiate a class)
@@ -68,14 +68,16 @@ export class Router { //instead of extending acyclicgraph or service again we ar
         
         this.service.load(service);
         
-        for(const name in this.services) { //tie node references together across service node maps so they can call each other
-            this.service.nodes.forEach((n) => {
-                if(this.services[name]?.nodes) {
-                    if(!this.services[name].nodes.get(n.tag)) {
-                        this.services[name].nodes.set(n.tag,n);
-                    } 
-                }
-            });
+        if(linkServices) {
+            for(const name in this.services) { //tie node references together across service node maps so they can call each other
+                this.service.nodes.forEach((n) => {
+                    if(this.services[name]?.nodes) {
+                        if(!this.services[name].nodes.get(n.tag)) {
+                            this.services[name].nodes.set(n.tag,n);
+                        } 
+                    }
+                });
+            }
         }
 
         return this.services[service.name];

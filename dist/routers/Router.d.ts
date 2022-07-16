@@ -42,7 +42,7 @@ export declare class Router {
     load: (service: Graph | Routes | {
         name: string;
         module: any;
-    } | any) => Service;
+    } | any, linkServices?: boolean) => Service;
     pipe: (source: string | GraphNode, destination: string, transmitter?: Protocol | string, origin?: string, method?: string, callback?: (res: any) => any | void) => number | false;
     pipeOnce: (source: string | GraphNode, destination: string, transmitter?: Protocol | string, origin?: string, method?: string, callback?: (res: any) => any | void) => false | void;
     sendAll: (message: ServiceMessage | any, connections: {
