@@ -17,7 +17,9 @@ export declare type GraphNodeProperties = {
     operator?: OperatorType | ((...args: any[]) => any | void);
     forward?: boolean;
     backward?: boolean;
-    children?: string | GraphNodeProperties | GraphNode | (GraphNodeProperties | GraphNode | string)[];
+    children?: {
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph;
+    };
     parent?: GraphNode | Graph;
     branch?: {
         [label: string]: {
@@ -84,7 +86,7 @@ export declare class GraphNode {
     runSync: boolean;
     firstRun: boolean;
     DEBUGNODE: boolean;
-    source: Graph;
+    source: Graph | GraphNode;
     tree: Tree;
     [key: string]: any;
     constructor(properties?: GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void), parentNode?: GraphNode, graph?: Graph);
@@ -113,18 +115,20 @@ export declare class GraphNode {
     append: (node: string | GraphNode, parentNode?: this) => void;
     subscribe: (callback: GraphNode | ((res: any) => void), tag?: string) => number;
     unsubscribe: (sub: number, tag?: string) => void;
-    addChildren: (children: GraphNode | GraphNodeProperties | (GraphNode | GraphNodeProperties)[]) => void;
+    addChildren: (children: {
+        [key: string]: string | boolean | GraphNode | Graph | GraphNodeProperties;
+    }) => void;
     callParent: (...args: any[]) => any;
     callChildren: (idx?: number, ...args: any[]) => any;
     setProps: (props?: GraphNodeProperties) => void;
     removeTree: (node: GraphNode | string) => void;
-    convertChildrenToNodes: (n: GraphNode) => any;
+    convertChildrenToNodes: (n?: GraphNode) => any;
     get: (tag: string) => any;
     stopLooping: (node?: GraphNode) => void;
     stopAnimating: (node?: GraphNode) => void;
     stopNode: (node?: GraphNode) => void;
     subscribeNode: (node: GraphNode) => number;
-    print: (node?: string | GraphNode, printChildren?: boolean, nodesPrinted?: any[]) => string;
+    print: (node?: string | GraphNode, printChildren?: boolean, nodesPrinted?: any[]) => any;
     reconstruct: (json: string | {
         [x: string]: any;
     }) => GraphNode | GraphNodeProperties;
@@ -168,7 +172,7 @@ export declare class Graph {
     unsubscribe: (tag: string, sub: number) => void;
     subscribeNode: (inputNode: string | GraphNode, outputNode: GraphNode | string) => number;
     stopNode: (node: string | GraphNode) => void;
-    print: (node?: GraphNode | undefined, printChildren?: boolean) => string;
+    print: (node?: GraphNode | undefined, printChildren?: boolean) => any;
     reconstruct: (json: string | {
         [x: string]: any;
     }) => GraphNode | GraphNodeProperties;
