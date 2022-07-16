@@ -347,11 +347,11 @@ export class GraphNode {
         
             if(this.children) this.convertChildrenToNodes(this);
                                 
-            let checkParentHasChildMapped = (node,child) => {
+            let checkParentHasChildMapped = (node,child,depth=0) => {
                 if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
                         if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
-                    if(node.parent.parent) {
-                        checkParentHasChildMapped(node.parent, child);
+                    if(node.parent.parent && depth !== node.graph.size) {
+                        checkParentHasChildMapped(node.parent, child, depth++);
                     }
                 }
             }
@@ -953,11 +953,11 @@ export class GraphNode {
          
     convertChildrenToNodes = (n:GraphNode) => {
                     
-        let checkParentHasChildMapped = (node,child) => {
+        let checkParentHasChildMapped = (node,child, depth=0) => {
             if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
                     if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
-                if(node.parent.parent) {
-                    checkParentHasChildMapped(node.parent, child);
+                if(node.parent.parent && depth !== node.graph.size) {
+                    checkParentHasChildMapped(node.parent, child, depth++);
                 }
             }
         }
@@ -1178,11 +1178,11 @@ export class Graph {
 
         this.nodes.forEach((node) => { //swap any child strings out for the proper nodes
             
-            let checkParentHasChildMapped = (node,child) => {
+            let checkParentHasChildMapped = (node,child,depth=0) => { //could get stuck in infinite loop
                 if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
                         if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
-                    if(node.parent.parent) {
-                        checkParentHasChildMapped(node.parent, child);
+                    if(node.parent.parent && depth !== this.nodes.size) {
+                        checkParentHasChildMapped(node.parent, child, depth++);
                     }
                 }
             }
