@@ -44,7 +44,7 @@ let routes:Routes = {
     }
 }
 
-const service = new Service(routes);
+const service = new Service({routes});
 
 ```
 
