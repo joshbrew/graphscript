@@ -1,4 +1,4 @@
-import { Service, Routes, ServiceMessage } from "../Service";
+import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
 export declare type WebRTCProps = {
     _id?: string;
     origin?: string;
@@ -37,9 +37,7 @@ export declare class WebRTCfrontend extends Service {
     iceServers: {
         urls: string[];
     }[];
-    constructor(routes?: Routes | Routes[], name?: string, props?: {
-        [key: string]: any;
-    }, loadDefaultRoutes?: boolean, iceServers?: {
+    constructor(options?: ServiceOptions, iceServers?: {
         urls: string[];
     }[]);
     createStream: (options: {

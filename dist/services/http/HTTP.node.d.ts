@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { Routes, Service, ServiceMessage } from "../Service";
+import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 import * as http from 'http';
 import * as https from 'https';
 import * as path from 'path';
@@ -49,9 +49,7 @@ export declare class HTTPbackend extends Service {
     mimeTypes: {
         [key: string]: string;
     };
-    constructor(routes?: Routes | Routes[], name?: string, props?: {
-        [key: string]: any;
-    }, loadDefaultRoutes?: boolean, settings?: {
+    constructor(options?: ServiceOptions, settings?: {
         host?: string;
         port?: number;
         protocol?: 'http' | 'https';

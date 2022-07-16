@@ -33,14 +33,21 @@ export declare type ServiceMessage = {
     origin?: string | GraphNode | Graph | Service;
     [key: string]: any;
 };
+export declare type ServiceOptions = {
+    routes?: Routes | Routes[];
+    name?: string;
+    props?: {
+        [key: string]: any;
+    };
+    loadDefaultRoutes: boolean;
+    [key: string]: any;
+};
 export declare class Service extends Graph {
     routes: Routes;
     loadDefaultRoutes: boolean;
     name: string;
     keepState: boolean;
-    constructor(routes?: Routes | Routes[], name?: string, props?: {
-        [key: string]: any;
-    }, loadDefaultRoutes?: boolean);
+    constructor(options?: ServiceOptions);
     load: (routes?: any, enumRoutes?: boolean) => Routes;
     unload: (routes?: Service | Routes | any) => Routes;
     handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;

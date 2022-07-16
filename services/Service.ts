@@ -43,6 +43,14 @@ export type ServiceMessage = {
     [key:string]:any //it's an object so do whatever, any messages meant for web protocols need to be stringified or buffered
 }
 
+export type ServiceOptions = {
+    routes?:Routes|Routes[], 
+    name?:string, 
+    props?:{[key:string]:any}, 
+    loadDefaultRoutes:boolean,
+    [key:string]:any
+};
+
 
 export class Service extends Graph {
 
@@ -53,15 +61,15 @@ export class Service extends Graph {
     name:string=`service${Math.floor(Math.random()*100000000000000)}`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
 
-    constructor(routes?:Routes|Routes[], name?:string, props?:{[key:string]:any}, loadDefaultRoutes:boolean=true) {
-        super(undefined,name,props);
-        this.loadDefaultRoutes = loadDefaultRoutes;
-        if(name) this.name = name;
+    constructor(options?:ServiceOptions) {
+        super(undefined,options.name,options.props);
+        if('loadDefaultRoutes' in options) this.loadDefaultRoutes = options.loadDefaultRoutes;
+        if(options.name) this.name = options.name;
         
-        if(Array.isArray(routes)) {
-            routes.forEach((r) => {this.load(r);})
+        if(Array.isArray(options.routes)) {
+            options.routes.forEach((r) => {this.load(r);})
         }
-        else if(routes) this.load(routes); //now process the routes for the acyclic graph to load them as graph nodes :-D
+        else if(options.routes) this.load(options.routes); //now process the routes for the acyclic graph to load them as graph nodes :-D
     }
 
     

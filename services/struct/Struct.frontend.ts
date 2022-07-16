@@ -1,7 +1,7 @@
 import { DataTablet, DS } from 'brainsatplay-data'
 import { Data, ProfileStruct, AuthorizationStruct, GroupStruct, DataStruct, EventStruct, ChatroomStruct, CommentStruct, Struct } from 'brainsatplay-data/dist/src/types';
 import { UserProps } from '../../routers/users/User.router';
-import { Routes, Service } from '../Service';
+import { Routes, Service, ServiceOptions } from '../Service';
 
 export const randomId = (prefix?) => ((prefix) ? `${prefix}` : '')  + Math.floor(1000000000000000*Math.random())
 
@@ -21,13 +21,10 @@ export class StructFrontend extends Service {
     id: string = randomId()
 
     constructor(
-        routes?:Routes|Routes[], 
-        name?:string, 
-        props?:{[key:string]:any}, 
-        loadDefaultRoutes?:boolean, 
+        options?:ServiceOptions,
         user?:Partial<UserStruct>
     ) {
-        super(routes, name, props, loadDefaultRoutes);
+        super(options);
 
         if (user instanceof Object && Object.keys(user).length > 0) this.setupUser(user) // Declares currentUser
     }

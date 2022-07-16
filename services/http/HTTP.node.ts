@@ -1,4 +1,4 @@
-import { RouteProp, Routes, Service, ServiceMessage } from "../Service";
+import { RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 import * as http from 'http'
 import * as https from 'https'
 import * as fs from 'fs'
@@ -70,13 +70,10 @@ export class HTTPbackend extends Service {
     };
 
     constructor(
-        routes?:Routes|Routes[], 
-        name?:string, 
-        props?:{[key:string]:any}, 
-        loadDefaultRoutes?:boolean,
+        options?:ServiceOptions,
         settings?:{ host?:string, port?:number, protocol?:'http'|'https', certpath?:string, keypath?:string }
     ) {
-        super(routes, name, props, loadDefaultRoutes);
+        super(options);
 
         if(settings) {
             if(settings.protocol === 'https') {

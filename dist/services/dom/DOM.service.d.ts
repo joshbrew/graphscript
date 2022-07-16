@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { DOMElement } from "./DOMElement";
 import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph';
-import { RouteProp, Routes, Service, ServiceMessage } from "../Service";
+import { RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 import { CompleteOptions } from './types/general';
 import { ElementOptions, ElementInfo, ElementProps } from './types/element';
 import { DOMElementProps, ComponentOptions, DOMElementInfo } from './types/component';
@@ -18,9 +18,7 @@ export declare class DOMService extends Graph {
     name: string;
     keepState: boolean;
     parentNode: HTMLElement;
-    constructor(routes?: DOMRoutes | DOMRoutes[], name?: string, props?: {
-        [key: string]: any;
-    }, loadDefaultRoutes?: boolean);
+    constructor(options?: ServiceOptions);
     elements: {
         [key: string]: ElementInfo;
     };

@@ -1,4 +1,4 @@
-import { Service, Routes, ServiceMessage } from "../Service";
+import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
 
 export type WebRTCProps = {
     _id?:string,
@@ -46,9 +46,11 @@ export class WebRTCfrontend extends Service {
         { urls: ['stun:stun4.l.google.com:19302'] }
     ];
 
-    constructor(routes?:Routes|Routes[], name?:string, props?:{[key:string]:any}, loadDefaultRoutes?:boolean, iceServers?:{urls:string[]}[] ) {
-        super(routes, name, props, loadDefaultRoutes);
-        super(routes, name);
+    constructor(
+        options?:ServiceOptions, 
+        iceServers?:{urls:string[]}[] 
+    ) {
+        super(options);
 
         if(iceServers) this.iceServers = iceServers;
     }

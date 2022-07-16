@@ -1,6 +1,6 @@
 import { DOMElement } from "./DOMElement"; //https://github.com/joshbrew/DOMElement <---- this is the special sauce
 import { Graph, GraphNode, GraphNodeProperties, OperatorType, stringifyWithCircularRefs } from '../../Graph';
-import { RouteProp, Routes, Service, ServiceMessage } from "../Service";
+import { RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 
 import {CompleteOptions} from './types/general';
 import {ElementOptions, ElementInfo, ElementProps} from './types/element';
@@ -38,20 +38,15 @@ export class DOMService extends Graph {
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
     parentNode:HTMLElement=document.body; //default parent elements for elements added
 
-    constructor(
-        routes?:DOMRoutes|DOMRoutes[], 
-        name?:string,
-        props?:{[key:string]:any}, 
-        loadDefaultRoutes:boolean=true
-    ) {
-        super(undefined,name,props);
-        this.loadDefaultRoutes = loadDefaultRoutes;
-
-        if(name) this.name = name;
-        if(Array.isArray(routes)) {
-            routes.forEach((r) => {this.load(r);})
-        }
-        else if(routes) this.load(routes); //now process the routes for the acyclic graph to load them as graph nodes :-D
+    constructor(options?:ServiceOptions) {
+            super(undefined,options.name,options.props);
+            if('loadDefaultRoutes' in options) this.loadDefaultRoutes = options.loadDefaultRoutes;
+            if(options.name) this.name = options.name;
+            
+            if(Array.isArray(options.routes)) {
+                options.routes.forEach((r) => {this.load(r);})
+            }
+            else if(options.routes) this.load(options.routes); //now process the routes for the acyclic graph to load them as graph nodes :-D
     }
     
     elements:{

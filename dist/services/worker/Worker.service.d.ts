@@ -1,4 +1,4 @@
-import { Service, Routes, ServiceMessage } from "../Service";
+import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
 import Worker from 'web-worker';
 export declare type WorkerProps = {
     url?: URL | string;
@@ -18,9 +18,7 @@ export declare class WorkerService extends Service {
         [key: string]: WorkerInfo;
     };
     threadRot: number;
-    constructor(routes?: Routes | Routes[], name?: string, props?: {
-        [key: string]: any;
-    }, loadDefaultRoutes?: boolean);
+    constructor(options?: ServiceOptions);
     addWorker: (options: {
         url: URL | string;
         _id?: string;

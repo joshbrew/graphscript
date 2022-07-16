@@ -1,4 +1,4 @@
-import { Service, Routes, ServiceMessage } from "../Service";
+import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
 import { proxyWorkerRoutes } from "./ProxyListener";
 import Worker from 'web-worker' //cross platform for node and browser
 
@@ -30,12 +30,9 @@ export class WorkerService extends Service {
     threadRot = 0; //thread rotation if not specifying
 
     constructor(
-        routes?:Routes|Routes[], 
-        name?:string, 
-        props?:{[key:string]:any}, 
-        loadDefaultRoutes?:boolean
+        options?:ServiceOptions
     ) {
-        super(routes, name, props, loadDefaultRoutes);
+        super(options);
         this.load(proxyWorkerRoutes); //add support for element proxying
     }
 

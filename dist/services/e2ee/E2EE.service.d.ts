@@ -1,4 +1,4 @@
-import { Service, Routes, ServiceMessage } from "../Service";
+import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
 export declare class E2EEService extends Service {
     name: string;
     keys: {
@@ -10,9 +10,7 @@ export declare class E2EEService extends Service {
     securedKeys: boolean;
     encryptedkeys?: string;
     secret?: string;
-    constructor(routes?: Routes | Routes[], name?: string, props?: {
-        [key: string]: any;
-    }, loadDefaultRoutes?: boolean, keys?: {
+    constructor(options?: ServiceOptions, keys?: {
         [key: string]: {
             key: string;
             _id?: string;
