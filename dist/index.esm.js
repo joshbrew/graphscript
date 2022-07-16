@@ -3227,7 +3227,7 @@ function parseFunctionFromText2(method) {
 
 // services/dom/DOM.service.ts
 var DOMService = class extends Graph {
-  constructor(options2) {
+  constructor(options2, parentNode) {
     super(void 0, options2.name, options2.props);
     this.routes = {};
     this.loadDefaultRoutes = true;
@@ -3859,6 +3859,10 @@ var DOMService = class extends Graph {
       this.loadDefaultRoutes = options2.loadDefaultRoutes;
     if (options2.name)
       this.name = options2.name;
+    if (parentNode instanceof HTMLElement)
+      this.parentNode = parentNode;
+    else if (options2.parentNode instanceof HTMLElement)
+      this.parentNode = parentNode;
     if (Array.isArray(options2.routes)) {
       options2.routes.forEach((r) => {
         this.load(r);

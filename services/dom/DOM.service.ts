@@ -38,10 +38,13 @@ export class DOMService extends Graph {
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
     parentNode:HTMLElement=document.body; //default parent elements for elements added
 
-    constructor(options?:ServiceOptions) {
+    constructor(options?:ServiceOptions,parentNode?:HTMLElement) {
             super(undefined,options.name,options.props);
             if('loadDefaultRoutes' in options) this.loadDefaultRoutes = options.loadDefaultRoutes;
             if(options.name) this.name = options.name;
+
+            if(parentNode instanceof HTMLElement) this.parentNode = parentNode;
+            else if(options.parentNode instanceof HTMLElement) this.parentNode = parentNode;
             
             if(Array.isArray(options.routes)) {
                 options.routes.forEach((r) => {this.load(r);})

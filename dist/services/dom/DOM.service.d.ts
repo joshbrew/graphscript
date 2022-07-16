@@ -18,7 +18,7 @@ export declare class DOMService extends Graph {
     name: string;
     keepState: boolean;
     parentNode: HTMLElement;
-    constructor(options?: ServiceOptions);
+    constructor(options?: ServiceOptions, parentNode?: HTMLElement);
     elements: {
         [key: string]: ElementInfo;
     };
