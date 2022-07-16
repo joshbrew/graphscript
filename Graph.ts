@@ -1111,7 +1111,7 @@ export class Graph {
     }
 
     //converts all children nodes and tag references to GraphNodes also
-    add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void) ={}, fromTree=false) => {
+    add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}, fromTree=false) => {
         let props = node;
         if(!(node instanceof GraphNode)) node = new GraphNode(props,undefined,this); 
         if(node.tag) this.tree[node.tag] = props; //set the head node prototype in the tree object
@@ -1143,7 +1143,7 @@ export class Graph {
                     this.add({tag:node,operator:(self,origin,...args) => {return tree[node];}},true);
                 }
                 if(this.nodes.get(node)?.oncreate) {
-                    oncreate[node] = this.nodes.get(node).oncreate
+                    oncreate[node] = this.nodes.get(node).oncreate;
                 }
             }
         }
@@ -1152,7 +1152,9 @@ export class Graph {
             if(typeof node.children === 'string') {
                 if(this.nodes.get(node.children)) {
                     node.children = [node.children];
-                    node.nodes.set(node.children);
+                    node.nodes.set(node.children[0].tag,node.children[0]);
+                    if(node.parent instanceof GraphNode && !node.parent.nodes.get(node.children[0].tag)) 
+                        node.parent.nodes.set(node.children[0].tag, node.children[0]);
                     if(node.children[0] instanceof GraphNode) {
                         if(node.children[0].tag && !(node.children[0].tag in node)) {
                             node[node.children[0].tag] = node.children[0];
@@ -1164,6 +1166,8 @@ export class Graph {
                     if(typeof c === 'string') {
                         if(this.nodes.get(c)) {
                             node.children[i] = this.nodes.get(c); node.nodes.set(node.children[i].tag,node.children[i]); 
+                            if(node.parent instanceof GraphNode && !node.parent.nodes.get(node.children[i].tag)) 
+                                node.parent.nodes.set(node.children[i].tag, node.children[i]);
                             if(node.children[i].tag && !(node.children[i].tag in node)) {
                                 node[node.children[i].tag] = node.children[i];
                             }
