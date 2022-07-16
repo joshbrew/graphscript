@@ -942,47 +942,65 @@ export class GraphNode {
     }
          
     convertChildrenToNodes = (n:GraphNode) => {
-        if( n?.children instanceof GraphNode ) { 
-            if(!n.graph?.nodes.get(n.tag)) n.graph.nodes.set(n.tag,n);
-            if(!n.nodes.get(n.tag)) n.nodes.set(n.tag,n); 
-        }
-        else if (Array.isArray(n.children)) {
-            for(let i = 0; i < n.children.length; i++) {
-                if(n.children[i] instanceof GraphNode) { 
-                    if(!n.graph?.nodes.get(n.children[i].tag)) n.graph.nodes.set(n.children[i].tag,n.children[i]);
-                    if(!n.nodes.get(n.children[i].tag)) n.nodes.set(n.children[i].tag,n.children[i]);
-                    if(!(n.children[i].tag in n)) n[n.children[i].tag] = n.children[i].tag; //set it as a property by name too as an additional easy accessor;
-                    continue; 
+                    
+        let checkParentHasChildMapped = (node,child) => {
+            if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
+                    if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
+                if(node.parent.parent) {
+                    checkParentHasChildMapped(node.parent, child);
                 }
-                else if(typeof n.children[i] === 'object' || typeof n.children[i] === 'function') {
-                    n.children[i] = new GraphNode(n.children[i],n,n.graph);
-                    n.nodes.set(n.children[i].tag,n.children[i]);
-                    if(!(n.children[i].tag in n)) n[n.children[i].tag] = n.children[i].tag; //set it as a property by name too as an additional easy accessor;
-                    n.convertChildrenToNodes(n.children[i]);
-                } 
-                else if (typeof n.children[i] === 'string') {
-                    if(n.graph && n.graph.get(n.children[i])) {
-                        n.children[i] = n.graph.get(n.children[i]); //try graph scope
+            }
+        }
+
+        if(n?.children) {
+            if( n.children instanceof GraphNode ) { 
+                if(!n.graph?.nodes.get(n.tag)) n.graph.nodes.set(n.tag,n);
+                if(!n.nodes.get(n.tag)) n.nodes.set(n.children.tag,n.children); 
+                checkParentHasChildMapped(n,n.children);
+            }
+            else if (Array.isArray(n.children)) {
+                for(let i = 0; i < n.children.length; i++) {
+                    if(n.children[i] instanceof GraphNode) { 
+                        if(!n.graph?.nodes.get(n.children[i].tag)) n.graph.nodes.set(n.children[i].tag,n.children[i]);
                         if(!n.nodes.get(n.children[i].tag)) n.nodes.set(n.children[i].tag,n.children[i]);
                         if(!(n.children[i].tag in n)) n[n.children[i].tag] = n.children[i].tag; //set it as a property by name too as an additional easy accessor;
+                        checkParentHasChildMapped(n,n.children[i]);
+                        continue; 
                     }
-                    if(!n.children[i] && n.nodes.get(n.children[i])) n.children[i] = n.nodes.get(n.children[i]); //try local scope
+                    else if(typeof n.children[i] === 'object' || typeof n.children[i] === 'function') {
+                        n.children[i] = new GraphNode(n.children[i],n,n.graph);
+                        n.nodes.set(n.children[i].tag,n.children[i]);
+                        if(!(n.children[i].tag in n)) n[n.children[i].tag] = n.children[i].tag; //set it as a property by name too as an additional easy accessor;
+                        checkParentHasChildMapped(n,n.children[i]);
+                        n.convertChildrenToNodes(n.children[i]);
+                    } 
+                    else if (typeof n.children[i] === 'string') {
+                        if(n.graph && n.graph.get(n.children[i])) {
+                            n.children[i] = n.graph.get(n.children[i]); //try graph scope
+                            if(!n.nodes.get(n.children[i].tag)) n.nodes.set(n.children[i].tag,n.children[i]);
+                            if(!(n.children[i].tag in n)) n[n.children[i].tag] = n.children[i].tag; //set it as a property by name too as an additional easy accessor;
+                        }
+                        if(!n.children[i] && n.nodes.get(n.children[i])) n.children[i] = n.nodes.get(n.children[i]); //try local scope
+                        checkParentHasChildMapped(n,n.children[i]);
+                    }
                 }
             }
-        }
-        else if(typeof n.children === 'object' || typeof n.children === 'function') {
-            n.children = new GraphNode(n.children,n,n.graph);
-            n.nodes.set(n.children.tag,n.children);
-            if(!(n.children.tag in n)) n[n.children.tag] = n.children.tag; //set it as a property by name too as an additional easy accessor;
-            n.convertChildrenToNodes(n.children);
-        } 
-        else if (typeof n.children === 'string') {
-            if(n.graph && n.graph.get(n.children)) {
-                n.children = n.graph.get(n.children); //try graph scope
-                if(!n.nodes.get(n.children.tag)) n.nodes.set(n.children.tag,n.children);
-                if(!n[n.children.tag]) n[n.children.tag] = n.children.tag; //set it as a property by name too as an additional easy accessor;
+            else if(typeof n.children === 'object' || typeof n.children === 'function') {
+                n.children = new GraphNode(n.children,n,n.graph);
+                n.nodes.set(n.children.tag,n.children);
+                if(!(n.children.tag in n)) n[n.children.tag] = n.children.tag; //set it as a property by name too as an additional easy accessor;
+                checkParentHasChildMapped(n,n.children);
+                n.convertChildrenToNodes(n.children);
+            } 
+            else if (typeof n.children === 'string') {
+                if(n.graph && n.graph.get(n.children)) {
+                    n.children = n.graph.get(n.children); //try graph scope
+                    if(!n.nodes.get(n.children.tag)) n.nodes.set(n.children.tag,n.children);
+                    if(!n[n.children.tag]) n[n.children.tag] = n.children.tag; //set it as a property by name too as an additional easy accessor;
+                }
+                if(!n.children && n.nodes.get(n.children)) n.children = n.nodes.get(n.children); //try local scope
+                checkParentHasChildMapped(n,n.children);
             }
-            if(!n.children && n.nodes.get(n.children)) n.children = n.nodes.get(n.children); //try local scope
         }
         return n.children;
     }
