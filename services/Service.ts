@@ -27,6 +27,7 @@ export type Routes = { //same as the tree in the base acyclic graph but adds ali
     [key:string]:
         GraphNode |
         GraphNodeProperties |
+        Graph |
         OperatorType |
         ((...args)=>any|void) |
         { aliases?:string[] } & GraphNodeProperties |
@@ -64,7 +65,7 @@ export class Service extends Graph {
 
     
     load = (
-        routes?:Service|Routes|{name:string,module:{[key:string]:any}}|any, 
+        routes?:Service|Graph|Routes|{name:string,module:{[key:string]:any}}|any, 
         enumRoutes:boolean=true //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
     ) => {    
         if(!routes && !this.firstLoad) return;

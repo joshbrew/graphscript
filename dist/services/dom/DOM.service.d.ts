@@ -8,7 +8,7 @@ import { DOMElementProps, ComponentOptions, DOMElementInfo } from './types/compo
 import { CanvasElementProps, CanvasOptions, CanvasElementInfo } from './types/canvascomponent';
 export declare type DOMRouteProp = (ElementProps & GraphNodeProperties) | (DOMElementProps & GraphNodeProperties) | (CanvasElementProps & GraphNodeProperties);
 export declare type DOMRoutes = {
-    [key: string]: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void) | ({
+    [key: string]: GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
         aliases?: string[];
     } & GraphNodeProperties) | RouteProp | DOMRouteProp;
 };

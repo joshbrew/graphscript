@@ -19,6 +19,7 @@ export type DOMRoutes = {
     [key:string]:
         GraphNode |
         GraphNodeProperties |
+        Graph |
         OperatorType |
         ((...args)=>any|void) |
         { aliases?:string[] } & GraphNodeProperties |

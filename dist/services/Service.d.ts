@@ -21,7 +21,7 @@ export declare type RouteProp = {
     aliases?: string[];
 } & GraphNodeProperties;
 export declare type Routes = {
-    [key: string]: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void) | ({
+    [key: string]: GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
         aliases?: string[];
     } & GraphNodeProperties) | RouteProp;
 };
