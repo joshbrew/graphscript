@@ -33,7 +33,7 @@ export class DOMService extends Graph {
     // front of the route like 'http/createServer'.
     routes:DOMRoutes={}
     firstLoad = true;
-    name:string=`html`;
+    name:string=`dom${Math.floor(Math.random()*1000000000000000)}`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
     parentNode:HTMLElement=document.body; //default parent elements for elements added
 
@@ -297,13 +297,13 @@ export class DOMService extends Graph {
     }
     
     load = (
-        routes?:Service|DOMRoutes|{name:string,module:{[key:string]:any}}|any,
+        routes?:Service|Graph|DOMRoutes|{name:string,module:{[key:string]:any}}|any,
         enumRoutes:boolean=true //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
     ) => {    
         if(!routes && !this.firstLoad) return;
         //console.log(this.routes);
         let service;
-        if(!(routes instanceof Service) && (routes as any)?.name) { //class prototype
+        if(!(routes instanceof Graph) && (routes as any)?.name) { //class prototype
             if(routes.module) {
                 let mod = routes;
                 routes = {};
@@ -317,9 +317,10 @@ export class DOMService extends Graph {
                 routes = service.routes;
             }
         } //we can instantiate a class and load the routes. Routes should run just fine referencing the classes' internal data structures without those being garbage collected.
-        else if (routes instanceof Service) { //class instance
+        else if (routes instanceof Graph && (routes.routes || routes.tree)) { //class instance
             service = routes;
-            routes = routes.routes; //or pull routes from an existing class
+            if(routes.routes) routes = routes.routes; //or pull routes from an existing class
+            else if(routes.tree) routes = routes.tree;
         }
         else if (typeof routes === 'object') {
             let name = routes.constructor.name;
@@ -338,7 +339,7 @@ export class DOMService extends Graph {
             }
         }
 
-        if(service instanceof Service) {     
+        if(service instanceof Graph && service.name) {     
             //the routes provided from a service will add the route name in front of the route so like 'name/route' to minimize conflicts, 
             //incl making generic service routes accessible per service. The services are still independently usable while the loader 
             // service provides routes to the other services
