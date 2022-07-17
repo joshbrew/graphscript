@@ -665,6 +665,7 @@
             if (node.nodes) {
               node.nodes.forEach((n) => {
                 this.checkNodesHaveChildMapped(n, child, checked);
+                console.log(n, child.tag);
               });
             }
           }
@@ -689,7 +690,7 @@
                 let child = n.graph.get(n.children[key]);
                 n.children[key] = child;
                 if (!child)
-                  n.children[key] = n.nodes.get(key);
+                  child = n.nodes.get(key);
                 if (child instanceof GraphNode) {
                   if (!n.nodes.get(n.children[key].tag))
                     n.nodes.set(n.children[key].tag, n.children[key]);
@@ -981,6 +982,7 @@
           if (typeof node.parent === "string") {
             if (this.nodes.get(node.parent)) {
               node.parent = this.nodes.get(node.parent);
+              node.nodes.set(node.parent.tag, node.parent);
             }
           }
         });

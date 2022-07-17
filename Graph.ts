@@ -889,7 +889,7 @@ export class GraphNode {
         }
     }
 
-    checkNodesHaveChildMapped = (node:GraphNode|Graph,child:GraphNode,checked={}) => { //crawling around node/graph maps 
+    checkNodesHaveChildMapped = (node:GraphNode|Graph, child:GraphNode, checked={}) => { //crawling around node/graph maps 
         let tag = node.tag;
         if(!tag) tag = node.name;
         
@@ -941,6 +941,7 @@ export class GraphNode {
                 if(node.nodes) {
                     node.nodes.forEach((n) => {
                         this.checkNodesHaveChildMapped(n, child, checked);
+                        console.log(n, child.tag)
                     });
                 }
             }
@@ -963,7 +964,7 @@ export class GraphNode {
                     else if(typeof n.children[key] === 'string') {
                         let child = n.graph.get(n.children[key]); //try graph scope
                         n.children[key] = child;
-                        if(!child) n.children[key] = n.nodes.get(key);
+                        if(!child) child = n.nodes.get(key);
                         if(child instanceof GraphNode) {
                             if(!n.nodes.get(n.children[key].tag)) n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
