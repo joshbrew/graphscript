@@ -1114,7 +1114,7 @@ export class Graph {
                                 n.setOperator((tree[node] as any).operator);
                                 delete (tree[node] as any).operator;
                             }
-                            Object.assign(n,tree[node]) //assign new properties
+                            n.setProps(tree[node]);
                         }
                     }
             }
