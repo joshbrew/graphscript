@@ -33,7 +33,7 @@ export class DOMService extends Graph {
     //routes denote paths and properties callable across interfaces and inherited by parent services (adding the service name in the 
     // front of the route like 'http/createServer'.
     routes:DOMRoutes={}
-    loadDefaultRoutes = true; //load default routes?
+    loadDefaultRoutes = false; //load default routes?
     name:string=`dom${Math.floor(Math.random()*1000000000000000)}`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
     parentNode:HTMLElement=document.body; //default parent elements for elements added

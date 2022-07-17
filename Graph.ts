@@ -448,7 +448,6 @@ export class GraphNode {
         ...args:any[]
     ) => {
         // NOTE: Should create a sync version with no promises (will block but be faster)
-
         if(!(typeof node === 'object')) {
             if(typeof node === 'string') { //can pass the node tag instead
                 let fnd:any = undefined;
@@ -1096,6 +1095,8 @@ export class Graph {
                 if(this.nodes.get(node)?.oncreate) {
                     oncreate[node] = this.nodes.get(node).oncreate;
                 }
+            } else {
+                Object.assign(this.nodes.get(node),tree[node]) //assign new properties
             }
         }
 

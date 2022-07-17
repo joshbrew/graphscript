@@ -30,9 +30,9 @@ export class Router { //instead of extending acyclicgraph or service again we ar
 
     state = this.service.state;
 
-    routes:Routes = {}
+    routes:Routes = this.service.routes;
     services:{[key:string]:Service} = {};
-    loadDefaultRoutes=true;
+    loadDefaultRoutes=false;
 
     [key:string]:any;
 
@@ -42,9 +42,6 @@ export class Router { //instead of extending acyclicgraph or service again we ar
         }
         if(this.loadDefaultRoutes) this.load(this.defaultRoutes);
 
-        if(this.routes) 
-            if(Object.keys(this.routes).length > 0)
-                this.load(this.routes);
         if(Array.isArray(services)){
             services.forEach(s => this.load(s,options?.linkServices));
         }
