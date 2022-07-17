@@ -5,6 +5,7 @@ import * as treeInfo from "../tree"
 const input = 3
 
 const router = new Router([treeInfo.tree],{loadDefaultRoutes:false})
+console.log('Router', router)
 
 router.subscribe('subtract', (res) => document.body.innerHTML = `
     <h2>Router</h2>
@@ -13,8 +14,5 @@ router.subscribe('subtract', (res) => document.body.innerHTML = `
     <p><b>Test Passed:</b> ${ res == treeInfo.expected([input])}</p>
 `)
 
-console.log('Router', router)
-
-const res = router.run('add', input)
-console.log('Router res', res)
+router.run('add', input)
 

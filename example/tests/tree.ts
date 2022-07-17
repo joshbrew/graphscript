@@ -22,7 +22,8 @@ export const tree = {
         children: {
             'subtract': true
         },
-        operator: operators.add
+        operator: operators.add,
+        
     },
     nested: new DOMService({
         name: 'nested',
