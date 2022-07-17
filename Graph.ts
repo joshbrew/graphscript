@@ -586,10 +586,6 @@ export class GraphNode {
         });
     }
 
-    set = (tag, node) => {
-        this.nodes.set(tag, node);
-    }
-
     runParent = async (node:GraphNode, ...args) => {
         if(node.backward && node.parent) {
             if(typeof node.parent === 'string') {
