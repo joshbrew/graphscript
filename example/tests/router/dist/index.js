@@ -1375,7 +1375,7 @@
                 routes2[prop] = routes2.module[prop];
             });
           } else if (typeof routes2 === "function") {
-            service = new routes2();
+            service = new routes2({ loadDefaultRoutes: this.loadDefaultRoutes });
             service.load();
             routes2 = service.routes;
           }
@@ -1788,9 +1788,10 @@
       this.state = this.service.state;
       this.routes = {};
       this.services = {};
+      this.loadDefaultRoutes = true;
       this.load = (service, linkServices = true) => {
         if (!(service instanceof Graph) && typeof service === "function") {
-          service = new service(void 0, service.name);
+          service = new service({ loadDefaultRoutes: this.loadDefaultRoutes }, service.name);
           service.load();
         } else if (!service)
           return;
@@ -2244,7 +2245,10 @@
           loop: 10
         }
       };
-      if (options && options?.loadDefaultRoutes)
+      if (options && "loadDefaultRoutes" in options) {
+        this.loadDefaultRoutes = options.loadDefaultRoutes;
+      }
+      if (this.loadDefaultRoutes)
         this.load(this.defaultRoutes);
       if (this.routes) {
         if (Object.keys(this.routes).length > 0)

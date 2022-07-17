@@ -37,7 +37,6 @@ export class Router { //instead of extending acyclicgraph or service again we ar
     [key:string]:any;
 
     constructor(services?:(Service|Graph|Routes|any)[]|{[key:string]:Service|Graph|Routes|any}|any[], options?:RouterOptions) { //preferably pass services but you can pass route objects in too to just add more base routes
-        if(options && options?.loadDefaultRoutes) 
         if(options && 'loadDefaultRoutes' in options) {
             this.loadDefaultRoutes = options.loadDefaultRoutes;
         }
