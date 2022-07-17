@@ -4,9 +4,7 @@ import * as treeInfo from "../tree"
 
 const input = 3
 
-const router = new Router({
-    routes: treeInfo.tree
-})
+const router = new Router([treeInfo.tree],{loadDefaultRoutes:false})
 
 router.subscribe('subtract', (res) => document.body.innerHTML = `
     <h2>Router</h2>

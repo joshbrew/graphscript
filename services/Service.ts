@@ -89,7 +89,7 @@ export class Service extends Graph {
                     else routes[prop] =  routes.module[prop];
                 });
             } else if (typeof routes === 'function') { //it's a service prototype... probably
-                service = new routes();
+                service = new routes({loadDefaultRoutes:this.loadDefaultRoutes});
                 service.load();
                 routes = service.routes;
             }

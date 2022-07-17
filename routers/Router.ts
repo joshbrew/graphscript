@@ -6,6 +6,10 @@ export type Protocol = 'http'|'wss'|'sse'|'webrtc'|'osc'|'worker'|'ble'|'serial'
 
 //handle subscriptions
 //match i/o protocols to correct services
+export type RouterOptions = {
+    linkServices?:boolean,
+    loadDefaultRoutes?:boolean
+}
 
 export class Router { //instead of extending acyclicgraph or service again we are going to keep this its own thing
 
@@ -28,19 +32,25 @@ export class Router { //instead of extending acyclicgraph or service again we ar
 
     routes:Routes = {}
     services:{[key:string]:Service} = {};
+    loadDefaultRoutes=true;
 
     [key:string]:any;
 
-    constructor(services?:(Service|Graph|Routes|any)[]|{[key:string]:Service|Graph|Routes|any}|any[]) { //preferably pass services but you can pass route objects in too to just add more base routes
-        this.load(this.defaultRoutes);
+    constructor(services?:(Service|Graph|Routes|any)[]|{[key:string]:Service|Graph|Routes|any}|any[], options?:RouterOptions) { //preferably pass services but you can pass route objects in too to just add more base routes
+        if(options && options?.loadDefaultRoutes) 
+        if(options && 'loadDefaultRoutes' in options) {
+            this.loadDefaultRoutes = options.loadDefaultRoutes;
+        }
+        if(this.loadDefaultRoutes) this.load(this.defaultRoutes);
+
         if(this.routes) 
             if(Object.keys(this.routes).length > 0)
                 this.load(this.routes);
         if(Array.isArray(services)){
-            services.forEach(s => this.load(s));
+            services.forEach(s => this.load(s,options?.linkServices));
         }
         else if (typeof services === 'object') {
-            Object.keys(services).forEach(s => this.load(services[s]));
+            Object.keys(services).forEach(s => this.load(services[s],options?.linkServices));
         }
         
     }
@@ -48,7 +58,7 @@ export class Router { //instead of extending acyclicgraph or service again we ar
     load = (service:Graph|Routes|{name:string,module:any}|any, linkServices:boolean=true) => { //load a service class instance or service prototoype class
         if(!(service instanceof Graph) && typeof service === 'function')    //class
         {   
-            service = new service(undefined, service.name); //we can instantiate a class)
+            service = new service({loadDefaultRoutes:this.loadDefaultRoutes}, service.name); //we can instantiate a class)
             service.load();
         }
         else if(!service) return;
