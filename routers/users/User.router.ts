@@ -1,5 +1,5 @@
 import { Graph, GraphNode, GraphNodeProperties, stringifyFast } from "../../Graph";
-import { Protocol, Router } from "../Router";
+import { Protocol, Router, RouterOptions } from "../Router";
 import { Routes, Service, ServiceMessage } from "../../services/Service";
 
 export type UserProps = {
@@ -93,8 +93,8 @@ export class UserRouter extends Router {
         shared:{}
     }
 
-    constructor(services:(Service|Graph|Routes|any)[]|{[key:string]:Service|Graph|Routes|any}|any[]) {
-        super(services);
+    constructor(services:(Service|Graph|Routes|any)[]|{[key:string]:Service|Graph|Routes|any}|any[], options?:RouterOptions) {
+        super(services,options);
         this.load(this.routes);
     }
 
