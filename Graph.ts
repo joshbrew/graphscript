@@ -950,10 +950,6 @@ export class GraphNode {
         }
         return n.children;
     }
-
-    get = (tag:string) => {
-        return this.nodes.get(tag);
-    }
     
     //stop any loops
     stopLooping = (node:GraphNode=this) => {
