@@ -177,8 +177,6 @@ node
 
     .append(props, parentNode=this) //append a child node with a properties object or string
 
-    .get(tag) //get a child node of this node by tag (in tree)
-
     .remove(node) //remove a node reference from this node and any nodes indexed in this node
 
     .stopLooping() //stop the loop
@@ -247,9 +245,11 @@ let graph = new Graph(tree);
 
         .setTree(tree) //apply a tree object to the graph to instantiate a bunch of nodes and append the existing tree with more methods
 
-        .addNode(node) // add a node with a properties object
+        .add(node) // add a node with a properties object
 
-        .getNode(tag) // get a node by tag, nodes added in the acyclic graph automatically get their tags set to sequential numbers if not set otherwise
+        .get(tag) // get a node by tag, nodes added in the acyclic graph automatically get their tags set to sequential numbers if not set otherwise
+
+        .set(node) //set a node by node.tag
 
         .create(operator=(self,origin,...args)=>{},parentNode,props) //create a node just using an operator, can pass props for more
 
