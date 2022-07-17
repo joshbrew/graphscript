@@ -61,7 +61,7 @@ export class Service extends Graph {
     name:string=`service${Math.floor(Math.random()*100000000000000)}`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
 
-    constructor(options?:ServiceOptions) {
+    constructor(options:ServiceOptions={}) {
         super(undefined,options.name,options.props);
         if('loadDefaultRoutes' in options) this.loadDefaultRoutes = options.loadDefaultRoutes;
         if(options.name) this.name = options.name;
