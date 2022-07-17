@@ -1,5 +1,5 @@
-import { Graph } from "../../Graph"
-import { DOMService } from "../../services/dom/DOM.service"
+import { Graph } from "../../../Graph"
+import { DOMService } from "../../../services/dom/DOM.service"
 
 
 const input = 3
@@ -35,14 +35,16 @@ const tree = {
 
 const graph = new Graph(tree, 'main')
 
+console.log('main graph:',graph);
+console.log('nested map:',graph.nodes.get('nested').nodes)
 const expected = subOp(addOp(input))
 const addChildren = graph.nodes.get('add').children
-console.log('Add Children', addChildren)
+console.log('add node children:', addChildren)
 
 
 graph.run('add', input).then(res => document.body.innerHTML = `
-<h2>Nested Graphs in Tree</h2>
-<p><b>Result:</b> ${res}</p>
-<p><b>Expected:</b> ${expected}</p>
-<p><b>Test Passed:</b> ${ res == expected}</p>
+    <h2>Nested Graphs in Tree</h2>
+    <p><b>Result:</b> ${res}</p>
+    <p><b>Expected:</b> ${expected}</p>
+    <p><b>Test Passed:</b> ${ res == expected}</p>
 `)

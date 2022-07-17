@@ -213,7 +213,7 @@ export class GraphNode {
 
     constructor(
         properties:GraphNodeProperties|Graph|OperatorType|((...args:any[])=>any|void)={}, 
-        parentNode?:GraphNode, 
+        parentNode?:GraphNode|Graph, 
         graph?:Graph
     ) {    
 
@@ -266,7 +266,10 @@ export class GraphNode {
                 this.nodes = source.nodes;
                 if(graph) {
                     source.nodes.forEach((n) => {
-                        if(!graph.nodes.get(n.tag)) graph.nodes.set(n.tag,n);
+                        if(!graph.nodes.get(n.tag)) {
+                            graph.nodes.set(n.tag,n);
+                            graph.nNodes++;
+                        }
                     });
                     graph.nodes.forEach((n) => {
                         if(!this.nodes.get(n.tag)) this.nodes.set(n.tag,n);
@@ -332,14 +335,17 @@ export class GraphNode {
                 } else {
                     this.tag = `node${Math.floor(Math.random()*10000000000)}`;
                 }
-            }        
-            if(parentNode && !properties.parent) this.parent=parentNode;
+            }      
+
+            if(parentNode) this.parent=parentNode;
+            console.log(this.tag, parentNode)
+            
             if(graph) this.graph=graph;
         
             if(graph) {
-                graph.nNodes++;
                 if(graph.nodes.get(this.tag)) graph.nodes.set(`${graph.nNodes}${this.tag}`,this);
                 else graph.nodes.set(this.tag,this);
+                graph.nNodes++;
             }
 
             
@@ -354,17 +360,11 @@ export class GraphNode {
             }
         
             if(this.children) this.convertChildrenToNodes(this);
-                                
-            let checkParentHasChildMapped = (node,child,depth=0) => {
-                if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
-                        if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
-                    if(node.parent.parent && depth < node.graph?.size) {
-                        checkParentHasChildMapped(node.parent, child, depth++);
-                    }
-                }
-            }
-            if(this.parent instanceof GraphNode) checkParentHasChildMapped(this.parent,this);
+    
+            if(this.parent instanceof GraphNode || this.parent instanceof Graph) this.checkNodesHaveChildMapped(this.parent,this);
             
+            console.log(this)
+
             if(!graph && typeof this.oncreate === 'function') this.oncreate(this);
         }
         else return properties;
@@ -766,7 +766,10 @@ export class GraphNode {
         if(typeof node === 'function') node = { operator:node as any};
         if(!(node instanceof GraphNode)) node = new GraphNode(node,this,this.graph); 
         this.nodes.set(node.tag,node);
-        if(this.graph) this.graph.nodes.set(node.tag,node);
+        if(this.graph) {
+            this.graph.nodes.set(node.tag,node);
+            this.graph.nNodes++;
+        }
         return node;
     }
     
@@ -774,7 +777,10 @@ export class GraphNode {
         if(typeof node === 'string') node = this.nodes.get(node);
         if(node instanceof GraphNode) {
             this.nodes.delete(node.tag);
-            if(this.graph) this.graph.nodes.delete(node.tag);
+            if(this.graph) {
+                this.graph.nodes.delete(node.tag);
+                this.graph.nNodes--;
+            }
             this.nodes.forEach((n:GraphNode) => {
                 if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
             }); 
@@ -882,41 +888,91 @@ export class GraphNode {
             }
         }
     }
-         
-    convertChildrenToNodes = (n:GraphNode=this) => {
-                    
-        let checkParentHasChildMapped = (node,child, depth=0) => {
-            if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
-                    if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
-                if(node.parent.parent && depth < node.graph?.size) {
-                    checkParentHasChildMapped(node.parent, child, depth++);
+
+    checkNodesHaveChildMapped = (node:GraphNode|Graph,child:GraphNode,checked={}) => { //crawling around node/graph maps 
+        let tag = node.tag;
+        if(!tag) tag = node.name;
+        
+        if(tag && tag !== child.tag) {
+            console.log(tag, child.tag)
+            if(!checked[tag]) {
+                checked[tag] = true;
+                if(node.source instanceof Graph) {
+                    if(!checked[node.source.name]) {
+                        checked[node.source.name] = true;
+                        node.source.nodes.forEach((n) => {
+                            checked[n.tag] = true;
+                            if(n.children) {
+                                if(typeof n.children[child.tag] === 'string') {
+                                    n.children[child.tag] = child;
+                                    n.nodes.set(child.tag,child);
+                                } 
+                            } 
+                        });
+                    }
+                }
+                if(node.graph instanceof Graph) {
+                    if(!checked[node.graph.name]) {
+                        checked[node.graph.name] = true;
+                        node.graph.nodes.forEach((n) => {
+                            if(!checked[n.tag]) {
+                                checked[n.tag] = true;
+                                if(n.children) {
+                                    if(typeof n.children[child.tag] === 'string') {
+                                        n.children[child.tag] = child;
+                                        n.nodes.set(child.tag,child);
+                                    }
+                                }
+                            }
+                        })
+                    }
+                }
+                if(typeof node.children === 'object') {
+                    if(typeof node.children[child.tag] === 'string') {
+                        node.children[child.tag] = child;
+                        node.nodes.set(child.tag,child);
+                    }
+                }
+                if(node.parent instanceof GraphNode) { //crawl up the tree
+                    if(node.parent.tag) {
+                        this.checkNodesHaveChildMapped(node.parent as GraphNode, child, checked);
+                    }
+                }
+                if(node.nodes) {
+                    node.nodes.forEach((n) => {
+                        this.checkNodesHaveChildMapped(n, child, checked);
+                    });
                 }
             }
         }
-
+    }
+         
+    convertChildrenToNodes = (n:GraphNode=this) => {
         if(n?.children) {
             for(const key in n.children) { //object syntax instead of setting single nodes etc.
                 if(!(n.children[key] instanceof GraphNode)) {
                     if(typeof n.children[key] === 'undefined' || n.children[key] === true) {
                         n.children[key] = n.graph.get(key); //try graph scope
                         if(!n.children[key]) n.children[key] = n.nodes.get(key);
-                        if(n.children[key]) {
+                        if(n.children[key] instanceof GraphNode) {
                             if(!n.nodes.get(n.children[key].tag)) n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
+                            this.checkNodesHaveChildMapped(n,n.children[key]);   
                         }
                     }
-                    if(typeof n.children[key] === 'string') {
+                    else if(typeof n.children[key] === 'string') {
                         let child = n.graph.get(n.children[key]); //try graph scope
                         n.children[key] = child;
                         if(!child) n.children[key] = n.nodes.get(key);
-                        if(child) {
+                        if(child instanceof GraphNode) {
                             if(!n.nodes.get(n.children[key].tag)) n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
+                            this.checkNodesHaveChildMapped(n,child);
                         }
                     } else if (typeof n.children[key] === 'object') {
                         if(!n.children[key].tag) n.children[key].tag = key;
                         n.children[key] = new GraphNode(n.children[key],n,n.graph);
-                        checkParentHasChildMapped(n,n.children);
+                        this.checkNodesHaveChildMapped(n,n.children[key]);
                     }
                 }
             }
@@ -1041,7 +1097,7 @@ export class Graph {
     //converts all children nodes and tag references to GraphNodes also
     add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}, fromTree=false) => {
         let props = node;
-        if(!(node instanceof GraphNode)) node = new GraphNode(props,undefined,this); 
+        if(!(node instanceof GraphNode)) node = new GraphNode(props,this,this); 
         if(node.tag) this.tree[node.tag] = props; //set the head node prototype in the tree object
         if(!fromTree) {
             if(node.oncreate) node.oncreate(node);
@@ -1076,17 +1132,8 @@ export class Graph {
             }
         }
 
-        this.nodes.forEach((node) => { //swap any child strings out for the proper nodes
-            
-            let checkParentHasChildMapped = (node,child,depth=0) => { //could get stuck in infinite loop
-                if(node.parent instanceof GraphNode || node.parent instanceof Graph) {
-                        if(!node.parent.nodes.get(child.tag)) node.parent.nodes.set(child.tag, child);
-                    if(node.parent.parent && depth < this.nodes?.size) {
-                        checkParentHasChildMapped(node.parent, child, depth++);
-                    }
-                }
-            }
-            
+        this.nodes.forEach((node:GraphNode) => { //swap any child strings out for the proper nodes
+
             if(typeof node.children === 'object') {
                 for(const key in node.children) {
                     if(typeof node.children[key] === 'string') {
@@ -1099,7 +1146,7 @@ export class Graph {
                         }
                     }
                     if(node.children[key] instanceof GraphNode) {
-                        checkParentHasChildMapped(node,node.children[key]);
+                        node.checkNodesHaveChildMapped(node,node.children[key]);
                     }
                 }
             }
@@ -1180,6 +1227,7 @@ export class Graph {
                 this.nodes.forEach((n) => {
                     if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
                 });
+                this.nNodes--;
                 recursivelyRemove(node as GraphNode);
             }
         }
