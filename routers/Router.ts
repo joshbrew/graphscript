@@ -32,7 +32,7 @@ export class Router { //instead of extending acyclicgraph or service again we ar
 
     routes:Routes = this.service.routes;
     services:{[key:string]:Service} = {};
-    loadDefaultRoutes=false;
+    loadDefaultRoutes = false;
 
     [key:string]:any;
 

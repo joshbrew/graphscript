@@ -4,7 +4,7 @@ import * as treeInfo from "../tree"
 
 const input = 3
 
-const router = new Router([treeInfo.tree],{loadDefaultRoutes:true})
+const router = new Router([treeInfo.tree],{loadDefaultRoutes:false})
 console.log('Router', router)
 
 router.subscribe('subtract', (res) => {

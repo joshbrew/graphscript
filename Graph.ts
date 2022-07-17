@@ -1096,7 +1096,27 @@ export class Graph {
                     oncreate[node] = this.nodes.get(node).oncreate;
                 }
             } else {
-                Object.assign(this.nodes.get(node),tree[node]) //assign new properties
+                let n = this.nodes.get(node);
+                if (typeof tree[node] === 'function') {
+                    n.setOperator(tree[node]);
+                }
+                else if(typeof tree[node] === 'object') 
+                    {
+                        if(tree[node] instanceof GraphNode) {
+                            if(n.tag !== (tree[node] as GraphNode).tag) this.add(tree[node]);
+                        } else if(tree[node] instanceof Graph) {
+                            if(n.tag !== tree[node].name) {
+                                this.removeTree(n);
+                                this.add(tree[node]);
+                            }
+                        } else {
+                            if((tree[node] as any).operator) {
+                                n.setOperator((tree[node] as any).operator);
+                                delete (tree[node] as any).operator;
+                            }
+                            Object.assign(n,tree[node]) //assign new properties
+                        }
+                    }
             }
         }
 
