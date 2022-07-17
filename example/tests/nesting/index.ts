@@ -41,10 +41,11 @@ const expected = subOp(addOp(input))
 const addChildren = graph.nodes.get('add').children
 console.log('add node children:', addChildren)
 
-
-graph.run('add', input).then(res => document.body.innerHTML = `
-    <h2>Nested Graphs in Tree</h2>
-    <p><b>Result:</b> ${res}</p>
-    <p><b>Expected:</b> ${expected}</p>
-    <p><b>Test Passed:</b> ${ res == expected}</p>
+graph.subscribe('subtract',(res) => document.body.innerHTML = `
+<h2>Nested Graphs in Tree</h2>
+<p><b>Result:</b> ${res}</p>
+<p><b>Expected:</b> ${expected}</p>
+<p><b>Test Passed:</b> ${ res == expected}</p>
 `)
+
+graph.run('add', input);

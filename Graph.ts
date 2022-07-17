@@ -271,9 +271,6 @@ export class GraphNode {
                             graph.nNodes++;
                         }
                     });
-                    graph.nodes.forEach((n) => {
-                        if(!this.nodes.get(n.tag)) this.nodes.set(n.tag,n);
-                    });
                 } //make sure node references get passed around correctly
             }
 
@@ -892,56 +889,32 @@ export class GraphNode {
     checkNodesHaveChildMapped = (node:GraphNode|Graph, child:GraphNode, checked={}) => { //crawling around node/graph maps 
         let tag = node.tag;
         if(!tag) tag = node.name;
-        
-        if(tag && tag !== child.tag) {
-            console.log(tag, child.tag)
-            if(!checked[tag]) {
-                checked[tag] = true;
-                if(node.source instanceof Graph) {
-                    if(!checked[node.source.name]) {
-                        checked[node.source.name] = true;
-                        node.source.nodes.forEach((n) => {
-                            checked[n.tag] = true;
-                            if(n.children) {
-                                if(typeof n.children[child.tag] === 'string') {
-                                    n.children[child.tag] = child;
-                                    n.nodes.set(child.tag,child);
-                                } 
-                            } 
-                        });
-                    }
-                }
-                if(node.graph instanceof Graph) {
-                    if(!checked[node.graph.name]) {
-                        checked[node.graph.name] = true;
-                        node.graph.nodes.forEach((n) => {
-                            if(!checked[n.tag]) {
-                                checked[n.tag] = true;
-                                if(n.children) {
-                                    if(typeof n.children[child.tag] === 'string') {
-                                        n.children[child.tag] = child;
-                                        n.nodes.set(child.tag,child);
-                                    }
-                                }
-                            }
-                        })
-                    }
-                }
-                if(typeof node.children === 'object') {
-                    if(typeof node.children[child.tag] === 'string') {
+
+        if(!checked[tag]) {
+            checked[tag] = true;
+            if(node.children) {
+                if(child.tag in node.children) {
+                    if(!(node.children[child.tag] instanceof GraphNode))
                         node.children[child.tag] = child;
-                        node.nodes.set(child.tag,child);
-                    }
                 }
-                if(node.parent instanceof GraphNode) { //crawl up the tree
-                    if(node.parent.tag) {
-                        this.checkNodesHaveChildMapped(node.parent as GraphNode, child, checked);
-                    }
-                }
-                if(node.nodes) {
+            }
+            if(node.parent) {
+                if(node.parent.children) {
+                    this.checkNodesHaveChildMapped(node.parent,child,checked);
+                } else if(node.nodes) {
                     node.nodes.forEach((n) => {
-                        this.checkNodesHaveChildMapped(n, child, checked);
-                        console.log(n, child.tag)
+                        if(!checked[n.tag]) {
+                            this.checkNodesHaveChildMapped(n,child,checked);
+                        }
+                    });
+                }
+            } 
+            if(node.graph) {
+                if(node.parent && (node.parent.name !== node.graph.name)) {
+                    node.graph.nodes.forEach((n) => {
+                        if(!checked[n.tag]) {
+                            this.checkNodesHaveChildMapped(n,child,checked);
+                        }
                     });
                 }
             }
@@ -1141,7 +1114,7 @@ export class Graph {
                         if(this.nodes.get(node.children[key])) {
                             node.children[key] = this.nodes.get(node.children[key]);
                         }
-                    } else if (node.children[key] === true || typeof node.children[key] === undefined) {
+                    } else if (node.children[key] === true || typeof node.children[key] === 'undefined') {
                         if(this.nodes.get(key)) {
                             node.children[key] = this.nodes.get(key);
                         }
