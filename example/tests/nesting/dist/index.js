@@ -309,16 +309,13 @@
             resolve(void 0);
         });
       };
-      this.set = (tag, node) => {
-        this.nodes.set(tag, node);
-      };
       this.runParent = async (node, ...args) => {
         if (node.backward && node.parent) {
           if (typeof node.parent === "string") {
             if (node.graph && node.graph?.get(node.parent)) {
               node.parent = node.graph;
               if (node.parent)
-                this.set(node.parent.tag, node.parent);
+                this.nodes.set(node.parent.tag, node.parent);
             } else
               node.parent = this.nodes.get(node.parent);
           }
@@ -333,7 +330,7 @@
               if (node.graph && node.graph?.get(node.children[key])) {
                 node.children[key] = node.graph.get(node.children[key]);
                 if (!node.nodes.get(node.children[key].tag))
-                  node.set(node.children[key].tag, node.children[key]);
+                  node.nodes.set(node.children[key].tag, node.children[key]);
               }
               if (!node.children[key] && node.nodes.get(node.children[key]))
                 node.children[key] = node.nodes.get(node.children[key]);
@@ -491,9 +488,9 @@
           node = { operator: node };
         if (!(node instanceof GraphNode))
           node = new GraphNode(node, this, this.graph);
-        this.set(node.tag, node);
+        this.nodes.set(node.tag, node);
         if (this.graph) {
-          this.graph.set(node.tag, node);
+          this.graph.nodes.set(node.tag, node);
           this.graph.nNodes++;
         }
         return node;
@@ -546,7 +543,7 @@
           if (this.graph && this.graph?.get(this.parent)) {
             this.parent = this.graph;
             if (this.parent)
-              this.set(this.parent.tag, this.parent);
+              this.nodes.set(this.parent.tag, this.parent);
           } else
             this.parent = this.nodes.get(this.parent);
         }
@@ -660,7 +657,7 @@
                   n.children[key] = n.nodes.get(key);
                 if (n.children[key] instanceof GraphNode) {
                   if (!n.nodes.get(n.children[key].tag))
-                    n.set(n.children[key].tag, n.children[key]);
+                    n.nodes.set(n.children[key].tag, n.children[key]);
                   if (!(n.children[key].tag in n))
                     n[n.children[key].tag] = n.children[key].tag;
                   this.checkNodesHaveChildMapped(n, n.children[key]);
@@ -672,7 +669,7 @@
                   child = n.nodes.get(key);
                 if (child instanceof GraphNode) {
                   if (!n.nodes.get(n.children[key].tag))
-                    n.set(n.children[key].tag, n.children[key]);
+                    n.nodes.set(n.children[key].tag, n.children[key]);
                   if (!(n.children[key].tag in n))
                     n[n.children[key].tag] = n.children[key].tag;
                   this.checkNodesHaveChildMapped(n, child);
@@ -688,9 +685,6 @@
         }
         return n.children;
       };
-      this.get = (tag) => {
-        return this.nodes.get(tag);
-      };
       this.stopLooping = (node = this) => {
         node.isLooping = false;
       };
@@ -703,7 +697,7 @@
       };
       this.subscribeNode = (node) => {
         if (node.tag)
-          this.set(node.tag, node);
+          this.nodes.set(node.tag, node);
         return this.state.subscribeTrigger(this.tag, (res) => {
           node._run(node, this, res);
         });
@@ -821,7 +815,7 @@
           if (graph2) {
             source.nodes.forEach((n) => {
               if (!graph2.nodes.get(n.tag)) {
-                graph2.set(n.tag, n);
+                graph2.nodes.set(n.tag, n);
                 graph2.nNodes++;
               }
             });
@@ -864,9 +858,9 @@
           this.graph = graph2;
         if (graph2) {
           if (graph2.nodes.get(this.tag))
-            graph2.set(`${graph2.nNodes}${this.tag}`, this);
+            graph2.nodes.set(`${graph2.nNodes}${this.tag}`, this);
           else
-            graph2.set(this.tag, this);
+            graph2.nodes.set(this.tag, this);
           graph2.nNodes++;
         }
         if (typeof properties.tree === "object") {
@@ -877,12 +871,11 @@
               }
             }
             let node = new GraphNode(properties.tree[key], this, graph2);
-            this.set(node.tag, node);
+            this.nodes.set(node.tag, node);
           }
         }
         if (this.children)
           this.convertChildrenToNodes(this);
-        console.log("OTHER cHECK", this);
         if (this.parent instanceof GraphNode || this.parent instanceof Graph)
           this.checkNodesHaveChildMapped(this.parent, this);
         if (!graph2 && typeof this.oncreate === "function")
@@ -897,9 +890,6 @@
       this.nodes = /* @__PURE__ */ new Map();
       this.state = state;
       this.tree = {};
-      this.set = (tag, node) => {
-        this.nodes.set(tag, node);
-      };
       this.add = (node = {}, fromTree = false) => {
         let props = node;
         if (!(node instanceof GraphNode))
@@ -926,7 +916,7 @@
               let newNode = this.add(tree2[node]);
               if (tree2[node].aliases) {
                 tree2[node].aliases.forEach((a) => {
-                  this.set(a, newNode);
+                  this.nodes.set(a, newNode);
                 });
               }
             } else {
@@ -952,7 +942,6 @@
                 }
               }
               if (node.children[key] instanceof GraphNode) {
-                console.log("SET TREE cHECK");
                 node.checkNodesHaveChildMapped(node, node.children[key]);
               }
             }
@@ -960,7 +949,7 @@
           if (typeof node.parent === "string") {
             if (this.nodes.get(node.parent)) {
               node.parent = this.nodes.get(node.parent);
-              node.set(node.parent.tag, node.parent);
+              node.nodes.set(node.parent.tag, node.parent);
             }
           }
         });
@@ -970,6 +959,9 @@
       };
       this.get = (tag) => {
         return this.nodes.get(tag);
+      };
+      this.set = (node) => {
+        return this.nodes.set(node.tag, node);
       };
       this.run = (node, ...args) => {
         if (typeof node === "string")
