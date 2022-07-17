@@ -267,7 +267,7 @@ export class GraphNode {
                 if(graph) {
                     source.nodes.forEach((n) => {
                         if(!graph.nodes.get(n.tag)) {
-                            graph.set(n.tag,n);
+                            graph.nodes.set(n.tag,n);
                             graph.nNodes++;
                         }
                     });
@@ -339,8 +339,8 @@ export class GraphNode {
             if(graph) this.graph=graph;
         
             if(graph) {
-                if(graph.nodes.get(this.tag)) graph.set(`${graph.nNodes}${this.tag}`,this);
-                else graph.set(this.tag,this);
+                if(graph.nodes.get(this.tag)) graph.nodes.set(`${graph.nNodes}${this.tag}`,this);
+                else graph.nodes.set(this.tag,this);
                 graph.nNodes++;
             }
 
@@ -351,7 +351,7 @@ export class GraphNode {
                         (properties.tree[key] as any).tag = key;
                     }
                     let node = new GraphNode(properties.tree[key],this,graph);
-                    this.set(node.tag,node);
+                    this.nodes.set(node.tag,node);
                 }
             }
         
@@ -595,7 +595,7 @@ export class GraphNode {
             if(typeof node.parent === 'string') {
                 if(node.graph && node.graph?.get(node.parent)) {
                     node.parent = node.graph;
-                    if(node.parent) this.set(node.parent.tag, node.parent);
+                    if(node.parent) this.nodes.set(node.parent.tag, node.parent);
                 }
                 else node.parent = this.nodes.get(node.parent);
             }
@@ -610,7 +610,7 @@ export class GraphNode {
                 if (typeof node.children[key] === 'string') {
                     if(node.graph && node.graph?.get(node.children[key])) {
                         node.children[key] = node.graph.get(node.children[key]); //try graph scope
-                        if(!node.nodes.get(node.children[key].tag)) node.set(node.children[key].tag,node.children[key]);
+                        if(!node.nodes.get(node.children[key].tag)) node.nodes.set(node.children[key].tag,node.children[key]);
                     }
                     if(!node.children[key] && node.nodes.get(node.children[key])) node.children[key] = node.nodes.get(node.children[key]); //try local scope
                 }
@@ -763,9 +763,9 @@ export class GraphNode {
     add = (node:GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
         if(typeof node === 'function') node = { operator:node as any};
         if(!(node instanceof GraphNode)) node = new GraphNode(node,this,this.graph); 
-        this.set(node.tag,node);
+        this.nodes.set(node.tag,node);
         if(this.graph) {
-            this.graph.set(node.tag,node);
+            this.graph.nodes.set(node.tag,node);
             this.graph.nNodes++;
         }
         return node;
@@ -821,7 +821,7 @@ export class GraphNode {
         if(typeof this.parent === 'string') {
             if(this.graph && this.graph?.get(this.parent)) {
                 this.parent = this.graph;
-                if(this.parent) this.set(this.parent.tag, this.parent);
+                if(this.parent) this.nodes.set(this.parent.tag, this.parent);
             }
             else this.parent = this.nodes.get(this.parent);
         }
@@ -930,7 +930,7 @@ export class GraphNode {
                         n.children[key] = n.graph.get(key); //try graph scope
                         if(!n.children[key]) n.children[key] = n.nodes.get(key);
                         if(n.children[key] instanceof GraphNode) {
-                            if(!n.nodes.get(n.children[key].tag)) n.set(n.children[key].tag,n.children[key]);
+                            if(!n.nodes.get(n.children[key].tag)) n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
                             this.checkNodesHaveChildMapped(n,n.children[key]);   
                         }
@@ -940,7 +940,7 @@ export class GraphNode {
                         n.children[key] = child;
                         if(!child) child = n.nodes.get(key);
                         if(child instanceof GraphNode) {
-                            if(!n.nodes.get(n.children[key].tag)) n.set(n.children[key].tag,n.children[key]);
+                            if(!n.nodes.get(n.children[key].tag)) n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
                             this.checkNodesHaveChildMapped(n,child);
                         }
@@ -976,7 +976,7 @@ export class GraphNode {
     
     //subscribe a node (that isn't a forward-passed child of this node) to run after this node 
     subscribeNode = (node:GraphNode) => {
-        if(node.tag) this.set(node.tag,node); //register the node on this node
+        if(node.tag) this.nodes.set(node.tag,node); //register the node on this node
         return this.state.subscribeTrigger(this.tag,(res)=>{node._run(node, this, res);})
     }
     
@@ -1069,10 +1069,6 @@ export class Graph {
         if(props) Object.assign(this,props); //set other props like flow properties in a nested graph
     }
 
-    set = (tag, node) => {
-        this.nodes.set(tag, node);
-    }
-
     //converts all children nodes and tag references to GraphNodes also
     add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}, fromTree=false) => {
         let props = node;
@@ -1098,7 +1094,7 @@ export class Graph {
                     let newNode = this.add(tree[node]);
                     if((tree[node] as GraphNodeProperties).aliases) {
                         (tree[node] as GraphNodeProperties).aliases.forEach((a) => {
-                            this.set(a,newNode); 
+                            this.nodes.set(a,newNode); 
                         });
                     }
                 } else {
@@ -1133,7 +1129,7 @@ export class Graph {
             if(typeof node.parent === 'string') {
                 if(this.nodes.get(node.parent)) {
                     node.parent = this.nodes.get(node.parent);
-                    node.set(node.parent.tag,node.parent);
+                    node.nodes.set(node.parent.tag,node.parent);
                 }
             }
         })
@@ -1147,6 +1143,10 @@ export class Graph {
 
     get = (tag:string) => {
         return this.nodes.get(tag);
+    }
+
+    set = (node:GraphNode) => {
+        return this.nodes.set(node.tag,node);
     }
 
     //Should create a sync version with no promises (will block but be faster)
