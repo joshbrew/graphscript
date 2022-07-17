@@ -118,7 +118,7 @@
     }
   };
   var GraphNode = class {
-    constructor(properties = {}, parentNode, graph2) {
+    constructor(properties = {}, parentNode, graph) {
       this.nodes = /* @__PURE__ */ new Map();
       this.arguments = /* @__PURE__ */ new Map();
       this.state = state;
@@ -139,16 +139,16 @@
           console.time(node.tag);
         let result = node.operator(node, origin, ...args);
         if (result instanceof Promise) {
-          result.then((res) => {
-            if (res !== void 0)
-              this.setState({ [node.tag]: res });
+          result.then((res2) => {
+            if (res2 !== void 0)
+              this.setState({ [node.tag]: res2 });
             if (node.DEBUGNODE) {
               console.timeEnd(node.tag);
               if (result !== void 0)
                 console.log(`${node.tag} result:`, result);
             }
             ;
-            return res;
+            return res2;
           });
         } else {
           if (result !== void 0)
@@ -187,8 +187,8 @@
         return this._run(this, void 0, ...args);
       };
       this.runAsync = (...args) => {
-        return new Promise((res, rej) => {
-          res(this._run(this, void 0, ...args));
+        return new Promise((res2, rej) => {
+          res2(this._run(this, void 0, ...args));
         });
       };
       this._run = (node = this, origin, ...args) => {
@@ -218,15 +218,15 @@
             return;
         }
         if (node.runSync) {
-          let res = node.runOp(node, origin, ...args);
-          return res;
+          let res2 = node.runOp(node, origin, ...args);
+          return res2;
         }
         return new Promise(async (resolve) => {
           if (node) {
             let run = (node2, tick = 0, ...input2) => {
               return new Promise(async (r) => {
                 tick++;
-                let res = await node2.runOp(node2, origin, ...input2);
+                let res2 = await node2.runOp(node2, origin, ...input2);
                 if (node2.repeat) {
                   while (tick < node2.repeat) {
                     if (node2.delay) {
@@ -240,59 +240,59 @@
                       });
                       break;
                     } else
-                      res = await node2.runOp(node2, origin, ...input2);
+                      res2 = await node2.runOp(node2, origin, ...input2);
                     tick++;
                   }
                   if (tick === node2.repeat) {
-                    r(res);
+                    r(res2);
                     return;
                   }
                 } else if (node2.recursive) {
                   while (tick < node2.recursive) {
                     if (node2.delay) {
                       setTimeout(async () => {
-                        r(await run(node2, tick, ...res));
+                        r(await run(node2, tick, ...res2));
                       }, node2.delay);
                       break;
                     } else if (node2.frame && window?.requestAnimationFrame) {
                       requestAnimationFrame(async () => {
-                        r(await run(node2, tick, ...res));
+                        r(await run(node2, tick, ...res2));
                       });
                       break;
                     } else
-                      res = await node2.runOp(node2, origin, ...res);
+                      res2 = await node2.runOp(node2, origin, ...res2);
                     tick++;
                   }
                   if (tick === node2.recursive) {
-                    r(res);
+                    r(res2);
                     return;
                   }
                 } else {
-                  r(res);
+                  r(res2);
                   return;
                 }
               });
             };
             let runnode = async () => {
-              let res = await run(node, void 0, ...args);
-              if (res !== void 0) {
+              let res2 = await run(node, void 0, ...args);
+              if (res2 !== void 0) {
                 if (node.backward && node.parent instanceof GraphNode) {
-                  if (Array.isArray(res))
-                    await this.runParent(node, ...res);
+                  if (Array.isArray(res2))
+                    await this.runParent(node, ...res2);
                   else
-                    await this.runParent(node, res);
+                    await this.runParent(node, res2);
                 }
                 if (node.children && node.forward) {
-                  if (Array.isArray(res))
-                    await this.runChildren(node, ...res);
+                  if (Array.isArray(res2))
+                    await this.runChildren(node, ...res2);
                   else
-                    await this.runChildren(node, res);
+                    await this.runChildren(node, res2);
                 }
                 if (node.branch) {
-                  this.runBranch(node, res);
+                  this.runBranch(node, res2);
                 }
               }
-              return res;
+              return res2;
             };
             if (node.delay) {
               setTimeout(async () => {
@@ -309,13 +309,16 @@
             resolve(void 0);
         });
       };
+      this.set = (tag, node) => {
+        this.nodes.set(tag, node);
+      };
       this.runParent = async (node, ...args) => {
         if (node.backward && node.parent) {
           if (typeof node.parent === "string") {
             if (node.graph && node.graph?.get(node.parent)) {
               node.parent = node.graph;
               if (node.parent)
-                this.nodes.set(node.parent.tag, node.parent);
+                this.set(node.parent.tag, node.parent);
             } else
               node.parent = this.nodes.get(node.parent);
           }
@@ -330,7 +333,7 @@
               if (node.graph && node.graph?.get(node.children[key])) {
                 node.children[key] = node.graph.get(node.children[key]);
                 if (!node.nodes.get(node.children[key].tag))
-                  node.nodes.set(node.children[key].tag, node.children[key]);
+                  node.set(node.children[key].tag, node.children[key]);
               }
               if (!node.children[key] && node.nodes.get(node.children[key]))
                 node.children[key] = node.nodes.get(node.children[key]);
@@ -488,9 +491,9 @@
           node = { operator: node };
         if (!(node instanceof GraphNode))
           node = new GraphNode(node, this, this.graph);
-        this.nodes.set(node.tag, node);
+        this.set(node.tag, node);
         if (this.graph) {
-          this.graph.nodes.set(node.tag, node);
+          this.graph.set(node.tag, node);
           this.graph.nNodes++;
         }
         return node;
@@ -543,7 +546,7 @@
           if (this.graph && this.graph?.get(this.parent)) {
             this.parent = this.graph;
             if (this.parent)
-              this.nodes.set(this.parent.tag, this.parent);
+              this.set(this.parent.tag, this.parent);
           } else
             this.parent = this.nodes.get(this.parent);
         }
@@ -657,7 +660,7 @@
                   n.children[key] = n.nodes.get(key);
                 if (n.children[key] instanceof GraphNode) {
                   if (!n.nodes.get(n.children[key].tag))
-                    n.nodes.set(n.children[key].tag, n.children[key]);
+                    n.set(n.children[key].tag, n.children[key]);
                   if (!(n.children[key].tag in n))
                     n[n.children[key].tag] = n.children[key].tag;
                   this.checkNodesHaveChildMapped(n, n.children[key]);
@@ -669,7 +672,7 @@
                   child = n.nodes.get(key);
                 if (child instanceof GraphNode) {
                   if (!n.nodes.get(n.children[key].tag))
-                    n.nodes.set(n.children[key].tag, n.children[key]);
+                    n.set(n.children[key].tag, n.children[key]);
                   if (!(n.children[key].tag in n))
                     n[n.children[key].tag] = n.children[key].tag;
                   this.checkNodesHaveChildMapped(n, child);
@@ -685,6 +688,9 @@
         }
         return n.children;
       };
+      this.get = (tag) => {
+        return this.nodes.get(tag);
+      };
       this.stopLooping = (node = this) => {
         node.isLooping = false;
       };
@@ -697,9 +703,9 @@
       };
       this.subscribeNode = (node) => {
         if (node.tag)
-          this.nodes.set(node.tag, node);
-        return this.state.subscribeTrigger(this.tag, (res) => {
-          node._run(node, this, res);
+          this.set(node.tag, node);
+        return this.state.subscribeTrigger(this.tag, (res2) => {
+          node._run(node, this, res2);
         });
       };
       this.print = (node = this, printChildren = true, nodesPrinted = []) => {
@@ -812,18 +818,18 @@
           if (source.oncreate)
             properties.oncreate = source.oncreate;
           this.nodes = source.nodes;
-          if (graph2) {
+          if (graph) {
             source.nodes.forEach((n) => {
-              if (!graph2.nodes.get(n.tag)) {
-                graph2.nodes.set(n.tag, n);
-                graph2.nNodes++;
+              if (!graph.nodes.get(n.tag)) {
+                graph.set(n.tag, n);
+                graph.nNodes++;
               }
             });
           }
         }
         if (properties.tag) {
-          if (graph2?.nodes) {
-            let hasnode = graph2.nodes.get(properties.tag);
+          if (graph?.nodes) {
+            let hasnode = graph.nodes.get(properties.tag);
             source = hasnode;
           }
           if (parentNode?.nodes) {
@@ -839,29 +845,29 @@
         if (properties?.operator) {
           properties.operator = this.setOperator(properties.operator);
         }
-        if (!properties.tag && graph2) {
-          properties.tag = `node${graph2.nNodes}`;
+        if (!properties.tag && graph) {
+          properties.tag = `node${graph.nNodes}`;
         } else if (!properties.tag) {
           properties.tag = `node${Math.floor(Math.random() * 1e10)}`;
         }
         Object.assign(this, properties);
         if (!this.tag) {
-          if (graph2) {
-            this.tag = `node${graph2.nNodes}`;
+          if (graph) {
+            this.tag = `node${graph.nNodes}`;
           } else {
             this.tag = `node${Math.floor(Math.random() * 1e10)}`;
           }
         }
         if (parentNode)
           this.parent = parentNode;
-        if (graph2)
-          this.graph = graph2;
-        if (graph2) {
-          if (graph2.nodes.get(this.tag))
-            graph2.nodes.set(`${graph2.nNodes}${this.tag}`, this);
+        if (graph)
+          this.graph = graph;
+        if (graph) {
+          if (graph.nodes.get(this.tag))
+            graph.set(`${graph.nNodes}${this.tag}`, this);
           else
-            graph2.nodes.set(this.tag, this);
-          graph2.nNodes++;
+            graph.set(this.tag, this);
+          graph.nNodes++;
         }
         if (typeof properties.tree === "object") {
           for (const key in properties.tree) {
@@ -870,15 +876,15 @@
                 properties.tree[key].tag = key;
               }
             }
-            let node = new GraphNode(properties.tree[key], this, graph2);
-            this.nodes.set(node.tag, node);
+            let node = new GraphNode(properties.tree[key], this, graph);
+            this.set(node.tag, node);
           }
         }
         if (this.children)
           this.convertChildrenToNodes(this);
         if (this.parent instanceof GraphNode || this.parent instanceof Graph)
           this.checkNodesHaveChildMapped(this.parent, this);
-        if (!graph2 && typeof this.oncreate === "function")
+        if (!graph && typeof this.oncreate === "function")
           this.oncreate(this);
       } else
         return properties;
@@ -890,6 +896,9 @@
       this.nodes = /* @__PURE__ */ new Map();
       this.state = state;
       this.tree = {};
+      this.set = (tag, node) => {
+        this.nodes.set(tag, node);
+      };
       this.add = (node = {}, fromTree = false) => {
         let props = node;
         if (!(node instanceof GraphNode))
@@ -916,7 +925,7 @@
               let newNode = this.add(tree2[node]);
               if (tree2[node].aliases) {
                 tree2[node].aliases.forEach((a) => {
-                  this.nodes.set(a, newNode);
+                  this.set(a, newNode);
                 });
               }
             } else {
@@ -949,7 +958,7 @@
           if (typeof node.parent === "string") {
             if (this.nodes.get(node.parent)) {
               node.parent = this.nodes.get(node.parent);
-              node.nodes.set(node.parent.tag, node.parent);
+              node.set(node.parent.tag, node.parent);
             }
           }
         });
@@ -959,9 +968,6 @@
       };
       this.get = (tag) => {
         return this.nodes.get(tag);
-      };
-      this.set = (node) => {
-        return this.nodes.set(node.tag, node);
       };
       this.run = (node, ...args) => {
         if (typeof node === "string")
@@ -975,12 +981,12 @@
         if (typeof node === "string")
           node = this.nodes.get(node);
         if (node instanceof GraphNode)
-          return new Promise((res, rej) => {
-            res(node._run(node, this, ...args));
+          return new Promise((res2, rej) => {
+            res2(node._run(node, this, ...args));
           });
         else
-          return new Promise((res, rej) => {
-            res(void 0);
+          return new Promise((res2, rej) => {
+            res2(void 0);
           });
       };
       this._run = (node, origin = this, ...args) => {
@@ -1087,8 +1093,8 @@
           tag = inputNode.tag;
         else if (typeof inputNode === "string")
           tag = inputNode;
-        return this.state.subscribeTrigger(tag, (res) => {
-          this.run(outputNode, inputNode, ...res);
+        return this.state.subscribeTrigger(tag, (res2) => {
+          this.run(outputNode, inputNode, ...res2);
         });
       };
       this.stopNode = (node) => {
@@ -1336,21 +1342,926 @@
     }
     return function stringifyFast2(obj, space) {
       parents.push(obj);
-      let res = JSON.stringify(obj, checkValues, space);
+      let res2 = JSON.stringify(obj, checkValues, space);
       clear();
-      return res;
+      return res2;
     };
   }();
   if (JSON.stringifyFast === void 0) {
     JSON.stringifyFast = stringifyFast;
   }
-  function createNode(operator, parentNode, props, graph2) {
+  function createNode(operator, parentNode, props, graph) {
     if (typeof props === "object") {
       props.operator = operator;
-      return new GraphNode(props, parentNode, graph2);
+      return new GraphNode(props, parentNode, graph);
     }
-    return new GraphNode({ operator }, parentNode, graph2);
+    return new GraphNode({ operator }, parentNode, graph);
   }
+
+  // ../../../services/Service.ts
+  var Service = class extends Graph {
+    constructor(options = {}) {
+      super(void 0, options.name, options.props);
+      this.routes = {};
+      this.loadDefaultRoutes = true;
+      this.name = `service${Math.floor(Math.random() * 1e14)}`;
+      this.keepState = true;
+      this.load = (routes2, enumRoutes = true) => {
+        if (!routes2 && !this.loadDefaultRoutes)
+          return;
+        let service;
+        if (!(routes2 instanceof Graph) && routes2?.name) {
+          if (routes2.module) {
+            let mod = routes2;
+            routes2 = {};
+            Object.getOwnPropertyNames(routes2.module).forEach((prop) => {
+              if (enumRoutes)
+                routes2[mod.name + "/" + prop] = routes2.module[prop];
+              else
+                routes2[prop] = routes2.module[prop];
+            });
+          } else if (typeof routes2 === "function") {
+            service = new routes2();
+            service.load();
+            routes2 = service.routes;
+          }
+        } else if (routes2 instanceof Graph && (routes2.routes || routes2.tree)) {
+          service = routes2;
+          if (routes2.routes)
+            routes2 = routes2.routes;
+          else if (routes2.tree)
+            routes2 = routes2.tree;
+        } else if (typeof routes2 === "object") {
+          let name = routes2.constructor.name;
+          if (name === "Object") {
+            name = Object.prototype.toString.call(routes2);
+            if (name)
+              name = name.split(" ")[1];
+            if (name)
+              name = name.split("]")[0];
+          }
+          if (name && name !== "Object") {
+            let module = routes2;
+            routes2 = {};
+            Object.getOwnPropertyNames(module).forEach((route) => {
+              if (enumRoutes)
+                routes2[name + "/" + route] = module[route];
+              else
+                routes2[route] = module[route];
+            });
+          }
+        }
+        if (service instanceof Graph && service.name) {
+          routes2 = Object.assign({}, routes2);
+          for (const prop in routes2) {
+            let route = routes2[prop];
+            delete routes2[prop];
+            routes2[service.name + "/" + prop] = route;
+          }
+        }
+        if (this.loadDefaultRoutes) {
+          let rts = Object.assign({}, this.defaultRoutes);
+          if (routes2) {
+            Object.assign(rts, this.routes);
+            routes2 = Object.assign(rts, routes2);
+          } else
+            routes2 = Object.assign(rts, this.routes);
+          this.loadDefaultRoutes = false;
+        }
+        for (const tag in routes2) {
+          let childrenIter = (route) => {
+            if (typeof route?.children === "object") {
+              for (const key in route.children) {
+                if (typeof route.children[key] === "object") {
+                  let rt = route.children[key];
+                  if (!rt.parent)
+                    rt.parent = tag;
+                  if (rt.tag) {
+                    routes2[rt.tag] = route.children[key];
+                    childrenIter(routes2[rt.tag]);
+                  } else if (rt.id) {
+                    rt.tag = rt.id;
+                    routes2[rt.tag] = route.children[key];
+                    childrenIter(routes2[rt.tag]);
+                  }
+                }
+              }
+            }
+          };
+          childrenIter(routes2[tag]);
+        }
+        for (const route in routes2) {
+          if (typeof routes2[route] === "object") {
+            let r = routes2[route];
+            if (typeof r === "object") {
+              if (r.get) {
+                if (typeof r.get == "object") {
+                }
+              }
+              if (r.post) {
+              }
+              if (r.delete) {
+              }
+              if (r.put) {
+              }
+              if (r.head) {
+              }
+              if (r.patch) {
+              }
+              if (r.options) {
+              }
+              if (r.connect) {
+              }
+              if (r.trace) {
+              }
+              if (r.post && !r.operator) {
+                routes2[route].operator = r.post;
+              } else if (!r.operator && typeof r.get == "function") {
+                routes2[route].operator = r.get;
+              }
+            }
+            if (this.routes[route]) {
+              if (typeof this.routes[route] === "object")
+                Object.assign(this.routes[route], routes2[route]);
+              else
+                this.routes[route] = routes2[route];
+            } else
+              this.routes[route] = routes2[route];
+          } else if (this.routes[route]) {
+            if (typeof this.routes[route] === "object")
+              Object.assign(this.routes[route], routes2[route]);
+            else
+              this.routes[route] = routes2[route];
+          } else
+            this.routes[route] = routes2[route];
+        }
+        this.setTree(this.routes);
+        for (const prop in this.routes) {
+          if (this.routes[prop]?.aliases) {
+            let aliases = this.routes[prop].aliases;
+            aliases.forEach((a) => {
+              if (service)
+                routes2[service.name + "/" + a] = this.routes[prop];
+              else
+                routes2[a] = this.routes[prop];
+            });
+          }
+        }
+        return this.routes;
+      };
+      this.unload = (routes2 = this.routes) => {
+        if (!routes2)
+          return;
+        let service;
+        if (!(routes2 instanceof Service) && typeof routes2 === "function") {
+          service = new Service();
+          routes2 = service.routes;
+        } else if (routes2 instanceof Service) {
+          routes2 = routes2.routes;
+        }
+        for (const r in routes2) {
+          delete this.routes[r];
+          if (this.nodes.get(r))
+            this.remove(r);
+        }
+        return this.routes;
+      };
+      this.handleMethod = (route, method, args, origin) => {
+        let m = method.toLowerCase();
+        if (m === "get" && this.routes[route]?.get?.transform instanceof Function) {
+          if (Array.isArray(args))
+            return this.routes[route].get.transform(...args);
+          else
+            return this.routes[route].get.transform(args);
+        }
+        if (this.routes[route]?.[m]) {
+          if (!(this.routes[route][m] instanceof Function)) {
+            if (args)
+              this.routes[route][m] = args;
+            return this.routes[route][m];
+          } else
+            return this.routes[route][m](args);
+        } else
+          return this.handleServiceMessage({ route, args, method, origin });
+      };
+      this.transmit = (...args) => {
+        if (typeof args[0] === "object") {
+          if (args[0].method) {
+            return this.handleMethod(args[0].route, args[0].method, args[0].args);
+          } else if (args[0].route) {
+            return this.handleServiceMessage(args[0]);
+          } else if (args[0].node) {
+            return this.handleGraphNodeCall(args[0].node, args[0].args, args[0].origin);
+          } else if (this.keepState) {
+            if (args[0].route)
+              this.setState({ [args[0].route]: args[0].args });
+            if (args[0].node)
+              this.setState({ [args[0].node]: args[0].args });
+          }
+        } else
+          return args;
+      };
+      this.receive = (...args) => {
+        if (args[0]) {
+          if (typeof args[0] === "string") {
+            let substr = args[0].substring(0, 8);
+            if (substr.includes("{") || substr.includes("[")) {
+              if (substr.includes("\\"))
+                args[0] = args[0].replace(/\\/g, "");
+              if (args[0][0] === '"') {
+                args[0] = args[0].substring(1, args[0].length - 1);
+              }
+              ;
+              args[0] = JSON.parse(args[0]);
+            }
+          }
+        }
+        if (typeof args[0] === "object") {
+          if (args[0].method) {
+            return this.handleMethod(args[0].route, args[0].method, args[0].args);
+          } else if (args[0].route) {
+            return this.handleServiceMessage(args[0]);
+          } else if (args[0].node) {
+            return this.handleGraphNodeCall(args[0].node, args[0].args, args[0].origin);
+          } else if (this.keepState) {
+            if (args[0].route)
+              this.setState({ [args[0].route]: args[0].args });
+            if (args[0].node)
+              this.setState({ [args[0].node]: args[0].args });
+          }
+        } else
+          return args;
+      };
+      this.pipe = (source, destination, endpoint, origin, method, callback) => {
+        if (source instanceof GraphNode) {
+          if (callback)
+            return source.subscribe((res2) => {
+              let mod = callback(res2);
+              if (mod !== void 0)
+                this.transmit({ route: destination, args: mod, origin, method });
+              else
+                this.transmit({ route: destination, args: res2, origin, method }, endpoint);
+            });
+          else
+            return this.subscribe(source, (res2) => {
+              this.transmit({ route: destination, args: res2, origin, method }, endpoint);
+            });
+        } else if (typeof source === "string")
+          return this.subscribe(source, (res2) => {
+            this.transmit({ route: destination, args: res2, origin, method }, endpoint);
+          });
+      };
+      this.pipeOnce = (source, destination, endpoint, origin, method, callback) => {
+        if (source instanceof GraphNode) {
+          if (callback)
+            return source.state.subscribeTriggerOnce(source.tag, (res2) => {
+              let mod = callback(res2);
+              if (mod !== void 0)
+                this.transmit({ route: destination, args: mod, origin, method });
+              else
+                this.transmit({ route: destination, args: res2, origin, method }, endpoint);
+            });
+          else
+            return this.state.subscribeTriggerOnce(source.tag, (res2) => {
+              this.transmit({ route: destination, args: res2, origin, method }, endpoint);
+            });
+        } else if (typeof source === "string")
+          return this.state.subscribeTriggerOnce(source, (res2) => {
+            this.transmit({ route: destination, args: res2, origin, method }, endpoint);
+          });
+      };
+      this.terminate = (...args) => {
+        this.nodes.forEach((n) => {
+          n.stopNode();
+        });
+      };
+      this.recursivelyAssign = (target, obj) => {
+        for (const key in obj) {
+          if (typeof obj[key] === "object") {
+            if (typeof target[key] === "object")
+              this.recursivelyAssign(target[key], obj[key]);
+            else
+              target[key] = this.recursivelyAssign({}, obj[key]);
+          } else
+            target[key] = obj[key];
+        }
+        return target;
+      };
+      this.defaultRoutes = {
+        "/": {
+          get: () => {
+            return this.print();
+          },
+          aliases: [""]
+        },
+        ping: () => {
+          console.log("ping");
+          return "pong";
+        },
+        echo: (...args) => {
+          this.transmit(...args);
+          return args;
+        },
+        assign: (source) => {
+          if (typeof source === "object") {
+            Object.assign(this, source);
+            return true;
+          }
+          return false;
+        },
+        recursivelyAssign: (source) => {
+          if (typeof source === "object") {
+            this.recursivelyAssign(this, source);
+            return true;
+          }
+          return false;
+        },
+        log: {
+          post: (...args) => {
+            console.log("Log: ", ...args);
+          },
+          aliases: ["info"]
+        },
+        error: (message) => {
+          let er = new Error(message);
+          console.error(message);
+          return er;
+        },
+        state: (key) => {
+          if (key) {
+            return this.state.data[key];
+          } else
+            return this.state.data;
+        },
+        printState: (key) => {
+          if (key) {
+            return stringifyWithCircularRefs(this.state.data[key]);
+          } else
+            return stringifyWithCircularRefs(this.state.data);
+        },
+        transmit: this.transmit,
+        receive: this.receive,
+        load: this.load,
+        unload: this.unload,
+        pipe: this.pipe,
+        terminate: this.terminate,
+        run: this.run,
+        _run: this._run,
+        subscribe: this.subscribe,
+        unsubscribe: this.unsubscribe,
+        stopNode: this.stopNode,
+        get: this.get,
+        add: this.add,
+        remove: this.remove,
+        setTree: this.setTree,
+        setState: this.setState,
+        print: this.print,
+        reconstruct: this.reconstruct,
+        handleMethod: this.handleMethod,
+        handleServiceMessage: this.handleServiceMessage,
+        handleGraphNodeCall: this.handleGraphNodeCall
+      };
+      if ("loadDefaultRoutes" in options)
+        this.loadDefaultRoutes = options.loadDefaultRoutes;
+      if (options.name)
+        this.name = options.name;
+      if (Array.isArray(options.routes)) {
+        options.routes.forEach((r) => {
+          this.load(r);
+        });
+      } else if (options.routes)
+        this.load(options.routes);
+    }
+    handleServiceMessage(message) {
+      let call;
+      if (typeof message === "object") {
+        if (message.route)
+          call = message.route;
+        else if (message.node)
+          call = message.node;
+      }
+      if (call) {
+        if (message.origin) {
+          if (Array.isArray(message.args))
+            return this._run(call, message.origin, ...message.args);
+          else
+            return this._run(call, message.origin, message.args);
+        } else {
+          if (Array.isArray(message.args))
+            return this.run(call, ...message.args);
+          else
+            return this.run(call, message.args);
+        }
+      } else
+        return message;
+    }
+    handleGraphNodeCall(route, args, origin) {
+      if (!route)
+        return args;
+      if (args?.args) {
+        this.handleServiceMessage(args);
+      } else if (origin) {
+        if (Array.isArray(args))
+          return this._run(route, origin, ...args);
+        else
+          return this._run(route, origin, args);
+      } else if (Array.isArray(args))
+        return this.run(route, ...args);
+      else
+        return this.run(route, args);
+    }
+    isTypedArray(x) {
+      return ArrayBuffer.isView(x) && Object.prototype.toString.call(x) !== "[object DataView]";
+    }
+  };
+
+  // ../../../routers/Router.ts
+  var Router = class {
+    constructor(services) {
+      this.id = `router${Math.floor(Math.random() * 1e15)}`;
+      this.service = new Service();
+      this.run = this.service.run;
+      this._run = this.service._run;
+      this.add = this.service.add;
+      this.remove = this.service.remove;
+      this.stopNode = this.service.stopNode;
+      this.subscribe = this.service.subscribe;
+      this.unsubscribe = this.service.unsubscribe;
+      this.get = this.service.get;
+      this.reconstruct = this.service.reconstruct;
+      this.setState = this.service.setState;
+      this.recursivelyAssign = this.service.recursivelyAssign;
+      this.state = this.service.state;
+      this.routes = {};
+      this.services = {};
+      this.load = (service, linkServices = true) => {
+        if (!(service instanceof Graph) && typeof service === "function") {
+          service = new service(void 0, service.name);
+          service.load();
+        } else if (!service)
+          return;
+        if (service instanceof Graph && service.name) {
+          this.services[service.name] = service;
+        } else {
+          if (service.constructor.name === "Object") {
+            let name = Object.prototype.toString.call(service);
+            if (name)
+              name = name.split(" ")[1];
+            if (name)
+              name = name.split("]")[0];
+            if (name && name !== "Object" && name !== "Function") {
+              this.services[name] = service;
+            }
+          } else
+            this.services[service.constructor.name] = service;
+        }
+        this.service.load(service, linkServices);
+        if (linkServices) {
+          for (const name in this.services) {
+            this.service.nodes.forEach((n) => {
+              if (this.services[name]?.nodes) {
+                if (!this.services[name].nodes.get(n.tag)) {
+                  this.services[name].nodes.set(n.tag, n);
+                }
+              }
+            });
+          }
+        }
+        return this.services[service.name];
+      };
+      this.pipe = (source, destination, transmitter, origin, method, callback) => {
+        if (!transmitter && source && destination) {
+          if (callback)
+            return this.subscribe(source, (res2) => {
+              let mod = callback(res2);
+              if (mod)
+                res2 = mod;
+              this.run(destination, res2);
+            });
+          return this.subscribe(source, (res2) => {
+            this.run(destination, res2);
+          });
+        }
+        if (transmitter) {
+          if (transmitter === "sockets")
+            transmitter = "wss";
+          const radio = this.services[transmitter];
+          if (radio) {
+            if (callback) {
+              return this.subscribe(source, (res2) => {
+                let mod = callback(res2);
+                if (mod)
+                  res2 = mod;
+                radio.transmit({ route: destination, args: res2, origin, method });
+              });
+            } else
+              return this.subscribe(source, (res2) => {
+                radio.transmit({ route: destination, args: res2, origin, method });
+              });
+          } else {
+            let endpoint = this.getEndpointInfo(transmitter);
+            if (endpoint) {
+              return this.services[endpoint.service].pipe(source, destination, transmitter, origin, method, callback);
+            }
+          }
+        }
+        return false;
+      };
+      this.pipeOnce = (source, destination, transmitter, origin, method, callback) => {
+        if (source instanceof GraphNode)
+          source = source.tag;
+        if (!transmitter && typeof source === "string" && destination) {
+          if (callback)
+            return this.state.subscribeTriggerOnce(source, (res2) => {
+              let mod = callback(res2);
+              if (mod)
+                res2 = mod;
+              this.run(destination, res2);
+            });
+          return this.state.subscribeTriggerOnce(source, (res2) => {
+            this.run(destination, res2);
+          });
+        }
+        if (transmitter) {
+          if (transmitter === "sockets")
+            transmitter = "wss";
+          const radio = this.services[transmitter];
+          if (radio) {
+            if (callback) {
+              return this.state.subscribeTriggerOnce(source, (res2) => {
+                let mod = callback(res2);
+                if (mod)
+                  res2 = mod;
+                radio.transmit({ route: destination, args: res2, origin, method });
+              });
+            } else
+              return this.state.subscribeTriggerOnce(source, (res2) => {
+                radio.transmit({ route: destination, args: res2, origin, method });
+              });
+          } else {
+            let endpoint = this.getEndpointInfo(transmitter);
+            if (endpoint) {
+              return this.services[endpoint.service].pipeOnce(source, destination, transmitter, origin, method, callback);
+            }
+          }
+        }
+        return false;
+      };
+      this.sendAll = (message, connections, channel) => {
+        let sent = false;
+        if (typeof connections === "object") {
+          for (const protocol in connections) {
+            for (const info in connections[protocol]) {
+              let obj = connections[protocol][info];
+              if (obj.socket) {
+                if (obj.socket.readyState === 1) {
+                  obj.socket.send(message);
+                  sent = true;
+                } else
+                  delete connections[protocol][info];
+              } else if (obj.wss) {
+                obj.wss.clients.forEach((c) => {
+                  c.send(message);
+                });
+                sent = true;
+              } else if (obj.sessions) {
+                if (channel) {
+                  obj.channel.broadcast(message, channel);
+                  sent = true;
+                } else
+                  for (const s in obj.sessions) {
+                    if (obj.sessions[s].isConnected) {
+                      obj.sessions[s].push(message);
+                      sent = true;
+                    }
+                  }
+              } else if (obj.session) {
+                if (channel) {
+                  obj.served.channel.broadcast(message, channel);
+                  sent = true;
+                } else if (obj.session.isConnected) {
+                  obj.session.push(message);
+                  sent = true;
+                } else
+                  delete connections[protocol][info];
+              } else if (obj.rtc) {
+                if (channel && obj.channels[channel]) {
+                  obj.channels[channel].send(message);
+                  sent = true;
+                } else if (obj.channels.data) {
+                  obj.channels.data.send(message);
+                  sent = true;
+                } else {
+                  let firstchannel = Object.keys(obj.channels)[0];
+                  obj.channels[firstchannel].send(message);
+                  sent = true;
+                }
+              } else if (obj.server) {
+                if (this.services.http) {
+                  this.services.http.transmit(message, channel);
+                  sent = true;
+                }
+              }
+            }
+          }
+        }
+        return sent;
+      };
+      this.getEndpointInfo = (path, service) => {
+        if (!path)
+          return void 0;
+        let testpath = (path2, service2) => {
+          if (this.services[service2]) {
+            if (this.services[service2].rtc?.[path2]) {
+              return this.services[service2].rtc[path2];
+            } else if (this.services[service2].servers?.[path2]) {
+              return this.services[service2].servers[path2];
+            } else if (this.services[service2].sockets?.[path2]) {
+              return this.services[service2].sockets[path2];
+            } else if (this.services[service2].eventsources?.[path2]) {
+              return this.services[service2].eventsources[path2];
+            } else if (this.services[service2].workers?.[path2]) {
+              return this.services[service2].workers[path2];
+            }
+          }
+          return void 0;
+        };
+        if (service) {
+          let found = testpath(path, service);
+          if (found)
+            return {
+              endpoint: found,
+              service
+            };
+        }
+        for (const s in this.services) {
+          let found = testpath(path, s);
+          if (found)
+            return {
+              endpoint: found,
+              service: s
+            };
+        }
+        return void 0;
+      };
+      this.pipeFastest = (source, destination, origin, method, callback, services = this.services) => {
+        for (const service in services) {
+          if (services[service].rtc) {
+            return this.pipe(source, destination, "webrtc", origin, method, callback);
+          }
+          if (services[service].eventsources) {
+            let keys = Object.keys(services[service].eventsources);
+            if (keys[0]) {
+              if (this.services[service].eventsources[keys[0]].sessions)
+                return this.pipe(source, destination, "sse", origin, method, callback);
+            }
+          }
+          if (services[service].sockets) {
+            return this.pipe(source, destination, "wss", origin, method, callback);
+          }
+          if (services[service].servers) {
+            return this.pipe(source, destination, "http", origin, method, callback);
+          }
+          if (services[service].workers) {
+            return this.pipe(source, destination, "worker", origin, method, callback);
+          }
+        }
+        return false;
+      };
+      this.getFirstRemoteEndpoint = (services = this.services) => {
+        let serviceInfo;
+        for (const service in services) {
+          if (services[service].rtc) {
+            serviceInfo = services[service].rtc;
+          }
+          if (services[service].eventsources && !serviceInfo) {
+            let keys2 = Object.keys(services[service].eventsources);
+            if (keys2[0]) {
+              if (this.services[service].eventsources[keys2[0]]?.sessions)
+                serviceInfo = services[service].eventsources;
+            }
+          }
+          if (services[service].sockets && !serviceInfo) {
+            serviceInfo = services[service].sockets;
+          }
+          if (services[service].servers && !serviceInfo) {
+            serviceInfo = services[service].servers;
+          }
+          if (services[service].workers && !serviceInfo) {
+            serviceInfo = services[service].workers;
+          }
+        }
+        let keys = Object.keys(serviceInfo);
+        if (keys[0])
+          return serviceInfo[keys[0]];
+        return false;
+      };
+      this.STREAMLATEST = 0;
+      this.STREAMALLLATEST = 1;
+      this.streamSettings = {};
+      this.streamFunctions = {
+        allLatestValues: (prop, setting) => {
+          let result = void 0;
+          if (Array.isArray(prop)) {
+            if (prop.length !== setting.lastRead) {
+              result = prop.slice(setting.lastRead);
+              setting.lastRead = prop.length;
+            }
+          } else if (typeof prop === "object") {
+            result = {};
+            for (const p in prop) {
+              if (Array.isArray(prop[p])) {
+                if (typeof setting === "number")
+                  setting = { [p]: { lastRead: void 0 } };
+                else if (!setting[p])
+                  setting[p] = { lastRead: void 0 };
+                if (prop[p].length !== setting[p].lastRead) {
+                  result[p] = prop[p].slice(setting[p].lastRead);
+                  setting[p].lastRead = prop[p].length;
+                }
+              } else {
+                if (typeof setting === "number")
+                  setting = { [p]: { lastRead: void 0 } };
+                else if (!setting[p])
+                  setting[p] = { lastRead: void 0 };
+                if (setting[p].lastRead !== prop[p]) {
+                  result[p] = prop[p];
+                  setting[p].lastRead = prop[p];
+                }
+              }
+            }
+            if (Object.keys(result).length === 0)
+              result = void 0;
+          } else {
+            if (setting.lastRead !== prop) {
+              result = prop;
+              setting.lastRead = prop;
+            }
+          }
+          return result;
+        },
+        latestValue: (prop, setting) => {
+          let result = void 0;
+          if (Array.isArray(prop)) {
+            if (prop.length !== setting.lastRead) {
+              result = prop[prop.length - 1];
+              setting.lastRead = prop.length;
+            }
+          } else if (typeof prop === "object") {
+            result = {};
+            for (const p in prop) {
+              if (Array.isArray(prop[p])) {
+                if (typeof setting === "number")
+                  setting = { [p]: { lastRead: void 0 } };
+                else if (!setting[p])
+                  setting[p] = { lastRead: void 0 };
+                if (prop[p].length !== setting[p].lastRead) {
+                  result[p] = prop[p][prop[p].length - 1];
+                  setting[p].lastRead = prop[p].length;
+                }
+              } else {
+                if (typeof setting === "number")
+                  setting = { [p]: { lastRead: void 0 } };
+                else if (!setting[p])
+                  setting[p] = { lastRead: void 0 };
+                if (setting[p].lastRead !== prop[p]) {
+                  result[p] = prop[p];
+                  setting[p].lastRead = prop[p];
+                }
+              }
+            }
+          } else {
+            if (setting.lastRead !== prop) {
+              result = prop;
+              setting.lastRead = prop;
+            }
+          }
+          return result;
+        }
+      };
+      this.setStreamFunc = (name, key, callback = this.streamFunctions.allLatestValues) => {
+        if (!this.streamSettings[name].settings[key])
+          this.streamSettings[name].settings[key] = { lastRead: 0 };
+        if (callback === this.STREAMLATEST)
+          this.streamSettings[name].settings[key].callback = this.streamFunctions.latestValue;
+        else if (callback === this.STREAMALLLATEST)
+          this.streamSettings[name].settings[key].callback = this.streamFunctions.allLatestValues;
+        else if (typeof callback === "string")
+          this.streamSettings[name].settings[key].callback = this.streamFunctions[callback];
+        else if (typeof callback === "function")
+          this.streamSettings[name].settings[key].callback = callback;
+        if (!this.streamSettings[name].settings[key].callback)
+          this.streamSettings[name].settings[key].callback = this.streamFunctions.allLatestValues;
+        return true;
+      };
+      this.addStreamFunc = (name, callback = (data) => {
+      }) => {
+        this.streamFunctions[name] = callback;
+      };
+      this.setStream = (object = {}, settings = {}, streamName = `stream${Math.floor(Math.random() * 1e10)}`) => {
+        if (settings.keys) {
+          if (settings.keys.length === 0) {
+            let k = Object.keys(object);
+            if (k.length > 0) {
+              settings.keys = Array.from(k);
+            }
+          }
+        } else {
+          settings.keys = Array.from(Object.keys(object));
+        }
+        this.streamSettings[streamName] = {
+          object,
+          settings
+        };
+        settings.keys.forEach((prop) => {
+          if (settings[prop]?.callback)
+            this.setStreamFunc(streamName, prop, settings[prop].callback);
+          else
+            this.setStreamFunc(streamName, prop, settings.callback);
+        });
+        return this.streamSettings[streamName];
+      };
+      this.removeStream = (streamName, key) => {
+        if (streamName && !key)
+          delete this.streamSettings[streamName];
+        else if (key && this.streamSettings[streamName]?.settings?.keys) {
+          let idx = this.streamSettings[streamName].settings.keys.indexOf(key);
+          if (idx > -1)
+            this.streamSettings[streamName].settings.keys.splice(idx, 1);
+          if (this.streamSettings[streamName].settings[key])
+            delete this.streamSettings[streamName].settings[key];
+          return true;
+        }
+        return false;
+      };
+      this.updateStreamData = (streamName, data = {}) => {
+        if (this.streamSettings[streamName]) {
+          Object.assign(this.streamSettings[streamName].object, data);
+          return this.streamSettings[streamName].object;
+        }
+        return false;
+      };
+      this.streamLoop = (connections, channel) => {
+        let updateObj = {};
+        for (const prop in this.streamSettings) {
+          this.streamSettings[prop].settings.keys.forEach((key) => {
+            if (this.streamSettings[prop].settings[key]) {
+              let data = this.streamSettings[prop].settings[key].callback(this.streamSettings[prop].object[key], this.streamSettings[prop].settings[key]);
+              if (data !== void 0)
+                updateObj[key] = data;
+            }
+          });
+        }
+        if (connections) {
+          this.sendAll(updateObj, connections, channel);
+        }
+        return updateObj;
+      };
+      this.receive = (message, service, ...args) => {
+        if (service)
+          for (const key in this.services) {
+            if (key === service || this.services[key].name === service) {
+              return this.services[key].receive(message, ...args);
+            }
+          }
+        return this.service.receive(message, ...args);
+      };
+      this.transmit = (message, service, ...args) => {
+        if (service)
+          for (const key in this.services) {
+            if (key === service || this.services[key].name === service) {
+              return this.services[key].transmit(message, ...args);
+            }
+          }
+        return this.service.transmit(message, ...args);
+      };
+      this.defaultRoutes = {
+        getEndpointInfo: this.getEndpointInfo,
+        pipeOnce: this.pipeOnce,
+        pipeFastest: this.pipeFastest,
+        setStream: this.setStream,
+        removeStream: this.removeStream,
+        updateStreamData: this.updateStreamData,
+        addStreamFunc: this.addStreamFunc,
+        setStreamFunc: this.setStreamFunc,
+        sendAll: this.sendAll,
+        streamLoop: {
+          operator: this.streamLoop,
+          loop: 10
+        }
+      };
+      this.load(this.defaultRoutes);
+      if (this.routes) {
+        if (Object.keys(this.routes).length > 0)
+          this.load(this.routes);
+      }
+      if (Array.isArray(services)) {
+        services.forEach((s) => this.load(s));
+      } else if (typeof services === "object") {
+        Object.keys(services).forEach((s) => this.load(services[s]));
+      }
+    }
+  };
 
   // ../../../services/dom/DOMElement.js
   var DOMElement = class extends HTMLElement {
@@ -1428,7 +2339,7 @@
           }
           return this.pushToState;
         },
-        subscribeTrigger(key, onchanged = (res) => {
+        subscribeTrigger(key, onchanged = (res2) => {
         }) {
           if (key) {
             if (!this.triggers[key]) {
@@ -1815,423 +2726,6 @@
     }
     return newFunc;
   }
-
-  // ../../../services/Service.ts
-  var Service = class extends Graph {
-    constructor(options = {}) {
-      super(void 0, options.name, options.props);
-      this.routes = {};
-      this.loadDefaultRoutes = true;
-      this.name = `service${Math.floor(Math.random() * 1e14)}`;
-      this.keepState = true;
-      this.load = (routes2, enumRoutes = true) => {
-        if (!routes2 && !this.loadDefaultRoutes)
-          return;
-        let service;
-        if (!(routes2 instanceof Graph) && routes2?.name) {
-          if (routes2.module) {
-            let mod = routes2;
-            routes2 = {};
-            Object.getOwnPropertyNames(routes2.module).forEach((prop) => {
-              if (enumRoutes)
-                routes2[mod.name + "/" + prop] = routes2.module[prop];
-              else
-                routes2[prop] = routes2.module[prop];
-            });
-          } else if (typeof routes2 === "function") {
-            service = new routes2();
-            service.load();
-            routes2 = service.routes;
-          }
-        } else if (routes2 instanceof Graph && (routes2.routes || routes2.tree)) {
-          service = routes2;
-          if (routes2.routes)
-            routes2 = routes2.routes;
-          else if (routes2.tree)
-            routes2 = routes2.tree;
-        } else if (typeof routes2 === "object") {
-          let name = routes2.constructor.name;
-          if (name === "Object") {
-            name = Object.prototype.toString.call(routes2);
-            if (name)
-              name = name.split(" ")[1];
-            if (name)
-              name = name.split("]")[0];
-          }
-          if (name && name !== "Object") {
-            let module = routes2;
-            routes2 = {};
-            Object.getOwnPropertyNames(module).forEach((route) => {
-              if (enumRoutes)
-                routes2[name + "/" + route] = module[route];
-              else
-                routes2[route] = module[route];
-            });
-          }
-        }
-        if (service instanceof Graph && service.name) {
-          routes2 = Object.assign({}, routes2);
-          for (const prop in routes2) {
-            let route = routes2[prop];
-            delete routes2[prop];
-            routes2[service.name + "/" + prop] = route;
-          }
-        }
-        if (this.loadDefaultRoutes) {
-          let rts = Object.assign({}, this.defaultRoutes);
-          if (routes2) {
-            Object.assign(rts, this.routes);
-            routes2 = Object.assign(rts, routes2);
-          } else
-            routes2 = Object.assign(rts, this.routes);
-          this.loadDefaultRoutes = false;
-        }
-        for (const tag in routes2) {
-          let childrenIter = (route) => {
-            if (typeof route?.children === "object") {
-              for (const key in route.children) {
-                if (typeof route.children[key] === "object") {
-                  let rt = route.children[key];
-                  if (!rt.parent)
-                    rt.parent = tag;
-                  if (rt.tag) {
-                    routes2[rt.tag] = route.children[key];
-                    childrenIter(routes2[rt.tag]);
-                  } else if (rt.id) {
-                    rt.tag = rt.id;
-                    routes2[rt.tag] = route.children[key];
-                    childrenIter(routes2[rt.tag]);
-                  }
-                }
-              }
-            }
-          };
-          childrenIter(routes2[tag]);
-        }
-        for (const route in routes2) {
-          if (typeof routes2[route] === "object") {
-            let r = routes2[route];
-            if (typeof r === "object") {
-              if (r.get) {
-                if (typeof r.get == "object") {
-                }
-              }
-              if (r.post) {
-              }
-              if (r.delete) {
-              }
-              if (r.put) {
-              }
-              if (r.head) {
-              }
-              if (r.patch) {
-              }
-              if (r.options) {
-              }
-              if (r.connect) {
-              }
-              if (r.trace) {
-              }
-              if (r.post && !r.operator) {
-                routes2[route].operator = r.post;
-              } else if (!r.operator && typeof r.get == "function") {
-                routes2[route].operator = r.get;
-              }
-            }
-            if (this.routes[route]) {
-              if (typeof this.routes[route] === "object")
-                Object.assign(this.routes[route], routes2[route]);
-              else
-                this.routes[route] = routes2[route];
-            } else
-              this.routes[route] = routes2[route];
-          } else if (this.routes[route]) {
-            if (typeof this.routes[route] === "object")
-              Object.assign(this.routes[route], routes2[route]);
-            else
-              this.routes[route] = routes2[route];
-          } else
-            this.routes[route] = routes2[route];
-        }
-        this.setTree(this.routes);
-        for (const prop in this.routes) {
-          if (this.routes[prop]?.aliases) {
-            let aliases = this.routes[prop].aliases;
-            aliases.forEach((a) => {
-              if (service)
-                routes2[service.name + "/" + a] = this.routes[prop];
-              else
-                routes2[a] = this.routes[prop];
-            });
-          }
-        }
-        return this.routes;
-      };
-      this.unload = (routes2 = this.routes) => {
-        if (!routes2)
-          return;
-        let service;
-        if (!(routes2 instanceof Service) && typeof routes2 === "function") {
-          service = new Service();
-          routes2 = service.routes;
-        } else if (routes2 instanceof Service) {
-          routes2 = routes2.routes;
-        }
-        for (const r in routes2) {
-          delete this.routes[r];
-          if (this.nodes.get(r))
-            this.remove(r);
-        }
-        return this.routes;
-      };
-      this.handleMethod = (route, method, args, origin) => {
-        let m = method.toLowerCase();
-        if (m === "get" && this.routes[route]?.get?.transform instanceof Function) {
-          if (Array.isArray(args))
-            return this.routes[route].get.transform(...args);
-          else
-            return this.routes[route].get.transform(args);
-        }
-        if (this.routes[route]?.[m]) {
-          if (!(this.routes[route][m] instanceof Function)) {
-            if (args)
-              this.routes[route][m] = args;
-            return this.routes[route][m];
-          } else
-            return this.routes[route][m](args);
-        } else
-          return this.handleServiceMessage({ route, args, method, origin });
-      };
-      this.transmit = (...args) => {
-        if (typeof args[0] === "object") {
-          if (args[0].method) {
-            return this.handleMethod(args[0].route, args[0].method, args[0].args);
-          } else if (args[0].route) {
-            return this.handleServiceMessage(args[0]);
-          } else if (args[0].node) {
-            return this.handleGraphNodeCall(args[0].node, args[0].args, args[0].origin);
-          } else if (this.keepState) {
-            if (args[0].route)
-              this.setState({ [args[0].route]: args[0].args });
-            if (args[0].node)
-              this.setState({ [args[0].node]: args[0].args });
-          }
-        } else
-          return args;
-      };
-      this.receive = (...args) => {
-        if (args[0]) {
-          if (typeof args[0] === "string") {
-            let substr = args[0].substring(0, 8);
-            if (substr.includes("{") || substr.includes("[")) {
-              if (substr.includes("\\"))
-                args[0] = args[0].replace(/\\/g, "");
-              if (args[0][0] === '"') {
-                args[0] = args[0].substring(1, args[0].length - 1);
-              }
-              ;
-              args[0] = JSON.parse(args[0]);
-            }
-          }
-        }
-        if (typeof args[0] === "object") {
-          if (args[0].method) {
-            return this.handleMethod(args[0].route, args[0].method, args[0].args);
-          } else if (args[0].route) {
-            return this.handleServiceMessage(args[0]);
-          } else if (args[0].node) {
-            return this.handleGraphNodeCall(args[0].node, args[0].args, args[0].origin);
-          } else if (this.keepState) {
-            if (args[0].route)
-              this.setState({ [args[0].route]: args[0].args });
-            if (args[0].node)
-              this.setState({ [args[0].node]: args[0].args });
-          }
-        } else
-          return args;
-      };
-      this.pipe = (source, destination, endpoint, origin, method, callback) => {
-        if (source instanceof GraphNode) {
-          if (callback)
-            return source.subscribe((res) => {
-              let mod = callback(res);
-              if (mod !== void 0)
-                this.transmit({ route: destination, args: mod, origin, method });
-              else
-                this.transmit({ route: destination, args: res, origin, method }, endpoint);
-            });
-          else
-            return this.subscribe(source, (res) => {
-              this.transmit({ route: destination, args: res, origin, method }, endpoint);
-            });
-        } else if (typeof source === "string")
-          return this.subscribe(source, (res) => {
-            this.transmit({ route: destination, args: res, origin, method }, endpoint);
-          });
-      };
-      this.pipeOnce = (source, destination, endpoint, origin, method, callback) => {
-        if (source instanceof GraphNode) {
-          if (callback)
-            return source.state.subscribeTriggerOnce(source.tag, (res) => {
-              let mod = callback(res);
-              if (mod !== void 0)
-                this.transmit({ route: destination, args: mod, origin, method });
-              else
-                this.transmit({ route: destination, args: res, origin, method }, endpoint);
-            });
-          else
-            return this.state.subscribeTriggerOnce(source.tag, (res) => {
-              this.transmit({ route: destination, args: res, origin, method }, endpoint);
-            });
-        } else if (typeof source === "string")
-          return this.state.subscribeTriggerOnce(source, (res) => {
-            this.transmit({ route: destination, args: res, origin, method }, endpoint);
-          });
-      };
-      this.terminate = (...args) => {
-        this.nodes.forEach((n) => {
-          n.stopNode();
-        });
-      };
-      this.recursivelyAssign = (target, obj) => {
-        for (const key in obj) {
-          if (typeof obj[key] === "object") {
-            if (typeof target[key] === "object")
-              this.recursivelyAssign(target[key], obj[key]);
-            else
-              target[key] = this.recursivelyAssign({}, obj[key]);
-          } else
-            target[key] = obj[key];
-        }
-        return target;
-      };
-      this.defaultRoutes = {
-        "/": {
-          get: () => {
-            return this.print();
-          },
-          aliases: [""]
-        },
-        ping: () => {
-          console.log("ping");
-          return "pong";
-        },
-        echo: (...args) => {
-          this.transmit(...args);
-          return args;
-        },
-        assign: (source) => {
-          if (typeof source === "object") {
-            Object.assign(this, source);
-            return true;
-          }
-          return false;
-        },
-        recursivelyAssign: (source) => {
-          if (typeof source === "object") {
-            this.recursivelyAssign(this, source);
-            return true;
-          }
-          return false;
-        },
-        log: {
-          post: (...args) => {
-            console.log("Log: ", ...args);
-          },
-          aliases: ["info"]
-        },
-        error: (message) => {
-          let er = new Error(message);
-          console.error(message);
-          return er;
-        },
-        state: (key) => {
-          if (key) {
-            return this.state.data[key];
-          } else
-            return this.state.data;
-        },
-        printState: (key) => {
-          if (key) {
-            return stringifyWithCircularRefs(this.state.data[key]);
-          } else
-            return stringifyWithCircularRefs(this.state.data);
-        },
-        transmit: this.transmit,
-        receive: this.receive,
-        load: this.load,
-        unload: this.unload,
-        pipe: this.pipe,
-        terminate: this.terminate,
-        run: this.run,
-        _run: this._run,
-        subscribe: this.subscribe,
-        unsubscribe: this.unsubscribe,
-        stopNode: this.stopNode,
-        get: this.get,
-        add: this.add,
-        remove: this.remove,
-        setTree: this.setTree,
-        setState: this.setState,
-        print: this.print,
-        reconstruct: this.reconstruct,
-        handleMethod: this.handleMethod,
-        handleServiceMessage: this.handleServiceMessage,
-        handleGraphNodeCall: this.handleGraphNodeCall
-      };
-      if ("loadDefaultRoutes" in options)
-        this.loadDefaultRoutes = options.loadDefaultRoutes;
-      if (options.name)
-        this.name = options.name;
-      if (Array.isArray(options.routes)) {
-        options.routes.forEach((r) => {
-          this.load(r);
-        });
-      } else if (options.routes)
-        this.load(options.routes);
-    }
-    handleServiceMessage(message) {
-      let call;
-      if (typeof message === "object") {
-        if (message.route)
-          call = message.route;
-        else if (message.node)
-          call = message.node;
-      }
-      if (call) {
-        if (message.origin) {
-          if (Array.isArray(message.args))
-            return this._run(call, message.origin, ...message.args);
-          else
-            return this._run(call, message.origin, message.args);
-        } else {
-          if (Array.isArray(message.args))
-            return this.run(call, ...message.args);
-          else
-            return this.run(call, message.args);
-        }
-      } else
-        return message;
-    }
-    handleGraphNodeCall(route, args, origin) {
-      if (!route)
-        return args;
-      if (args?.args) {
-        this.handleServiceMessage(args);
-      } else if (origin) {
-        if (Array.isArray(args))
-          return this._run(route, origin, ...args);
-        else
-          return this._run(route, origin, args);
-      } else if (Array.isArray(args))
-        return this.run(route, ...args);
-      else
-        return this.run(route, args);
-    }
-    isTypedArray(x) {
-      return ArrayBuffer.isView(x) && Object.prototype.toString.call(x) !== "[object DataView]";
-    }
-  };
 
   // ../../../services/dom/DOM.service.ts
   var DOMService = class extends Graph {
@@ -2769,39 +3263,39 @@
       this.pipe = (source, destination, endpoint, origin, method, callback) => {
         if (source instanceof GraphNode) {
           if (callback)
-            return source.subscribe((res) => {
-              let mod = callback(res);
+            return source.subscribe((res2) => {
+              let mod = callback(res2);
               if (mod !== void 0)
                 this.transmit({ route: destination, args: mod, origin, method });
               else
-                this.transmit({ route: destination, args: res, origin, method }, endpoint);
+                this.transmit({ route: destination, args: res2, origin, method }, endpoint);
             });
           else
-            return this.subscribe(source, (res) => {
-              this.transmit({ route: destination, args: res, origin, method }, endpoint);
+            return this.subscribe(source, (res2) => {
+              this.transmit({ route: destination, args: res2, origin, method }, endpoint);
             });
         } else if (typeof source === "string")
-          return this.subscribe(source, (res) => {
-            this.transmit({ route: destination, args: res, origin, method }, endpoint);
+          return this.subscribe(source, (res2) => {
+            this.transmit({ route: destination, args: res2, origin, method }, endpoint);
           });
       };
       this.pipeOnce = (source, destination, endpoint, origin, method, callback) => {
         if (source instanceof GraphNode) {
           if (callback)
-            return source.state.subscribeTriggerOnce(source.tag, (res) => {
-              let mod = callback(res);
+            return source.state.subscribeTriggerOnce(source.tag, (res2) => {
+              let mod = callback(res2);
               if (mod !== void 0)
                 this.transmit({ route: destination, args: mod, origin, method });
               else
-                this.transmit({ route: destination, args: res, origin, method }, endpoint);
+                this.transmit({ route: destination, args: res2, origin, method }, endpoint);
             });
           else
-            return this.state.subscribeTriggerOnce(source.tag, (res) => {
-              this.transmit({ route: destination, args: res, origin, method }, endpoint);
+            return this.state.subscribeTriggerOnce(source.tag, (res2) => {
+              this.transmit({ route: destination, args: res2, origin, method }, endpoint);
             });
         } else if (typeof source === "string")
-          return this.state.subscribeTriggerOnce(source, (res) => {
-            this.transmit({ route: destination, args: res, origin, method }, endpoint);
+          return this.state.subscribeTriggerOnce(source, (res2) => {
+            this.transmit({ route: destination, args: res2, origin, method }, endpoint);
           });
       };
       this.terminate = (element) => {
@@ -3022,16 +3516,16 @@
 
   // index.ts
   var input = 3;
-  var graph = new Graph(tree, "main");
-  console.log("main graph:", graph);
-  console.log("nested map:", graph.nodes.get("nested").nodes);
-  var addChildren = graph.nodes.get("add").children;
-  console.log("add node children:", addChildren);
-  graph.subscribe("subtract", (res) => document.body.innerHTML = `
-<h2>Nested Graphs in Tree</h2>
-<p><b>Result:</b> ${res}</p>
-<p><b>Expected:</b> ${expected([input])}</p>
-<p><b>Test Passed:</b> ${res == expected([input])}</p>
+  var router = new Router({
+    routes: tree
+  });
+  router.subscribe("subtract", (res2) => document.body.innerHTML = `
+    <h2>Router</h2>
+    <p><b>Result:</b> ${res2}</p>
+    <p><b>Expected:</b> ${expected([input])}</p>
+    <p><b>Test Passed:</b> ${res2 == expected([input])}</p>
 `);
-  graph.run("add", input);
+  console.log("Router", router);
+  var res = router.run("add", input);
+  console.log("Router res", res);
 })();
