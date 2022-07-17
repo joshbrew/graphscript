@@ -45,8 +45,4 @@ graph.run('add', input).then(res => document.body.innerHTML = `
 <p><b>Result:</b> ${res}</p>
 <p><b>Expected:</b> ${expected}</p>
 <p><b>Test Passed:</b> ${ res == expected}</p>
-
-<p><b>Add Children:</b> ${ JSON.stringify(addChildren)}</p>
-
-
 `)
