@@ -15,7 +15,8 @@ export class Router { //instead of extending acyclicgraph or service again we ar
 
     id = `router${Math.floor(Math.random()*1000000000000000)}`
 
-    service = new Service(); //global service
+    service = new Service(); //global service/graph
+    nodes = this.service.nodes;
     run = this.service.run;
     _run = this.service._run;
     add = this.service.add;
