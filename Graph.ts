@@ -262,6 +262,7 @@ export class GraphNode {
                 if(source.delay) properties.delay = source.delay;
                 if(source.tag) properties.tag = source.tag;
                 if(source.oncreate) properties.oncreate = source.oncreate;
+                if(!this.firstRun) this.firstRun = true;
 
                 this.nodes = source.nodes;
                 if(graph) {
@@ -337,7 +338,7 @@ export class GraphNode {
                 properties.arguments = this.arguments
             }
 
-            Object.assign(this, properties); //set the node's props as this  
+            Object.assign(this, properties); //set the node's props as this 
 
             if(!this.tag) {
                 if(graph) {
@@ -374,6 +375,7 @@ export class GraphNode {
             if(this.parent instanceof GraphNode || this.parent instanceof Graph) this.checkNodesHaveChildMapped(this.parent, this);
         
             if(!graph && typeof this.oncreate === 'function') this.oncreate(this);
+            if(!this.firstRun) this.firstRun = true; 
         }
         else return properties;
       
@@ -932,6 +934,7 @@ export class GraphNode {
                 if(child.tag in node.children) {
                     if(!(node.children[child.tag] instanceof GraphNode))
                         node.children[child.tag] = child;
+                        if(!node.firstRun) node.firstRun = true; 
                 }
             }
             if(node.parent) {
