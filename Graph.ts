@@ -1148,10 +1148,24 @@ export class Graph {
                         if(tree[node] instanceof GraphNode) {
                             if(n.tag !== (tree[node] as GraphNode).tag) this.add(tree[node]);
                         } else if(tree[node] instanceof Graph) {
-                            if(n.tag !== tree[node].name) {
-                                this.removeTree(n);
-                                this.add(tree[node]);
-                            }
+                            //in case any stuff was added to the graph to indicate flow logic
+                            let source = tree[node] as any;
+                            let properties = this.nodes.get(node) as any;
+                            if(source.operator) properties.operator = source.operator;
+                            if(source.children) properties.children = source.children;
+                            if(source.forward) properties.forward = source.forward;
+                            if(source.backward) properties.backward = source.backward;
+                            if(source.repeat) properties.repeat = source.repeat;
+                            if(source.recursive) properties.recursive = source.recursive;
+                            if(source.loop) properties.loop = source.loop;
+                            if(source.animate) properties.animate = source.animate;
+                            if(source.looper) properties.looper = source.looper;
+                            if(source.animation) properties.animation = source.animation;
+                            if(source.delay) properties.delay = source.delay;
+                            if(source.tag) properties.tag = source.tag;
+                            if(source.oncreate) properties.oncreate = source.oncreate;
+
+                            properties.nodes = source.nodes;
                         } else {
                             n.setProps(tree[node]);
                         }

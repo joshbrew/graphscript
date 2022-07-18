@@ -32,7 +32,7 @@ export class DOMService extends Graph {
 
     //routes denote paths and properties callable across interfaces and inherited by parent services (adding the service name in the 
     // front of the route like 'http/createServer'.
-    routes:DOMRoutes={}
+    routes:DOMRoutes={};
     loadDefaultRoutes = false; //load default routes?
     name:string=`dom${Math.floor(Math.random()*1000000000000000)}`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
@@ -115,10 +115,10 @@ export class DOMService extends Graph {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
                 if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
 
-                // TODO: Figure out why newNode and node don't match...
-                const newNode = this.nodes.get(node.tag)
-                this.elements[options.id].node = newNode
-                // console.log(node.tag, node, newNode, newNode === node)
+                // // TODO: Figure out why newNode and node don't match...
+                // const newNode = this.nodes.get(node.tag)
+                // this.elements[options.id].node = newNode
+                // // console.log(node.tag, node, newNode, newNode === node)
 
                 if(oncreate) oncreate(elm,this.elements[options.id]);
             },0.01);
@@ -480,6 +480,8 @@ export class DOMService extends Graph {
             childrenIter(routes[tag]);
         }
 
+        routes = Object.assign({},routes);
+        let elmroutes = {}
         for(const route in routes) {
             if(typeof routes[route] === 'object') {
                 let r = routes[route] as RouteProp | DOMRouteProp;
@@ -488,14 +490,20 @@ export class DOMService extends Graph {
                     if(r.template) { //assume its a component node
                         if(!routes[route].tag) routes[route].tag = route;
                         this.addComponent(routes[route]);
+                        elmroutes[route] = routes[route];
+                        delete routes[route];
                     }
                     else if(r.context) { //assume its a canvas node
                         if(!routes[route].tag) routes[route].tag = route;
                         this.addCanvasComponent(routes[route]);
+                        elmroutes[route] = routes[route];
+                        delete routes[route];
                     }
                     else if(r.tagName || r.element) { //assume its an element node
                         if(!routes[route].tag) routes[route].tag = route;
                         this.addElement(routes[route]);
+                        elmroutes[route] = routes[route];
+                        delete routes[route];
                     }
 
                     if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
