@@ -1150,7 +1150,7 @@ export class Graph {
                         } else if(tree[node] instanceof Graph) {
                             //in case any stuff was added to the graph to indicate flow logic
                             let source = tree[node] as any;
-                            let properties = this.nodes.get(node) as any;
+                            let properties = {} as any;
                             if(source.operator) properties.operator = source.operator;
                             if(source.children) properties.children = source.children;
                             if(source.forward) properties.forward = source.forward;
@@ -1166,6 +1166,8 @@ export class Graph {
                             if(source.oncreate) properties.oncreate = source.oncreate;
 
                             properties.nodes = source.nodes;
+                            properties.source = source;
+                            n.setProps(properties);
                         } else {
                             n.setProps(tree[node]);
                         }
