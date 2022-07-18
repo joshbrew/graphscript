@@ -341,8 +341,8 @@ export class GraphNode {
             if(graph) {
                 if(!graph.nodes.get(this.tag)) {
                     graph.nNodes++;
-                    graph.nodes.set(this.tag,this);
                 }
+                graph.nodes.set(this.tag,this);
             }
 
             
