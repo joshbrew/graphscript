@@ -943,7 +943,7 @@ export class GraphNode {
                         n.children[key] = n.graph.get(key); //try graph scope
                         if(!n.children[key]) n.children[key] = n.nodes.get(key);
                         if(n.children[key] instanceof GraphNode) {
-                            if(!n.nodes.get(n.children[key].tag)) n.nodes.set(n.children[key].tag,n.children[key]);
+                            n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
                             this.checkNodesHaveChildMapped(n,n.children[key]);   
                         }
@@ -953,7 +953,7 @@ export class GraphNode {
                         n.children[key] = child;
                         if(!child) child = n.nodes.get(key);
                         if(child instanceof GraphNode) {
-                            if(!n.nodes.get(n.children[key].tag)) n.nodes.set(n.children[key].tag,n.children[key]);
+                             n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
                             this.checkNodesHaveChildMapped(n,child);
                         }
