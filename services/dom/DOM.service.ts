@@ -93,9 +93,9 @@ export class DOMService extends Graph {
             return props;
         }
 
-        let node = new GraphNode({
+        let node = new GraphNode(
             options
-        },undefined,this);
+        ,undefined,this);
         
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
         if(generateChildElementNodes) { //convert all child divs to additional nodes
@@ -240,9 +240,9 @@ export class DOMService extends Graph {
             return props;
         }
 
-        let node = new GraphNode({
+        let node = new GraphNode(
             options
-        },undefined,this);
+        ,undefined,this);
 
         this.components[completeOptions.id] = {
             element:elm as any,
@@ -346,9 +346,9 @@ export class DOMService extends Graph {
             return props;
         }
 
-        let node = new GraphNode({
+        let node = new GraphNode(
             options
-        },undefined,this);
+        ,undefined,this);
 
         let canvas = elm.querySelector('canvas');
         if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object

@@ -264,6 +264,7 @@ export class GraphNode {
                 if(source.oncreate) properties.oncreate = source.oncreate;
 
                 this.nodes = source.nodes;
+                
                 if(graph) {
                     source.nodes.forEach((n) => {
                         if(!graph.nodes.get(n.tag)) {
@@ -329,9 +330,9 @@ export class GraphNode {
             if ('arguments' in properties) {
 
                 if (properties.arguments){
-                for (let key in properties.arguments){
-                    this.arguments.set(key, properties.arguments[key])
-                }
+                    for (let key in properties.arguments){
+                        this.arguments.set(key, properties.arguments[key])
+                    }
                 }
 
                 properties.arguments = this.arguments
