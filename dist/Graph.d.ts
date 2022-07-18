@@ -89,7 +89,7 @@ export declare class GraphNode {
     source: Graph | GraphNode;
     tree: Tree;
     [key: string]: any;
-    constructor(properties?: GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void), parentNode?: GraphNode, graph?: Graph);
+    constructor(properties?: GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void), parentNode?: GraphNode | Graph, graph?: Graph);
     operator: OperatorType;
     runOp: (node?: GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
     setOperator: (operator: OperatorType) => OperatorType;
@@ -122,8 +122,8 @@ export declare class GraphNode {
     callChildren: (idx?: number, ...args: any[]) => any;
     setProps: (props?: GraphNodeProperties) => void;
     removeTree: (node: GraphNode | string) => void;
+    checkNodesHaveChildMapped: (node: GraphNode | Graph, child: GraphNode, checked?: {}) => void;
     convertChildrenToNodes: (n?: GraphNode) => any;
-    get: (tag: string) => any;
     stopLooping: (node?: GraphNode) => void;
     stopAnimating: (node?: GraphNode) => void;
     stopNode: (node?: GraphNode) => void;
@@ -160,6 +160,7 @@ export declare class Graph {
     add: (node?: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void), fromTree?: boolean) => GraphNode | GraphNodeProperties;
     setTree: (tree?: Tree) => void;
     get: (tag: string) => any;
+    set: (node: GraphNode) => Map<any, any>;
     run: (node: string | GraphNode, ...args: any[]) => any;
     runAsync: (node: string | GraphNode, ...args: any[]) => Promise<unknown>;
     _run: (node: string | GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;

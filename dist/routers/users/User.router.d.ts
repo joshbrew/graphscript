@@ -1,5 +1,5 @@
 import { Graph, GraphNode, GraphNodeProperties } from "../../Graph";
-import { Protocol, Router } from "../Router";
+import { Protocol, Router, RouterOptions } from "../Router";
 import { Routes, Service, ServiceMessage } from "../../services/Service";
 export declare type UserProps = {
     _id?: string;
@@ -122,7 +122,7 @@ export declare class UserRouter extends Router {
     };
     constructor(services: (Service | Graph | Routes | any)[] | {
         [key: string]: Service | Graph | Routes | any;
-    } | any[]);
+    } | any[], options?: RouterOptions);
     runAs: (node: string | GraphNode, userId: string | UserProps | (UserProps & GraphNode) | undefined, ...args: any[]) => any;
     pipeAs: (source: string | GraphNode, destination: string, transmitter: Protocol | string, userId: string | UserProps | (UserProps & GraphNode) | undefined, method: string, callback: (res: any) => any | void) => number | false;
     _initConnections: (connections: UserProps) => void;

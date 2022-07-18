@@ -2,9 +2,14 @@
 import { Graph, GraphNode } from "../Graph";
 import { Routes, Service, ServiceMessage } from '../services/Service';
 export declare type Protocol = 'http' | 'wss' | 'sse' | 'webrtc' | 'osc' | 'worker' | 'ble' | 'serial' | 'unsafe' | 'struct' | 'fs' | 'lsl' | 'hdf5' | 'unity' | 'e2ee';
+export declare type RouterOptions = {
+    linkServices?: boolean;
+    loadDefaultRoutes?: boolean;
+};
 export declare class Router {
     id: string;
     service: Service;
+    nodes: Map<any, any>;
     run: (node: string | GraphNode, ...args: any[]) => any;
     _run: (node: string | GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
     add: (node?: GraphNode | import("../Graph").GraphNodeProperties | import("../Graph").OperatorType | ((...args: any[]) => any), fromTree?: boolean) => GraphNode | import("../Graph").GraphNodeProperties;
@@ -35,10 +40,11 @@ export declare class Router {
     services: {
         [key: string]: Service;
     };
+    loadDefaultRoutes: boolean;
     [key: string]: any;
     constructor(services?: (Service | Graph | Routes | any)[] | {
         [key: string]: Service | Graph | Routes | any;
-    } | any[]);
+    } | any[], options?: RouterOptions);
     load: (service: Graph | Routes | {
         name: string;
         module: any;
