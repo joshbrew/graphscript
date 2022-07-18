@@ -262,7 +262,6 @@ export class GraphNode {
                 if(source.delay) properties.delay = source.delay;
                 if(source.tag) properties.tag = source.tag;
                 if(source.oncreate) properties.oncreate = source.oncreate;
-                if(!this.firstRun) this.firstRun = true;
 
                 this.nodes = source.nodes;
                 if(graph) {
