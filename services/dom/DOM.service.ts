@@ -93,9 +93,7 @@ export class DOMService extends Graph {
             return props;
         }
 
-        let node = new GraphNode({
-            options
-        },undefined,this);
+        let node = new GraphNode(options,undefined,this);
         
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
         if(generateChildElementNodes) { //convert all child divs to additional nodes
