@@ -224,9 +224,9 @@ export class GraphNode {
         if(typeof properties === 'object') {
 
             //can pass graphs and wrap Graphs with GraphNodes to enable nesting in trees
-            let source;
+           
             if(properties instanceof Graph) {
-                source = properties;
+                let source = properties;
                 
                 properties = {
                     source,
@@ -274,22 +274,24 @@ export class GraphNode {
                 } //make sure node references get passed around correctly
             }
 
-            if(properties.tag) {
+            if(properties.tag && (graph || parentNode)) {
                 if(graph?.nodes) {
                     let hasnode = graph.nodes.get(properties.tag);
-                    source = hasnode;
+                    if(hasnode) {
+                        Object.assign(this,hasnode); 
+                        if(!this.source) this.source = hasnode;
+                    }
                     //if(hasnode) return hasnode;
                 }
                 if(parentNode?.nodes) {
                     let hasnode = parentNode.nodes.get(properties.tag);
-                    source = hasnode;
+                    if(hasnode) {
+                        Object.assign(this,hasnode); 
+                        if(!this.source) this.source = hasnode;
+                    }
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
             
-                if(source) {
-                    Object.assign(this,source); //assign source node properties to self, any custom properties will be specified
-                    if(!this.source) this.source = source;
-                }
             }
 
             if(properties?.operator) {
@@ -323,17 +325,17 @@ export class GraphNode {
             //     else this[prop] = properties[prop];
             // }
 
-      // Override Argument Default Values
-      if ('arguments' in properties) {
+            // Override Argument Default Values
+            if ('arguments' in properties) {
 
-        if (properties.arguments){
-          for (let key in properties.arguments){
-              this.arguments.set(key, properties.arguments[key])
-          }
-        }
+                if (properties.arguments){
+                for (let key in properties.arguments){
+                    this.arguments.set(key, properties.arguments[key])
+                }
+                }
 
-        properties.arguments = this.arguments
-      }
+                properties.arguments = this.arguments
+            }
 
             Object.assign(this, properties); //set the node's props as this  
 
