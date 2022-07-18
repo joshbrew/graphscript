@@ -114,6 +114,12 @@ export class DOMService extends Graph {
         if(!elm.parentNode) {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
                 if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
+
+                // TODO: Figure out why newNode and node don't match...
+                const newNode = this.nodes.get(node.tag)
+                this.elements[options.id].node = newNode
+                // console.log(node.tag, node, newNode, newNode === node)
+
                 if(oncreate) oncreate(elm,this.elements[options.id]);
             },0.01);
         }
