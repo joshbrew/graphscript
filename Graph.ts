@@ -323,8 +323,19 @@ export class GraphNode {
             //     else this[prop] = properties[prop];
             // }
 
+      // Override Argument Default Values
+      if ('arguments' in properties) {
 
-            Object.assign(this,properties); //set the node's props as this  
+        if (properties.arguments){
+          for (let key in properties.arguments){
+              this.arguments.set(key, properties.arguments[key])
+          }
+        }
+
+        properties.arguments = this.arguments
+      }
+
+            Object.assign(this, properties); //set the node's props as this  
 
             if(!this.tag) {
                 if(graph) {
@@ -419,8 +430,12 @@ export class GraphNode {
                 return (fn as any)(...args);
             }
 
-            // track argument names
-            this.arguments = params
+            // Track Argument Names + Default Values (if no initial value provided)
+          if (this.arguments){
+            params.forEach((v, k) => {
+              if (!this.arguments.has(k)) this.arguments.set(k, v)
+            })
+          }
         }
 
         this.operator = operator;
@@ -443,11 +458,16 @@ export class GraphNode {
         return new Promise((res,rej) => {res(this._run(this,undefined,...args))}); //will be a promise
     }
 
+    transformArgs: (args:any[]) => any[] = (args=[]) => args
+
     _run = (
         node:GraphNode=this, 
         origin?:string|GraphNode|Graph, 
         ...args:any[]
     ) => {
+
+        if (typeof this.transformArgs === 'function') args = this.transformArgs(args)
+
         // NOTE: Should create a sync version with no promises (will block but be faster)
         if(!(typeof node === 'object')) {
             if(typeof node === 'string') { //can pass the node tag instead
