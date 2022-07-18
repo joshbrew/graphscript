@@ -458,7 +458,7 @@ export class GraphNode {
         return new Promise((res,rej) => {res(this._run(this,undefined,...args))}); //will be a promise
     }
 
-    transformArgs: (args:any[]) => any[] = (args=[]) => args
+    transformArgs: (args:any[], self?:GraphNode) => any[] = (args=[]) => args
 
     _run = (
         node:GraphNode=this, 
@@ -466,7 +466,7 @@ export class GraphNode {
         ...args:any[]
     ) => {
 
-        if (typeof this.transformArgs === 'function') args = this.transformArgs(args)
+        if (typeof this.transformArgs === 'function') args = this.transformArgs(args, node)
 
         // NOTE: Should create a sync version with no promises (will block but be faster)
         if(!(typeof node === 'object')) {
