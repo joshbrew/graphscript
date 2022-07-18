@@ -481,7 +481,6 @@ export class DOMService extends Graph {
         }
 
         routes = Object.assign({},routes);
-        let elmroutes = {}
         for(const route in routes) {
             if(typeof routes[route] === 'object') {
                 let r = routes[route] as RouteProp | DOMRouteProp;
@@ -490,20 +489,14 @@ export class DOMService extends Graph {
                     if(r.template) { //assume its a component node
                         if(!routes[route].tag) routes[route].tag = route;
                         this.addComponent(routes[route]);
-                        elmroutes[route] = routes[route];
-                        delete routes[route];
                     }
                     else if(r.context) { //assume its a canvas node
                         if(!routes[route].tag) routes[route].tag = route;
                         this.addCanvasComponent(routes[route]);
-                        elmroutes[route] = routes[route];
-                        delete routes[route];
                     }
                     else if(r.tagName || r.element) { //assume its an element node
                         if(!routes[route].tag) routes[route].tag = route;
                         this.addElement(routes[route]);
-                        elmroutes[route] = routes[route];
-                        delete routes[route];
                     }
 
                     if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
