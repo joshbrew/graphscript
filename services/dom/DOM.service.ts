@@ -74,26 +74,27 @@ export class DOMService extends Graph {
         let oncreate = options.oncreate;
         delete options.oncreate; //so it doesnt trigger on the node
 
-        let node = new GraphNode({
-            element:elm,   
-            operator:(node,origin,props:{[key:string]:any})=>{ 
-                if(typeof props === 'object') 
-                    for(const key in props) { 
-                        if(node.element) {
-                            if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
-                                { //attempt to execute a function with arguments
-                                    if(Array.isArray(props[key]))
-                                        node.element[key](...props[key]);
-                                    else node.element[key](props[key]);
-                                } 
-                            else if (key === 'style') { Object.assign(node.element[key],props[key])}
-                            else node.element[key] = props[key]; 
-                        }
+        if(!options.element) options.element = elm;
+        if(!options.operator) options.operator = (node,origin,props:{[key:string]:any})=>{ 
+            if(typeof props === 'object') 
+                for(const key in props) { 
+                    if(node.element) {
+                        if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
+                            { //attempt to execute a function with arguments
+                                if(Array.isArray(props[key]))
+                                    node.element[key](...props[key]);
+                                else node.element[key](props[key]);
+                            } 
+                        else if (key === 'style') { Object.assign(node.element[key],props[key])}
+                        else node.element[key] = props[key]; 
                     }
-                    
-                return props;
-            },
-            ...options
+                }
+                
+            return props;
+        }
+
+        let node = new GraphNode({
+            options
         },undefined,this);
         
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
@@ -219,31 +220,29 @@ export class DOMService extends Graph {
         if(generateChildElementNodes) { //convert all child divs to additional nodes
             divs = divs.map((d:HTMLElement) => this.addElement({element:d}));
         }
-     
-        let node = new GraphNode(
-            {
-                element:elm,   
-                operator:(node,origin,props:{[key:string]:any})=>{ 
-                    if(typeof props === 'object') 
-                        for(const key in props) { 
-                            if(node.element) {
-                                if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
-                                    { //attempt to execute a function with arguments
-                                        if(Array.isArray(props[key]))
-                                            node.element[key](...props[key]);
-                                        else node.element[key](props[key]);
-                                    } 
-                                else node.element[key] = props[key]; 
-                            }
-                        }
-                        
-                    return props;
-                },
-                ...completeOptions
-            },
-            undefined,
-            this
-        );
+
+        if(!options.element) options.element = elm;
+        if(!options.operator) options.operator = (node,origin,props:{[key:string]:any})=>{ 
+            if(typeof props === 'object') 
+                for(const key in props) { 
+                    if(node.element) {
+                        if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
+                            { //attempt to execute a function with arguments
+                                if(Array.isArray(props[key]))
+                                    node.element[key](...props[key]);
+                                else node.element[key](props[key]);
+                            } 
+                        else if (key === 'style') { Object.assign(node.element[key],props[key])}
+                        else node.element[key] = props[key]; 
+                    }
+                }
+                
+            return props;
+        }
+
+        let node = new GraphNode({
+            options
+        },undefined,this);
 
         this.components[completeOptions.id] = {
             element:elm as any,
@@ -327,26 +326,29 @@ export class DOMService extends Graph {
         }
 
         this.templates[completeOptions.id] = completeOptions;
-                
-        let node = new GraphNode({
-            element:elm,   
-            operator:(node,origin,props:{[key:string]:any})=>{ 
-                if(typeof props === 'object') 
-                    for(const key in props) { 
-                        if(node.element) {
-                            if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
-                                { //attempt to execute a function with arguments
-                                    if(Array.isArray(props[key]))
-                                        node.element[key](...props[key]);
-                                    else node.element[key](props[key]);
-                                } 
-                            else node.element[key] = props[key]; 
-                        }
+
+        if(!options.element) options.element = elm;
+        if(!options.operator) options.operator = (node,origin,props:{[key:string]:any})=>{ 
+            if(typeof props === 'object') 
+                for(const key in props) { 
+                    if(node.element) {
+                        if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
+                            { //attempt to execute a function with arguments
+                                if(Array.isArray(props[key]))
+                                    node.element[key](...props[key]);
+                                else node.element[key](props[key]);
+                            } 
+                        else if (key === 'style') { Object.assign(node.element[key],props[key])}
+                        else node.element[key] = props[key]; 
                     }
-                return props;
-            },
-            ...completeOptions
-        }, undefined,this);
+                }
+                
+            return props;
+        }
+
+        let node = new GraphNode({
+            options
+        },undefined,this);
 
         let canvas = elm.querySelector('canvas');
         if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object
