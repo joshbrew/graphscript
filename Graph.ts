@@ -339,9 +339,10 @@ export class GraphNode {
             if(graph) this.graph=graph;
         
             if(graph) {
-                if(graph.nodes.get(this.tag)) graph.nodes.set(`${graph.nNodes}${this.tag}`,this);
-                else graph.nodes.set(this.tag,this);
-                graph.nNodes++;
+                if(!graph.nodes.get(this.tag)) {
+                    graph.nNodes++;
+                    graph.nodes.set(this.tag,this);
+                }
             }
 
             
