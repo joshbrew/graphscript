@@ -608,6 +608,12 @@ export class GraphNode {
                         if(!node.nodes.get(node.children[key].tag)) node.nodes.set(node.children[key].tag,node.children[key]);
                     }
                     if(!node.children[key] && node.nodes.get(node.children[key])) node.children[key] = node.nodes.get(node.children[key]); //try local scope
+                } else if (typeof node.children[key] === 'undefined' || node.children[key] === true) {
+                    if(node.graph && node.graph?.get(key)) {
+                        node.children[key] = node.graph.get(key); //try graph scope
+                        if(!node.nodes.get(node.children[key].tag)) node.nodes.set(node.children[key].tag,node.children[key]);
+                    }
+                    if(!node.children[key] && node.nodes.get(key)) node.children[key] = node.nodes.get(key); //try local scope
                 }
                 if(node.children[key]?.runOp)
                     await node.children[key]._run(node.children[key], node, ...args);
@@ -836,7 +842,17 @@ export class GraphNode {
     }
     
     setProps = (props:GraphNodeProperties={}) => {
-        Object.assign(this,props);
+        let tmp = Object.assign({},props);
+        if(tmp.children) {
+            this.addChildren(props.children);
+            delete tmp.children;
+        }
+        if(tmp.operator) {
+            this.setOperator(props.operator);
+            delete tmp.operator;
+        }
+
+        Object.assign(tmp,props);
         if(
             !( 
                (this.children && this.forward) || 
@@ -845,6 +861,7 @@ export class GraphNode {
                this.frame || this.recursive
             )
         ) this.runSync = true;
+
     }
 
     removeTree = (node:GraphNode|string) => { //stop and dereference nodes to garbage collect them
@@ -1110,10 +1127,6 @@ export class Graph {
                                 this.add(tree[node]);
                             }
                         } else {
-                            if((tree[node] as any).operator) {
-                                n.setOperator((tree[node] as any).operator);
-                                delete (tree[node] as any).operator;
-                            }
                             n.setProps(tree[node]);
                         }
                     }
