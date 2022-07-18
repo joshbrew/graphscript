@@ -1,3 +1,4 @@
+import { Graph } from "../../Graph"
 import { DOMService } from "../../services/dom/DOM.service"
 
 export const operators = {
@@ -12,7 +13,28 @@ export const operators = {
     }
 }
 
+// const deepGraph = new Graph({
+//     button: {
+//         tagName: 'button', 
+//         innerHTML: 'Click me',
+//         children: {
+//             'add': true
+//         },
+//         operator: (input) => {
+//             console.log('Running', input)
+//             return input
+//         },
+//         oncreate: (self, props) => {
+//             console.log('created function', self,  props)
+//             self.onclick = () => {
+//                 props.node.run(true)
+//             }
+//         }
+//     },
+// })
+
 const routes = {
+    // button: deepGraph,
     add: {
         children: {
             'subtract': true
