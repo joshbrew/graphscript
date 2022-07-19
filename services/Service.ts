@@ -75,7 +75,8 @@ export class Service extends Graph {
     
     load = (
         routes?:Service|Graph|Routes|{name:string,module:{[key:string]:any}}|any, 
-        enumRoutes:boolean=true //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
+        includeClassName:boolean=true, //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
+        routeFormat:string='.'
     ) => {    
         if(!routes && !this.loadDefaultRoutes) return;
         //console.log(this.routes);
@@ -85,7 +86,7 @@ export class Service extends Graph {
                 let mod = routes;
                 routes = {};
                 Object.getOwnPropertyNames(routes.module).forEach((prop) => { //iterate through 
-                    if(enumRoutes) routes[mod.name+'/'+prop] = routes.module[prop];
+                    if(includeClassName) routes[mod.name+routeFormat+prop] = routes.module[prop];
                     else routes[prop] =  routes.module[prop];
                 });
             } else if (typeof routes === 'function') { //it's a service prototype... probably
@@ -110,13 +111,13 @@ export class Service extends Graph {
                 let module = routes;
                 routes = {};
                 Object.getOwnPropertyNames(module).forEach((route) => {
-                    if(enumRoutes) routes[name+'/'+route] = module[route];
+                    if(includeClassName) routes[name+routeFormat+route] = module[route];
                     else routes[route] = module[route];
                 });
             }
         }
 
-        if(service instanceof Graph && service.name && enumRoutes) {     
+        if(service instanceof Graph && service.name && includeClassName) {     
             //the routes provided from a service will add the route name in front of the route so like 'name/route' to minimize conflicts, 
             //incl making generic service routes accessible per service. The services are still independently usable while the loader 
             // service provides routes to the other services
@@ -124,7 +125,7 @@ export class Service extends Graph {
             for(const prop in routes) { 
                 let route = routes[prop];
                 delete routes[prop]; 
-                routes[service.name+'/'+prop] = route;  //store the routes in the loaded service under aliases including the service name
+                routes[service.name+routeFormat+prop] = route;  //store the routes in the loaded service under aliases including the service name
             }
         } 
         
@@ -203,7 +204,7 @@ export class Service extends Graph {
             if((this.routes[prop] as any)?.aliases) {
                 let aliases = (this.routes[prop] as any).aliases;
                 aliases.forEach((a:string) => {
-                    if(service) routes[service.name+'/'+a] = this.routes[prop]; //we're just gonna copy the routes to the aliases for simplicity 
+                    if(service) routes[service.name+routeFormat+a] = this.routes[prop]; //we're just gonna copy the routes to the aliases for simplicity 
                     else routes[a] = this.routes[prop];
                 });
 
