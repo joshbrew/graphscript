@@ -24,6 +24,8 @@ export function getFnParamInfo(fn):Map<string, any>{
     matches.forEach(v => {
         let [name, value] = v.split('=')
         name = name.trim()
+        name = name.replace(/\d+$/, ""); // Account for bundling. RULE: No trailing numbers in argument names
+
         try {
             if (name) info.set(name,  (0, eval)(`(${value})`))
         } catch (e) {
