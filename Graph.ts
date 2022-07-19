@@ -1111,6 +1111,7 @@ export class Graph {
         if(!fromTree) {
             if(node.oncreate) node.oncreate(node);
         } 
+        this.nodes.set(node.tag,node);
         return node;
     }
 
@@ -1120,6 +1121,7 @@ export class Graph {
         let oncreate = {};
         for(const node in tree) { //add any nodes not added yet, assuming we aren't overwriting the same tags to the tree.
             if(!this.nodes.get(node)) {
+                if(tree[node] instanceof GraphNode) {}
                 if(typeof tree[node] === 'function') {
                     this.add({tag:node, operator:tree[node] as OperatorType|((...args)=>any|void)},true);
                 }
