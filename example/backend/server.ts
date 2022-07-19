@@ -41,7 +41,7 @@ let router = new UserRouter([
 //console.log(router);
 
 router.run(
-    'http/setupServer',
+    'http.setupServer',
     {
         protocol:'http',
         host:'localhost',
@@ -62,7 +62,7 @@ router.run(
 ).then((served:ServerInfo) => { //this function returns a promise so we can use .then, only explicitly async or promise-returning functions can be awaited or .then'd for good performance!
     
     const socketserver = router.run(
-        'wss/setupWSS',
+        'wss.setupWSS',
         {
             server:served.server,
             host:served.host,
@@ -75,7 +75,7 @@ router.run(
     );
     
     const hotreload = router.run(
-        'wss/setupWSS',
+        'wss.setupWSS',
         {
             server:served.server,
             host:served.host,
@@ -88,7 +88,7 @@ router.run(
     );
 
     const sseinfo = router.run(
-        'sse/setupSSE',
+        'sse.setupSSE',
         {
             server:served.server,
             path:'sse',

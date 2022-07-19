@@ -29,13 +29,13 @@ const router = new UserRouter({
 //     path:'hotreload'
 // } as WebSocketProps) as WebSocketInfo;
 
-const socketinfo = router.run('wss/openWS',{
+const socketinfo = router.run('wss.openWS',{
     host:'localhost',
     port:8080,
     path:'wss'
 } as WebSocketProps) as WebSocketInfo;
 
-const sseinfo = router.run('sse/openSSE',{
+const sseinfo = router.run('sse.openSSE',{
     url:'http://localhost:8080/sse',
     events:{
         'test':(ev)=>{console.log('test',ev.data)}
