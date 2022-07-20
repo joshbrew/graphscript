@@ -1109,6 +1109,7 @@ export class Graph {
     add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
         let props = node;
         if(!(node instanceof GraphNode)) node = new GraphNode(props,this,this); 
+        else this.nNodes++;
         if(node.tag) this.tree[node.tag] = props; //set the head node prototype in the tree object
         this.nodes.set(node.tag,node);
         return node;
