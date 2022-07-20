@@ -111,7 +111,7 @@ export type GraphNodeProperties = {
         [label:string]:{ //apply any label for your own indexing
             if:any, //if this value
             then:string|((...operator_result:any[])=>any)|GraphNode //then do this, e.g. use a node tag, a GraphNode, or supply any function
-        } //it still returns afterward but is treated like an additional flow statement :D
+        } //it still returns afterward but is treated like an additional flow statement :D. GraphNodes being run will contain the origin node (who had the branch)
     },
     tree?:Tree, //can also declare independent node maps on a node for referencing
     delay?:false|number, //ms delay to fire the node
@@ -655,8 +655,8 @@ export class GraphNode {
                         if(typeof node.branch[k].if === 'object') node.branch[k].if = stringifyFast(node.branch[k].if);
                         if(stringifyFast(output) === node.branch[k].if) {
                             if(node.branch[k].then instanceof GraphNode) {
-                                if(Array.isArray(output))  await node.branch[k].then.run(...output);
-                                else await node.branch[k].then.run(output);
+                                if(Array.isArray(output))  await node.branch[k].then._run(node.branch[k].then,node,...output);
+                                else await node.branch[k].then._run(node.branch[k].then,node,...output);
                             }
                             else if (typeof node.branch[k].then === 'function') {
                                 if(Array.isArray(output)) await node.branch[k].then(...output)
@@ -666,8 +666,8 @@ export class GraphNode {
                                 else node.branch[k].then = node.nodes.get(node.branch[k].then);
 
                                 if(node.branch[k].then instanceof GraphNode) {
-                                    if(Array.isArray(output))  await node.branch[k].then.run(...output);
-                                    else await node.branch[k].then.run(output);
+                                    if(Array.isArray(output))  await node.branch[k].then._run(node.branch[k].then,node,...output);
+                                    else await node.branch[k].then._run(node.branch[k].then,node,...output);
                                 }
                             }
                             return true;
