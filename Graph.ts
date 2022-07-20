@@ -651,31 +651,31 @@ export class GraphNode {
         if(node.branch) {
             let keys = Object.keys(node.branch);
             await Promise.all(keys.map(async (k) => {
-                    if(typeof output === 'object') {
-                        if(typeof node.branch[k].if === 'object') node.branch[k].if = stringifyFast(node.branch[k].if);
-                        if(stringifyFast(output) === node.branch[k].if) {
+                    if(typeof node.branch[k].if === 'object') node.branch[k].if = stringifyFast(node.branch[k].if); //stringify object outputs, stringifyFast saves a TON of overhead
+                    let pass = false;
+                    if(typeof output === 'object') if(stringifyFast(output) === node.branch[k].if) pass = true;
+                    else if (output === node.branch[k].if) pass = true;
+                    else pass = true;
+                    if(pass) {
+                        if(node.branch[k].then instanceof GraphNode) {
+                            if(Array.isArray(output))  await node.branch[k].then._run(node.branch[k].then,node,...output);
+                            else await node.branch[k].then._run(node.branch[k].then,node,...output);
+                        }
+                        else if (typeof node.branch[k].then === 'function') {
+                            if(Array.isArray(output)) await node.branch[k].then(...output)
+                            else await node.branch[k].then(output);
+                        } 
+                        else if (typeof node.branch[k].then === 'string') {
+                            if(node.graph) node.branch[k].then = node.graph.nodes.get(node.branch[k].then);
+                            else node.branch[k].then = node.nodes.get(node.branch[k].then);
+
                             if(node.branch[k].then instanceof GraphNode) {
                                 if(Array.isArray(output))  await node.branch[k].then._run(node.branch[k].then,node,...output);
                                 else await node.branch[k].then._run(node.branch[k].then,node,...output);
-                            }
-                            else if (typeof node.branch[k].then === 'function') {
-                                if(Array.isArray(output)) await node.branch[k].then(...output)
-                                else await node.branch[k].then(output);
-                            } else if (typeof node.branch[k].then === 'string') {
-                                if(node.graph) node.branch[k].then = node.graph.nodes.get(node.branch[k].then);
-                                else node.branch[k].then = node.nodes.get(node.branch[k].then);
-
-                                if(node.branch[k].then instanceof GraphNode) {
-                                    if(Array.isArray(output))  await node.branch[k].then._run(node.branch[k].then,node,...output);
-                                    else await node.branch[k].then._run(node.branch[k].then,node,...output);
-                                }
-                            }
-                            return true;
+                            } 
                         }
-                    } else {
-                        await node.branch[k].then(output); 
-                        return true;
-                    } 
+                    }
+                    return pass;
             }))
         }
     }
