@@ -418,12 +418,11 @@ export class GraphNode {
         
         let params = getFnParamInfo(operator);
 
-        if (params.size === 0) params.set('input', undefined) // Set default input param if none specified
-
         const keys = params.keys()
         const paramOne = keys.next().value
         const paramTwo = keys.next().value
 
+        // RULE: Restricted argument names
         const restrictedOne = ['self', 'node']  
         const restrictedTwo = ['origin', 'parent', 'graph', 'router']  
 
