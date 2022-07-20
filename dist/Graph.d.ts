@@ -102,6 +102,7 @@ export declare class GraphNode {
      */
     run: (...args: any[]) => any;
     runAsync: (...args: any[]) => Promise<unknown>;
+    transformArgs: (args: any[], self?: GraphNode) => any[];
     _run: (node?: GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
     runParent: (node: GraphNode, ...args: any[]) => Promise<void>;
     runChildren: (node: GraphNode, ...args: any[]) => Promise<void>;
@@ -157,7 +158,7 @@ export declare class Graph {
     constructor(tree?: Tree, tag?: string, props?: {
         [key: string]: any;
     });
-    add: (node?: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void), fromTree?: boolean) => GraphNode | GraphNodeProperties;
+    add: (node?: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void)) => GraphNode | GraphNodeProperties;
     setTree: (tree?: Tree) => void;
     get: (tag: string) => any;
     set: (node: GraphNode) => Map<any, any>;

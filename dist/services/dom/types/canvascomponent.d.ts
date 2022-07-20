@@ -36,7 +36,7 @@ export declare type CanvasOptions = {
     element: DOMElement & {
         canvas: HTMLCanvasElement;
         context: RenderingContext;
-    };
+    } | HTMLElement;
     tagName?: string;
     canvas?: HTMLCanvasElement;
     context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent' | RenderingContext;

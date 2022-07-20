@@ -48,7 +48,7 @@ export declare class Service extends Graph {
     name: string;
     keepState: boolean;
     constructor(options?: ServiceOptions);
-    load: (routes?: any, enumRoutes?: boolean) => Routes;
+    load: (routes?: any, includeClassName?: boolean, routeFormat?: string) => Routes;
     unload: (routes?: Service | Routes | any) => Routes;
     handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;
     handleServiceMessage(message: ServiceMessage): any;

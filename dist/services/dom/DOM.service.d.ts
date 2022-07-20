@@ -33,7 +33,7 @@ export declare class DOMService extends Graph {
     updateOptions: (options: any, element: any) => CompleteOptions;
     addComponent: (options: ComponentOptions, generateChildElementNodes?: boolean) => DOMElementInfo;
     addCanvasComponent: (options: CanvasOptions) => CanvasElementInfo;
-    load: (routes?: any, enumRoutes?: boolean) => DOMRoutes;
+    load: (routes?: any, includeClassName?: boolean, routeFormat?: string) => DOMRoutes;
     unload: (routes?: Service | Routes | any) => DOMRoutes;
     handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;
     handleServiceMessage(message: ServiceMessage): any;
