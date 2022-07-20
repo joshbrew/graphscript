@@ -376,7 +376,7 @@ export class GraphNode {
     
             if(this.parent instanceof GraphNode || this.parent instanceof Graph) this.checkNodesHaveChildMapped(this.parent, this);
         
-            if(!graph && typeof this.oncreate === 'function') this.oncreate(this);
+            if(typeof this.oncreate === 'function') this.oncreate(this);
             if(!this.firstRun) this.firstRun = true; 
         }
         else return properties;
@@ -1106,13 +1106,10 @@ export class Graph {
     }
 
     //converts all children nodes and tag references to GraphNodes also
-    add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}, fromTree=false) => {
+    add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
         let props = node;
         if(!(node instanceof GraphNode)) node = new GraphNode(props,this,this); 
         if(node.tag) this.tree[node.tag] = props; //set the head node prototype in the tree object
-        if(!fromTree) {
-            if(node.oncreate) node.oncreate(node);
-        } 
         this.nodes.set(node.tag,node);
         return node;
     }
@@ -1120,7 +1117,6 @@ export class Graph {
     setTree = (tree:Tree = this.tree) => {
         if(!tree) return;
 
-        let oncreate = {};
         for(const node in tree) { //add any nodes not added yet, assuming we aren't overwriting the same tags to the tree.
             if(!this.nodes.get(node)) {
                 if(typeof tree[node] === 'function') {
@@ -1137,9 +1133,6 @@ export class Graph {
                 } else {
                     //we are trying to load something like a number or array in this case so lets make it a node that just returns the value
                     this.add({tag:node,operator:(self,origin,...args) => {return tree[node];}},true);
-                }
-                if(this.nodes.get(node)?.oncreate) {
-                    oncreate[node] = this.nodes.get(node).oncreate;
                 }
             } else {
                 let n = this.nodes.get(node);
@@ -1203,12 +1196,7 @@ export class Graph {
                     node.nodes.set(node.parent.tag,node.parent);
                 }
             }
-        })
-
-        for(const key in oncreate) {
-            oncreate[key](this.nodes.get(key)); //now run the oncreate callbacks
-        }
-
+        });
 
     }
 
