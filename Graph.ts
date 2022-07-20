@@ -1120,7 +1120,7 @@ export class Graph {
         for(const node in tree) { //add any nodes not added yet, assuming we aren't overwriting the same tags to the tree.
             if(!this.nodes.get(node)) {
                 if(typeof tree[node] === 'function') {
-                    this.add({tag:node, operator:tree[node] as OperatorType|((...args)=>any|void)},true);
+                    this.add({tag:node, operator:tree[node] as OperatorType|((...args)=>any|void)});
                 }
                 else if (typeof tree[node] === 'object' && !Array.isArray(tree[node])) {
                     if(!(tree[node] as any).tag) (tree[node] as any).tag = node;
@@ -1132,7 +1132,7 @@ export class Graph {
                     }
                 } else {
                     //we are trying to load something like a number or array in this case so lets make it a node that just returns the value
-                    this.add({tag:node,operator:(self,origin,...args) => {return tree[node];}},true);
+                    this.add({tag:node,operator:(self,origin,...args) => {return tree[node];}});
                 }
             } else {
                 let n = this.nodes.get(node);
