@@ -485,7 +485,7 @@ export class DOMService extends Graph {
 
         routes = Object.assign({},routes);
         for(const route in routes) {
-            if(typeof routes[route] === 'object') {
+            if(typeof routes[route] === 'object' && !(routes[route] instanceof GraphNode)) {
                 let r = routes[route] as RouteProp | DOMRouteProp;
                 
                 if(typeof r === 'object') {
