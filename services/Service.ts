@@ -101,7 +101,10 @@ export class Service extends Graph {
             let name;
             if(includeClassName) {
                 name = service.name;
-                if(!name) name = service.tag;
+                if(!name) {
+                    name = service.tag;
+                    service.name = name;
+                }
                 if(!name) {
                     name = `graph${Math.floor(Math.random()*1000000000000000)}`;
                     service.name = name; 
