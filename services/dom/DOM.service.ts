@@ -436,9 +436,9 @@ export class DOMService extends Graph {
                 routes[node.tag] = node;
                 
                 let checked = {};
-                
+
                 let checkChildGraphNodes = (nd:GraphNode, prev?:GraphNode) => {
-                    if(!checked[nd.tag] || (includeClassName && !checked[prev.tag+routeFormat+nd.tag])) {
+                    if(!checked[nd.tag] || (prev && includeClassName && !checked[prev?.tag+routeFormat+nd.tag])) {
                         if(!prev) checked[nd.tag] = true;
                         else checked[prev.tag+routeFormat+nd.tag] = true;
 
