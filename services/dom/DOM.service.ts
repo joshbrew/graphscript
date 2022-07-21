@@ -361,7 +361,7 @@ export class DOMService extends Graph {
         ,undefined,this);
 
         (elm as any).node = node; //self.node references the graphnode on the div now
-        
+
         let canvas = elm.querySelector('canvas');
         if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object
 
@@ -544,7 +544,7 @@ export class DOMService extends Graph {
                 if(typeof r === 'object') {
                     if(r.template) { //assume its a component node
                         if(!routes[route].tag) routes[route].tag = route;
-                        this.addComponent(routes[route]);
+                        this.addComponent(routes[route],routes[route].generateChildElementNodes);
                     }
                     else if(r.context) { //assume its a canvas node
                         if(!routes[route].tag) routes[route].tag = route;
@@ -552,7 +552,7 @@ export class DOMService extends Graph {
                     }
                     else if(r.tagName || r.element) { //assume its an element node
                         if(!routes[route].tag) routes[route].tag = route;
-                        this.addElement(routes[route]);
+                        this.addElement(routes[route],routes[route].generateChildElementNodes);
                     }
 
                     if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
