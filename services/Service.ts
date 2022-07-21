@@ -116,6 +116,35 @@ export class Service extends Graph {
                 //if(includeClassName) routes[name+routeFormat+node.tag] = node;
                 //else 
                 routes[node.tag] = node;
+                
+                let checked = {};
+                let checkChildGraphNodes = (nd:GraphNode) => {
+                    if(!checked[nd.tag]) {
+                        checked[nd.tag] = true;
+
+                        if(nd instanceof Graph || nd.source instanceof Graph) {
+                            if(includeClassName) {
+                                let nm = nd.name;
+                                if(!nm) {
+                                    nm = nd.tag;
+                                    nd.name = nm;
+                                }
+                                if(!nm) {
+                                    nm = `graph${Math.floor(Math.random()*1000000000000000)}`;
+                                    nd.name = nm; 
+                                    nd.tag = nm;
+                                }
+                            } 
+                            nd.nodes.forEach((n) => {
+                                if(includeClassName) routes[nd.tag+routeFormat+n.tag] = n;
+                                else if(!routes[n.tag]) routes[n.tag] = n; 
+                                checkChildGraphNodes(n);
+                            });
+                        }
+                    }
+                }
+
+                checkChildGraphNodes(node);
             });
         }
         else if (typeof routes === 'object') {
