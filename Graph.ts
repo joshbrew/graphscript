@@ -969,6 +969,7 @@ export class GraphNode {
                         n.children[key] = n.graph.get(key); //try graph scope
                         if(!n.children[key]) n.children[key] = n.nodes.get(key);
                         if(n.children[key] instanceof GraphNode) {
+                            if(n.graph) n.children[key] = new GraphNode({tag:key},n,n.graph); //make an new node instead of copying the old one.
                             n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
                             this.checkNodesHaveChildMapped(n,n.children[key]);   
