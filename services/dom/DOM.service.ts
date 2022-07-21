@@ -96,6 +96,8 @@ export class DOMService extends Graph {
         let node = new GraphNode(
             options
         ,undefined,this);
+
+        (elm as any).node = node; //self.node references the graphnode on the div now
         
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
         if(generateChildElementNodes) { //convert all child divs to additional nodes
@@ -250,6 +252,8 @@ export class DOMService extends Graph {
             options
         ,undefined,this);
 
+        (elm as any).node = node; //self.node references the graphnode on the div now
+
         this.components[completeOptions.id] = {
             element:elm as any,
             class:CustomElement,
@@ -356,6 +360,8 @@ export class DOMService extends Graph {
             options
         ,undefined,this);
 
+        (elm as any).node = node; //self.node references the graphnode on the div now
+        
         let canvas = elm.querySelector('canvas');
         if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object
 
