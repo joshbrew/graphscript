@@ -436,9 +436,11 @@ export class DOMService extends Graph {
                 routes[node.tag] = node;
                 
                 let checked = {};
-                let checkChildGraphNodes = (nd:GraphNode) => {
-                    if((!checked[nd.tag] || (includeClassName && !checked[node.tag+routeFormat+nd.tag]))) {
-                        checked[nd.tag] = true;
+                
+                let checkChildGraphNodes = (nd:GraphNode, prev?:GraphNode) => {
+                    if(!checked[nd.tag] || (includeClassName && !checked[prev.tag+routeFormat+nd.tag])) {
+                        if(!prev) checked[nd.tag] = true;
+                        else checked[prev.tag+routeFormat+nd.tag] = true;
 
                         if(nd instanceof Graph || nd.source instanceof Graph) {
                             if(includeClassName) {
@@ -456,7 +458,7 @@ export class DOMService extends Graph {
                             nd.nodes.forEach((n) => {
                                 if(includeClassName) routes[nd.tag+routeFormat+n.tag] = n;
                                 else if(!routes[n.tag]) routes[n.tag] = n; 
-                                checkChildGraphNodes(n);
+                                checkChildGraphNodes(n,nd);
                             });
                         }
                     }
