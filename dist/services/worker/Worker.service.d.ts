@@ -26,10 +26,10 @@ export declare class WorkerService extends Service {
         onerror?: (ev: any) => void;
     }) => boolean;
     toObjectURL: (scriptTemplate: string) => string;
-    transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: StructuredSerializeOptions) => any;
+    transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: any) => any;
     terminate: (worker: Worker | MessagePort | string) => boolean;
     establishMessageChannel: (worker: Worker | string, worker2?: Worker | string) => false | MessageChannel;
-    request: (message: ServiceMessage | any, worker: Worker, transfer?: any, origin?: string, method?: string) => Promise<unknown>;
+    request: (message: ServiceMessage | any, worker: any, transfer?: any, origin?: string, method?: string) => Promise<unknown>;
     runRequest: (message: ServiceMessage | any, worker: undefined | string | Worker | MessagePort, callbackId: string | number) => any;
     routes: Routes;
 }

@@ -98,8 +98,16 @@ export class Service extends Graph {
         else if (routes instanceof Graph) { //class instance
             service = routes;
             routes = {};
+            let name;
+            if(includeClassName) {
+                name = service.name;
+                if(!name) name = service.tag;
+                if(!name) name = `graph${Math.floor(Math.random()*1000000000000000)}`;
+            } 
+
             service.nodes.forEach((node)=>{
-                routes[node.tag] = node;
+                if(includeClassName) routes[name+routeFormat+node.tag] = node;
+                else routes[node.tag] = node;
             });
         }
         else if (typeof routes === 'object') {

@@ -9,7 +9,6 @@ export class DOMElement extends HTMLElement {
     useShadow: boolean;
     styles: any;
     oncreate: any;
-    onresize: any;
     ondelete: any;
     onchanged: any;
     renderonchanged: boolean;
