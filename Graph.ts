@@ -193,7 +193,7 @@ export class GraphNode {
 
     nodes:Map<any,any> = new Map()
     arguments = new Map()
-    initial:any; //keep track of custom initial properties added that aren't default on the current class object
+    initial:any = {}; //keep track of custom initial properties added that aren't default on the current class object
 
     tag:string;
     parent:GraphNode|Graph;
