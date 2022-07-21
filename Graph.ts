@@ -193,6 +193,7 @@ export class GraphNode {
 
     nodes:Map<any,any> = new Map()
     arguments = new Map()
+    initial:any; //keep track of custom initial properties added that aren't default on the current class object
 
     tag:string;
     parent:GraphNode|Graph;
@@ -294,7 +295,6 @@ export class GraphNode {
                     }
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
-            
             }
 
             if(properties?.operator) {
@@ -337,10 +337,16 @@ export class GraphNode {
                     }
                 }
 
-                properties.arguments = this.arguments
+                properties.arguments = this.arguments;
+            }
+
+            let keys = Object.getOwnPropertyNames(this); 
+            for(const key in properties) {
+                if(!keys.includes(key)) this.initial[key] = properties[key]; //get custom initial values 
             }
 
             Object.assign(this, properties); //set the node's props as this 
+
 
             if(!this.tag) {
                 if(graph) {
@@ -866,6 +872,28 @@ export class GraphNode {
         }
         return result;
     }
+
+    getProps = (node=this) => {
+       return {
+         tag:node.tag,
+         operator:node.operator,
+         graph:node.graph,
+         children:node.children,
+         parent:node.parent,
+         forward:node.forward,
+         backward:node.bacward,
+         loop:node.loop,
+         animate:node.animate,
+         frame:node.frame,
+         delay:node.delay,
+         recursive:node.recursive,
+         repeat:node.repeat,
+         branch:node.branch,
+         oncreate:node.oncreate,
+         DEBUGNODE:node.DEBUGNODE,
+         ...this.initial
+       };
+    }
     
     setProps = (props:GraphNodeProperties={}) => {
         let tmp = Object.assign({},props);
@@ -969,7 +997,11 @@ export class GraphNode {
                         n.children[key] = n.graph.get(key); //try graph scope
                         if(!n.children[key]) n.children[key] = n.nodes.get(key);
                         if(n.children[key] instanceof GraphNode) {
-                            if(n.graph) n.children[key] = new GraphNode({tag:key},n,n.graph); //make an new node instead of copying the old one.
+                            if(n.graph) {
+                                let props = n.children[key].getProps(); //get the customized values of this node
+                                delete props.tag;
+                                n.children[key] = new GraphNode(props,n,n.graph); //make an new node instead of copying the old one.
+                            }
                             n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
                             this.checkNodesHaveChildMapped(n,n.children[key]);   
