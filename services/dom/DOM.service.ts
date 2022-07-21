@@ -437,7 +437,7 @@ export class DOMService extends Graph {
                 
                 let checked = {};
                 let checkChildGraphNodes = (nd:GraphNode) => {
-                    if(!checked[nd.tag]) {
+                    if((!checked[nd.tag] || (includeClassName && !checked[node.tag+routeFormat+nd.tag]))) {
                         checked[nd.tag] = true;
 
                         if(nd instanceof Graph || nd.source instanceof Graph) {
