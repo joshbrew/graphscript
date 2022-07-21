@@ -42,13 +42,13 @@ export class Router { //instead of extending acyclicgraph or service again we ar
         if(options && 'loadDefaultRoutes' in options) {
             this.loadDefaultRoutes = options.loadDefaultRoutes;
         }
-        if(this.loadDefaultRoutes) this.load(this.defaultRoutes,options?.linkServices);
+        if(this.loadDefaultRoutes) this.load(this.defaultRoutes,options?.linkServices,options?.includeClassName);
 
         if(Array.isArray(services)){
-            services.forEach(s => this.load(s,options?.linkServices));
+            services.forEach(s => this.load(s,options?.linkServices,options?.includeClassName));
         }
         else if (typeof services === 'object') {
-            Object.keys(services).forEach(s => this.load(services[s],options?.linkServices));
+            Object.keys(services).forEach(s => this.load(services[s],options?.linkServices,options?.includeClassName));
         }
         
     }
