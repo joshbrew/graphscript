@@ -95,7 +95,7 @@ export class Service extends Graph {
                 routes = service.routes;
             }
         } //we can instantiate a class and load the routes. Routes should run just fine referencing the classes' internal data structures without those being garbage collected.
-        else if (routes instanceof Graph) { //class instance
+        else if (routes instanceof Graph || routes.source instanceof Graph) { //class instance
             service = routes;
             routes = {};
             let name;
