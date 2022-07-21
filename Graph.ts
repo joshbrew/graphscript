@@ -1001,12 +1001,8 @@ export class GraphNode {
                                 let props = (n.children[key] as GraphNode).getProps(); //get the customized values of this node
                                 delete props.parent;
                                 delete props.graph;
-                                if(n.source) 
+                                if(n.source instanceof Graph) 
                                     n.children[key] = new GraphNode(props,n,(n as any).source); //make an new node instead of copying the old one.
-                                else {
-                                    delete props.tag;
-                                    n.children[key] = new GraphNode(props,n,n.graph); //make an new node instead of copying the old one.
-                                }
                             }
                             n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
