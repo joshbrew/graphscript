@@ -1000,6 +1000,8 @@ export class GraphNode {
                             if(n.graph) {
                                 let props = n.children[key].getProps(); //get the customized values of this node
                                 delete props.tag;
+                                delete props.parent;
+                                delete props.graph;
                                 n.children[key] = new GraphNode(props,n,n.graph); //make an new node instead of copying the old one.
                             }
                             n.nodes.set(n.children[key].tag,n.children[key]);
