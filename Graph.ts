@@ -193,7 +193,7 @@ export class GraphNode {
 
     nodes:Map<any,any> = new Map()
     arguments = new Map()
-    initial:any = {}; //keep track of custom initial properties added that aren't default on the current class object
+    initial:{[key:string]:any} = {}; //keep track of custom initial properties added that aren't default on the current class object
 
     tag:string;
     parent:GraphNode|Graph;
@@ -998,10 +998,15 @@ export class GraphNode {
                         if(!n.children[key]) n.children[key] = n.nodes.get(key);
                         if(n.children[key] instanceof GraphNode) {
                             if(n.graph) {
-                                let props = n.children[key].getProps(); //get the customized values of this node
+                                let props = (n.children[key] as GraphNode).getProps(); //get the customized values of this node
                                 delete props.parent;
                                 delete props.graph;
-                                n.children[key] = new GraphNode(props,n,n.graph); //make an new node instead of copying the old one.
+                                if(n.source) 
+                                    n.children[key] = new GraphNode(props,n,(n as any).source); //make an new node instead of copying the old one.
+                                else {
+                                    delete props.tag;
+                                    n.children[key] = new GraphNode(props,n,n.graph); //make an new node instead of copying the old one.
+                                }
                             }
                             n.nodes.set(n.children[key].tag,n.children[key]);
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
