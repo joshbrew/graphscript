@@ -7,7 +7,8 @@ export type Protocol = 'http'|'wss'|'sse'|'webrtc'|'osc'|'worker'|'ble'|'serial'
 //handle subscriptions
 //match i/o protocols to correct services
 export type RouterOptions = {
-    linkServices?:boolean,
+    linkServices?:boolean, //have all services map each other's nodes?
+    includeClassName?:boolean, //reroute services with their class/variable/service name if defined (anonymous objects won't add reroutes!!)
     loadDefaultRoutes?:boolean
 }
 
@@ -54,7 +55,8 @@ export class Router { //instead of extending acyclicgraph or service again we ar
 
     load = (
         service:Graph|Routes|{name:string,module:any}|any, 
-        linkServices:boolean=true
+        linkServices:boolean=true,
+        includeClassName:boolean=true
     ) => { //load a service class instance or service prototoype class
         if(!(service instanceof Graph) && typeof service === 'function')    //class
         {   
@@ -76,7 +78,7 @@ export class Router { //instead of extending acyclicgraph or service again we ar
             } else this.services[service.constructor.name] = service; 
         }
         
-        this.service.load(service, linkServices);
+        this.service.load(service, includeClassName);
         
         if(linkServices) {
             for(const name in this.services) { //tie node references together across service node maps so they can call each other

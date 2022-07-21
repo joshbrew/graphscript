@@ -102,12 +102,17 @@ export class Service extends Graph {
             if(includeClassName) {
                 name = service.name;
                 if(!name) name = service.tag;
-                if(!name) name = `graph${Math.floor(Math.random()*1000000000000000)}`;
+                if(!name) {
+                    name = `graph${Math.floor(Math.random()*1000000000000000)}`;
+                    service.name = name; 
+                    service.tag = name;
+                }
             } 
 
             service.nodes.forEach((node)=>{
-                if(includeClassName) routes[name+routeFormat+node.tag] = node;
-                else routes[node.tag] = node;
+                //if(includeClassName) routes[name+routeFormat+node.tag] = node;
+                //else 
+                routes[node.tag] = node;
             });
         }
         else if (typeof routes === 'object') {
