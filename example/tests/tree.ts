@@ -21,7 +21,7 @@ const deep = new Graph({}, tag, {
         hello: 'world'
     },
     operator: (node, arg1) => {
-        console.log('arbitrary property ( incorrect )', node.arbitrary, node.initial.source.arbitrary)
+        console.log('arbitrary property ( incorrect )', node.arbitrary, node.source.arbitrary)
         return arg1
     }
 })
