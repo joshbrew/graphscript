@@ -34,7 +34,7 @@ const deep2 = new Graph({
         },
         operator: (node, arg1) => {
             console.log('node', node)
-            console.log('arbitrary property ( correct )', node.arbitrary, node, node.initial)
+            console.log('arbitrary property ( correct )', node.arbitrary, node, node._initial)
             return arg1
         }
     }
