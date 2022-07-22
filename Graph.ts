@@ -285,12 +285,18 @@ export class GraphNode {
                 if(graph?.nodes) {
                     hasnode = graph.nodes.get(properties.tag);
                     if(hasnode) {
+                        if(hasnode.source) {}
                         // if(hasnode.source instanceof Graph) { //duplicate the graph
                         //     hasnode = new Graph(hasnode.source.tree,`${hasnode.tag}${graph.nNodes+1}`, properties);
                         // }
                         Object.assign(this,hasnode); 
                         if(!this.source) this.source = hasnode;
-                        if(hasnode.initial) Object.assign(properties, hasnode.initial);
+
+                        let props = hasnode.getProps();
+                        delete hasnode.graph;
+                        delete hasnode.parent;
+
+                        if(hasnode.initial) Object.assign(properties, props);
                     }
                     //if(hasnode) return hasnode;
                 }
@@ -299,7 +305,12 @@ export class GraphNode {
                     if(hasnode) {
                         Object.assign(this,hasnode); 
                         if(!this.source) this.source = hasnode;
-                        if(hasnode.initial) Object.assign(properties, hasnode.initial);
+                        
+                        let props = hasnode.getProps();
+                        delete hasnode.graph;
+                        delete hasnode.parent;
+
+                        if(hasnode.initial) Object.assign(properties, props);
                     }
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
