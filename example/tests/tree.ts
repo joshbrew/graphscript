@@ -14,19 +14,18 @@ export const operators = {
 }
 
 const tag = 'config_1'
-// Incorrect
+
 const deep = new Graph({}, tag, {
     tag,
     arbitrary: {
         hello: 'world'
     },
     operator: (node, arg1) => {
-        console.log('arbitrary property ( incorrect )', node.arbitrary, node.initial.source.arbitrary)
+        console.log('arbitrary property ( incorrect )', node.arbitrary, node.source.arbitrary)
         return arg1
     }
 })
 
-// Correct
 const correctTag = tag + '_correct'
 const deep2 = new Graph({
     [correctTag]: {
