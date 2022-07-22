@@ -252,6 +252,7 @@ export class GraphNode {
                 };
 
                 //in case any stuff was added to the graph to indicate flow logic
+                if(source.initial) Object.assign(properties,source.initial); 
                 if(source.operator) properties.operator = source.operator;
                 if(source.children) properties.children = source.children;
                 if(source.forward) properties.forward = source.forward;
