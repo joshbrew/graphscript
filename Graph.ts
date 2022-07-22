@@ -347,6 +347,8 @@ export class GraphNode {
             for(const key in properties) {
                 if(!keys.includes(key)) this.initial[key] = properties[key]; //get custom initial values 
             }
+            this.initial.children = Object.assign({},properties.children); //preserve the prototypes
+            this.initial.parent = Object.assign({},properties.parent);
 
             Object.assign(this, properties); //set the node's props as this 
 
@@ -365,9 +367,10 @@ export class GraphNode {
                 this.graph=graph;
                 if(!graph.nodes.get(this.tag)) 
                     graph.nNodes++;
-                else 
+                else {
+                    parentNode.nodes.set(this.tag,this);
                     this.tag = `${this.tag}${graph.nNodes+1}` //make sure the tags are unique
-                
+                }
                 graph.nodes.set(this.tag,this);
             }
 
@@ -882,7 +885,7 @@ export class GraphNode {
          tag:node.tag,
          operator:node.operator,
          graph:node.graph,
-         children:node.children,
+         children:node.children, //will return the original prototypes kept in this.initial if they exist
          parent:node.parent,
          forward:node.forward,
          backward:node.bacward,
