@@ -361,12 +361,13 @@ export class GraphNode {
 
             if(parentNode) this.parent=parentNode;
             
-            if(graph) this.graph=graph;
-        
             if(graph) {
-                if(!graph.nodes.get(this.tag)) {
+                this.graph=graph;
+                if(!graph.nodes.get(this.tag)) 
                     graph.nNodes++;
-                }
+                else 
+                    this.tag = `${this.tag}${graph.nNodes+1}` //make sure the tags are unique
+                
                 graph.nodes.set(this.tag,this);
             }
 
