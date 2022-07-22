@@ -282,9 +282,6 @@ export class GraphNode {
                 if(graph?.nodes) {
                     let hasnode = graph.nodes.get(properties.tag);
                     if(hasnode) {
-                        if(hasnode.source instanceof Graph) { //duplicate the graph
-                            hasnode = new Graph(hasnode.source.tree,`${hasnode.tag}${graph.nNodes}`, properties);
-                        }
                         Object.assign(this,hasnode); 
                         if(!this.source) this.source = hasnode;
                     }
@@ -1141,9 +1138,8 @@ export class Graph {
     constructor( tree?:Tree, tag?:string, props?:{[key:string]:any} ) {
         this.tag = tag ? tag : `graph${Math.floor(Math.random()*100000000000)}`;
 
-        if(tree || Object.keys(this.tree).length > 0) this.setTree(tree);
-
         if(props) Object.assign(this,props); //set other props like flow properties in a nested graph
+        if(tree || Object.keys(this.tree).length > 0) this.setTree(tree);
     }
 
     //converts all children nodes and tag references to GraphNodes also
