@@ -1207,6 +1207,7 @@ export class Graph {
                             if(source.delay) properties.delay = source.delay;
                             if(source.tag) properties.tag = source.tag;
                             if(source.oncreate) properties.oncreate = source.oncreate;
+                            if(source.node?.initial) Object.assign(properties,source.node.initial);
 
                             properties.nodes = source.nodes;
                             properties.source = source;
