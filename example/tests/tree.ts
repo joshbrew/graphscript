@@ -14,7 +14,7 @@ export const operators = {
 }
 
 const tag = 'config_1'
-// Incorrect
+
 const deep = new Graph({}, tag, {
     tag,
     arbitrary: {
@@ -26,7 +26,6 @@ const deep = new Graph({}, tag, {
     }
 })
 
-// Correct
 const correctTag = tag + '_correct'
 const deep2 = new Graph({
     [correctTag]: {
