@@ -13,28 +13,37 @@ export const operators = {
     }
 }
 
-// const deepGraph = new Graph({
-//     button: {
-//         tagName: 'button', 
-//         innerHTML: 'Click me',
-//         children: {
-//             'add': true
-//         },
-//         operator: (input) => {
-//             console.log('Running', input)
-//             return input
-//         },
-//         oncreate: (self, props) => {
-//             console.log('created function', self,  props)
-//             self.onclick = () => {
-//                 props.node.run(true)
-//             }
-//         }
-//     },
-// })
+const tag = 'config_1'
+// Incorrect
+const deep = new Graph({}, tag, {
+    tag,
+    arbitrary: {
+        hello: 'world'
+    },
+    operator: (node, arg1) => {
+        console.log('arbitrary property ( incorrect )', node.arbitrary, node.initial.source.arbitrary)
+        return arg1
+    }
+})
+
+// Correct
+const correctTag = tag + '_correct'
+const deep2 = new Graph({
+    [correctTag]: {
+        arbitrary: {
+            hello: 'world'
+        },
+        operator: (node, arg1) => {
+            console.log('node', node)
+            console.log('arbitrary property ( correct )', node.arbitrary, node, node.initial)
+            return arg1
+        }
+    }
+})
 
 const routes = {
-    // button: deepGraph,
+    deep,
+    deep2,
     add: {
         children: {
             'subtract': true
@@ -42,6 +51,10 @@ const routes = {
         operator: operators.add,
     },
     multiply: {
+        children: {
+            [tag]: true,
+            [correctTag]: true
+        },
         operator: operators.multiply,
     },
 }
@@ -50,7 +63,7 @@ export const tree = {
     subtract: {
         operator: operators.subtract,
         children: {
-            'multiply': true
+            'multiply': true        
         },
     },
     nested: new DOMService({
