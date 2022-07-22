@@ -370,6 +370,7 @@ export class GraphNode {
                 else {
                     parentNode.nodes.set(this.tag,this);
                     this.tag = `${this.tag}${graph.nNodes+1}` //make sure the tags are unique
+                    graph.nNodes++;
                 }
                 graph.nodes.set(this.tag,this);
             }
@@ -1011,7 +1012,6 @@ export class GraphNode {
                                 if(n.source) 
                                     n.children[key] = new GraphNode(props,n,(n as any).source); //make an new node instead of copying the old one.
                                 else {
-                                    if(props.tag) props.tag = `${props.tag}${n.graph.nNodes+1}`
                                     n.children[key] = new GraphNode(props,n,n.graph); //make an new node instead of copying the old one.
                                 }
                             }
