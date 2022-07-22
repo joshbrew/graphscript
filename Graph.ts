@@ -282,6 +282,9 @@ export class GraphNode {
                 if(graph?.nodes) {
                     let hasnode = graph.nodes.get(properties.tag);
                     if(hasnode) {
+                        // if(hasnode.source instanceof Graph) { //duplicate the graph
+                        //     hasnode = new Graph(hasnode.source.tree,`${hasnode.tag}${graph.nNodes+1}`, properties);
+                        // }
                         Object.assign(this,hasnode); 
                         if(!this.source) this.source = hasnode;
                     }
