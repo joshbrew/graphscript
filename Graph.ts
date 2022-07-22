@@ -266,6 +266,7 @@ export class GraphNode {
                 if(source.tag) properties.tag = source.tag;
                 if(source.oncreate) properties.oncreate = source.oncreate;
                 if(source.node) if(source.node.initial) Object.assign(properties,source.node.initial);
+                if(source.initial) Object.assign(properties,source.initial);
 
                 this.nodes = source.nodes;
                 source.node = this;
@@ -307,11 +308,6 @@ export class GraphNode {
             if(properties?.operator) {
                 properties.operator = this.setOperator(properties.operator); //updates an arbitrary function if not fitting our operator format
             }
-            // const keys = Object.keys(this)
-            // const prohibited = ['tag', 'parent', 'graph', 'children', 'operator']    
-            // for (let key in properties){
-            //     if (!keys.includes(key) && !prohibited.includes(key)) this.attributes.add(key)
-            // }
     
             if(!properties.tag && graph) {
                 properties.tag = `node${graph.nNodes}`; //add a sequential id to find the node in the tree 
@@ -1137,6 +1133,7 @@ export class Graph {
     tag:string;
     nodes:Map<any,any> = new Map();
     state=state;
+    initial:any;
 
     //can create preset node trees on the graph
     tree:Tree = {};
@@ -1146,7 +1143,10 @@ export class Graph {
     constructor( tree?:Tree, tag?:string, props?:{[key:string]:any} ) {
         this.tag = tag ? tag : `graph${Math.floor(Math.random()*100000000000)}`;
 
-        if(props) Object.assign(this,props); //set other props like flow properties in a nested graph
+        if(props) {
+            Object.assign(this,props); //set other props like flow properties in a nested graph
+            this.initial = props;
+        }
         if(tree || Object.keys(this.tree).length > 0) this.setTree(tree);
     }
 
