@@ -296,7 +296,7 @@ export class GraphNode {
                         delete props.graph;
                         delete props.parent;
 
-                        if(hasnode.initial) Object.assign(properties, props);
+                        Object.assign(properties, props);
                     }
                     //if(hasnode) return hasnode;
                 }
@@ -310,7 +310,7 @@ export class GraphNode {
                         delete props.graph;
                         delete props.parent;
 
-                        if(hasnode.initial) Object.assign(properties, props);
+                        Object.assign(properties, props);
                     }
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
