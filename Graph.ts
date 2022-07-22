@@ -252,7 +252,6 @@ export class GraphNode {
                 };
 
                 //in case any stuff was added to the graph to indicate flow logic
-                if(source.initial) Object.assign(properties, source.initial); 
                 if(source.operator) properties.operator = source.operator;
                 if(source.children) properties.children = source.children;
                 if(source.forward) properties.forward = source.forward;
@@ -266,8 +265,10 @@ export class GraphNode {
                 if(source.delay) properties.delay = source.delay;
                 if(source.tag) properties.tag = source.tag;
                 if(source.oncreate) properties.oncreate = source.oncreate;
+                if(source.node) if(source.node.initial) Object.assign(properties,source.node.initial);
 
                 this.nodes = source.nodes;
+                source.node = this;
                 
                 if(graph) {
                     source.nodes.forEach((n) => {
@@ -280,8 +281,9 @@ export class GraphNode {
             }
 
             if(properties.tag && (graph || parentNode)) {
+                let hasnode;
                 if(graph?.nodes) {
-                    let hasnode = graph.nodes.get(properties.tag);
+                    hasnode = graph.nodes.get(properties.tag);
                     if(hasnode) {
                         // if(hasnode.source instanceof Graph) { //duplicate the graph
                         //     hasnode = new Graph(hasnode.source.tree,`${hasnode.tag}${graph.nNodes+1}`, properties);
@@ -292,8 +294,8 @@ export class GraphNode {
                     }
                     //if(hasnode) return hasnode;
                 }
-                else if(parentNode?.nodes) {
-                    let hasnode = parentNode.nodes.get(properties.tag);
+                if(!hasnode && parentNode?.nodes) {
+                    hasnode = parentNode.nodes.get(properties.tag);
                     if(hasnode) {
                         Object.assign(this,hasnode); 
                         if(!this.source) this.source = hasnode;
