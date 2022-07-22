@@ -364,14 +364,12 @@ export class GraphNode {
             
             if(graph) {
                 this.graph=graph;
-                if(!graph.nodes.get(this.tag)) 
-                    graph.nNodes++;
-                else {
+                if(graph.nodes.get(this.tag)) {
                     parentNode.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
                     this.tag = `${this.tag}${graph.nNodes+1}` //make sure the tags are unique
-                    graph.nNodes++;
                 }
                 graph.nodes.set(this.tag,this);
+                graph.nNodes++;
             }
 
             
