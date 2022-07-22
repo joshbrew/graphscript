@@ -284,36 +284,24 @@ export class GraphNode {
                 let hasnode;
                 if(graph?.nodes) {
                     hasnode = graph.nodes.get(properties.tag);
-                    if(hasnode) {
-                        if(hasnode.source) {}
-                        // if(hasnode.source instanceof Graph) { //duplicate the graph
-                        //     hasnode = new Graph(hasnode.source.tree,`${hasnode.tag}${graph.nNodes+1}`, properties);
-                        // }
-                        Object.assign(this,hasnode); 
-                        if(!this.source) this.source = hasnode;
-
-                        let props = hasnode.getProps();
-                        delete props.graph;
-                        delete props.parent;
-
-                        Object.assign(properties, props);
-                    }
-                    //if(hasnode) return hasnode;
+                    // if(hasnode) if(hasnode.source instanceof Graph) { //duplicate the graph
+                    //     hasnode = new Graph(hasnode.source.tree,`${hasnode.tag}${graph.nNodes+1}`, properties);
+                    // }
                 }
                 if(!hasnode && parentNode?.nodes) {
                     hasnode = parentNode.nodes.get(properties.tag);
-                    if(hasnode) {
-                        Object.assign(this,hasnode); 
-                        if(!this.source) this.source = hasnode;
-
-                        let props = hasnode.getProps();
-                        delete props.graph;
-                        delete props.parent;
-
-                        Object.assign(properties, props);
-                    }
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
+                if(hasnode) {
+                    Object.assign(this,hasnode); 
+                    if(!this.source) this.source = hasnode;
+
+                    let props = hasnode.getProps();
+                    delete props.graph;
+                    delete props.parent;
+
+                    Object.assign(properties, props);
+                }
             }
 
             if(properties?.operator) {
