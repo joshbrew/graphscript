@@ -227,7 +227,7 @@ export class GraphNode {
         if(typeof properties === 'object') {
 
             //can pass graphs and wrap Graphs with GraphNodes to enable nesting in trees
-           
+            if(properties instanceof GraphNode && properties.initial) Object.assign(properties, properties.initial);
             if(properties instanceof Graph) {
                 let source = properties;
                 
