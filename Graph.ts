@@ -288,6 +288,7 @@ export class GraphNode {
                         // }
                         Object.assign(this,hasnode); 
                         if(!this.source) this.source = hasnode;
+                        if(hasnode.initial) Object.assign(properties, hasnode.initial);
                     }
                     //if(hasnode) return hasnode;
                 }
@@ -296,6 +297,7 @@ export class GraphNode {
                     if(hasnode) {
                         Object.assign(this,hasnode); 
                         if(!this.source) this.source = hasnode;
+                        if(hasnode.initial) Object.assign(properties, hasnode.initial);
                     }
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
