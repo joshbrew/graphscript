@@ -293,8 +293,8 @@ export class GraphNode {
                         if(!this.source) this.source = hasnode;
 
                         let props = hasnode.getProps();
-                        delete hasnode.graph;
-                        delete hasnode.parent;
+                        delete props.graph;
+                        delete props.parent;
 
                         if(hasnode.initial) Object.assign(properties, props);
                     }
@@ -305,10 +305,10 @@ export class GraphNode {
                     if(hasnode) {
                         Object.assign(this,hasnode); 
                         if(!this.source) this.source = hasnode;
-                        
+
                         let props = hasnode.getProps();
-                        delete hasnode.graph;
-                        delete hasnode.parent;
+                        delete props.graph;
+                        delete props.parent;
 
                         if(hasnode.initial) Object.assign(properties, props);
                     }
