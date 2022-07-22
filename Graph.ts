@@ -1001,38 +1001,38 @@ export class GraphNode {
         if(n?.children) {
             for(const key in n.children) { //object syntax instead of setting single nodes etc.
                 if(!(n.children[key] instanceof GraphNode)) {
-                    if(typeof n.children[key] === 'undefined' || n.children[key] === true) {
-                        n.children[key] = n.graph.get(key); //try graph scope
-                        if(!n.children[key]) n.children[key] = n.nodes.get(key);
+                    if (typeof n.children[key] === 'object') {
+                        if(!n.children[key].tag) n.children[key].tag = key;
+                        n.children[key] = new GraphNode(n.children[key],n,n.graph); //make a brand new graphnode based on the object spec
+                        this.checkNodesHaveChildMapped(n,n.children[key]); //then climb up the tree to make sure each enclosing layer has node references for these children
+                    }
+                    else {
+                        if(typeof n.children[key] === 'undefined' || n.children[key] == true) {
+                            n.children[key] = n.graph.get(key); //try graph scope
+                            if(!n.children[key]) n.children[key] = n.nodes.get(key);
+                        }
+                        else if(typeof n.children[key] === 'string') {
+                            let k = n.children[key];
+                            n.children[key] = n.graph.get(k); //try graph scope
+                            if(!n.children[key]) n.children[key] = n.nodes.get(key);
+                        } 
                         if(n.children[key] instanceof GraphNode) {
-                            if(n.graph) {
+                            if(n.graph) { //lets copy the node in this case so we have an independent instance we can parent properly
                                 let props = (n.children[key] as GraphNode).getProps(); //get the customized values of this node
                                 delete props.parent;
                                 delete props.graph;
-                                if(n.source) 
+                                if(n.source) //map the node to a source graph if it a child of a graphnode that wraps a graph
                                     n.children[key] = new GraphNode(props,n,(n as any).source); //make an new node instead of copying the old one.
                                 else {
                                     n.children[key] = new GraphNode(props,n,n.graph); //make an new node instead of copying the old one.
                                 }
                             }
-                            n.nodes.set(n.children[key].tag,n.children[key]);
+                            else {
+                                n.nodes.set(n.children[key].tag, n.children[key]);
+                                this.checkNodesHaveChildMapped(n, n.children[key]);   
+                            }
                             if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
-                            this.checkNodesHaveChildMapped(n,n.children[key]);   
                         }
-                    }
-                    else if(typeof n.children[key] === 'string') {
-                        let child = n.graph.get(n.children[key]); //try graph scope
-                        n.children[key] = child;
-                        if(!child) child = n.nodes.get(key);
-                        if(child instanceof GraphNode) {
-                             n.nodes.set(n.children[key].tag,n.children[key]);
-                            if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
-                            this.checkNodesHaveChildMapped(n,child);
-                        }
-                    } else if (typeof n.children[key] === 'object') {
-                        if(!n.children[key].tag) n.children[key].tag = key;
-                        n.children[key] = new GraphNode(n.children[key],n,n.graph);
-                        this.checkNodesHaveChildMapped(n,n.children[key]);
                     }
                 }
             }
