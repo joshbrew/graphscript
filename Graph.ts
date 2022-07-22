@@ -368,7 +368,7 @@ export class GraphNode {
                 if(!graph.nodes.get(this.tag)) 
                     graph.nNodes++;
                 else {
-                    parentNode.nodes.set(this.tag,this);
+                    parentNode.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
                     this.tag = `${this.tag}${graph.nNodes+1}` //make sure the tags are unique
                     graph.nNodes++;
                 }
@@ -703,7 +703,7 @@ export class GraphNode {
         //can add an animationFrame coroutine, one per node //because why not
         this.animation = animation as any;
         if(!animation) this.animation = this.operator as any;
-        if(node.animate && !node.isAnimating) {
+        if(node.animate && !node.isAnimating && 'requestAnimationFrame' in window) {
             node.isAnimating = true;
             let anim = async () => {
                 //console.log('anim')
