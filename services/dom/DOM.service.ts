@@ -524,10 +524,7 @@ export class DOMService extends Graph {
                             if((route.tag || route.id) && (route.template || route.context || route.tagName || route.element) && (rt.template || rt.context || rt.tagName || rt.element) && !rt.parentNode) {
                                 if(route.tag) rt.parentNode = route.tag; 
                                 if(route.id) rt.parentNode = route.id;
-                                rt.parent = rt.parentNode;
                             }
-                            else if(!rt.parent && route.tag) rt.parent = route.tag;
-                            else if(!rt.parent && routeKey) rt.parent = routeKey;
 
                             if(rt.tag) {
                                 routes[rt.tag] = route.children[key];
