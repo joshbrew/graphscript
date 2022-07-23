@@ -11,9 +11,9 @@ import {CanvasElementProps, CanvasOptions, CanvasElementInfo} from './types/canv
 
 
 export type DOMRouteProp = 
-    (ElementProps & GraphNodeProperties) |
-    (DOMElementProps & GraphNodeProperties) |
-    (CanvasElementProps & GraphNodeProperties)
+    ElementProps |
+    DOMElementProps |
+    CanvasElementProps
 
 export type DOMRoutes = {
     [key:string]:
@@ -515,25 +515,33 @@ export class DOMService extends Graph {
         
         //load any children into routes too if tags exist
         for(const tag in routes) {
-            let childrenIter = (route:RouteProp) => {
+            let childrenIter = (route:RouteProp, routeKey:string) => {
                 if(typeof route?.children === 'object') {
                     for(const key in route.children) {
                         if(typeof route.children[key] === 'object') {
                             let rt = (route.children[key] as any);
-                            if(!rt.parent) rt.parent = tag;
+                            //automatically parent children html routes to parent html routes without needing explicit parentNode definitions
+                            if((route.tag || route.id) && (route.template || route.context || route.tagName || route.element) && (rt.template || rt.context || rt.tagName || rt.element) && !rt.parentNode) {
+                                if(route.tag) rt.parentNode = route.tag; 
+                                if(route.id) rt.parentNode = route.id;
+                                rt.parent = rt.parentNode;
+                            }
+                            else if(!rt.parent && route.tag) rt.parent = route.tag;
+                            else if(!rt.parent && routeKey) rt.parent = routeKey;
+
                             if(rt.tag) {
                                 routes[rt.tag] = route.children[key];
-                                childrenIter(routes[rt.tag]);
+                                childrenIter(routes[rt.tag], key);
                             } else if (rt.id) {
                                 rt.tag = rt.id;
                                 routes[rt.tag] = route.children[key];
-                                childrenIter(routes[rt.tag]);
+                                childrenIter(routes[rt.tag], key);
                             }
                         }
                     }
                 }
             }
-            childrenIter(routes[tag]);
+            childrenIter(routes[tag],tag);
         }
 
         routes = Object.assign({},routes);

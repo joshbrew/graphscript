@@ -6,7 +6,7 @@ import { CompleteOptions } from './types/general';
 import { ElementOptions, ElementInfo, ElementProps } from './types/element';
 import { DOMElementProps, ComponentOptions, DOMElementInfo } from './types/component';
 import { CanvasElementProps, CanvasOptions, CanvasElementInfo } from './types/canvascomponent';
-export declare type DOMRouteProp = (ElementProps & GraphNodeProperties) | (DOMElementProps & GraphNodeProperties) | (CanvasElementProps & GraphNodeProperties);
+export declare type DOMRouteProp = ElementProps | DOMElementProps | CanvasElementProps;
 export declare type DOMRoutes = {
     [key: string]: GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
         aliases?: string[];

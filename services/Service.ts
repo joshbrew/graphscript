@@ -190,25 +190,26 @@ export class Service extends Graph {
 
         //load any children into routes too if tags exist
         for(const tag in routes) {
-            let childrenIter = (route:RouteProp) => {
+            let childrenIter = (route:RouteProp, routeKey:string) => {
                 if(typeof route?.children === 'object') {
                     for(const key in route.children) {
                         if(typeof route.children[key] === 'object') {
                             let rt = (route.children[key] as any);
-                            if(!rt.parent) rt.parent = tag;
+                            if(!rt.parent && route.tag) rt.parent = route.tag;
+                            else if(!rt.parent && routeKey) rt.parent = routeKey;
                             if(rt.tag) {
                                 routes[rt.tag] = route.children[key];
-                                childrenIter(routes[rt.tag]);
+                                childrenIter(routes[rt.tag],key);
                             } else if (rt.id) {
                                 rt.tag = rt.id;
                                 routes[rt.tag] = route.children[key];
-                                childrenIter(routes[rt.tag]);
+                                childrenIter(routes[rt.tag],key);
                             }
                         }
                     }
                 }
             }
-            childrenIter(routes[tag]);
+            childrenIter(routes[tag],tag);
         }
 
         for(const route in routes) {

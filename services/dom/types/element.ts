@@ -13,7 +13,7 @@ export type ElementProps = {
     innerHTML?:string,
     id?:string,
     generateChildElementNodes?:boolean //generate these element info and graphnodes for every node in an element hierarchy
-}
+} & GraphNodeProperties
 
 export type ElementInfo = { //returned from addElement
     element:HTMLElement,

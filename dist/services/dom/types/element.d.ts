@@ -14,7 +14,7 @@ export declare type ElementProps = {
     innerHTML?: string;
     id?: string;
     generateChildElementNodes?: boolean;
-};
+} & GraphNodeProperties;
 export declare type ElementInfo = {
     element: HTMLElement;
     node: GraphNode;
