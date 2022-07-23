@@ -195,7 +195,7 @@ export class Service extends Graph {
                     for(const key in route.children) {
                         if(typeof route.children[key] === 'object') {
                             let rt = (route.children[key] as any);
-                            if(!rt.parent && route.tag) rt.parent = route.tag;
+                            if(!rt.parent && route.tag) rt.parent = route.tag; //this could parent to the wrong nodes potentially when copying stuff by tag
                             else if(!rt.parent && routeKey) rt.parent = routeKey;
                             if(rt.tag) {
                                 routes[rt.tag] = route.children[key];
