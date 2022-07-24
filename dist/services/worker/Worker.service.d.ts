@@ -26,7 +26,7 @@ export declare class WorkerService extends Service {
         onerror?: (ev: any) => void;
     }) => WorkerInfo;
     toObjectURL: (scriptTemplate: string) => string;
-    transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: any) => any;
+    transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: StructuredSerializeOptions) => any;
     terminate: (worker: Worker | MessagePort | string) => boolean;
     establishMessageChannel: (worker: Worker | string, worker2?: Worker | string) => false | MessageChannel;
     request: (message: ServiceMessage | any, worker: Worker, transfer?: any, origin?: string, method?: string) => Promise<unknown>;

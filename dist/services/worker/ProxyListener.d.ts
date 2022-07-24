@@ -1,13 +1,19 @@
-export function initProxyElement(element: any, worker: any): string;
-export class EventDispatcher {
+export declare function initProxyElement(element: any, worker: any): string;
+export declare class EventDispatcher {
+    _listeners: any;
     addEventListener(type: any, listener: any): void;
-    _listeners: {};
     hasEventListener(type: any, listener: any): boolean;
     removeEventListener(type: any, listener: any): void;
     dispatchEvent(event: any): void;
 }
-export class ElementProxyReceiver extends EventDispatcher {
-    style: {};
+export declare class ElementProxyReceiver extends EventDispatcher {
+    style: any;
+    width: any;
+    left: any;
+    right: any;
+    top: any;
+    height: any;
+    constructor();
     get clientWidth(): any;
     get clientHeight(): any;
     setPointerCapture(): void;
@@ -21,21 +27,18 @@ export class ElementProxyReceiver extends EventDispatcher {
         bottom: any;
     };
     handleEvent(data: any): void;
-    left: any;
-    top: any;
-    width: any;
-    height: any;
     focus(): void;
 }
-export class ProxyManager {
-    id: string;
-    targets: {};
-    handleEvent(data: any, id: any): void;
+export declare class ProxyManager {
+    id: any;
+    targets: any;
+    constructor();
     makeProxy(id: any): void;
     getProxy(id: any): any;
+    handleEvent(data: any, id: any): void;
 }
-export namespace proxyWorkerRoutes {
-    export { initProxyElement };
-    export function makeProxy(self: any, origin: any, id: any): any;
-    export function handleProxyEvent(self: any, origin: any, data: any, id: any): any;
-}
+export declare const proxyWorkerRoutes: {
+    initProxyElement: typeof initProxyElement;
+    makeProxy: (self: any, origin: any, id: any) => any;
+    handleProxyEvent: (self: any, origin: any, data: any, id: any) => any;
+};

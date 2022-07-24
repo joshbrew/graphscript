@@ -1,12 +1,12 @@
 {
     "name": "graphscript",
-    "version": "0.0.64",
+    "version": "0.0.65",
     "description": "Barebones esbuild and test node server implementation. For building",
     "main": "dist/index.js",
     "module": "dist/index.esm.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "start": "cd example/frontend && npm start",
+        "start": "tinybuild path=tinybuild.node.config.js && tinybuild",
         "build": "tinybuild build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",
