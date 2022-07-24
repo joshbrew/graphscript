@@ -22,16 +22,17 @@ export type RouteProp = { //these are just multiple methods you can call on a ro
     aliases?:string[] 
 } & GraphNodeProperties
 
+export type Route = 
+    GraphNode |
+    GraphNodeProperties |
+    Graph |
+    OperatorType |
+    ((...args)=>any|void) |
+    { aliases?:string[] } & GraphNodeProperties |
+    RouteProp
 
 export type Routes = { //same as the tree in the base acyclic graph but adds aliases and RouteProps handling
-    [key:string]:
-        GraphNode |
-        GraphNodeProperties |
-        Graph |
-        OperatorType |
-        ((...args)=>any|void) |
-        { aliases?:string[] } & GraphNodeProperties |
-        RouteProp
+    [key:string]: Route
 }
 
 export type ServiceMessage = {
@@ -48,6 +49,14 @@ export type ServiceOptions = {
     name?:string, 
     props?:{[key:string]:any}, 
     loadDefaultRoutes?:boolean,
+    includeClassName?:boolean,
+    routeFormat?:string,
+    customRoutes?:{ //modify routes or execute other functions based on the route properties? e.g. addElement in DOMService
+        [key:string]:(route:Route, routeKey:string, routes:Routes)=>Route|any|void
+    },
+    customChildren?:{ //modify child routes in the tree based on parent conditions
+        [key:string]:(child:Route, childRouteKey:string, parent:Route, routes:Routes)=>Route|any|void
+    },
     [key:string]:any
 };
 
@@ -60,123 +69,152 @@ export class Service extends Graph {
     loadDefaultRoutes = false;
     name:string=`service${Math.floor(Math.random()*100000000000000)}`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
+    firstLoad = true;
 
     constructor(options:ServiceOptions={}) {
         super(undefined,options.name,options.props);
-        if('loadDefaultRoutes' in options) this.loadDefaultRoutes = options.loadDefaultRoutes;
         if(options.name) this.name = options.name;
-        
-        if(Array.isArray(options.routes)) {
-            options.routes.forEach((r) => {this.load(r);})
-        }
-        else if(options.routes) this.load(options.routes); //now process the routes for the acyclic graph to load them as graph nodes :-D
+        if(options.routes || this.routes) this.init(options);
     }
 
+    init = (options:ServiceOptions) => {
+        if('loadDefaultRoutes' in options) this.loadDefaultRoutes = options.loadDefaultRoutes;
+        if(Array.isArray(options.routes)) {
+            options.routes.forEach((r) => {
+                this.load(
+                    r, 
+                    options.includeClassName, 
+                    options.routeFormat,
+                    options.customRoutes,
+                    options.customChildren
+                );
+            });
+        }
+        else if(options.routes || (this.routes && this.firstLoad)) 
+            this.load(
+                options.routes, 
+                options.includeClassName, 
+                options.routeFormat,
+                options.customRoutes,
+                options.customChildren
+            ); //now process the routes for the acyclic graph to load them as graph nodes :-D
+    }
     
     load = (
         routes?:Service|Graph|Routes|{name:string,module:{[key:string]:any}}|any, 
         includeClassName:boolean=true, //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
-        routeFormat:string='.'
+        routeFormat:string='.',
+        customRoutes?:{ //modify routes or execute other functions based on the route properties? e.g. addElement in DOMService
+            [key:string]:(route:{[key:string]:any} & GraphNodeProperties, routeKey:string, routes:Routes)=>{[key:string]:any} & GraphNodeProperties
+        },
+        customChildren?:{ //modify child routes in the tree based on parent conditions
+            [key:string]:(child:{[key:string]:any} & GraphNodeProperties, childRouteKey:string, parent:{[key:string]:any} & GraphNodeProperties, routes:Routes)=>{[key:string]:any} & GraphNodeProperties
+        }
     ) => {    
-        if(!routes && !this.loadDefaultRoutes) return;
+        if(!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length === 0 || this.firstLoad)) return;
+        if(this.firstLoad) this.firstLoad = false;
+
         //console.log(this.routes);
         let service;
-        if(!(routes instanceof Graph) && (routes as any)?.name) { //class prototype
-            if(routes.module) {
-                let mod = routes;
+        if(routes) {
+            if(!(routes instanceof Graph) && (routes as any)?.name) { //class prototype
+                if(routes.module) {
+                    let mod = routes;
+                    routes = {};
+                    Object.getOwnPropertyNames(routes.module).forEach((prop) => { //iterate through 
+                        if(includeClassName) routes[mod.name+routeFormat+prop] = routes.module[prop];
+                        else routes[prop] =  routes.module[prop];
+                    });
+                } else if (typeof routes === 'function') { //it's a service prototype... probably
+                    service = new routes({loadDefaultRoutes:this.loadDefaultRoutes});
+                    service.load();
+                    routes = service.routes;
+                }
+            } //we can instantiate a class and load the routes. Routes should run just fine referencing the classes' internal data structures without those being garbage collected.
+            else if (routes instanceof Graph || routes.source instanceof Graph) { //class instance
+                service = routes;
                 routes = {};
-                Object.getOwnPropertyNames(routes.module).forEach((prop) => { //iterate through 
-                    if(includeClassName) routes[mod.name+routeFormat+prop] = routes.module[prop];
-                    else routes[prop] =  routes.module[prop];
-                });
-            } else if (typeof routes === 'function') { //it's a service prototype... probably
-                service = new routes({loadDefaultRoutes:this.loadDefaultRoutes});
-                service.load();
-                routes = service.routes;
-            }
-        } //we can instantiate a class and load the routes. Routes should run just fine referencing the classes' internal data structures without those being garbage collected.
-        else if (routes instanceof Graph || routes.source instanceof Graph) { //class instance
-            service = routes;
-            routes = {};
-            let name;
-            if(includeClassName) {
-                name = service.name;
-                if(!name) {
-                    name = service.tag;
-                    service.name = name;
-                }
-                if(!name) {
-                    name = `graph${Math.floor(Math.random()*1000000000000000)}`;
-                    service.name = name; 
-                    service.tag = name;
-                }
-            } 
+                let name;
+                if(includeClassName) {
+                    name = service.name;
+                    if(!name) {
+                        name = service.tag;
+                        service.name = name;
+                    }
+                    if(!name) {
+                        name = `graph${Math.floor(Math.random()*1000000000000000)}`;
+                        service.name = name; 
+                        service.tag = name;
+                    }
+                } 
 
-            service.nodes.forEach((node)=>{
-                //if(includeClassName) routes[name+routeFormat+node.tag] = node;
-                //else 
-                routes[node.tag] = node;
-                
-                let checked = {};
-                let checkChildGraphNodes = (nd:GraphNode, prev?:GraphNode) => {
-                    if(!checked[nd.tag] || (prev && includeClassName && !checked[prev?.tag+routeFormat+nd.tag])) {
-                        if(!prev) checked[nd.tag] = true;
-                        else checked[prev.tag+routeFormat+nd.tag] = true;
+                service.nodes.forEach((node)=>{
+                    //if(includeClassName) routes[name+routeFormat+node.tag] = node;
+                    //else 
+                    routes[node.tag] = node;
+                    
+                    let checked = {};
+                    let checkChildGraphNodes = (nd:GraphNode, par?:GraphNode) => {
+                        if(!checked[nd.tag] || (par && includeClassName && !checked[par?.tag+routeFormat+nd.tag])) {
+                            if(!par) checked[nd.tag] = true;
+                            else checked[par.tag+routeFormat+nd.tag] = true;
 
-                        if(nd instanceof Graph || nd.source instanceof Graph) {
-                            if(includeClassName) {
-                                let nm = nd.name;
-                                if(!nm) {
-                                    nm = nd.tag;
-                                    nd.name = nm;
-                                }
-                                if(!nm) {
-                                    nm = `graph${Math.floor(Math.random()*1000000000000000)}`;
-                                    nd.name = nm; 
-                                    nd.tag = nm;
-                                }
-                            } 
-                            nd.nodes.forEach((n) => {
-                                if(includeClassName) routes[nd.tag+routeFormat+n.tag] = n;
-                                else if(!routes[n.tag]) routes[n.tag] = n; 
-                                checkChildGraphNodes(n,nd);
-                            });
+                            if(nd instanceof Graph || nd.source instanceof Graph) {
+                                if(includeClassName) {
+                                    let nm = nd.name;
+                                    if(!nm) {
+                                        nm = nd.tag;
+                                        nd.name = nm;
+                                    }
+                                    if(!nm) {
+                                        nm = `graph${Math.floor(Math.random()*1000000000000000)}`;
+                                        nd.name = nm; 
+                                        nd.tag = nm;
+                                    }
+                                } 
+                                nd.nodes.forEach((n) => {
+                                    if(includeClassName) routes[nd.tag+routeFormat+n.tag] = n;
+                                    else if(!routes[n.tag]) routes[n.tag] = n; 
+                                    checkChildGraphNodes(n,nd);
+                                });
+                            }
                         }
                     }
-                }
 
-                checkChildGraphNodes(node);
-            });
-        }
-        else if (typeof routes === 'object') {
-            let name = routes.constructor.name;
-            if(name === 'Object') {
-                name = Object.prototype.toString.call(routes);
-                if(name) name = name.split(' ')[1];
-                if(name) name = name.split(']')[0];
-            } 
-            if(name && name !== 'Object') { 
-                let module = routes;
-                routes = {};
-                Object.getOwnPropertyNames(module).forEach((route) => {
-                    if(includeClassName) routes[name+routeFormat+route] = module[route];
-                    else routes[route] = module[route];
+                    checkChildGraphNodes(node);
                 });
             }
+            else if (typeof routes === 'object') {
+                let name = routes.constructor.name;
+                if(name === 'Object') {
+                    name = Object.prototype.toString.call(routes);
+                    if(name) name = name.split(' ')[1];
+                    if(name) name = name.split(']')[0];
+                } 
+                if(name && name !== 'Object') { 
+                    let module = routes;
+                    routes = {};
+                    Object.getOwnPropertyNames(module).forEach((route) => {
+                        if(includeClassName) routes[name+routeFormat+route] = module[route];
+                        else routes[route] = module[route];
+                    });
+                }
+            }
+
+            if(service instanceof Graph && service.name && includeClassName) {     
+                //the routes provided from a service will add the route name in front of the route so like 'name/route' to minimize conflicts, 
+                //incl making generic service routes accessible per service. The services are still independently usable while the loader 
+                // service provides routes to the other services
+                routes = Object.assign({},routes); //copy props to a new object so we don't delete the original service routes
+                for(const prop in routes) { 
+                    let route = routes[prop];
+                    delete routes[prop]; 
+                    routes[service.name+routeFormat+prop] = route;  //store the routes in the loaded service under aliases including the service name
+                }
+            } 
+
         }
 
-        if(service instanceof Graph && service.name && includeClassName) {     
-            //the routes provided from a service will add the route name in front of the route so like 'name/route' to minimize conflicts, 
-            //incl making generic service routes accessible per service. The services are still independently usable while the loader 
-            // service provides routes to the other services
-            routes = Object.assign({},routes); //copy props to a new object so we don't delete the original service routes
-            for(const prop in routes) { 
-                let route = routes[prop];
-                delete routes[prop]; 
-                routes[service.name+routeFormat+prop] = route;  //store the routes in the loaded service under aliases including the service name
-            }
-        } 
-        
         if(this.loadDefaultRoutes) {
             let rts = Object.assign({},this.defaultRoutes); //load all default routes
             if(routes) {
@@ -188,13 +226,25 @@ export class Service extends Graph {
             this.loadDefaultRoutes = false;
         }
 
-        //load any children into routes too if tags exist
+        if(!routes) routes = this.routes;
+        
         for(const tag in routes) {
             let childrenIter = (route:RouteProp, routeKey:string) => {
                 if(typeof route?.children === 'object') {
+                    nested:
                     for(const key in route.children) {
                         if(typeof route.children[key] === 'object') {
                             let rt = (route.children[key] as any);
+
+                            if(rt.tag && routes[rt.tag]) continue;
+
+                            if(customChildren) {
+                                for(const key in customChildren) {
+                                    rt = customChildren[key](rt,key,route,routes);
+                                    if(!rt) continue nested;
+                                }
+                            }
+
                             if(rt.tag) {
                                 routes[rt.tag] = route.children[key];
                                 childrenIter(routes[rt.tag],key);
@@ -210,11 +260,20 @@ export class Service extends Graph {
             childrenIter(routes[tag],tag);
         }
 
+        top:
         for(const route in routes) {
             if(typeof routes[route] === 'object') {
                 let r = routes[route] as RouteProp;
 
                 if(typeof r === 'object') {
+
+                    if(customRoutes) { //mutate routes or run custom node creation functions
+                        for(const key in customRoutes) {
+                            r = customRoutes[key](r,key,routes);
+                            if(!r) continue top; //nothing returned so continue
+                        }
+                    }
+
                     if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
                         if(typeof r.get == 'object') {
                             
@@ -244,14 +303,14 @@ export class Service extends Graph {
                 else this.routes[route] = routes[route];
             } else this.routes[route] = routes[route];
         }
-
+    
         this.setTree(this.routes);
 
         for(const prop in this.routes) { //now set the aliases on the routes, the aliases share the same node otherwise
             if((this.routes[prop] as any)?.aliases) {
                 let aliases = (this.routes[prop] as any).aliases;
                 aliases.forEach((a:string) => {
-                    if(service) routes[service.name+routeFormat+a] = this.routes[prop]; //we're just gonna copy the routes to the aliases for simplicity 
+                    if(service?.name && includeClassName) routes[service.name+routeFormat+a] = this.routes[prop]; //we're just gonna copy the routes to the aliases for simplicity 
                     else routes[a] = this.routes[prop];
                 });
 

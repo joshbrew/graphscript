@@ -20,10 +20,11 @@ export declare type RouteProp = {
     trace?: (...args: any) => any | void;
     aliases?: string[];
 } & GraphNodeProperties;
+export declare type Route = GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
+    aliases?: string[];
+} & GraphNodeProperties) | RouteProp;
 export declare type Routes = {
-    [key: string]: GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
-        aliases?: string[];
-    } & GraphNodeProperties) | RouteProp;
+    [key: string]: Route;
 };
 export declare type ServiceMessage = {
     route?: string;
@@ -40,6 +41,14 @@ export declare type ServiceOptions = {
         [key: string]: any;
     };
     loadDefaultRoutes?: boolean;
+    includeClassName?: boolean;
+    routeFormat?: string;
+    customRoutes?: {
+        [key: string]: (route: Route, routeKey: string, routes: Routes) => Route | any | void;
+    };
+    customChildren?: {
+        [key: string]: (child: Route, childRouteKey: string, parent: Route, routes: Routes) => Route | any | void;
+    };
     [key: string]: any;
 };
 export declare class Service extends Graph {
@@ -47,8 +56,24 @@ export declare class Service extends Graph {
     loadDefaultRoutes: boolean;
     name: string;
     keepState: boolean;
+    firstLoad: boolean;
     constructor(options?: ServiceOptions);
-    load: (routes?: any, includeClassName?: boolean, routeFormat?: string) => Routes;
+    init: (options: ServiceOptions) => void;
+    load: (routes?: any, includeClassName?: boolean, routeFormat?: string, customRoutes?: {
+        [key: string]: (route: {
+            [key: string]: any;
+        } & GraphNodeProperties, routeKey: string, routes: Routes) => {
+            [key: string]: any;
+        } & GraphNodeProperties;
+    }, customChildren?: {
+        [key: string]: (child: {
+            [key: string]: any;
+        } & GraphNodeProperties, childRouteKey: string, parent: {
+            [key: string]: any;
+        } & GraphNodeProperties, routes: Routes) => {
+            [key: string]: any;
+        } & GraphNodeProperties;
+    }) => Routes;
     unload: (routes?: Service | Routes | any) => Routes;
     handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;
     handleServiceMessage(message: ServiceMessage): any;
