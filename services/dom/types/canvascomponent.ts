@@ -1,8 +1,9 @@
 import { DOMElementProps } from "./component"
 import { DOMElement } from "../DOMElement"
-import { GraphNode, GraphNodeProperties } from "../../../Graph"
+import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph"
+import { ElementProps } from "./element"
 
-export type CanvasElementProps = {
+export type CanvasElementProps = GraphNodeProperties & {
     tagName?:string, //custom node tag name, requires a '-' in it 
     parentNode?:string|HTMLElement,
     styles?:string, //will use the shadow DOM automatically in this case
@@ -17,7 +18,8 @@ export type CanvasElementProps = {
     onresize?:(self:DOMElement,info?:CanvasElementInfo)=>void,
     ondelete?:(self:DOMElement,info?:CanvasElementInfo)=>void,
     renderonchanged?:boolean|((self:DOMElement,info?:CanvasElementInfo)=>void),
-} & GraphNodeProperties
+    children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph|DOMElementProps|ElementProps|CanvasElementProps},
+} 
 
 export type CanvasElementInfo = { //returned from addCanvasComponent
     element:DOMElement & {canvas:HTMLCanvasElement, context:RenderingContext},
@@ -50,6 +52,7 @@ export type CanvasOptions = {
     ondelete?:(self:DOMElement,info?:CanvasElementInfo)=>void,
     onchanged?:(props:any)=>void,
     renderonchanged?:boolean|((self:DOMElement,info?:CanvasElementInfo)=>void),
-    props?:{[key:string]:any}
+    props?:{[key:string]:any},
+    children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph|DOMElementProps|ElementProps|CanvasElementProps},
     id?:string
 } & GraphNodeProperties

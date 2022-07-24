@@ -5,9 +5,10 @@ import { Graph } from "../../Graph"
 export const unsafeRoutes = {
     
     //add a route and parse it from text
-    setRoute:(self:GraphNode,origin:any,fnName:string,fn:string|((...args:[])=>any)) => {
+    setRoute:(self:GraphNode,origin:any,fn:string|((...args:[])=>any),fnName?:string) => {
         if(typeof fn === 'string') fn = parseFunctionFromText(fn);
         if(typeof fn === 'function') {
+            if(!fnName) fnName = fn.name;
             if(self.graph.get(fnName)) {
                 self.graph.get(fnName).setOperator(fn); //overwrite operator
             }

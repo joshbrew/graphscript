@@ -1,5 +1,7 @@
-import { GraphNode, GraphNodeProperties } from "../../../Graph";
-export declare type ElementProps = {
+import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph";
+import { CanvasElementProps } from "./canvascomponent";
+import { DOMElementProps } from "./component";
+export declare type ElementProps = GraphNodeProperties & {
     tagName?: string;
     element?: HTMLElement;
     style?: CSSStyleDeclaration;
@@ -13,15 +15,18 @@ export declare type ElementProps = {
     innerText?: string;
     innerHTML?: string;
     id?: string;
+    children?: {
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
+    };
     generateChildElementNodes?: boolean;
-} & GraphNodeProperties;
+};
 export declare type ElementInfo = {
     element: HTMLElement;
     node: GraphNode;
     parentNode: HTMLElement;
     divs: any[];
 } & ElementProps;
-export declare type ElementOptions = {
+export declare type ElementOptions = GraphNodeProperties & {
     tagName?: string;
     element?: HTMLElement;
     style?: CSSStyleDeclaration;
@@ -34,5 +39,8 @@ export declare type ElementOptions = {
     ondelete?: (self: HTMLElement, info: ElementInfo) => void;
     innerText?: string;
     innerHTML?: string;
+    children?: {
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
+    };
     id?: string;
-} & GraphNodeProperties;
+};

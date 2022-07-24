@@ -36,7 +36,7 @@ export declare type GraphNodeProperties = {
     loop?: false | number;
     animation?: OperatorType;
     looper?: OperatorType;
-    oncreate?: (self: GraphNode) => void;
+    oncreate?: (self: GraphNode | any, ...args: any[]) => void;
     DEBUGNODE?: boolean;
     [key: string]: any;
 };

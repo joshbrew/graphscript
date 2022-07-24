@@ -1,6 +1,8 @@
 import { DOMElement } from "../DOMElement";
-import { GraphNode, GraphNodeProperties } from "../../../Graph";
-export declare type DOMElementProps = {
+import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph";
+import { ElementProps } from "./element";
+import { CanvasElementProps } from "./canvascomponent";
+export declare type DOMElementProps = GraphNodeProperties & {
     tagName?: string;
     template?: string | ((props: any) => string | HTMLElement) | HTMLElement;
     parentNode?: string | HTMLElement;
@@ -13,15 +15,18 @@ export declare type DOMElementProps = {
     innerText?: string;
     innerHTML?: string;
     id?: string;
+    children?: {
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
+    };
     generateChildElementNodes?: boolean;
-} & GraphNodeProperties;
+};
 export declare type DOMElementInfo = {
     element: DOMElement;
     class: any;
     node: GraphNode;
     divs: any[];
 } & DOMElementProps;
-export declare type ComponentOptions = {
+export declare type ComponentOptions = GraphNodeProperties & {
     tagName?: string;
     template?: string | ((props: any) => string | HTMLElement) | HTMLElement;
     parentNode?: string | HTMLElement;
@@ -36,5 +41,8 @@ export declare type ComponentOptions = {
     };
     innerText?: string;
     innerHTML?: string;
+    children?: {
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
+    };
     id?: string;
-} & GraphNodeProperties;
+};

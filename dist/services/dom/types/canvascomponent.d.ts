@@ -1,6 +1,8 @@
+import { DOMElementProps } from "./component";
 import { DOMElement } from "../DOMElement";
-import { GraphNode, GraphNodeProperties } from "../../../Graph";
-export declare type CanvasElementProps = {
+import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph";
+import { ElementProps } from "./element";
+export declare type CanvasElementProps = GraphNodeProperties & {
     tagName?: string;
     parentNode?: string | HTMLElement;
     styles?: string;
@@ -15,7 +17,10 @@ export declare type CanvasElementProps = {
     onresize?: (self: DOMElement, info?: CanvasElementInfo) => void;
     ondelete?: (self: DOMElement, info?: CanvasElementInfo) => void;
     renderonchanged?: boolean | ((self: DOMElement, info?: CanvasElementInfo) => void);
-} & GraphNodeProperties;
+    children?: {
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
+    };
+};
 export declare type CanvasElementInfo = {
     element: DOMElement & {
         canvas: HTMLCanvasElement;
@@ -53,6 +58,9 @@ export declare type CanvasOptions = {
     renderonchanged?: boolean | ((self: DOMElement, info?: CanvasElementInfo) => void);
     props?: {
         [key: string]: any;
+    };
+    children?: {
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
     };
     id?: string;
 } & GraphNodeProperties;

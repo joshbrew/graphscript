@@ -1,6 +1,6 @@
 import { GraphNode } from "../../Graph";
 export declare const unsafeRoutes: {
-    setRoute: (self: GraphNode, origin: any, fnName: string, fn: string | (() => any)) => boolean;
+    setRoute: (self: GraphNode, origin: any, fn: string | (() => any), fnName?: string) => boolean;
     transferClass: (classObj: any) => false | {
         route: string;
         args: any;
