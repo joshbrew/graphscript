@@ -9,8 +9,8 @@ export declare type WorkerProps = {
 };
 export declare type WorkerInfo = {
     worker: Worker;
-    send: (message: any) => void;
-    request: (message: any) => Promise<any>;
+    send: (message: any, transfer?: any) => void;
+    request: (message: any, transfer?: any, origin?: string, method?: string) => Promise<any>;
 } & WorkerProps;
 export declare class WorkerService extends Service {
     name: string;

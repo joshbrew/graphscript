@@ -21,7 +21,9 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         workerCanvasRoutes,
         unsafeRoutes //allows dynamic route loading
         //load additional services in node or browser workers e.g. http service in node or threejs service in browser
-    ]);
+    ],{
+        includeClassName:false //prevent reroute names e.g. gpu/coherence just for simpler callbacks
+    });
 
     self.onmessage = (ev:MessageEvent) => {
         let result = ((self as any).SERVICE as WorkerService).receive(ev.data); //this will handle graph logic and can run requests for the window or messsage ports etc etc.

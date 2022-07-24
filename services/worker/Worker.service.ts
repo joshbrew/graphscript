@@ -14,8 +14,8 @@ export type WorkerProps = {
 
 export type WorkerInfo = {
     worker:Worker,
-    send:(message:any)=>void,
-    request:(message:any)=>Promise<any>
+    send:(message:any,transfer?:any)=>void,
+    request:(message:any, transfer?:any, origin?:string, method?:string)=>Promise<any>
 } & WorkerProps
 
 //this spawns the workers
