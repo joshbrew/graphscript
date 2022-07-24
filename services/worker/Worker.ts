@@ -30,4 +30,4 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
     
 }
 
-export default self;
+export default self as any;

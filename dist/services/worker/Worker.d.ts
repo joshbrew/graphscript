@@ -1,1 +1,2 @@
-export default self;
+declare const _default: any;
+export default _default;
