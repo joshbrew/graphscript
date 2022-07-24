@@ -78,7 +78,15 @@ export class Service extends Graph {
     }
 
     init = (options:ServiceOptions) => {
+        options = Object.assign({},options);
         if('loadDefaultRoutes' in options) this.loadDefaultRoutes = options.loadDefaultRoutes;
+
+        if(options.customRoutes) Object.assign(options.customRoutes,this.customRoutes);
+        else options.customRoutes = this.customRoutes;
+        
+        if(options.customChildren) Object.assign(options.customChildren,this.customChildren);
+        else options.customChildren = this.customChildren;
+        
         if(Array.isArray(options.routes)) {
             options.routes.forEach((r) => {
                 this.load(

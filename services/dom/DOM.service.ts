@@ -74,12 +74,6 @@ export class DOMService extends Service {
     constructor(options?:ServiceOptions,parentNode?:HTMLElement) {
             super({props:options.props,name:options.name});
 
-            if(options.customRoutes) Object.assign(options.customRoutes,this.customRoutes);
-            else options.customRoutes = this.customRoutes;
-            
-            if(options.customChildren) Object.assign(options.customChildren,this.customChildren);
-            else options.customChildren = this.customChildren;
-            
             if(parentNode instanceof HTMLElement) this.parentNode = parentNode;
             else if(options.parentNode instanceof HTMLElement) this.parentNode = parentNode;
 
