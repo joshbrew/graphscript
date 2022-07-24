@@ -1,6 +1,7 @@
 import { Routes, Service } from "../Service";
+import { gpuUtils } from 'gpujsutils';
 export declare class GPUService extends Service {
-    gpu: any;
+    gpu: gpuUtils;
     addFunc: (fn: string | Function) => void;
     addKernel: (name: string, fn: string | Function, options?: any) => void;
     callKernel: (name: string, ...args: any[]) => void;

@@ -25,8 +25,8 @@ export * from './services/worker/Worker.service'
 export * from './services/worker/ProxyListener'
 export * from './services/worker/WorkerCanvas'
 
-import worker from './services/worker/Worker' //compiles the worker in the dist
-export {worker}
+import gsworker from './services/worker/Worker' //compiles the worker in the dist
+export {gsworker}
 
 export * from './routers/Router'
 export * from './routers/users/User.router'

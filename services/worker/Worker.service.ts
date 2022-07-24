@@ -42,58 +42,59 @@ export class WorkerService extends Service {
         onmessage?:(ev)=>void,
         onerror?:(ev)=>void
     }) => { //pass file location, web url, or javascript dataurl string
-        if(options.url) {
+        let worker;
+        if(options.url) worker = new Worker(options.url);
             
-            let worker = new Worker(options.url);
+        else worker = new Worker(Worker);
 
-            if(!options._id) 
-                options._id = `worker${Math.floor(Math.random()*1000000000000000)}`;
+        if(!options._id) 
+            options._id = `worker${Math.floor(Math.random()*1000000000000000)}`;
 
-            let send = (message:any,transfer?:any) => {
-                return this.transmit(message,worker,transfer);
-            }
+        let send = (message:any,transfer?:any) => {
+            return this.transmit(message,worker,transfer);
+        }
 
-            let request = (message:ServiceMessage|any, transfer?:any, origin?:string, method?:string) => {
-                return new Promise ((res,rej) => {
-                    let callbackId = Math.random();
-                    let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
-                    if(origin) req.origin = origin;
-                    if(method) req.method = method;
-                    let onmessage = (ev)=>{
-                        if(typeof ev.data === 'object') {
-                            if(ev.data.callbackId === callbackId) {
-                                worker.removeEventListener('message',onmessage);
-                                res(ev.data); //resolve the request with the corresponding message
-                            }
+        let request = (message:ServiceMessage|any, transfer?:any, origin?:string, method?:string) => {
+            return new Promise ((res,rej) => {
+                let callbackId = Math.random();
+                let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
+                if(origin) req.origin = origin;
+                if(method) req.method = method;
+                let onmessage = (ev)=>{
+                    if(typeof ev.data === 'object') {
+                        if(ev.data.callbackId === callbackId) {
+                            worker.removeEventListener('message',onmessage);
+                            res(ev.data); //resolve the request with the corresponding message
                         }
                     }
-                    worker.addEventListener('message',onmessage)
-                    this.transmit(req, worker, transfer);
-                });
-            }
-
-            if(!options.onmessage) options.onmessage = (ev) => {
-                let res = this.receive(ev.data);
-                this.setState({[options._id as string]:res});
-            }
-
-            if(!options.onerror) {
-                options.onerror = (ev) => {
-                    console.error(ev.data);
                 }
-            }
+                worker.addEventListener('message',onmessage)
+                this.transmit(req, worker, transfer);
+            });
+        }
 
-            worker.onmessage = options.onmessage;
-            worker.onerror = options.onerror;
+        if(!options.onmessage) options.onmessage = (ev) => {
+            let res = this.receive(ev.data);
+            this.setState({[options._id as string]:res});
+        }
 
-            this.workers[options._id] = {
-                worker,
-                send,
-                request,
-                ...options
+        if(!options.onerror) {
+            options.onerror = (ev) => {
+                console.error(ev.data);
             }
         }
-        return false;
+
+        worker.onmessage = options.onmessage;
+        worker.onerror = options.onerror;
+
+        this.workers[options._id] = {
+            worker,
+            send,
+            request,
+            ...options
+        }
+
+        return this.workers[options._id];
     }
 
     //new Worker(urlFromString)
