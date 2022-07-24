@@ -1,23 +1,24 @@
-/// <reference types="node" />
 import { DOMElement } from "./DOMElement";
 import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph';
-import { RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { RouteProp, Service, ServiceOptions } from "../Service";
 import { CompleteOptions } from './types/general';
 import { ElementOptions, ElementInfo, ElementProps } from './types/element';
 import { DOMElementProps, ComponentOptions, DOMElementInfo } from './types/component';
 import { CanvasElementProps, CanvasOptions, CanvasElementInfo } from './types/canvascomponent';
 export declare type DOMRouteProp = ElementProps | DOMElementProps | CanvasElementProps;
+export declare type DOMServiceRoute = GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
+    aliases?: string[];
+} & GraphNodeProperties) | RouteProp | DOMRouteProp;
 export declare type DOMRoutes = {
-    [key: string]: GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
-        aliases?: string[];
-    } & GraphNodeProperties) | RouteProp | DOMRouteProp;
+    [key: string]: DOMServiceRoute;
 };
-export declare class DOMService extends Graph {
-    routes: DOMRoutes;
+export declare class DOMService extends Service {
     loadDefaultRoutes: boolean;
     name: string;
     keepState: boolean;
     parentNode: HTMLElement;
+    customRoutes: ServiceOptions["customRoutes"];
+    customChildren: ServiceOptions["customChildren"];
     constructor(options?: ServiceOptions, parentNode?: HTMLElement);
     elements: {
         [key: string]: ElementInfo;
@@ -33,18 +34,7 @@ export declare class DOMService extends Graph {
     updateOptions: (options: any, element: any) => CompleteOptions;
     addComponent: (options: ComponentOptions, generateChildElementNodes?: boolean) => DOMElementInfo;
     addCanvasComponent: (options: CanvasOptions) => CanvasElementInfo;
-    load: (routes?: any, includeClassName?: boolean, routeFormat?: string) => DOMRoutes;
-    unload: (routes?: Service | Routes | any) => DOMRoutes;
-    handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;
-    handleServiceMessage(message: ServiceMessage): any;
-    handleGraphNodeCall(route: string | GraphNode, args: any, origin?: string | GraphNode | Graph): any;
-    transmit: (...args: any[]) => any | void;
-    receive: (...args: any[]) => any | void;
-    pipe: (source: GraphNode | string, destination: string, endpoint?: string | any, origin?: string, method?: string, callback?: (res: any) => any | void) => number;
-    pipeOnce: (source: GraphNode | string, destination: string, endpoint?: string | any, origin?: string, method?: string, callback?: (res: any) => any | void) => void;
     terminate: (element: string | DOMElement | HTMLElement | DOMElementInfo | CanvasElementInfo) => boolean;
-    isTypedArray(x: any): boolean;
-    recursivelyAssign: (target: any, obj: any) => any;
     defaultRoutes: DOMRoutes;
 }
 /**
