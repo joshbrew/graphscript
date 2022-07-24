@@ -1,5 +1,4 @@
 import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
-import { proxyWorkerRoutes } from "./ProxyListener";
 import Worker from 'web-worker' //cross platform for node and browser
 
 declare var WorkerGlobalScope;
@@ -33,7 +32,6 @@ export class WorkerService extends Service {
         options?:ServiceOptions
     ) {
         super(options);
-        this.load(proxyWorkerRoutes); //add support for element proxying
     }
 
     addWorker = (options:{

@@ -33,6 +33,23 @@ type Routes = { //same as the tree in the base acyclic graph but adds aliases an
         RouteProp
 }
 
+//the input options are kind of complex but allow for robust programmatic customization. 
+type ServiceOptions = {
+    routes?:Routes|Routes[], 
+    name?:string, 
+    props?:{[key:string]:any}, 
+    loadDefaultRoutes?:boolean,
+    includeClassName?:boolean,
+    routeFormat?:string,
+    customRoutes?:{ //modify routes or execute other functions based on the route properties? e.g. addElement in DOMService
+        [key:string]:(route:Route, routeKey:string, routes:Routes)=>Route|any|void
+    },
+    customChildren?:{ //modify child routes in the tree based on parent conditions
+        [key:string]:(child:Route, childRouteKey:string, parent:Route, routes:Routes)=>Route|any|void
+    },
+    [key:string]:any
+};
+
 //these are the same as trees except they can turn get or post into operators,
 // this makes more sense when the http server is involved but you can specify any
 let routes:Routes = {
