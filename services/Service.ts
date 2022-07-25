@@ -74,7 +74,7 @@ export class Service extends Graph {
     constructor(options:ServiceOptions={}) {
         super(undefined,options.name,options.props);
         if(options.name) this.name = options.name;
-        if(options.routes || this.routes) this.init(options);
+        if(options.routes || Object.keys(this.routes).length > 0) this.init(options);
     }
 
     init = (options:ServiceOptions) => {
@@ -98,7 +98,7 @@ export class Service extends Graph {
                 );
             });
         }
-        else if(options.routes || (this.routes && this.firstLoad)) 
+        else if(options.routes || (Object.keys(this.routes).length > 0 && this.firstLoad)) 
             this.load(
                 options.routes, 
                 options.includeClassName, 
@@ -119,7 +119,7 @@ export class Service extends Graph {
             [key:string]:(child:{[key:string]:any} & GraphNodeProperties, childRouteKey:string, parent:{[key:string]:any} & GraphNodeProperties, routes:Routes)=>{[key:string]:any} & GraphNodeProperties
         }
     ) => {    
-        if(!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length === 0 || this.firstLoad)) return;
+        if(!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad)) return;
         if(this.firstLoad) this.firstLoad = false;
 
         //console.log(this.routes);
@@ -247,8 +247,8 @@ export class Service extends Graph {
                             if(rt.tag && routes[rt.tag]) continue;
 
                             if(customChildren) {
-                                for(const key in customChildren) {
-                                    rt = customChildren[key](rt,key,route,routes);
+                                for(const k in customChildren) {
+                                    rt = customChildren[k](rt,key,route,routes);
                                     if(!rt) continue nested;
                                 }
                             }
@@ -277,7 +277,7 @@ export class Service extends Graph {
 
                     if(customRoutes) { //mutate routes or run custom node creation functions
                         for(const key in customRoutes) {
-                            r = customRoutes[key](r,key,routes);
+                            r = customRoutes[key](r,route,routes);
                             if(!r) continue top; //nothing returned so continue
                         }
                     }
