@@ -438,7 +438,14 @@ export class GraphNode {
         const restrictedTwo = ['origin', 'parent', 'graph', 'router']  
 
         //we can pass other formatted functions in as operators and they will be wrapped to assume they don't use self/node or origin/router, but will still work in the flow graph logic calls
-        if (!restrictedOne.includes(paramOne) && !restrictedTwo.includes(paramTwo)){
+        let pass = false;
+        restrictedOne.forEach((a) => { //esbuild will rename variables with numbers on the end so we need to account for that
+            if(paramOne.includes(a)) pass = true;
+        })
+        restrictedTwo.forEach((a) => {
+            if(paramTwo.includes(a)) pass = true;
+        })
+        if (!pass){
             let fn = operator;
 
             //wrap the simplified operator to fit our format
