@@ -200,14 +200,16 @@
         const restrictedOne = ["self", "node"];
         const restrictedTwo = ["origin", "parent", "graph", "router"];
         let pass = false;
-        restrictedOne.forEach((a) => {
-          if (paramOne.includes(a))
-            pass = true;
-        });
-        restrictedTwo.forEach((a) => {
-          if (paramTwo.includes(a))
-            pass = true;
-        });
+        if (paramOne)
+          restrictedOne.forEach((a) => {
+            if (paramOne.includes(a))
+              pass = true;
+          });
+        if (paramTwo)
+          restrictedTwo.forEach((a) => {
+            if (paramTwo.includes(a))
+              pass = true;
+          });
         if (!pass) {
           let fn = operator;
           operator = (self2, origin, ...args) => {
@@ -705,13 +707,18 @@
           checked[tag] = true;
           if (node.children) {
             if (child.tag in node.children) {
-              if (!(node.children[child.tag] instanceof GraphNode))
+              if (node.children[child.tag] instanceof GraphNode) {
+                if (!node.nodes.get(child.tag))
+                  node.nodes.set(child.tag, child);
                 node.children[child.tag] = child;
-              if (!node.firstRun)
-                node.firstRun = true;
+                if (!node.firstRun)
+                  node.firstRun = true;
+              }
             }
           }
-          if (node.parent) {
+          if (node.parent instanceof GraphNode) {
+            if (node.nodes.get(child.tag) && !node.parent.nodes.get(child.tag))
+              node.parent.nodes.set(child.tag, child);
             if (node.parent.children) {
               this.checkNodesHaveChildMapped(node.parent, child, checked);
             } else if (node.nodes) {
@@ -740,8 +747,10 @@
               if (typeof n.children[key] === "object") {
                 if (!n.children[key].tag)
                   n.children[key].tag = key;
-                n.children[key] = new GraphNode(n.children[key], n, n.graph);
-                this.checkNodesHaveChildMapped(n, n.children[key]);
+                if (!n.nodes.get(n.children[key].tag)) {
+                  n.children[key] = new GraphNode(n.children[key], n, n.graph);
+                  this.checkNodesHaveChildMapped(n, n.children[key]);
+                }
               } else {
                 if (typeof n.children[key] === "undefined" || n.children[key] == true) {
                   n.children[key] = n.graph.get(key);
@@ -754,21 +763,20 @@
                     n.children[key] = n.nodes.get(key);
                 }
                 if (n.children[key] instanceof GraphNode) {
-                  if (n.graph) {
+                  if (n.graph && n.children[key].parent.tag !== this.tag) {
                     let props = n.children[key].getProps();
                     delete props.parent;
                     delete props.graph;
-                    if (n.source)
+                    if (n.source instanceof Graph)
                       n.children[key] = new GraphNode(props, n, n.source);
                     else {
                       n.children[key] = new GraphNode(props, n, n.graph);
                     }
-                  } else {
-                    n.nodes.set(n.children[key].tag, n.children[key]);
-                    this.checkNodesHaveChildMapped(n, n.children[key]);
                   }
+                  n.nodes.set(n.children[key].tag, n.children[key]);
+                  this.checkNodesHaveChildMapped(n, n.children[key]);
                   if (!(n.children[key].tag in n))
-                    n[n.children[key].tag] = n.children[key].tag;
+                    n[n.children[key].tag] = n.children[key];
                 }
               }
             }
@@ -969,12 +977,14 @@
             this.tag = `node${Math.floor(Math.random() * 1e10)}`;
           }
         }
-        if (parentNode)
+        if (parentNode) {
           this.parent = parentNode;
+          if (parentNode instanceof GraphNode || parentNode instanceof Graph)
+            parentNode.nodes.set(this.tag, this);
+        }
         if (graph) {
           this.graph = graph;
           if (graph.nodes.get(this.tag)) {
-            parentNode.nodes.set(this.tag, this);
             this.tag = `${this.tag}${graph.nNodes + 1}`;
           }
           graph.nodes.set(this.tag, this);
@@ -1653,6 +1663,8 @@
           routes = this.routes;
         for (const tag in routes) {
           let childrenIter = (route, routeKey) => {
+            if (!route.tag)
+              route.tag = routeKey;
             if (typeof route?.children === "object") {
               nested:
                 for (const key in route.children) {
@@ -1674,6 +1686,9 @@
                       rt.tag = rt.id;
                       routes[rt.tag] = route.children[key];
                       childrenIter(routes[rt.tag], key);
+                    } else {
+                      routes[key] = route.children[key];
+                      childrenIter(routes[key], key);
                     }
                   }
                 }

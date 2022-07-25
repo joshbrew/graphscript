@@ -238,6 +238,7 @@ export class Service extends Graph {
         
         for(const tag in routes) {
             let childrenIter = (route:RouteProp, routeKey:string) => {
+                if(!route.tag) route.tag = routeKey;
                 if(typeof route?.children === 'object') {
                     nested:
                     for(const key in route.children) {
@@ -260,6 +261,9 @@ export class Service extends Graph {
                                 rt.tag = rt.id;
                                 routes[rt.tag] = route.children[key];
                                 childrenIter(routes[rt.tag],key);
+                            } else {
+                                routes[key] = route.children[key];
+                                childrenIter(routes[key],key);
                             }
                         }
                     }
@@ -311,6 +315,7 @@ export class Service extends Graph {
                 else this.routes[route] = routes[route];
             } else this.routes[route] = routes[route];
         }
+
     
         this.setTree(this.routes);
 

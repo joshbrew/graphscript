@@ -144,6 +144,7 @@ export class DOMService extends Service {
         
         if(!elm.parentNode) {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
+                if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
                 if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
 
                 // // TODO: Figure out why newNode and node don't match...
@@ -181,13 +182,11 @@ export class DOMService extends Service {
 
     updateOptions = (options, element): CompleteOptions => {
 
-        if(!options.id) options.id = `${options.tagName ?? 'element'}${Math.floor(Math.random()*1000000000000000)}`;
-
         if(!options.id && options.tag) options.id = options.tag;
         if(!options.tag && options.id) options.tag = options.id;
-        if(!options.id) options.id = options.tagName;
+        if(!options.id) options.id = `${options.tagName ?? 'element'}${Math.floor(Math.random()*1000000000000000)}`;
 
-        if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
+        if(typeof options.parentNode === 'string' && document.getElementById(options.parentNode)) options.parentNode = document.getElementById(options.parentNode);
         if(!options.parentNode) {        
             if(!this.parentNode) this.parentNode = document.body;
             options.parentNode = this.parentNode;
@@ -294,6 +293,7 @@ export class DOMService extends Service {
                 
         if(!elm.parentNode) {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync tree/route loading calls are finished
+                if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
                 if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
             },0.01);
         }
@@ -416,6 +416,7 @@ export class DOMService extends Service {
       
         if(!elm.parentNode) {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync tree/route loading calls are finished
+                if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
                 if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
             },0.01);
         }

@@ -360,12 +360,14 @@ export class GraphNode {
                 }
             }      
 
-            if(parentNode) this.parent=parentNode;
+            if(parentNode) {
+                this.parent=parentNode;
+                if(parentNode instanceof GraphNode || parentNode instanceof Graph) parentNode.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
+            }
             
             if(graph) {
                 this.graph=graph;
                 if(graph.nodes.get(this.tag)) {
-                    parentNode.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
                     this.tag = `${this.tag}${graph.nNodes+1}` //make sure the tags are unique
                 }
                 graph.nodes.set(this.tag,this);
@@ -439,12 +441,16 @@ export class GraphNode {
 
         //we can pass other formatted functions in as operators and they will be wrapped to assume they don't use self/node or origin/router, but will still work in the flow graph logic calls
         let pass = false;
-        restrictedOne.forEach((a) => { //esbuild will rename variables with numbers on the end so we need to account for that
-            if(paramOne.includes(a)) pass = true;
-        })
-        restrictedTwo.forEach((a) => {
-            if(paramTwo.includes(a)) pass = true;
-        })
+        if(paramOne)
+            restrictedOne.forEach((a) => { //esbuild will rename variables with numbers on the end so we need to account for that
+                if(paramOne.includes(a)) pass = true;
+            })
+
+        if(paramTwo)
+            restrictedTwo.forEach((a) => {
+                if(paramTwo.includes(a)) pass = true;
+            })
+
         if (!pass){
             let fn = operator;
 
@@ -973,12 +979,16 @@ export class GraphNode {
             checked[tag] = true;
             if(node.children) {
                 if(child.tag in node.children) {
-                    if(!(node.children[child.tag] instanceof GraphNode))
+                    if((node.children[child.tag] instanceof GraphNode)) {
+                        if(!node.nodes.get(child.tag)) node.nodes.set(child.tag,child);
                         node.children[child.tag] = child;
                         if(!node.firstRun) node.firstRun = true; 
+                    }
                 }
             }
-            if(node.parent) {
+            if(node.parent instanceof GraphNode) {
+                if(node.nodes.get(child.tag) && !node.parent.nodes.get(child.tag)) 
+                    node.parent.nodes.set(child.tag,child);
                 if(node.parent.children) {
                     this.checkNodesHaveChildMapped(node.parent,child,checked);
                 } else if(node.nodes) {
@@ -1007,8 +1017,10 @@ export class GraphNode {
                 if(!(n.children[key] instanceof GraphNode)) {
                     if (typeof n.children[key] === 'object') {
                         if(!n.children[key].tag) n.children[key].tag = key;
-                        n.children[key] = new GraphNode(n.children[key],n,n.graph); //make a brand new graphnode based on the object spec
-                        this.checkNodesHaveChildMapped(n,n.children[key]); //then climb up the tree to make sure each enclosing layer has node references for these children
+                        if(!n.nodes.get(n.children[key].tag)) {
+                            n.children[key] = new GraphNode(n.children[key],n,n.graph); //make a brand new graphnode based on the object spec
+                            this.checkNodesHaveChildMapped(n,n.children[key]); //then climb up the tree to make sure each enclosing layer has node references for these children
+                        }
                     }
                     else {
                         if(typeof n.children[key] === 'undefined' || n.children[key] == true) {
@@ -1021,21 +1033,19 @@ export class GraphNode {
                             if(!n.children[key]) n.children[key] = n.nodes.get(key);
                         } 
                         if(n.children[key] instanceof GraphNode) {
-                            if(n.graph) { //lets copy the node in this case so we have an independent instance we can parent properly
+                            if(n.graph && n.children[key].parent.tag !== this.tag) { //lets copy the node in this case so we have an independent instance we can parent properly
                                 let props = (n.children[key] as GraphNode).getProps(); //get the customized values of this node
                                 delete props.parent;
                                 delete props.graph;
-                                if(n.source) //map the node to a source graph if it a child of a graphnode that wraps a graph
+                                if(n.source instanceof Graph) //map the node to a source graph if it a child of a graphnode that wraps a graph
                                     n.children[key] = new GraphNode(props,n,(n as any).source); //make an new node instead of copying the old one.
                                 else {
                                     n.children[key] = new GraphNode(props,n,n.graph); //make an new node instead of copying the old one.
                                 }
                             }
-                            else {
-                                n.nodes.set(n.children[key].tag, n.children[key]);
-                                this.checkNodesHaveChildMapped(n, n.children[key]);   
-                            }
-                            if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key].tag; //set it as a property by name too as an additional easy accessor;
+                            n.nodes.set(n.children[key].tag, n.children[key]);
+                            this.checkNodesHaveChildMapped(n, n.children[key]); 
+                            if(!(n.children[key].tag in n)) n[n.children[key].tag] = n.children[key]; //set it as a property by name too as an additional easy accessor; 
                         }
                     }
                 }
