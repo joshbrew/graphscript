@@ -1017,9 +1017,12 @@ export class GraphNode {
                 if(!(n.children[key] instanceof GraphNode)) {
                     if (typeof n.children[key] === 'object') {
                         if(!n.children[key].tag) n.children[key].tag = key;
+                        //console.log(key,n.tag,(n.graph.nodes.get(n.children[key].tag)?.parent.tag),n.graph.tag)
                         if(!n.nodes.get(n.children[key].tag)) {
+                            //console.log(n.children[key], n.nodes.size);
                             n.children[key] = new GraphNode(n.children[key],n,n.graph); //make a brand new graphnode based on the object spec
                             this.checkNodesHaveChildMapped(n,n.children[key]); //then climb up the tree to make sure each enclosing layer has node references for these children
+                            //console.log(n.children[key], n.nodes.size);
                         }
                     }
                     else {
@@ -1033,13 +1036,13 @@ export class GraphNode {
                             if(!n.children[key]) n.children[key] = n.nodes.get(key);
                         } 
                         if(n.children[key] instanceof GraphNode) {
-                            if(n.graph && n.children[key].parent.tag !== this.tag) { //lets copy the node in this case so we have an independent instance we can parent properly
+                            if(n.graph) { //lets copy the node in this case so we have an independent instance we can parent properly
                                 let props = (n.children[key] as GraphNode).getProps(); //get the customized values of this node
                                 delete props.parent;
                                 delete props.graph;
-                                if(n.source instanceof Graph) //map the node to a source graph if it a child of a graphnode that wraps a graph
+                                if(n.source instanceof Graph) {//map the node to a source graph if it a child of a graphnode that wraps a graph
                                     n.children[key] = new GraphNode(props,n,(n as any).source); //make an new node instead of copying the old one.
-                                else {
+                                } else {
                                     n.children[key] = new GraphNode(props,n,n.graph); //make an new node instead of copying the old one.
                                 }
                             }
@@ -1202,36 +1205,35 @@ export class Graph {
                 if (typeof tree[node] === 'function') {
                     n.setOperator(tree[node]);
                 }
-                else if(typeof tree[node] === 'object') 
-                    {
-                        if(tree[node] instanceof GraphNode) {
-                            if(n.tag !== (tree[node] as GraphNode).tag) this.add(tree[node]);
-                        } else if(tree[node] instanceof Graph) {
-                            //in case any stuff was added to the graph to indicate flow logic
-                            let source = tree[node] as any;
-                            let properties = {} as any;
-                            if(source.operator) properties.operator = source.operator;
-                            if(source.children) properties.children = source.children;
-                            if(source.forward) properties.forward = source.forward;
-                            if(source.backward) properties.backward = source.backward;
-                            if(source.repeat) properties.repeat = source.repeat;
-                            if(source.recursive) properties.recursive = source.recursive;
-                            if(source.loop) properties.loop = source.loop;
-                            if(source.animate) properties.animate = source.animate;
-                            if(source.looper) properties.looper = source.looper;
-                            if(source.animation) properties.animation = source.animation;
-                            if(source.delay) properties.delay = source.delay;
-                            if(source.tag) properties.tag = source.tag;
-                            if(source.oncreate) properties.oncreate = source.oncreate;
-                            if(source.node?._initial) Object.assign(properties,source.node._initial);
+                else if(typeof tree[node] === 'object') {
+                    if(tree[node] instanceof GraphNode) {
+                        this.add(tree[node]);
+                    } else if(tree[node] instanceof Graph) {
+                        //in case any stuff was added to the graph to indicate flow logic
+                        let source = tree[node] as any;
+                        let properties = {} as any;
+                        if(source.operator) properties.operator = source.operator;
+                        if(source.children) properties.children = source.children;
+                        if(source.forward) properties.forward = source.forward;
+                        if(source.backward) properties.backward = source.backward;
+                        if(source.repeat) properties.repeat = source.repeat;
+                        if(source.recursive) properties.recursive = source.recursive;
+                        if(source.loop) properties.loop = source.loop;
+                        if(source.animate) properties.animate = source.animate;
+                        if(source.looper) properties.looper = source.looper;
+                        if(source.animation) properties.animation = source.animation;
+                        if(source.delay) properties.delay = source.delay;
+                        if(source.tag) properties.tag = source.tag;
+                        if(source.oncreate) properties.oncreate = source.oncreate;
+                        if(source.node?._initial) Object.assign(properties,source.node._initial);
 
-                            properties.nodes = source.nodes;
-                            properties.source = source;
-                            n.setProps(properties);
-                        } else {
-                            n.setProps(tree[node]);
-                        }
+                        properties.nodes = source.nodes;
+                        properties.source = source;
+                        n.setProps(properties);
+                    } else {
+                        n.setProps(tree[node]);
                     }
+                }
             }
         }
 

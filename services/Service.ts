@@ -244,7 +244,7 @@ export class Service extends Graph {
                     for(const key in route.children) {
                         if(typeof route.children[key] === 'object') {
                             let rt = (route.children[key] as any);
-
+                           
                             if(rt.tag && routes[rt.tag]) continue;
 
                             if(customChildren) {
@@ -262,8 +262,13 @@ export class Service extends Graph {
                                 routes[rt.tag] = route.children[key];
                                 childrenIter(routes[rt.tag],key);
                             } else {
-                                routes[key] = route.children[key];
+                                routes[key] = rt;
                                 childrenIter(routes[key],key);
+                            }
+
+                            if(service?.name && includeClassName) {
+                                routes[service.name+routeFormat+key] = rt;
+                                delete routes[key];
                             }
                         }
                     }
@@ -316,7 +321,7 @@ export class Service extends Graph {
             } else this.routes[route] = routes[route];
         }
 
-    
+        console.log(Object.keys(this.routes));
         this.setTree(this.routes);
 
         for(const prop in this.routes) { //now set the aliases on the routes, the aliases share the same node otherwise
