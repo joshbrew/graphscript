@@ -236,6 +236,7 @@ export class Service extends Graph {
 
         if(!routes) routes = this.routes;
         
+        let allRoutes = {};
         for(const tag in routes) {
             let childrenIter = (route:RouteProp, routeKey:string) => {
                 if(!route.tag) route.tag = routeKey;
@@ -245,7 +246,7 @@ export class Service extends Graph {
                         if(typeof route.children[key] === 'object') {
                             let rt = (route.children[key] as any);
                            
-                            if(rt.tag && routes[rt.tag]) continue;
+                            if(rt.tag && allRoutes[rt.tag]) continue;
 
                             if(customChildren) {
                                 for(const k in customChildren) {
@@ -255,38 +256,39 @@ export class Service extends Graph {
                             }
 
                             if(rt.tag) {
-                                routes[rt.tag] = route.children[key];
-                                childrenIter(routes[rt.tag],key);
+                                allRoutes[rt.tag] = route.children[key];
+                                childrenIter(allRoutes[rt.tag],key);
                             } else if (rt.id) {
                                 rt.tag = rt.id;
-                                routes[rt.tag] = route.children[key];
-                                childrenIter(routes[rt.tag],key);
+                                allRoutes[rt.tag] = route.children[key];
+                                childrenIter(allRoutes[rt.tag],key);
                             } else {
-                                routes[key] = rt;
-                                childrenIter(routes[key],key);
+                                allRoutes[key] = rt;
+                                childrenIter(allRoutes[key],key);
                             }
 
                             if(service?.name && includeClassName) {
-                                routes[service.name+routeFormat+key] = rt;
-                                delete routes[key];
+                                allRoutes[service.name+routeFormat+key] = rt;
+                                delete allRoutes[key];
                             }
                         }
                     }
                 }
             }
+            allRoutes[tag] = routes[tag]
             childrenIter(routes[tag],tag);
         }
 
         top:
-        for(const route in routes) {
-            if(typeof routes[route] === 'object') {
-                let r = routes[route] as RouteProp;
+        for(const route in allRoutes) {
+            if(typeof allRoutes[route] === 'object') {
+                let r = allRoutes[route] as RouteProp;
 
                 if(typeof r === 'object') {
 
                     if(customRoutes) { //mutate routes or run custom node creation functions
                         for(const key in customRoutes) {
-                            r = customRoutes[key](r,route,routes);
+                            r = customRoutes[key](r,route,allRoutes);
                             if(!r) continue top; //nothing returned so continue
                         }
                     }
@@ -306,11 +308,16 @@ export class Service extends Graph {
                     if(r.trace) {}
 
                     if(r.post && !r.operator) {
-                        routes[route].operator = r.post;
+                        allRoutes[route].operator = r.post;
                     } else if (!r.operator && typeof r.get == 'function') {
-                        routes[route].operator = r.get;
+                        allRoutes[route].operator = r.get;
                     }
                 }
+            }
+        }
+
+        for(const route in routes) {
+            if(typeof routes[route] === 'object') {
                 if(this.routes[route]) {
                     if(typeof this.routes[route] === 'object') Object.assign(this.routes[route],routes[route]);
                     else this.routes[route] = routes[route];
