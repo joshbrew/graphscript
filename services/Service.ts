@@ -55,7 +55,7 @@ export type ServiceOptions = {
         [key:string]:(route:Route, routeKey:string, routes:Routes)=>Route|any|void
     },
     customChildren?:{ //modify child routes in the tree based on parent conditions
-        [key:string]:(child:Route, childRouteKey:string, parent:Route, routes:Routes)=>Route|any|void
+        [key:string]:(child:Route, childRouteKey:string, parent:Route, routes:Routes, checked:Routes)=>Route|any|void
     },
     [key:string]:any
 };
@@ -112,12 +112,8 @@ export class Service extends Graph {
         routes?:Service|Graph|Routes|{name:string,module:{[key:string]:any}}|any, 
         includeClassName:boolean=true, //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
         routeFormat:string='.',
-        customRoutes?:{ //modify routes or execute other functions based on the route properties? e.g. addElement in DOMService
-            [key:string]:(route:{[key:string]:any} & GraphNodeProperties, routeKey:string, routes:Routes)=>{[key:string]:any} & GraphNodeProperties
-        },
-        customChildren?:{ //modify child routes in the tree based on parent conditions
-            [key:string]:(child:{[key:string]:any} & GraphNodeProperties, childRouteKey:string, parent:{[key:string]:any} & GraphNodeProperties, routes:Routes)=>{[key:string]:any} & GraphNodeProperties
-        }
+        customRoutes?:ServiceOptions["customRoutes"],
+        customChildren?:ServiceOptions["customChildren"]
     ) => {    
         if(!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad)) return;
         if(this.firstLoad) this.firstLoad = false;
@@ -238,11 +234,13 @@ export class Service extends Graph {
         if(!routes) routes = this.routes;
         
         for(const tag in routes) {
+            let incr = 1;
             let childrenIter = (route:RouteProp, routeKey:string) => {
                 if(!route.tag) route.tag = routeKey;
                 if(typeof route?.children === 'object') {
                     nested:
                     for(const key in route.children) {
+                        incr++;
                         if(typeof route.children[key] === 'object') {
                             let rt = (route.children[key] as any);
                            
@@ -250,7 +248,7 @@ export class Service extends Graph {
 
                             if(customChildren) {
                                 for(const k in customChildren) {
-                                    rt = customChildren[k](rt,key,route,routes);
+                                    rt = customChildren[k](rt,key,route,routes,allRoutes);
                                     if(!rt) continue nested;
                                 }
                             }
@@ -258,17 +256,37 @@ export class Service extends Graph {
                             if(rt.id && !rt.tag) {
                                 rt.tag = rt.id;
                             } 
+
+                            let k:any;
                             if (rt.tag) {
-                                allRoutes[rt.tag] = route.children[key];
-                                childrenIter(allRoutes[rt.tag],key);
+                                if(allRoutes[rt.tag]) {
+                                    let randkey = `${rt.tag}${incr}`;
+                                    allRoutes[randkey] = rt; 
+                                    childrenIter(allRoutes[randkey],key)
+                                    k = randkey;
+                                }
+                                else {
+                                    allRoutes[rt.tag] = rt;
+                                    childrenIter(allRoutes[rt.tag],key)
+                                    k = rt.tag;
+                                }
                             } else {
-                                allRoutes[key] = rt;
-                                childrenIter(allRoutes[key],key);
+                                if(allRoutes[key]) {
+                                    let randkey = `${key}${incr}`;
+                                    allRoutes[randkey] = rt; 
+                                    childrenIter(allRoutes[randkey],key)
+                                    k = randkey;
+                                }
+                                else {
+                                    allRoutes[key] = rt;
+                                    childrenIter(allRoutes[key],key)
+                                    k = key;
+                                }
                             }
 
                             if(service?.name && includeClassName) {
-                                allRoutes[service.name+routeFormat+key] = rt;
-                                delete allRoutes[key];
+                                allRoutes[service.name+routeFormat+k] = rt;
+                                delete allRoutes[k];
                             } else allRoutes[key] = rt;
                         }
                     }
@@ -278,6 +296,7 @@ export class Service extends Graph {
             childrenIter(routes[tag],tag);
         }
 
+        console.log(Object.keys(allRoutes))
         top:
         for(const route in allRoutes) { //modify all routes incl children
             if(typeof allRoutes[route] === 'object') {

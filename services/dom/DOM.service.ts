@@ -61,7 +61,7 @@ export class DOMService extends Service {
     }
 
     customChildren:ServiceOptions["customChildren"] = {
-        'dom':(rt:DOMServiceRoute|any, routeKey:string, route:any, routes:DOMRoutes) => {
+        'dom':(rt:DOMServiceRoute|any, routeKey:string, route:any, routes:DOMRoutes, checked:DOMRoutes) => {
             //automatically parent children html routes to parent html routes without needing explicit parentNode definitions
             if((route.tag || route.id) && (route.template || route.context || route.tagName || route.element) && (rt.template || rt.context || rt.tagName || rt.element) && !rt.parentNode) {
                 if(route.tag) rt.parentNode = route.tag; 
@@ -123,6 +123,7 @@ export class DOMService extends Service {
         }
 
         let node:GraphNode;
+
         if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode)
             node = this.nodes.get(options.id);
         else 
