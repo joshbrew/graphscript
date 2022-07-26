@@ -233,8 +233,10 @@ export class Service extends Graph {
 
         if(!routes) routes = this.routes;
         
+        
+        let incr = 0;
         for(const tag in routes) {
-            let incr = 1;
+            incr++;
             let childrenIter = (route:RouteProp, routeKey:string) => {
                 if(!route.tag) route.tag = routeKey;
                 if(typeof route?.children === 'object') {
@@ -262,6 +264,7 @@ export class Service extends Graph {
                                 if(allRoutes[rt.tag]) {
                                     let randkey = `${rt.tag}${incr}`;
                                     allRoutes[randkey] = rt; 
+                                    rt.tag = randkey;
                                     childrenIter(allRoutes[randkey],key)
                                     k = randkey;
                                 }
@@ -274,6 +277,7 @@ export class Service extends Graph {
                                 if(allRoutes[key]) {
                                     let randkey = `${key}${incr}`;
                                     allRoutes[randkey] = rt; 
+                                    rt.tag = randkey;
                                     childrenIter(allRoutes[randkey],key)
                                     k = randkey;
                                 }
@@ -287,7 +291,7 @@ export class Service extends Graph {
                             if(service?.name && includeClassName) {
                                 allRoutes[service.name+routeFormat+k] = rt;
                                 delete allRoutes[k];
-                            } else allRoutes[key] = rt;
+                            } else allRoutes[k] = rt;
                         }
                     }
                 }
@@ -296,7 +300,7 @@ export class Service extends Graph {
             childrenIter(routes[tag],tag);
         }
 
-        console.log(Object.keys(allRoutes))
+        //console.log(Object.keys(allRoutes))
         top:
         for(const route in allRoutes) { //modify all routes incl children
             if(typeof allRoutes[route] === 'object') {
