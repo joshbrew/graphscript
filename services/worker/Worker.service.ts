@@ -55,7 +55,7 @@ export class WorkerService extends Service {
         let request = (message:ServiceMessage|any, transfer?:any, origin?:string, method?:string) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
-                let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
+                let req = {route:'runRequest', args:message, origin:options._id, callbackId:callbackId} as any;
                 if(origin) req.origin = origin;
                 if(method) req.method = method;
                 let onmessage = (ev)=>{
