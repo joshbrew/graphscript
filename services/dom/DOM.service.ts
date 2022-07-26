@@ -122,11 +122,9 @@ export class DOMService extends Service {
             return props;
         }
 
-        let opts = Object.assign({},options);
-        if(opts.children) delete opts.children;
-
+        
         let node = new GraphNode(
-            opts,
+            options,
             options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
             this
         );
@@ -282,11 +280,8 @@ export class DOMService extends Service {
             return props;
         }
 
-        let opts = Object.assign({},options);
-        if(opts.children) delete opts.children;
-
         let node = new GraphNode(
-            opts,
+            options,
             options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
         this);
 
@@ -395,11 +390,8 @@ export class DOMService extends Service {
             return props;
         }
 
-        let opts = Object.assign({},options);
-        if(opts.children) delete opts.children;
-
         let node = new GraphNode(
-            opts,
+            options,
             options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
             this
         );
