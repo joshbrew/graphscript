@@ -187,7 +187,8 @@ export class WorkerService extends Service {
         });
     }
 
-    runRequest = (message:ServiceMessage|any, worker:undefined|string|Worker|MessagePort, callbackId:string|number) => {   
+    runRequest = (message:ServiceMessage|any, worker:undefined|string|Worker|MessagePort, callbackId:string|number) => {  
+        //console.log('running request:',message, 'for worker', worker, 'callback', callbackId) 
         let res = this.receive(message);
         if(typeof worker === 'string' && this.workers[worker]) {
             if(this.workers[worker].port) worker = this.workers[worker].port;

@@ -15,6 +15,7 @@ export const unsafeRoutes = {
                 self.graph.get(fnName).setOperator(fn); //overwrite operator
             }
             else (self.graph as Graph).add({tag:fnName,operator:fn});
+            //console.log(self)
             return true;
         }
         return false;

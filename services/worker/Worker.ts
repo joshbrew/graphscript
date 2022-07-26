@@ -12,24 +12,20 @@ import { unsafeRoutes } from '../unsafe/Unsafe.service';
 declare var WorkerGlobalScope;
 
 if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-    (self as any).SERVICE = new WorkerService();
-
-    (self as any).ROUTER = new Router([ //this links nodes in different services to each other if loaded in this context
-        (self as any).SERVICE,
-        GPUService,
-        proxyWorkerRoutes,
-        workerCanvasRoutes,
-        unsafeRoutes //allows dynamic route loading
-        //load additional services in node or browser workers e.g. http service in node or threejs service in browser
-    ],{
-        includeClassName:false //prevent reroute names e.g. gpu/coherence just for simpler callbacks
+    (self as any).SERVICE = new WorkerService({
+        routes:[
+            (self as any).SERVICE,
+            GPUService,
+            proxyWorkerRoutes,
+            workerCanvasRoutes,
+            unsafeRoutes //allows dynamic route loading
+        ],
+        includeClassName:false
     });
-
-    //console.log((self as any).ROUTER.routes)
 
     self.onmessage = (ev:MessageEvent) => {
         let result = ((self as any).SERVICE as WorkerService).runRequest(ev.data.args, ev.data.origin, ev.data.callbackId); //this will handle graph logic and can run requests for the window or messsage ports etc etc.
-        //console.log(ev.data, result)
+        //console.log(ev.data, result, (self as any).SERVICE)
         //console.log(result);
     }
     
