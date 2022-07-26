@@ -763,13 +763,13 @@
                     n.children[key] = n.nodes.get(key);
                 }
                 if (n.children[key] instanceof GraphNode) {
-                  if (n.graph && n.children[key].parent.tag !== this.tag) {
+                  if (n.graph) {
                     let props = n.children[key].getProps();
                     delete props.parent;
                     delete props.graph;
-                    if (n.source instanceof Graph)
+                    if (n.source instanceof Graph) {
                       n.children[key] = new GraphNode(props, n, n.source);
-                    else {
+                    } else {
                       n.children[key] = new GraphNode(props, n, n.graph);
                     }
                   }
@@ -977,11 +977,6 @@
             this.tag = `node${Math.floor(Math.random() * 1e10)}`;
           }
         }
-        if (parentNode) {
-          this.parent = parentNode;
-          if (parentNode instanceof GraphNode || parentNode instanceof Graph)
-            parentNode.nodes.set(this.tag, this);
-        }
         if (graph) {
           this.graph = graph;
           if (graph.nodes.get(this.tag)) {
@@ -989,6 +984,11 @@
           }
           graph.nodes.set(this.tag, this);
           graph.nNodes++;
+        }
+        if (parentNode) {
+          this.parent = parentNode;
+          if (parentNode instanceof GraphNode || parentNode instanceof Graph)
+            parentNode.nodes.set(this.tag, this);
         }
         if (typeof properties.tree === "object") {
           for (const key in properties.tree) {
@@ -1023,11 +1023,13 @@
         let props = node;
         if (!(node instanceof GraphNode))
           node = new GraphNode(props, this, this);
-        else
+        else {
           this.nNodes++;
-        if (node.tag)
-          this.tree[node.tag] = props;
-        this.nodes.set(node.tag, node);
+          if (node.tag) {
+            this.tree[node.tag] = props;
+            this.nodes.set(node.tag, node);
+          }
+        }
         return node;
       };
       this.setTree = (tree = this.tree) => {
@@ -1057,8 +1059,7 @@
               n.setOperator(tree[node]);
             } else if (typeof tree[node] === "object") {
               if (tree[node] instanceof GraphNode) {
-                if (n.tag !== tree[node].tag)
-                  this.add(tree[node]);
+                this.add(tree[node]);
               } else if (tree[node] instanceof Graph) {
                 let source = tree[node];
                 let properties = {};
@@ -1555,6 +1556,7 @@
         if (this.firstLoad)
           this.firstLoad = false;
         let service;
+        let allRoutes = {};
         if (routes) {
           if (!(routes instanceof Graph) && routes?.name) {
             if (routes.module) {
@@ -1610,7 +1612,7 @@
                       }
                     }
                     nd.nodes.forEach((n) => {
-                      if (includeClassName)
+                      if (includeClassName && !routes[nd.tag + routeFormat + n.tag])
                         routes[nd.tag + routeFormat + n.tag] = n;
                       else if (!routes[n.tag])
                         routes[n.tag] = n;
@@ -1661,49 +1663,76 @@
         }
         if (!routes)
           routes = this.routes;
+        let incr = 0;
         for (const tag in routes) {
+          incr++;
           let childrenIter = (route, routeKey) => {
             if (!route.tag)
               route.tag = routeKey;
             if (typeof route?.children === "object") {
               nested:
                 for (const key in route.children) {
+                  incr++;
                   if (typeof route.children[key] === "object") {
                     let rt = route.children[key];
-                    if (rt.tag && routes[rt.tag])
+                    if (rt.tag && allRoutes[rt.tag])
                       continue;
                     if (customChildren) {
-                      for (const k in customChildren) {
-                        rt = customChildren[k](rt, key, route, routes);
+                      for (const k2 in customChildren) {
+                        rt = customChildren[k2](rt, key, route, routes, allRoutes);
                         if (!rt)
                           continue nested;
                       }
                     }
-                    if (rt.tag) {
-                      routes[rt.tag] = route.children[key];
-                      childrenIter(routes[rt.tag], key);
-                    } else if (rt.id) {
+                    if (rt.id && !rt.tag) {
                       rt.tag = rt.id;
-                      routes[rt.tag] = route.children[key];
-                      childrenIter(routes[rt.tag], key);
-                    } else {
-                      routes[key] = route.children[key];
-                      childrenIter(routes[key], key);
                     }
+                    let k;
+                    if (rt.tag) {
+                      if (allRoutes[rt.tag]) {
+                        let randkey = `${rt.tag}${incr}`;
+                        allRoutes[randkey] = rt;
+                        rt.tag = randkey;
+                        childrenIter(allRoutes[randkey], key);
+                        k = randkey;
+                      } else {
+                        allRoutes[rt.tag] = rt;
+                        childrenIter(allRoutes[rt.tag], key);
+                        k = rt.tag;
+                      }
+                    } else {
+                      if (allRoutes[key]) {
+                        let randkey = `${key}${incr}`;
+                        allRoutes[randkey] = rt;
+                        rt.tag = randkey;
+                        childrenIter(allRoutes[randkey], key);
+                        k = randkey;
+                      } else {
+                        allRoutes[key] = rt;
+                        childrenIter(allRoutes[key], key);
+                        k = key;
+                      }
+                    }
+                    if (service?.name && includeClassName) {
+                      allRoutes[service.name + routeFormat + k] = rt;
+                      delete allRoutes[k];
+                    } else
+                      allRoutes[k] = rt;
                   }
                 }
             }
           };
+          allRoutes[tag] = routes[tag];
           childrenIter(routes[tag], tag);
         }
         top:
-          for (const route in routes) {
-            if (typeof routes[route] === "object") {
-              let r = routes[route];
+          for (const route in allRoutes) {
+            if (typeof allRoutes[route] === "object") {
+              let r = allRoutes[route];
               if (typeof r === "object") {
                 if (customRoutes) {
                   for (const key in customRoutes) {
-                    r = customRoutes[key](r, route, routes);
+                    r = customRoutes[key](r, route, allRoutes);
                     if (!r)
                       continue top;
                   }
@@ -1729,27 +1758,39 @@
                 if (r.trace) {
                 }
                 if (r.post && !r.operator) {
-                  routes[route].operator = r.post;
+                  allRoutes[route].operator = r.post;
                 } else if (!r.operator && typeof r.get == "function") {
-                  routes[route].operator = r.get;
+                  allRoutes[route].operator = r.get;
                 }
               }
-              if (this.routes[route]) {
-                if (typeof this.routes[route] === "object")
-                  Object.assign(this.routes[route], routes[route]);
-                else
-                  this.routes[route] = routes[route];
-              } else
-                this.routes[route] = routes[route];
-            } else if (this.routes[route]) {
+            }
+          }
+        for (const route in routes) {
+          if (typeof routes[route] === "object") {
+            if (this.routes[route]) {
               if (typeof this.routes[route] === "object")
                 Object.assign(this.routes[route], routes[route]);
               else
                 this.routes[route] = routes[route];
             } else
               this.routes[route] = routes[route];
+          } else if (this.routes[route]) {
+            if (typeof this.routes[route] === "object")
+              Object.assign(this.routes[route], routes[route]);
+            else
+              this.routes[route] = routes[route];
+          } else
+            this.routes[route] = routes[route];
+        }
+        if (service) {
+          for (const key in this.routes) {
+            if (this.routes[key] instanceof GraphNode) {
+              this.nodes.set(key, this.routes[key]);
+              this.nNodes++;
+            }
           }
-        this.setTree(this.routes);
+        } else
+          this.setTree(this.routes);
         for (const prop in this.routes) {
           if (this.routes[prop]?.aliases) {
             let aliases = this.routes[prop].aliases;
@@ -2044,7 +2085,7 @@
       this.routes = this.service.routes;
       this.services = {};
       this.loadDefaultRoutes = false;
-      this.load = (service, linkServices = true, includeClassName = true) => {
+      this.load = (service, linkServices = true, includeClassName = true, routeFormat = ".", customRoutes, customChildren) => {
         if (!(service instanceof Graph) && typeof service === "function") {
           service = new service({ loadDefaultRoutes: this.loadDefaultRoutes }, service.name);
           service.load();
@@ -2065,7 +2106,7 @@
           } else
             this.services[service.constructor.name] = service;
         }
-        this.service.load(service, includeClassName);
+        this.service.load(service, includeClassName, routeFormat, customRoutes, customChildren);
         if (linkServices) {
           for (const name2 in this.services) {
             this.service.nodes.forEach((n) => {
@@ -2504,11 +2545,11 @@
         this.loadDefaultRoutes = options.loadDefaultRoutes;
       }
       if (this.loadDefaultRoutes)
-        this.load(this.defaultRoutes, options?.linkServices, options?.includeClassName);
+        this.load(this.defaultRoutes, options?.linkServices, options?.includeClassName, options?.routeFormat, options?.customRoutes, options?.customChildren);
       if (Array.isArray(services)) {
-        services.forEach((s) => this.load(s, options?.linkServices, options?.includeClassName));
+        services.forEach((s) => this.load(s, options?.linkServices, options?.includeClassName, options?.routeFormat, options?.customRoutes, options?.customChildren));
       } else if (typeof services === "object") {
-        Object.keys(services).forEach((s) => this.load(services[s], options?.linkServices, options?.includeClassName));
+        Object.keys(services).forEach((s) => this.load(services[s], options?.linkServices, options?.includeClassName, options?.routeFormat, options?.customRoutes, options?.customChildren));
       }
     }
   };
