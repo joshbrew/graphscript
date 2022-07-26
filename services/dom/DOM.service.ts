@@ -122,12 +122,15 @@ export class DOMService extends Service {
             return props;
         }
 
-        
-        let node = new GraphNode(
-            options,
-            options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
-            this
-        );
+        let node:GraphNode;
+        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode)
+            node = this.nodes.get(options.id);
+        else 
+            node = new GraphNode(
+                options,
+                options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
+                this
+            );
 
         (elm as any).node = node; //self.node references the graphnode on the div now
         
@@ -280,10 +283,16 @@ export class DOMService extends Service {
             return props;
         }
 
-        let node = new GraphNode(
-            options,
-            options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
-        this);
+        
+        let node:GraphNode;
+        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode)
+            node = this.nodes.get(options.id);
+        else 
+            node = new GraphNode(
+                options,
+                options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
+                this
+            );
 
         (elm as any).node = node; //self.node references the graphnode on the div now
 
@@ -390,11 +399,15 @@ export class DOMService extends Service {
             return props;
         }
 
-        let node = new GraphNode(
-            options,
-            options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
-            this
-        );
+        let node:GraphNode;
+        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode)
+            node = this.nodes.get(options.id);
+        else 
+            node = new GraphNode(
+                options,
+                options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
+                this
+            );
 
         (elm as any).node = node; //self.node references the graphnode on the div now
 
