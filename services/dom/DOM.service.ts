@@ -123,8 +123,10 @@ export class DOMService extends Service {
         }
 
         let node = new GraphNode(
-            options
-        ,undefined,this);
+            options,
+            options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
+            this
+        );
 
         (elm as any).node = node; //self.node references the graphnode on the div now
         
@@ -186,7 +188,8 @@ export class DOMService extends Service {
         if(!options.tag && options.id) options.tag = options.id;
         if(!options.id) options.id = `${options.tagName ?? 'element'}${Math.floor(Math.random()*1000000000000000)}`;
 
-        if(typeof options.parentNode === 'string' && document.getElementById(options.parentNode)) options.parentNode = document.getElementById(options.parentNode);
+        if(typeof options.parentNode === 'string' && document.getElementById(options.parentNode)) 
+            options.parentNode = document.getElementById(options.parentNode);
         if(!options.parentNode) {        
             if(!this.parentNode) this.parentNode = document.body;
             options.parentNode = this.parentNode;
@@ -277,8 +280,9 @@ export class DOMService extends Service {
         }
 
         let node = new GraphNode(
-            options
-        ,undefined,this);
+            options,
+            options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
+        this);
 
         (elm as any).node = node; //self.node references the graphnode on the div now
 
@@ -386,8 +390,10 @@ export class DOMService extends Service {
         }
 
         let node = new GraphNode(
-            options
-        ,undefined,this);
+            options,
+            options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
+            this
+        );
 
         (elm as any).node = node; //self.node references the graphnode on the div now
 

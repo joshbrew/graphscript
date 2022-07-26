@@ -279,7 +279,7 @@ export class Service extends Graph {
         }
 
         top:
-        for(const route in allRoutes) {
+        for(const route in allRoutes) { //modify all routes incl children
             if(typeof allRoutes[route] === 'object') {
                 let r = allRoutes[route] as RouteProp;
 
@@ -327,7 +327,6 @@ export class Service extends Graph {
             } else this.routes[route] = routes[route];
         }
 
-        console.log(Object.keys(this.routes),this.routes)
         if(service) {
             for(const key in this.routes) {
                 if(this.routes[key] instanceof GraphNode) {
