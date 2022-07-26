@@ -25,6 +25,8 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         includeClassName:false //prevent reroute names e.g. gpu/coherence just for simpler callbacks
     });
 
+    //console.log((self as any).ROUTER.routes)
+
     self.onmessage = (ev:MessageEvent) => {
         let result = ((self as any).SERVICE as WorkerService).runRequest(ev.data.args, ev.data.origin, ev.data.callbackId); //this will handle graph logic and can run requests for the window or messsage ports etc etc.
         //console.log(ev.data, result)

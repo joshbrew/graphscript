@@ -78,7 +78,7 @@
     let newFuncHead = getFunctionHead(method);
     let newFuncBody = getFunctionBody(method);
     let newFunc;
-    if (newFuncHead.includes("function ")) {
+    if (newFuncHead.includes("function")) {
       let varName = newFuncHead.split("(")[1].split(")")[0];
       newFunc = new Function(varName, newFuncBody);
     } else {

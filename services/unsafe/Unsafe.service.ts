@@ -6,7 +6,9 @@ export const unsafeRoutes = {
     
     //add a route and parse it from text
     setRoute:(self:GraphNode,origin:any,fn:string|((...args:[])=>any),fnName?:string) => {
+        //console.log(origin, fn, fnName)
         if(typeof fn === 'string') fn = parseFunctionFromText(fn);
+        //console.log(fn);
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
             if(self.graph.get(fnName)) {
