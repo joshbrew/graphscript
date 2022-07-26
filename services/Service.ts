@@ -124,6 +124,7 @@ export class Service extends Graph {
 
         //console.log(this.routes);
         let service;
+        let allRoutes = {};
         if(routes) {
             if(!(routes instanceof Graph) && (routes as any)?.name) { //class prototype
                 if(routes.module) {
@@ -181,7 +182,7 @@ export class Service extends Graph {
                                     }
                                 } 
                                 nd.nodes.forEach((n) => {
-                                    if(includeClassName) routes[nd.tag+routeFormat+n.tag] = n;
+                                    if(includeClassName && !routes[nd.tag+routeFormat+n.tag]) routes[nd.tag+routeFormat+n.tag] = n;
                                     else if(!routes[n.tag]) routes[n.tag] = n; 
                                     checkChildGraphNodes(n,nd);
                                 });
@@ -236,7 +237,6 @@ export class Service extends Graph {
 
         if(!routes) routes = this.routes;
         
-        let allRoutes = {};
         for(const tag in routes) {
             let childrenIter = (route:RouteProp, routeKey:string) => {
                 if(!route.tag) route.tag = routeKey;
@@ -255,11 +255,10 @@ export class Service extends Graph {
                                 }
                             }
 
-                            if(rt.tag) {
-                                allRoutes[rt.tag] = route.children[key];
-                                childrenIter(allRoutes[rt.tag],key);
-                            } else if (rt.id) {
+                            if(rt.id && !rt.tag) {
                                 rt.tag = rt.id;
+                            } 
+                            if (rt.tag) {
                                 allRoutes[rt.tag] = route.children[key];
                                 childrenIter(allRoutes[rt.tag],key);
                             } else {
@@ -328,8 +327,15 @@ export class Service extends Graph {
             } else this.routes[route] = routes[route];
         }
 
-        console.log(Object.keys(this.routes));
-        this.setTree(this.routes);
+        console.log(Object.keys(this.routes),this.routes)
+        if(service) {
+            for(const key in this.routes) {
+                if(this.routes[key] instanceof GraphNode) {
+                    this.nodes.set(key,this.routes[key]);
+                }
+            }
+        }
+        else this.setTree(this.routes);
 
         for(const prop in this.routes) { //now set the aliases on the routes, the aliases share the same node otherwise
             if((this.routes[prop] as any)?.aliases) {
