@@ -18921,7 +18921,7 @@ ${F.join("")}}`;
           loop: 10
         }
       };
-      this.load(this.routes);
+      this.load(this.routes, options.linkServices, options.includeClassName, options.routeFormat, options.customRoutes, options.customChildren);
     }
     getFirstMatch(obj1, obj2) {
       for (const i in obj1) {
