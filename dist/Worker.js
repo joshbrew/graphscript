@@ -2576,7 +2576,7 @@
         let request = (message, transfer, origin, method) => {
           return new Promise((res, rej) => {
             let callbackId = Math.random();
-            let req = { route: "runRequest", args: [message, options._id, callbackId] };
+            let req = { route: "runRequest", args: message, origin: options._id, callbackId };
             if (origin)
               req.origin = origin;
             if (method)
@@ -15190,7 +15190,7 @@ ${F.join("")}}`;
       includeClassName: false
     });
     self.onmessage = (ev2) => {
-      let result = self.SERVICE.receive(ev2.data);
+      let result = self.SERVICE.runRequest(ev2.data.args, ev2.data.origin, ev2.data.callbackId);
     };
   }
   var Worker_default = self;
