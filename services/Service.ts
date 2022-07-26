@@ -269,7 +269,7 @@ export class Service extends Graph {
                             if(service?.name && includeClassName) {
                                 allRoutes[service.name+routeFormat+key] = rt;
                                 delete allRoutes[key];
-                            }
+                            } else allRoutes[key] = rt;
                         }
                     }
                 }

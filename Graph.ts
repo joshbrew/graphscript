@@ -360,11 +360,6 @@ export class GraphNode {
                 }
             }      
 
-            if(parentNode) {
-                this.parent=parentNode;
-                if(parentNode instanceof GraphNode || parentNode instanceof Graph) parentNode.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
-            }
-            
             if(graph) {
                 this.graph=graph;
                 if(graph.nodes.get(this.tag)) {
@@ -374,6 +369,10 @@ export class GraphNode {
                 graph.nNodes++;
             }
 
+            if(parentNode) {
+                this.parent=parentNode;
+                if(parentNode instanceof GraphNode || parentNode instanceof Graph) parentNode.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
+            }
             
             if(typeof properties.tree === 'object') { //can generate node maps from trees in nodes that will be available for use in the main graph, and the main graph will index them by tag
                 for(const key in properties.tree) {
@@ -1174,9 +1173,13 @@ export class Graph {
     add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
         let props = node;
         if(!(node instanceof GraphNode)) node = new GraphNode(props,this,this); 
-        else this.nNodes++;
-        if(node.tag) this.tree[node.tag] = props; //set the head node prototype in the tree object
-        this.nodes.set(node.tag,node);
+        else {
+            this.nNodes++;
+            if(node.tag) {
+                this.tree[node.tag] = props; //set the head node prototype in the tree object
+                this.nodes.set(node.tag,node);
+            }
+        }
         return node;
     }
 
