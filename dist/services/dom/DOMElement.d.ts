@@ -17,7 +17,7 @@ export class DOMElement extends HTMLElement {
     attachedShadow: boolean;
     obsAttributes: string[];
     get observedAttributes(): string[];
-    attributeChangedCallback(name: any, old: any, val: any): void;
+    attributeChangedCallback: (name: any, old: any, val: any) => void;
     ONRESIZE: (ev: any) => void;
     connectedCallback(): void;
     delete: () => void;
