@@ -18,6 +18,10 @@ export function getFnParamInfo(fn):Map<string, any>{
       innerMatch = fstr.slice(fstr.indexOf("(") + 1, fstr.indexOf(")"));
     else
       innerMatch = fstr.match(/([a-zA-Z]\w*|\([a-zA-Z]\w*(,\s*[a-zA-Z]\w*)*\)) =>/)?.[1];
+
+    if(!innerMatch) 
+        return undefined;
+
     const matches = innerMatch.match(ARGUMENT_NAMES).filter((e) => !!e);
 
     const info = new Map()
@@ -430,27 +434,35 @@ export class GraphNode {
         
         let params = getFnParamInfo(operator);
 
-        const keys = params.keys()
-        const paramOne = keys.next().value
-        const paramTwo = keys.next().value
-
-        // RULE: Restricted argument names
-        const restrictedOne = ['self', 'node']  
-        const restrictedTwo = ['origin', 'parent', 'graph', 'router']  
-
-        //we can pass other formatted functions in as operators and they will be wrapped to assume they don't use self/node or origin/router, but will still work in the flow graph logic calls
         let pass = false;
-        //console.log(params,operator.toString())
-        if(paramOne)
-            restrictedOne.forEach((a) => { //esbuild will rename variables with numbers on the end so we need to account for that
-                if(paramOne.includes(a)) pass = true;
-            })
+        if(params) {
+            const keys = params.keys()
+            const paramOne = keys.next().value
+            const paramTwo = keys.next().value
 
-        if(paramTwo)
-            restrictedTwo.forEach((a) => {
-                if(paramTwo.includes(a)) pass = true;
-            })
+            // RULE: Restricted argument names
+            const restrictedOne = ['self', 'node']  
+            const restrictedTwo = ['origin', 'parent', 'graph', 'router']  
 
+            //we can pass other formatted functions in as operators and they will be wrapped to assume they don't use self/node or origin/router, but will still work in the flow graph logic calls
+
+            //console.log(params,operator.toString())
+            if(paramOne)
+                restrictedOne.forEach((a) => { //esbuild will rename variables with numbers on the end so we need to account for that
+                    if(paramOne.includes(a)) pass = true;
+                })
+
+            if(paramTwo)
+                restrictedTwo.forEach((a) => {
+                    if(paramTwo.includes(a)) pass = true;
+                })
+
+            if (this.arguments){
+                params.forEach((v, k) => {
+                    if (!this.arguments.has(k)) this.arguments.set(k, v)
+                })
+            }
+        }// else console.log(operator.toString())
         if (!pass){
             let fn = operator;
 
@@ -460,11 +472,7 @@ export class GraphNode {
             }
 
             // Track Argument Names + Default Values (if no _initial value provided)
-          if (this.arguments){
-            params.forEach((v, k) => {
-              if (!this.arguments.has(k)) this.arguments.set(k, v)
-            })
-          }
+         
         }
 
         this.operator = operator;

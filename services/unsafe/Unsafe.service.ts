@@ -31,6 +31,7 @@ export const unsafeRoutes = {
     },
     receiveClass:(self:GraphNode,origin:any,stringified:string)=>{ //eval a class string and set it as a key on the local graph by class name, so self.graph.method exists
         if(typeof stringified === 'string') {
+            console.log(stringified)
             if(stringified.indexOf('class') === 0) {
                 let cls = (0,eval)('('+stringified+')');
                 let name = cls.name; //get classname
