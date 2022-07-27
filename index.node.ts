@@ -18,6 +18,8 @@ export * from './services/sse/SSE.node'
 
 export * from './services/wss/WSS.node'
 
+export * from './services/cmd/CMD.node'
+
 //export * from './services/struct/Struct.frontend'
 
 // export * from './services/webrtc/WebRTC.browser'
