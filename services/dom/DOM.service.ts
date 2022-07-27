@@ -122,16 +122,18 @@ export class DOMService extends Service {
             return props;
         }
 
-        let node:GraphNode;
 
-        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode)
+        let node:GraphNode;
+        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
             node = this.nodes.get(options.id);
-        else 
+            node.element = elm;
+        } else {
             node = new GraphNode(
                 options,
                 options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
                 this
             );
+        }
 
         (elm as any).node = node; //self.node references the graphnode on the div now
         
@@ -151,8 +153,15 @@ export class DOMService extends Service {
         
         if(!elm.parentNode) {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
-                if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
-                if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
+                if(typeof options.parentNode === 'string') 
+                    options.parentNode = document.getElementById(options.parentNode);
+                if(typeof options.parentNode === 'object') {
+                    // if(options.parentNode.shadowRoot) {
+                    //     console.log(options.parentNode.shadowRoot)
+                    //     options.parentNode.shadowRoot.appendChild(elm);
+                    // } else 
+                    options.parentNode.appendChild(elm);
+                }
 
                 // // TODO: Figure out why newNode and node don't match...
                 // const newNode = this.nodes.get(node.tag)
@@ -286,14 +295,16 @@ export class DOMService extends Service {
 
         
         let node:GraphNode;
-        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode)
+        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
             node = this.nodes.get(options.id);
-        else 
+            node.element = elm;
+        } else {
             node = new GraphNode(
                 options,
                 options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
                 this
             );
+        }
 
         (elm as any).node = node; //self.node references the graphnode on the div now
 
@@ -309,7 +320,12 @@ export class DOMService extends Service {
         if(!elm.parentNode) {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync tree/route loading calls are finished
                 if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
-                if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
+                if(typeof options.parentNode === 'object') {
+                    // if(options.parentNode.shadowRoot)
+                    //     options.parentNode.shadowRoot.appendChild(elm);
+                    // else 
+                    options.parentNode.appendChild(elm);
+                }
             },0.01);
         }
 
@@ -401,14 +417,16 @@ export class DOMService extends Service {
         }
 
         let node:GraphNode;
-        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode)
+        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
             node = this.nodes.get(options.id);
-        else 
+            node.element = elm;
+        } else {
             node = new GraphNode(
                 options,
                 options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
                 this
             );
+        }
 
         (elm as any).node = node; //self.node references the graphnode on the div now
 
@@ -438,7 +456,12 @@ export class DOMService extends Service {
         if(!elm.parentNode) {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync tree/route loading calls are finished
                 if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
-                if(typeof options.parentNode === 'object') options.parentNode.appendChild(elm);
+                if(typeof options.parentNode === 'object') {
+                    // if(options.parentNode.shadowRoot)
+                    //     options.parentNode.shadowRoot.appendChild(elm);
+                    // else 
+                    options.parentNode.appendChild(elm);
+                }
             },0.01);
         }
         

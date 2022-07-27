@@ -14,6 +14,8 @@ export class DOMElement extends HTMLElement {
     onchanged: any;
     renderonchanged: boolean;
     FRAGMENT: any;
+    STYLE: any;
+    SHADOW: any;
     attachedShadow: boolean;
     obsAttributes: string[];
     get observedAttributes(): string[];

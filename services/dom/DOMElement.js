@@ -14,7 +14,7 @@ export class DOMElement extends HTMLElement {
     onchanged; //(props) => {} fires when props change
     renderonchanged=false; //(self,props) => {} fires after rerendering on props change
 
-    FRAGMENT;
+    FRAGMENT; STYLE;
     attachedShadow = false;
 
     obsAttributes=["props","options","onchanged","onresize","ondelete","oncreate","template"]
@@ -190,20 +190,6 @@ export class DOMElement extends HTMLElement {
 
         
         if(this.styles) {
-            let elm = `
-            <style>
-                ${templateStr}
-            </style>
-            `;
-
-            if(this.template.indexOf('<style')) {
-                this.template.splice(this.template.indexOf('<style'+7),this.template.indexOf('</style'),templateStr);
-            } else {
-                if(this.template.indexOf('<head')) {
-                    this.template.splice(this.template.indexOf('<head'+6),0,elm);
-                } else this.template = elm + this.template;
-            }
-
             this.useShadow = true;
         }
 
@@ -262,6 +248,7 @@ export class DOMElement extends HTMLElement {
         if(typeof this.template === 'function') this.templateResult = this.template(props, this); //can pass a function
         else this.templateResult = this.template;
 
+
         //this.innerHTML = this.templateResult;
 
         const t = document.createElement('template');
@@ -278,17 +265,33 @@ export class DOMElement extends HTMLElement {
 
         if(this.FRAGMENT) { //will reappend the fragment without reappending the whole node if already rendered once
             if(this.useShadow) {
+                //this.removeChild(this.shadowRoot)
+                if(this.STYLE) this.shadowRoot.removeChild(this.STYLE);
                 this.shadowRoot.removeChild(this.FRAGMENT);
             }   
             else this.removeChild(this.FRAGMENT); 
         }
         if(this.useShadow) {
-            if(!this.attachedShadow) this.attachShadow({mode:'open'});
+            if(!this.attachedShadow) {
+                this.attachShadow({mode:'open'}).innerHTML = '<slot></slot>';
+                this.attachedShadow = true;
+            }
+            if(this.styles) {
+                let style = document.createElement('style');
+                style.textContent = this.styles;
+                this.shadowRoot.prepend(style);
+                this.STYLE = style;
+            }
+
             this.shadowRoot.prepend(fragment); //now you need to use the shadowRoot.querySelector etc.
             this.FRAGMENT = this.shadowRoot.childNodes[0];
+            //this.prepend(this.shadowRoot)
         }   
-        else this.prepend(fragment);
-        this.FRAGMENT = this.childNodes[0];
+        else {
+            this.prepend(fragment);
+            this.FRAGMENT = this.childNodes[0];
+        }
+        
 
         let rendered = new CustomEvent('rendered', {detail: { props:this.props, self:this }});
         this.dispatchEvent(rendered);
@@ -395,19 +398,8 @@ export class DOMElement extends HTMLElement {
     }
 
     set styles(templateStr) {
-        let elm = `
-        <style>
-            ${templateStr}
-        </style>
-        `;
-
-        if(this.template.indexOf('<style')) {
-            this.template.splice(this.template.indexOf('<style'+7),this.template.indexOf('</style'),templateStr);
-        } else {
-            if(this.template.indexOf('<head')) {
-                this.template.splice(this.template.indexOf('<head'+6),0,elm);
-            } else this.template = elm + this.template;
-        }
+        
+        this.styles = templateStr;
 
         if(this.querySelector('style')) { //get the top style 
             if(!this.useShadow) {
