@@ -41,7 +41,7 @@ export class DOMElement extends HTMLElement {
         addCustomElement(cls,tag,extend);
     }
 
-    attributeChangedCallback(name, old, val) {
+    attributeChangedCallback = (name, old, val) => {
         if(name === 'onchanged') {
             let onchanged = val;
             if(typeof onchanged === 'string') onchanged = parseFunctionFromText(onchanged);
@@ -128,7 +128,7 @@ export class DOMElement extends HTMLElement {
                 }
             }
             this[name] = parsed; // set arbitrary props 
-            if(name !== 'props') this.props[name] = parsed; //reflect it in the props object (to set props via attributes more easily)
+            if(name !== 'props' && this.props) this.props[name] = parsed; //reflect it in the props object (to set props via attributes more easily)
             //this.props[name] = val; //set arbitrary props via attributes
         }
     }
@@ -136,13 +136,17 @@ export class DOMElement extends HTMLElement {
     connectedCallback() {
 
         // set initial props
+        if(!this.props) this.props = {};
+        //debugger;
         let newProps = this.getAttribute('props');
         if(typeof newProps === 'string') newProps = JSON.parse(newProps);
 
         Object.assign(this.props,newProps);
+
         this.state.setState({props:this.props});
 
         //Observe arbitrary attributes
+            //console.log(this,this.attributes)
         Array.from(this.attributes).forEach((att) => {
             let name = att.name;
             //console.log(name,this.getAttribute(name),this[name])
@@ -287,7 +291,7 @@ export class DOMElement extends HTMLElement {
         this.FRAGMENT = this.childNodes[0];
 
         let rendered = new CustomEvent('rendered', {detail: { props:this.props, self:this }});
-        this.dispatchEvent('rendered');
+        this.dispatchEvent(rendered);
         
         if(this.oncreate) this.oncreate(this,props); //set scripted behaviors
     }
