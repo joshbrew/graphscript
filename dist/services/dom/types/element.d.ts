@@ -4,7 +4,7 @@ import { DOMElementProps } from "./component";
 export declare type ElementProps = GraphNodeProperties & {
     tagName?: string;
     element?: HTMLElement;
-    style?: CSSStyleDeclaration;
+    style?: Partial<CSSStyleDeclaration>;
     attributes?: {
         [key: string]: any;
     };
@@ -29,7 +29,7 @@ export declare type ElementInfo = {
 export declare type ElementOptions = GraphNodeProperties & {
     tagName?: string;
     element?: HTMLElement;
-    style?: CSSStyleDeclaration;
+    style?: Partial<CSSStyleDeclaration>;
     attributes?: {
         [key: string]: any;
     };

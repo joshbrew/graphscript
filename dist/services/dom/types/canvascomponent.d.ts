@@ -48,7 +48,7 @@ export declare type CanvasOptions = {
     draw: ((self: DOMElement, info: CanvasElementInfo) => void);
     width?: string;
     height?: string;
-    style?: CSSStyleDeclaration;
+    style?: Partial<CSSStyleDeclaration>;
     parentNode?: string | HTMLElement;
     styles?: string;
     oncreate?: (self: DOMElement, info?: CanvasElementInfo) => void;

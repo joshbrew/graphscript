@@ -44,7 +44,7 @@ export type CanvasOptions = {
     draw:((self:DOMElement,info:CanvasElementInfo)=>void), //string or function that passes the modifiable props on the element (the graph node properties)
     width?:string, //e.g. '300px'
     height?:string, //e.g. '300px'
-    style?:CSSStyleDeclaration, //canvas inline style string
+    style?:Partial<CSSStyleDeclaration>, //canvas inline style string
     parentNode?:string|HTMLElement,
     styles?:string, //stylesheet text, goes inside a <style> tag. This will use the shadow DOM automatically in this case
     oncreate?:(self:DOMElement,info?:CanvasElementInfo)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.

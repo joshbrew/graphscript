@@ -5,7 +5,7 @@ import { DOMElementProps } from "./component";
 export type ElementProps = GraphNodeProperties & {
     tagName?:string, //e.g. 'div', 'canvas'
     element?:HTMLElement, //alternatively set an element
-    style?:CSSStyleDeclaration,
+    style?:Partial<CSSStyleDeclaration>,
     attributes?:{[key:string]:any}, //specify any attributes/values
     parentNode?:string|HTMLElement,
     oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
@@ -28,7 +28,7 @@ export type ElementInfo = { //returned from addElement
 export type ElementOptions = GraphNodeProperties & {
     tagName?:string, //e.g. 'div', 'canvas'
     element?:HTMLElement, //alternatively set an element
-    style?:CSSStyleDeclaration,
+    style?:Partial<CSSStyleDeclaration>,
     attributes?:{[key:string]:any}, //specify any attributes/values e.g. innerHTML, onclick,...
     parentNode?:string|HTMLElement,
     oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
