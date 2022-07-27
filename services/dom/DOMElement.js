@@ -189,9 +189,9 @@ export class DOMElement extends HTMLElement {
         //now we can add event listeners for our custom events
 
         
-        if(this.styles) {
-            this.useShadow = true;
-        }
+        // if(this.styles) {
+        //     this.useShadow = true;
+        // }
 
         this.render(this.props);
         this.dispatchEvent(created);
@@ -248,7 +248,7 @@ export class DOMElement extends HTMLElement {
         if(typeof this.template === 'function') this.templateResult = this.template(props, this); //can pass a function
         else this.templateResult = this.template;
 
-
+        if(this.styles) this.templateResult = `<style>${this.styles}</style>${this.templateResult}`;
         //this.innerHTML = this.templateResult;
 
         const t = document.createElement('template');
@@ -402,13 +402,14 @@ export class DOMElement extends HTMLElement {
         this.styles = templateStr;
 
         if(this.querySelector('style')) { //get the top style 
-            if(!this.useShadow) {
-                this.useShadow = true;
-                this.render()
-            } else this.querySelector('style').innerHTML = templateStr;
+            // if(!this.useShadow) {
+            //     this.useShadow = true;
+            //     this.render()
+            // } else 
+            this.querySelector('style').innerHTML = templateStr;
 
         } else {
-            this.useShadow = true;
+            //this.useShadow = true;
             this.render();
         }
     }

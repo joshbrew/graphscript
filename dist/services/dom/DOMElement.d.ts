@@ -15,7 +15,6 @@ export class DOMElement extends HTMLElement {
     renderonchanged: boolean;
     FRAGMENT: any;
     STYLE: any;
-    SHADOW: any;
     attachedShadow: boolean;
     obsAttributes: string[];
     get observedAttributes(): string[];
@@ -24,7 +23,7 @@ export class DOMElement extends HTMLElement {
     connectedCallback(): void;
     delete: () => void;
     render: (props?: {}) => void;
-    templateResult: string;
+    templateResult: any;
     state: {
         pushToState: {};
         data: {};

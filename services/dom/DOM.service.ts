@@ -252,6 +252,7 @@ export class DOMService extends Service {
         class CustomElement extends DOMElement {
             props = options.props;
             styles = options.styles;
+            useShadow = options.useShadow;
             template = options.template as any;
             oncreate = options.oncreate;
             onresize = options.onresize;

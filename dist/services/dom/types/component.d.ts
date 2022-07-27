@@ -31,6 +31,7 @@ export declare type ComponentOptions = GraphNodeProperties & {
     template?: string | ((props: any) => string | HTMLElement) | HTMLElement;
     parentNode?: string | HTMLElement;
     styles?: string;
+    useShadow?: boolean;
     oncreate?: (self: DOMElement, info?: DOMElementInfo) => void;
     onresize?: (self: DOMElement, info?: DOMElementInfo) => void;
     ondelete?: (self: DOMElement, info?: DOMElementInfo) => void;
