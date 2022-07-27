@@ -1,9 +1,9 @@
 import { GraphNode } from "../../Graph";
 export declare const unsafeRoutes: {
     setRoute: (self: GraphNode, origin: any, fn: string | (() => any), fnName?: string) => boolean;
-    transferClass: (classObj: any) => false | {
+    transferClass: (classObj: any, className?: string) => false | {
         route: string;
-        args: any;
+        args: any[];
     };
-    receiveClass: (self: GraphNode, origin: any, stringified: string) => boolean;
+    receiveClass: (self: GraphNode, origin: any, stringified: string, className?: string) => boolean;
 };

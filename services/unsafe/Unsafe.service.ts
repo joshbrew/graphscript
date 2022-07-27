@@ -20,22 +20,26 @@ export const unsafeRoutes = {
         }
         return false;
     },
-    transferClass:(classObj:any)=>{ //send a class over a remote service
+    transferClass:(classObj:any, className?:string)=>{ //send a class over a remote service
         if(typeof classObj === 'object') {
             let str = classObj.toString();//needs to be a class prototype
-            let message = {route:'receiveClass',args:str};
+            let message = {route:'receiveClass',args:[str,className]};
 
             return message;
         }
         return false;
     },
-    receiveClass:(self:GraphNode,origin:any,stringified:string)=>{ //eval a class string and set it as a key on the local graph by class name, so self.graph.method exists
+    receiveClass:(self:GraphNode,origin:any,stringified:string, className?:string)=>{ //eval a class string and set it as a key on the local graph by class name, so self.graph.method exists
         if(typeof stringified === 'string') {
-            console.log(stringified)
+            //console.log(stringified)
             if(stringified.indexOf('class') === 0) {
                 let cls = (0,eval)('('+stringified+')');
-                let name = cls.name; //get classname
+                let name = className;
+                
+                if(!name)
+                    name = cls.name; //get classname
                 self.graph[name] = cls;
+                
                 return true;
             }
         }

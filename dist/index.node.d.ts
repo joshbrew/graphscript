@@ -6,6 +6,7 @@ export * from './services/gpu/GPU.service';
 export * from './services/http/HTTP.node';
 export * from './services/sse/SSE.node';
 export * from './services/wss/WSS.node';
+export * from './services/cmd/CMD.node';
 export * from './services/worker/Worker.service';
 export * from './services/worker/ProxyListener';
 export * from './services/worker/WorkerCanvas';
