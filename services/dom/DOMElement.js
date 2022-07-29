@@ -1,7 +1,7 @@
 //from 'fragelement' on npm by Joshua Brewster (AGPL v3.0)
 export class DOMElement extends HTMLElement { 
 
-    template = (props, self=this) => { //return a string or html node
+    template = (self=this, props) => { //return a string or html node
         return `<div> Custom Fragment Props: ${JSON.stringify(props)} </div>`
     }; //override the default template string by extending the class, or use options.template if calling the base class
     props = {};
@@ -245,7 +245,7 @@ export class DOMElement extends HTMLElement {
 
     render = (props=this.props) => {
 
-        if(typeof this.template === 'function') this.templateResult = this.template(props, this); //can pass a function
+        if(typeof this.template === 'function') this.templateResult = this.template(this, props); //can pass a function
         else this.templateResult = this.template;
 
         if(this.styles) this.templateResult = `<style>${this.styles}</style>${this.templateResult}`;
@@ -485,7 +485,7 @@ export function parseFunctionFromText(method) {
 
     let newFunc;
     try{
-        if (newFuncHead.includes('function ')) {
+        if (newFuncHead.includes('function')) {
             let varName = newFuncHead.split('(')[1].split(')')[0]
             newFunc = new Function(varName, newFuncBody);
         } else {

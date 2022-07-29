@@ -5,7 +5,7 @@ import { CanvasElementProps } from "./canvascomponent"
 
 export type DOMElementProps = GraphNodeProperties & {
     tagName?:string, //custom node tag name, requires a '-' in it 
-    template?:string|((props:any)=>string|HTMLElement)|HTMLElement, //string or function that passes the modifiable props on the element (the graph node properties)
+    template?:string|((self:DOMElement, props:any)=>string|HTMLElement)|HTMLElement, //string or function that passes the modifiable props on the element (the graph node properties)
     parentNode?:string|HTMLElement,
     styles?:string, //will use the shadow DOM automatically in this case
     oncreate?:(self:DOMElement,info?:DOMElementInfo)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
@@ -30,7 +30,7 @@ export type DOMElementInfo = { //returned from addComponent
 
 export type ComponentOptions = GraphNodeProperties & {
     tagName?:string,
-    template?:string|((props:any)=>string|HTMLElement)|HTMLElement, //string or function that passes the modifiable props on the element (the graph node properties)
+    template?:string|((self:DOMElement, props:any)=>string|HTMLElement)|HTMLElement, //string or function that passes the modifiable props on the element (the graph node properties)
     parentNode?:string|HTMLElement,
     styles?:string, //Insert a stylesheet in front of the template
     useShadow?:boolean, //use the shadow root for style/html nesting? breaks document.querySelector...

@@ -4,7 +4,7 @@ import { ElementProps } from "./element";
 import { CanvasElementProps } from "./canvascomponent";
 export declare type DOMElementProps = GraphNodeProperties & {
     tagName?: string;
-    template?: string | ((props: any) => string | HTMLElement) | HTMLElement;
+    template?: string | ((self: DOMElement, props: any) => string | HTMLElement) | HTMLElement;
     parentNode?: string | HTMLElement;
     styles?: string;
     oncreate?: (self: DOMElement, info?: DOMElementInfo) => void;
@@ -28,7 +28,7 @@ export declare type DOMElementInfo = {
 } & DOMElementProps;
 export declare type ComponentOptions = GraphNodeProperties & {
     tagName?: string;
-    template?: string | ((props: any) => string | HTMLElement) | HTMLElement;
+    template?: string | ((self: DOMElement, props: any) => string | HTMLElement) | HTMLElement;
     parentNode?: string | HTMLElement;
     styles?: string;
     useShadow?: boolean;
