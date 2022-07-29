@@ -9,7 +9,7 @@ export declare type ElementProps = GraphNodeProperties & {
         [key: string]: any;
     };
     parentNode?: string | HTMLElement;
-    oncreate?: (self: HTMLElement, info: ElementInfo) => void;
+    onrender?: (self: HTMLElement, info: ElementInfo) => void;
     onresize?: (ev: any, self: HTMLElement, info: ElementInfo) => void;
     ondelete?: (self: HTMLElement, info: ElementInfo) => void;
     innerText?: string;
@@ -34,7 +34,7 @@ export declare type ElementOptions = GraphNodeProperties & {
         [key: string]: any;
     };
     parentNode?: string | HTMLElement;
-    oncreate?: (self: HTMLElement, info: ElementInfo) => void;
+    onrender?: (self: HTMLElement, info: ElementInfo) => void;
     onresize?: (ev: any, self: HTMLElement, info: ElementInfo) => void;
     ondelete?: (self: HTMLElement, info: ElementInfo) => void;
     innerText?: string;

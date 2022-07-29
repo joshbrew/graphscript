@@ -8,7 +8,7 @@ export type ElementProps = GraphNodeProperties & {
     style?:Partial<CSSStyleDeclaration>,
     attributes?:{[key:string]:any}, //specify any attributes/values
     parentNode?:string|HTMLElement,
-    oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
+    onrender?:(self:HTMLElement,info:ElementInfo)=>void,
     onresize?:(ev,self:HTMLElement,info:ElementInfo)=>void,
     ondelete?:(self:HTMLElement,info:ElementInfo)=>void,
     innerText?:string,
@@ -31,7 +31,7 @@ export type ElementOptions = GraphNodeProperties & {
     style?:Partial<CSSStyleDeclaration>,
     attributes?:{[key:string]:any}, //specify any attributes/values e.g. innerHTML, onclick,...
     parentNode?:string|HTMLElement,
-    oncreate?:(self:HTMLElement,info:ElementInfo)=>void,
+    onrender?:(self:HTMLElement,info:ElementInfo)=>void,
     onresize?:(ev,self:HTMLElement,info:ElementInfo)=>void,
     ondelete?:(self:HTMLElement,info:ElementInfo)=>void,
     innerText?:string,

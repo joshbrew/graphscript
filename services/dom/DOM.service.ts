@@ -43,17 +43,18 @@ export class DOMService extends Service {
     customRoutes:ServiceOptions["customRoutes"] = {
         'dom':(r:DOMServiceRoute|any, route:string, routes:DOMRoutes|any) => {
 
+            // console.log(r)
             if(r.template) { //assume its a component node
-                if(!routes[route].tag) routes[route].tag = route;
-                this.addComponent(routes[route],routes[route].generateChildElementNodes);
+                if(!r.tag) r.tag = route;
+                this.addComponent(r,r.generateChildElementNodes);
             }
             else if(r.context) { //assume its a canvas node
-                if(!routes[route].tag) routes[route].tag = route;
-                this.addCanvasComponent(routes[route]);
+                if(!r.tag) r.tag = route;
+                this.addCanvasComponent(r);
             }
             else if(r.tagName || r.element) { //assume its an element node
-                if(!routes[route].tag) routes[route].tag = route;
-                this.addElement(routes[route],routes[route].generateChildElementNodes);
+                if(!r.tag) r.tag = route;
+                this.addElement(r,r.generateChildElementNodes);
             }
 
             return r;
@@ -100,8 +101,7 @@ export class DOMService extends Service {
 
         let elm:HTMLElement = this.createElement(options)
 
-        let oncreate = options.oncreate;
-        delete options.oncreate; //so it doesnt trigger on the node
+        let oncreate = options.onrender;
 
         if(!options.element) options.element = elm;
         if(!options.operator) options.operator = (node,origin,props:{[key:string]:any})=>{ 
@@ -224,9 +224,9 @@ export class DOMService extends Service {
         generateChildElementNodes=true
     )=>{
         
-        if(options.oncreate) {
-            let oncreate = options.oncreate;
-            (options.oncreate as any) = (self:DOMElement) => {
+        if(options.onrender) {
+            let oncreate = options.onrender;
+            (options.onrender as any) = (self:DOMElement) => {
                 oncreate(self, options as DOMElementInfo);
             }
         }
@@ -254,13 +254,11 @@ export class DOMService extends Service {
             styles = options.styles;
             useShadow = options.useShadow;
             template = options.template as any;
-            oncreate = options.oncreate;
+            oncreate = options.onrender;
             onresize = options.onresize;
             ondelete = options.ondelete;
             renderonchanged = options.renderonchanged as any;
         }
-
-        delete options.oncreate; //so it doesn't trigger on the node
 
         if(!options.tagName) options.tagName = `custom-element${Math.random()*1000000000000000}`;
 
@@ -345,9 +343,9 @@ export class DOMService extends Service {
             options.template+=` ></canvas>`;
         } else options.template = options.canvas;
                 
-        if(options.oncreate) {
-            let oncreate = options.oncreate;
-            (options.oncreate as any) = (self:DOMElement) => {
+        if(options.onrender) {
+            let oncreate = options.onrender;
+            (options.onrender as any) = (self:DOMElement) => {
                 oncreate(self, options as any);
             }
         }
@@ -375,12 +373,11 @@ export class DOMService extends Service {
             props = options.props;
             styles = options.styles;
             template = options.template;
-            oncreate = options.oncreate;
+            oncreate = options.onrender;
             onresize = options.onresize;
             ondelete = options.ondelete;
             renderonchanged = options.renderonchanged as any;
         }
-        delete options.oncreate; //so it doesnt trigger on the node
 
         if(!options.tagName) options.tagName = `custom-element${Math.random()*1000000000000000}`;
 

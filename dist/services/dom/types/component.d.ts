@@ -7,7 +7,7 @@ export declare type DOMElementProps = GraphNodeProperties & {
     template?: string | ((self: DOMElement, props: any) => string | HTMLElement) | HTMLElement;
     parentNode?: string | HTMLElement;
     styles?: string;
-    oncreate?: (self: DOMElement, info?: DOMElementInfo) => void;
+    onrender?: (self: DOMElement, info?: DOMElementInfo) => void;
     onresize?: (self: DOMElement, info?: DOMElementInfo) => void;
     ondelete?: (self: DOMElement, info?: DOMElementInfo) => void;
     onchanged?: (props: any) => void;
@@ -32,7 +32,7 @@ export declare type ComponentOptions = GraphNodeProperties & {
     parentNode?: string | HTMLElement;
     styles?: string;
     useShadow?: boolean;
-    oncreate?: (self: DOMElement, info?: DOMElementInfo) => void;
+    onrender?: (self: DOMElement, info?: DOMElementInfo) => void;
     onresize?: (self: DOMElement, info?: DOMElementInfo) => void;
     ondelete?: (self: DOMElement, info?: DOMElementInfo) => void;
     onchanged?: (props: any) => void;
