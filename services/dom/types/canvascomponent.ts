@@ -14,7 +14,7 @@ export type CanvasElementProps = GraphNodeProperties & {
     draw:((self:DOMElement,info:CanvasElementInfo)=>void), //string or function that passes the modifiable props on the element (the graph node properties)
     width?:string, //e.g. '300px'
     height?:string, //e.g. '300px'
-    oncreate?:(self:DOMElement,info?:CanvasElementInfo)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
+    onrender?:(self:DOMElement,info?:CanvasElementInfo)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
     onresize?:(self:DOMElement,info?:CanvasElementInfo)=>void,
     ondelete?:(self:DOMElement,info?:CanvasElementInfo)=>void,
     renderonchanged?:boolean|((self:DOMElement,info?:CanvasElementInfo)=>void),
@@ -47,7 +47,7 @@ export type CanvasOptions = {
     style?:Partial<CSSStyleDeclaration>, //canvas inline style string
     parentNode?:string|HTMLElement,
     styles?:string, //stylesheet text, goes inside a <style> tag. This will use the shadow DOM automatically in this case
-    oncreate?:(self:DOMElement,info?:CanvasElementInfo)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
+    onrender?:(self:DOMElement,info?:CanvasElementInfo)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
     onresize?:(self:DOMElement,info?:CanvasElementInfo)=>void,
     ondelete?:(self:DOMElement,info?:CanvasElementInfo)=>void,
     onchanged?:(props:any)=>void,

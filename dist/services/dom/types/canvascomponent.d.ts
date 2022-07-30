@@ -13,7 +13,7 @@ export declare type CanvasElementProps = GraphNodeProperties & {
     draw: ((self: DOMElement, info: CanvasElementInfo) => void);
     width?: string;
     height?: string;
-    oncreate?: (self: DOMElement, info?: CanvasElementInfo) => void;
+    onrender?: (self: DOMElement, info?: CanvasElementInfo) => void;
     onresize?: (self: DOMElement, info?: CanvasElementInfo) => void;
     ondelete?: (self: DOMElement, info?: CanvasElementInfo) => void;
     renderonchanged?: boolean | ((self: DOMElement, info?: CanvasElementInfo) => void);
@@ -51,7 +51,7 @@ export declare type CanvasOptions = {
     style?: Partial<CSSStyleDeclaration>;
     parentNode?: string | HTMLElement;
     styles?: string;
-    oncreate?: (self: DOMElement, info?: CanvasElementInfo) => void;
+    onrender?: (self: DOMElement, info?: CanvasElementInfo) => void;
     onresize?: (self: DOMElement, info?: CanvasElementInfo) => void;
     ondelete?: (self: DOMElement, info?: CanvasElementInfo) => void;
     onchanged?: (props: any) => void;

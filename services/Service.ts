@@ -510,13 +510,13 @@ export class Service extends Graph {
             if(callback) return source.subscribe((res)=>{
                 let mod = callback(res); //either a modifier or a void function to do a thing before transmitting the data
                 if(mod !== undefined) this.transmit({route:destination, args:mod, origin, method});
-                else this.transmit({route:destination, args:res, origin, method},endpoint);
+                else this.transmit({route:destination, args:res, origin, method}, endpoint);
             })
-            else return this.subscribe(source,(res)=>{ this.transmit({route:destination, args:res, origin, method},endpoint); });
+            else return this.subscribe(source,(res)=>{ this.transmit({route:destination, args:res, origin, method}, endpoint); });
         }
         else if(typeof source === 'string') 
             return this.subscribe(source,(res)=>{ 
-                this.transmit({route:destination, args:res, origin, method},endpoint); 
+                this.transmit({route:destination, args:res, origin, method}, endpoint); 
             });
     }
 
