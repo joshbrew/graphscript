@@ -23,7 +23,7 @@ export declare type GraphNodeProperties = {
     parent?: GraphNode | Graph;
     branch?: {
         [label: string]: {
-            if: any;
+            if: any | ((output: any) => boolean);
             then: string | ((...operator_result: any[]) => any) | GraphNode;
         };
     };

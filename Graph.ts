@@ -113,7 +113,7 @@ export type GraphNodeProperties = {
     parent?:GraphNode|Graph, //parent graph node
     branch?:{ //based on the operator result, automatically do something
         [label:string]:{ //apply any label for your own indexing
-            if:any, //if this value
+            if:any|((output:any)=>boolean), //if this value, or pass a callback that returns true/false
             then:string|((...operator_result:any[])=>any)|GraphNode //then do this, e.g. use a node tag, a GraphNode, or supply any function
         } //it still returns afterward but is treated like an additional flow statement :D. GraphNodes being run will contain the origin node (who had the branch)
     },
@@ -685,9 +685,14 @@ export class GraphNode {
             await Promise.all(keys.map(async (k) => {
                     if(typeof node.branch[k].if === 'object') node.branch[k].if = stringifyFast(node.branch[k].if); //stringify object outputs, stringifyFast saves a TON of overhead
                     let pass = false;
-                    if(typeof output === 'object') if(stringifyFast(output) === node.branch[k].if) pass = true;
-                    else if (output === node.branch[k].if) pass = true;
-                    else pass = true;
+                    if(typeof node.branch[k].if === 'function') {
+                        pass = node.branch[k].if(output); //don't use async here, it's not a promise
+                    }
+                    else {
+                        if(typeof output === 'object') if(stringifyFast(output) === node.branch[k].if) pass = true;
+                        else if (output === node.branch[k].if) pass = true;
+                        else pass = true;
+                    }
                     if(pass) {
                         if(node.branch[k].then instanceof GraphNode) {
                             if(Array.isArray(output))  await node.branch[k].then._run(node.branch[k].then,node,...output);

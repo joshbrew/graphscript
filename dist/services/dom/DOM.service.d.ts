@@ -1,42 +1,36 @@
-import { DOMElement } from "./DOMElement";
-import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph';
-import { RouteProp, Service, ServiceOptions } from "../Service";
-import { CompleteOptions } from './types/general';
-import { ElementOptions, ElementInfo, ElementProps } from './types/element';
-import { DOMElementProps, ComponentOptions, DOMElementInfo } from './types/component';
-import { CanvasElementProps, CanvasOptions, CanvasElementInfo } from './types/canvascomponent';
-export declare type DOMRouteProp = ElementProps | DOMElementProps | CanvasElementProps;
-export declare type DOMServiceRoute = GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
-    aliases?: string[];
-} & GraphNodeProperties) | RouteProp | DOMRouteProp;
-export declare type DOMRoutes = {
-    [key: string]: DOMServiceRoute;
-};
-export declare class DOMService extends Service {
-    loadDefaultRoutes: boolean;
-    name: string;
-    keepState: boolean;
-    parentNode: HTMLElement;
-    customRoutes: ServiceOptions["customRoutes"];
-    customChildren: ServiceOptions["customChildren"];
-    constructor(options?: ServiceOptions, parentNode?: HTMLElement);
-    elements: {
-        [key: string]: ElementInfo;
+export function addCustomElement(cls: any, tag: any, extend?: any): void;
+export function randomId(tag?: string): string;
+export function parseFunctionFromText(method: any): any;
+export class DOMElement extends HTMLElement {
+    static get tag(): string;
+    static addElement(tag?: string, cls?: typeof DOMElement, extend?: any): void;
+    template: ((self: DOMElement, props: any) => (string|HTMLElement)) | string | HTMLElement;
+    props: {[key:string]:any};
+    useShadow: boolean;
+    styles: string;
+    oncreate: ((self: DOMElement, props: any) => void);
+    onresize: ((self: DOMElement, props: any) => void);
+    ondelete: ((self: DOMElement, props: any) => void);
+    onchanged: ((self: DOMElement, props: any) => void);
+    renderonchanged: boolean | ((self: DOMElement, props: any) => void);
+    FRAGMENT: any;
+    STYLE: any;
+    attachedShadow: boolean;
+    obsAttributes: string[];
+    get observedAttributes(): string[];
+    attributeChangedCallback: (name: any, old: any, val: any) => void;
+    ONRESIZE: (ev: any) => void;
+    connectedCallback(): void;
+    delete: () => void;
+    render: (props?: {}) => void;
+    templateResult: any;
+    state: {
+        pushToState: {};
+        data: {};
+        triggers: {};
+        setState(updateObj: any): {};
+        subscribeTrigger(key: any, onchanged?: (res: any) => void): number;
+        unsubscribeTrigger(key: any, sub: any): boolean;
+        subscribeTriggerOnce(key?: any, onchanged?: (value: any) => void): void;
     };
-    components: {
-        [key: string]: DOMElementInfo | CanvasElementInfo;
-    };
-    templates: {
-        [key: string]: DOMElementProps | CanvasElementProps;
-    };
-    addElement: (options: ElementOptions, generateChildElementNodes?: boolean) => ElementInfo;
-    createElement: (options: ElementOptions) => HTMLElement;
-    updateOptions: (options: any, element: any) => CompleteOptions;
-    addComponent: (options: ComponentOptions, generateChildElementNodes?: boolean) => DOMElementInfo;
-    addCanvasComponent: (options: CanvasOptions) => CanvasElementInfo;
-    terminate: (element: string | DOMElement | HTMLElement | DOMElementInfo | CanvasElementInfo) => boolean;
-    defaultRoutes: DOMRoutes;
 }
-/**
- * Usage
- */

@@ -77,28 +77,45 @@ type OperatorType = ( //can be async
 
 type GraphNodeProperties = {
     tag?:string, //generated if not specified, or use to get another node by tag instead of generating a new one
+    
     operator?:OperatorType|((...args)=>any|void), //Operator to handle I/O on this node. Returned inputs can propagate according to below settings
+    
     forward?:boolean, //pass output to child nodes
+    
     backward?:boolean, //pass output to parent node
+    
     children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph}//string|GraphNodeProperties|GraphNode|(GraphNodeProperties|GraphNode|string)[], //child node(s), can be tags of other nodes, properties objects like this, or GraphNodes, or null
+    
     parent?:GraphNode|Graph, //parent graph node
+
     branch?:{ //based on the operator result, automatically do something
         [label:string]:{ //apply any label for your own indexing
-            if:any, //if this value
+            if:any|((output:any)=>boolean), //if this value, or pass a callback that returns true/false
             then:string|((...operator_result:any[])=>any)|GraphNode //then do this, e.g. use a node tag, a GraphNode, or supply any function
         } //it still returns afterward but is treated like an additional flow statement :D
     },
+
     tree?:Tree, //can also declare independent node maps on a node for referencing
+    
     delay?:false|number, //ms delay to fire the node
+    
     repeat?:false|number, // set repeat as an integer to repeat the input n times, cmd will be the number of times the operation has been repeated
+    
     recursive?:false|number, //or set recursive with an integer to pass the output back in as the next input n times, cmd will be the number of times the operation has been repeated
     frame?:boolean, //true or false. If repeating or recursing, execute on requestAnimationFrame? Careful mixing this with animate:true
+    
     animate?:boolean, //true or false, run the operation on an animationFrame loop?
+    
     loop?:false|number, //milliseconds or false, run the operation on a loop?
+    
     animation?: OperatorType, //if it outputs something not undefined it will trigger parent/child operators
+    
     looper?: OperatorType, //if it outputs something not undefined it will trigger parent/child operators
+    
     oncreate?:(self:GraphNode)=>void //do something after initializing the node, if loaded in a graph it only runs after setTree
+    
     DEBUGNODE?:boolean // print a console.time and the result for a node by tag, run DEBUGNODES on a GraphNode or Graph to toggle debug on all attached nodes.
+    
     [key:string]:any //add whatever variables and utilities
 }; //can specify properties of the element which can be subscribed to for changes.
 
@@ -130,12 +147,15 @@ GraphNode utilities
         children:undefined, //child node(s), can be tags of other nodes, properties objects like this, or graphnodes, or null
         parent:undefined, //parent graph node
         branch:undefined,  //based on the operator result, automatically do something
+        tree:undefined,
         delay:false, //ms delay to fire the node
         repeat:false, // set repeat as an integer to repeat the input n times
         recursive:false, //or set recursive with an integer to pass the output back in as the next input n times
         frame:false, //true or false. If repeating or recursing, execute on requestAnimationFrame? Careful mixing this with animate:true
         animate:false, //true or false
+        animation:undefined, //independent animation function from main operator?
         loop:undefined, //milliseconds or false
+        looper:undefined, //independent looping function from main operator?
         tag:undefined, //generated if not specified, or use to get another node by tag instead of generating a new one
         DEBUGNODE:false // print a console.time and the result for a node by tag, run DEBUGNODES on a GraphNode or Graph to toggle debug on all attached nodes.
       }; //can specify properties of the element which can be subscribed to for changes.
