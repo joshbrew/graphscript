@@ -689,9 +689,8 @@ export class GraphNode {
                         pass = node.branch[k].if(output); //don't use async here, it's not a promise
                     }
                     else {
-                        if(typeof output === 'object') if(stringifyFast(output) === node.branch[k].if) pass = true;
+                        if(typeof output === 'object') {if(stringifyFast(output) === node.branch[k].if) pass = true;}
                         else if (output === node.branch[k].if) pass = true;
-                        else pass = true;
                     }
                     if(pass) {
                         if(node.branch[k].then instanceof GraphNode) {
