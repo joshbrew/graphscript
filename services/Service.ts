@@ -153,6 +153,12 @@ export class Service extends Graph {
                     }
                 } 
 
+                if(service.customRoutes && !this.customRoutes) this.customRoutes = service.customRoutes;
+                else if (service.customRoutes && this.customRoutes) Object.assign(this.customRoutes,service.customRoutes);
+
+                if(service.customChildren && !this.customChildren) this.customChildren = service.customChildren;
+                else if (service.customChildren && this.customChildren) Object.assign(this.customChildren, service.customChildren);
+
                 service.nodes.forEach((node)=>{
                     //if(includeClassName) routes[name+routeFormat+node.tag] = node;
                     //else 
