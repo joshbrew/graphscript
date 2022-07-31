@@ -1,11 +1,17 @@
-import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, Routes, ServiceMessage, ServiceOptions, Route } from "../Service";
 import Worker from 'web-worker' //cross platform for node and browser
+import { GraphNodeProperties } from "../../Graph";
 
 declare var WorkerGlobalScope;
 
+export type WorkerRoute = {
+    worker: string|URL|Blob,
+    workerId?: string
+} & GraphNodeProperties & WorkerProps
+
 export type WorkerProps = {
-    url?:URL|string,
-    _id?:string|number,
+    url?:URL|string|Blob,
+    _id?:string,
     port?:MessagePort, //message channel for this instance
     onmessage?:(ev)=>void,
     onerror?:(ev)=>void
@@ -28,25 +34,54 @@ export class WorkerService extends Service {
 
     threadRot = 0; //thread rotation if not specifying
 
-    constructor(
-        options?:ServiceOptions
-    ) {
-        super(options);
+    customRoutes:ServiceOptions["customRoutes"] = {
+        'worker':(route:Route | WorkerRoute,routeKey:string,routes:Routes) => {
+            let rt = route as WorkerRoute;
+            if(rt.worker || rt.workerId) { //each set of props with a worker will instantiate a new worker, else you can use the same worker elsewhere by passing the corresponding tag
+                if(rt.worker) rt.url = rt.worker;
+                if(rt.workerId) rt.tag = rt.workerId;
+                if(!rt.tag) rt.tag = routeKey;
+                if(!rt._id) rt._id = routeKey;
+
+                let worker;
+                if(this.workers[rt._id]) worker = this.workers[rt._id];
+                if(!worker) worker = this.addWorker(rt);
+        
+                if(worker) {
+                    if(!rt.operator) {
+                        rt.operator = (...args) => {
+                            if(!this.nodes.get(rt.tag)?.children) worker.send(args);
+                            else return worker.request(args);
+                        }
+                    }
+                }
+            }
+        }
     }
 
+    //customChildren:ServiceOptions["customChildren"] = {} //todo, create message ports between workers with parent/child relationships and set up pipes
+
     addWorker = (options:{
-        url:URL|string,
+        url?:URL|string|Blob,
+        port?:MessagePort,
         _id?:string,
         onmessage?:(ev)=>void,
         onerror?:(ev)=>void
     }) => { //pass file location, web url, or javascript dataurl string
         let worker;
-        if(options.url) worker = new Worker(options.url);
-            
-        else worker = new Worker(Worker);
 
         if(!options._id) 
             options._id = `worker${Math.floor(Math.random()*1000000000000000)}`;
+
+        if(options.url) worker = new Worker(options.url);
+        else if (options.port) {
+            worker = options.port;
+        } else if (this.workers[options._id]) {
+            if(this.workers[options._id].port) worker = this.workers[options._id].port;
+            else worker = this.workers[options._id].worker;
+        }
+
+        if(!worker) return;
 
         let send = (message:any,transfer?:any) => {
             return this.transmit(message,worker,transfer);
@@ -137,29 +172,34 @@ export class WorkerService extends Service {
     }
 
     //if no second id provided, message channel will exist to this thread
-    establishMessageChannel = (worker:Worker|string, worker2?:Worker|string) => {
+    establishMessageChannel = (worker:Worker|string|MessagePort, worker2?:Worker|string|MessagePort) => {
+        
+        let workerId;
         if(typeof worker === 'string') {
+            workerId = worker;
             if(this.workers[worker]){
-                worker = this.workers[worker].worker;
+                if(this.workers[worker].port) worker = this.workers[worker].port;
+                else worker2 = this.workers[worker].worker;
             }
         }
         if(typeof worker2 === 'string') {
             if(this.workers[worker2]){
-                worker2 = this.workers[worker2].worker;
+                if(this.workers[worker2].port) worker2 = this.workers[worker2].port;
+                else worker2 = this.workers[worker2].worker;
             }
         } 
 
-        if(worker instanceof Worker) {
+        if(worker instanceof Worker || worker instanceof MessagePort) {
             let channel = new MessageChannel();
             let port1 = channel.port1;
             let port2 = channel.port2;
             let portId = `port${Math.floor(Math.random()*1000000000000000)}`;
 
-            worker.postMessage({route:'recursivelyAssign',args:{workers:{_id:portId,port:port1}}},[port1])
+            worker.postMessage({route:'addWorker',args:{port:port1, _id:portId}},[port1]);
 
-            if(worker2 instanceof Worker) {
-                worker2.postMessage({route:'recursivelyAssign',args:{workers:{_id:portId,port:port2}}},[port2]);
-            }
+            if(worker2 instanceof Worker || worker2 instanceof MessagePort) {
+                worker2.postMessage({route:'addWorker',args:{port:port1, _id:portId}},[port2]);
+            } else if(workerId && this.workers[workerId]) this.workers[workerId].port = port2;
         
             return channel;
         }
