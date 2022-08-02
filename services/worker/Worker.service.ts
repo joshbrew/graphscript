@@ -84,6 +84,7 @@ export class WorkerService extends Service {
         if(!worker) return;
 
         let send = (message:any,transfer?:any) => {
+            //console.log('sent', message)
             return this.transmit(message,worker,transfer);
         }
 
@@ -191,17 +192,15 @@ export class WorkerService extends Service {
 
         if(worker instanceof Worker || worker instanceof MessagePort) {
             let channel = new MessageChannel();
-            let port1 = channel.port1;
-            let port2 = channel.port2;
             let portId = `port${Math.floor(Math.random()*1000000000000000)}`;
 
-            worker.postMessage({route:'addWorker',args:{port:port1, _id:portId}},[port1]);
+            worker.postMessage({route:'addWorker',args:{port:channel.port1, _id:portId}},[channel.port1]);
 
             if(worker2 instanceof Worker || worker2 instanceof MessagePort) {
-                worker2.postMessage({route:'addWorker',args:{port:port1, _id:portId}},[port2]);
-            } else if(workerId && this.workers[workerId]) this.workers[workerId].port = port2;
+                worker2.postMessage({route:'addWorker',args:{port:channel.port2, _id:portId}},[channel.port2]);
+            } else if(workerId && this.workers[workerId]) this.workers[workerId].port = channel.port2;
         
-            return channel;
+            return portId;
         }
 
         return false;

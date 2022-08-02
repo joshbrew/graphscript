@@ -27,7 +27,7 @@ export const unsafeRoutes = {
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
             if(self.graph.get(route)) {
-                self.graph.get(route)[fnName] = fn; //overwrite operator
+                self.graph.get(route)[fnName] = fn; //overwrite method
             }
             else (self.graph as Graph).add({tag:fnName,[fnName]:fn});
             //console.log(self)
