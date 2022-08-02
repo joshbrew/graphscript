@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { Routes, Service, ServiceMessage } from "../Service";
+import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 import { Session, SessionState } from 'better-sse';
 import http from 'http';
 import https from 'https';
@@ -31,6 +31,7 @@ export declare class SSEbackend extends Service {
             served: SSESessionInfo;
         };
     };
+    constructor(options?: ServiceOptions);
     setupSSE: (options: SSEProps) => false | SSESessionInfo;
     transmit: (data: string | ServiceMessage, path: string, channel: string) => void;
     terminate: (path: string | SSEProps) => void;

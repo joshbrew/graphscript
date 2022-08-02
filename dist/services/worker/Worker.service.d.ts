@@ -23,6 +23,7 @@ export declare class WorkerService extends Service {
         [key: string]: WorkerInfo;
     };
     threadRot: number;
+    constructor(options?: ServiceOptions);
     customRoutes: ServiceOptions["customRoutes"];
     addWorker: (options: {
         url?: URL | string | Blob;
@@ -34,7 +35,7 @@ export declare class WorkerService extends Service {
     toObjectURL: (scriptTemplate: string) => string;
     transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: StructuredSerializeOptions) => any;
     terminate: (worker: Worker | MessagePort | string) => boolean;
-    establishMessageChannel: (worker: Worker | string | MessagePort, worker2?: Worker | string | MessagePort) => false | MessageChannel;
+    establishMessageChannel: (worker: Worker | string | MessagePort, worker2?: Worker | string | MessagePort) => string | false;
     request: (message: ServiceMessage | any, worker: Worker, transfer?: any, origin?: string, method?: string) => Promise<unknown>;
     runRequest: (message: ServiceMessage | any, worker: undefined | string | Worker | MessagePort, callbackId: string | number) => any;
     routes: Routes;

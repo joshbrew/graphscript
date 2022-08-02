@@ -31,6 +31,7 @@ export declare class CMDService extends Service {
         } & CMDRoute;
     };
     customRoutes: ServiceOptions['customRoutes'];
+    constructor(options?: ServiceOptions);
     createProcess: (properties: CMDRoute) => CMDRoute;
     abort: (process: ChildProcess | CMDInfo) => boolean;
     send: (process: ChildProcess, data: Serializable) => boolean;

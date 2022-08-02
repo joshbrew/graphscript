@@ -1,4 +1,4 @@
-import { Service, Routes, ServiceMessage } from "../Service";
+import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
 export declare type WebSocketProps = {
     host: string;
     port: number;
@@ -22,6 +22,7 @@ export declare class WSSfrontend extends Service {
     sockets: {
         [key: string]: WebSocketInfo;
     };
+    constructor(options?: ServiceOptions);
     openWS: (options?: WebSocketProps) => WebSocketInfo;
     transmit: (data: string | ArrayBufferLike | Blob | ArrayBufferView | ServiceMessage, ws: WebSocket) => boolean;
     terminate: (ws: WebSocket | string) => boolean;

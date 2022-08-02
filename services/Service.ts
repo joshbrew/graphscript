@@ -25,7 +25,7 @@ export type RouteProp = { //these are just multiple methods you can call on a ro
 export type Route = 
     GraphNode |
     GraphNodeProperties |
-    Graph |
+    Graph | Service |
     OperatorType |
     ((...args)=>any|void) |
     { aliases?:string[] } & GraphNodeProperties |

@@ -44,6 +44,11 @@ export class CMDService extends Service {
         }
     }
 
+    constructor(options?:ServiceOptions) {
+        super(options)
+        this.load(this.routes);
+    }
+
     createProcess = (properties:CMDRoute) => {
         let rt = properties;
         if(rt.command) {

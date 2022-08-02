@@ -1,4 +1,4 @@
-import { Routes, Service, ServiceMessage } from "../Service";
+import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 export declare type RequestOptions = {
     method: string;
     url: string | URL;
@@ -17,6 +17,7 @@ export declare class HTTPfrontend extends Service {
     name: string;
     fetchProxied: boolean;
     listening: {};
+    constructor(options?: ServiceOptions);
     request: (options: RequestOptions) => XMLHttpRequest;
     get: (url?: string | URL, type?: XMLHttpRequestResponseType, mimeType?: string | undefined) => Promise<unknown>;
     post: (message: any | ServiceMessage, url?: string | URL, type?: XMLHttpRequestResponseType, mimeType?: string | undefined) => Promise<unknown>;

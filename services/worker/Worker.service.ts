@@ -34,6 +34,11 @@ export class WorkerService extends Service {
 
     threadRot = 0; //thread rotation if not specifying
 
+    constructor(options?:ServiceOptions) {
+        super(options);
+        this.load(this.routes);
+    }
+
     customRoutes:ServiceOptions["customRoutes"] = {
         'worker':(route:Route | WorkerRoute,routeKey:string,routes:Routes) => {
             let rt = route as WorkerRoute;

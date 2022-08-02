@@ -20,7 +20,7 @@ export declare type RouteProp = {
     trace?: (...args: any) => any | void;
     aliases?: string[];
 } & GraphNodeProperties;
-export declare type Route = GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
+export declare type Route = GraphNode | GraphNodeProperties | Graph | Service | OperatorType | ((...args: any[]) => any | void) | ({
     aliases?: string[];
 } & GraphNodeProperties) | RouteProp;
 export declare type Routes = {

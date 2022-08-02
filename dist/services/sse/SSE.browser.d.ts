@@ -1,4 +1,4 @@
-import { Service, Routes } from "../Service";
+import { Service, Routes, ServiceOptions } from "../Service";
 export declare type EventSourceProps = {
     url: string;
     events: {
@@ -21,6 +21,7 @@ export declare class SSEfrontend extends Service {
     eventsources: {
         [key: string]: EventSourceInfo;
     };
+    constructor(options?: ServiceOptions);
     openSSE: (options: EventSourceProps) => {
         url: string;
         events: {

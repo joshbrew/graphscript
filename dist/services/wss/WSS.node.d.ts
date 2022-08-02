@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { Routes, Service, ServiceMessage } from "../Service";
+import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 import WebSocket, { WebSocketServer } from 'ws';
 import http from 'http';
 import https from 'https';
@@ -52,6 +52,7 @@ export declare class WSSbackend extends Service {
     sockets: {
         [key: string]: SocketInfo;
     };
+    constructor(options?: ServiceOptions);
     setupWSS: (options: SocketServerProps) => SocketServerInfo;
     openWS: (options: SocketProps) => WebSocket;
     transmit: (message: string | ArrayBufferLike | Blob | ArrayBufferView | Buffer[] | ServiceMessage, ws: WebSocketServer | WebSocket) => void;
