@@ -185,7 +185,7 @@ node
     .runOp(node=this, origin, ...args) //<--- runs the operator and sets state with the result for that tag. Returns a promise if the operator is an async function.
     
 
-    .addChildren(children) //add child GraphNodes to this node (operation results passed on forward pass)
+    .addChildren(children:{}) //add child GraphNodes to this node (operation results passed on forward pass)
 
     .subscribe(callback=(res)=>{},tag=this.tag) //subscribe to the tagged node output, returns an int. if you pass a graphnode as a callback it will call subscribeNode
  

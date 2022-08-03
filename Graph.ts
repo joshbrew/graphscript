@@ -855,6 +855,7 @@ export class GraphNode {
                 if(n.nodes.get((node as GraphNode).tag)) {
                     n.nodes.delete((node as GraphNode).tag);
                     if(n.children[(node as GraphNode).tag]) delete n.children[(node as GraphNode).tag];
+                    if(n.parent?.tag === (node as GraphNode).tag) delete n.parent;
                 }
             }); 
             
@@ -974,33 +975,45 @@ export class GraphNode {
                 if(typeof node.children === 'object' && !checked[node.tag]) {
                     checked[node.tag] = true;
                     for(const key in node.children) {
-                        if(node.children[key].stopNode) node.children[key].stopNode();
-                            if(node.children[key].tag) {
-                                if(this.nodes.get(node.children[key].tag)) this.nodes.delete(node.children[key].tag);
-                                if(node[node.children[key].tag] instanceof GraphNode) delete node[node.children[key].tag];
-                            }
+                        if(node.children[key].stopNode) 
+                            node.children[key].stopNode();
+                        if(node.children[key].tag) {
+                            if(this.nodes.get(node.children[key].tag)) 
+                                this.nodes.delete(node.children[key].tag);
+
                             this.nodes.forEach((n) => {
-                                if(n.nodes.get(node.children[key].tag)) n.nodes.delete(node.children[key].tag);
-                                if(n[node.children[key].tag] instanceof GraphNode) delete n[node.children[key].tag];
+                                if(n.nodes.get(node.children[key].tag)) 
+                                    n.nodes.delete(node.children[key].tag);
+                                if(n.children[key] instanceof GraphNode) 
+                                    delete n.children[key];
                             });
                             recursivelyRemove(node.children[key]);
+                        }
                     }
                 }
             }
-            if(node.stopNode) node.stopNode();
+            if(node.stopNode) 
+                node.stopNode();
             if(node.tag) {
                 this.nodes.delete(node.tag);
-                if(this.children[node.tag]) delete this.children[node.tag];
-                if(this[node.tag] instanceof GraphNode) delete this[node.tag];
+                if(this.children[node.tag]) 
+                    delete this.children[node.tag];
+                if(this.parent?.tag === node.tag) 
+                    delete this.parent;
+                if(this[node.tag] instanceof GraphNode) 
+                    delete this[node.tag];
                 this.nodes.forEach((n) => {
                     if((node as GraphNode)?.tag) {
                         if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
-                        if(n[(node as GraphNode).tag] instanceof GraphNode) delete n[(node as GraphNode).tag];
+                        if(n.children[(node as GraphNode).tag] instanceof GraphNode) 
+                            delete n.children[(node as GraphNode).tag];
                     }
                 });
                 recursivelyRemove(node);
-                if(this.graph) this.graph.removeTree(node); //remove from parent graph too 
-                else if(node.ondelete) node.ondelete(node);
+                if(this.graph) 
+                    this.graph.removeTree(node, checked); //remove from parent graph too 
+                else if(node.ondelete) 
+                    node.ondelete(node);
             }
         }
     }
@@ -1334,10 +1347,10 @@ export class Graph {
         else return undefined;
     }
 
-    removeTree = (node:string|GraphNode) => {
+    removeTree = (node:string|GraphNode, checked?:any) => {
         if(typeof node === 'string') node = this.nodes.get(node);
         if(node instanceof GraphNode) {
-            let checked = {};
+            if(!checked) checked = {};
             const recursivelyRemove = (node:GraphNode) => {
                 if(node.children && !checked[node.tag]) {
                     checked[node.tag] = true;

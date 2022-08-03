@@ -188,7 +188,7 @@ export declare class Graph {
     run: (node: string | GraphNode, ...args: any[]) => any;
     runAsync: (node: string | GraphNode, ...args: any[]) => Promise<unknown>;
     _run: (node: string | GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
-    removeTree: (node: string | GraphNode) => string | GraphNode;
+    removeTree: (node: string | GraphNode, checked?: any) => string | GraphNode;
     remove: (node: string | GraphNode) => string | GraphNode;
     append: (node: GraphNode, parentNode: GraphNode) => void;
     callParent: (node: GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => Promise<any>;
