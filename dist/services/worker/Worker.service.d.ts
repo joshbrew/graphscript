@@ -16,6 +16,8 @@ export declare type WorkerInfo = {
     worker: Worker;
     send: (message: any, transfer?: any) => void;
     request: (message: any, transfer?: any, origin?: string, method?: string) => Promise<any>;
+    post: (route: any, args?: any, transfer?: any) => void;
+    run: (route: any, args?: any, transfer?: any, origin?: string, method?: string) => Promise<any>;
 } & WorkerProps;
 export declare class WorkerService extends Service {
     name: string;

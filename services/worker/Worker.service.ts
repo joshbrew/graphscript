@@ -20,7 +20,9 @@ export type WorkerProps = {
 export type WorkerInfo = {
     worker:Worker,
     send:(message:any,transfer?:any)=>void,
-    request:(message:any, transfer?:any, origin?:string, method?:string)=>Promise<any>
+    request:(message:any, transfer?:any, origin?:string, method?:string)=>Promise<any>,
+    post:(route:any, args?:any, transfer?:any)=>void,
+    run:(route:any, args?:any, transfer?:any, origin?:string, method?:string)=>Promise<any>
 } & WorkerProps
 
 //this spawns the workers
@@ -93,6 +95,38 @@ export class WorkerService extends Service {
             return this.transmit(message,worker,transfer);
         }
 
+        let post = (route:any,args?:any,transfer?:any, origin?:string, method?:string) => {
+            //console.log('sent', message)
+            let message:any = {
+                route,
+                args
+            };
+            if(origin) message.origin = origin;
+            if(method) message.method = method;
+
+            return this.transmit(message,worker,transfer);
+        }
+
+        let run = (route:any,args?:any, transfer?:any, origin?:string, method?:string) => {
+            return new Promise ((res,rej) => {
+                let callbackId = Math.random();
+                let req = {route:'runRequest', args:[{route, args}, options._id, callbackId]} as any;
+                //console.log(req)
+                if(origin) req.args[0].origin = origin;
+                if(method) req.args[0].method = method;
+                let onmessage = (ev)=>{
+                    if(typeof ev.data === 'object') {
+                        if(ev.data.callbackId === callbackId) {
+                            worker.removeEventListener('message',onmessage);
+                            res(ev.data.args); //resolve the request with the corresponding message
+                        }
+                    }
+                }
+                worker.addEventListener('message',onmessage)
+                this.transmit(req, worker, transfer);
+            });
+        }
+        
         let request = (message:ServiceMessage|any, transfer?:any, origin?:string, method?:string) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
@@ -130,6 +164,8 @@ export class WorkerService extends Service {
         this.workers[options._id] = {
             worker,
             send,
+            post,
+            run,
             request,
             ...options
         }
