@@ -113,6 +113,8 @@ type GraphNodeProperties = {
     looper?: OperatorType, //if it outputs something not undefined it will trigger parent/child operators
     
     oncreate?:(self:GraphNode)=>void //do something after initializing the node, if loaded in a graph it only runs after setTree
+
+    ondelete?:(self:GraphNode|any)=>void, //do something after deleting the node
     
     DEBUGNODE?:boolean // print a console.time and the result for a node by tag, run DEBUGNODES on a GraphNode or Graph to toggle debug on all attached nodes.
     
