@@ -54,12 +54,19 @@ export function parseFunctionFromText(method='') {
     }
 
     let getFunctionHead = (methodString) => {
-        let startindex = methodString.indexOf(')');
+        let startindex = methodString.indexOf('=>')+1;
+        if(startindex <= 0) {
+            startindex = methodString.indexOf('){');
+        }
+        if(startindex <= 0) {
+            startindex = methodString.indexOf(') {');
+        }
         return methodString.slice(0, methodString.indexOf('{',startindex) + 1);
     }
 
     let newFuncHead = getFunctionHead(method);
     let newFuncBody = getFunctionBody(method);
+
 
     let newFunc;
     if (newFuncHead.includes('function')) {
@@ -829,7 +836,7 @@ export class GraphNode {
         this.nodes.set(node.tag,node);
         if(this.graph) {
             this.graph.nodes.set(node.tag,node);
-            this.graph.nNodes++;
+            this.graph.nNodes = this.graph.nodes.size;
         }
         return node;
     }
@@ -840,7 +847,7 @@ export class GraphNode {
             this.nodes.delete(node.tag);
             if(this.graph) {
                 this.graph.nodes.delete(node.tag);
-                this.graph.nNodes--;
+                this.graph.nNodes = this.graph.nodes.size;
             }
             this.nodes.forEach((n:GraphNode) => {
                 if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
@@ -1187,7 +1194,7 @@ export class Graph {
         let props = node;
         if(!(node instanceof GraphNode)) node = new GraphNode(props,this,this); 
         else {
-            this.nNodes++;
+            this.nNodes = this.nodes.size;
             if(node.tag) {
                 this.tree[node.tag] = props; //set the head node prototype in the tree object
                 this.nodes.set(node.tag,node);
@@ -1347,7 +1354,7 @@ export class Graph {
                 this.nodes.forEach((n) => {
                     if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
                 });
-                this.nNodes--;
+                this.nNodes = this.nodes.size;
                 recursivelyRemove(node as GraphNode);
             }
         }

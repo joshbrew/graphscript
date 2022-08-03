@@ -32,10 +32,18 @@
       return methodString.replace(/^\W*(function[^{]+\{([\s\S]*)\}|[^=]+=>[^{]*\{([\s\S]*)\}|[^=]+=>(.+))/i, '$2$3$4');
     }
   
+    
     let getFunctionHead = (methodString) => {
-      let startindex = methodString.indexOf(')');
+      let startindex = methodString.indexOf('=>')+1;
+      if(startindex <= 0) {
+          startindex = methodString.indexOf('){');
+      }
+      if(startindex <= 0) {
+          startindex = methodString.indexOf(') {');
+      }
       return methodString.slice(0, methodString.indexOf('{',startindex) + 1);
     }
+
   
     let newFuncHead = getFunctionHead(method);
     let newFuncBody = getFunctionBody(method);

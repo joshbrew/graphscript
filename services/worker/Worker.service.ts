@@ -26,7 +26,7 @@ export type WorkerInfo = {
 //this spawns the workers
 export class WorkerService extends Service {
     
-    name='worker'
+    name='workers'
     
     workers:{
         [key:string]:WorkerInfo
@@ -96,14 +96,15 @@ export class WorkerService extends Service {
         let request = (message:ServiceMessage|any, transfer?:any, origin?:string, method?:string) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
-                let req = {route:'runRequest', args:message, origin:options._id, callbackId:callbackId} as any;
+                let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
+                //console.log(req)
                 if(origin) req.origin = origin;
                 if(method) req.method = method;
                 let onmessage = (ev)=>{
                     if(typeof ev.data === 'object') {
                         if(ev.data.callbackId === callbackId) {
                             worker.removeEventListener('message',onmessage);
-                            res(ev.data); //resolve the request with the corresponding message
+                            res(ev.data.args); //resolve the request with the corresponding message
                         }
                     }
                 }
@@ -212,17 +213,18 @@ export class WorkerService extends Service {
         
     }
 
-    request = (message:ServiceMessage|any, worker:Worker, transfer?:any, origin?:string, method?:string) => {
+    request = (message:ServiceMessage|any, workerId:string, transfer?:any, origin?:string, method?:string) => {
+        let worker = this.workers[workerId].worker;
         return new Promise ((res,rej) => {
             let callbackId = Math.random();
-            let req = {route:'runRequest', args:message, callbackId} as any;
+            let req = {route:'runRequest', args:[message, callbackId]} as any;
             if(origin) req.origin = origin;
             if(method) req.method = method;
             let onmessage = (ev)=>{
                 if(typeof ev.data === 'object') {
                     if(ev.data.callbackId === callbackId) {
                         worker.removeEventListener('message',onmessage);
-                        res(ev.data); //resolve the request with the corresponding message
+                        res(ev.data.args); //resolve the request with the corresponding message
                     }
                 }
             }
@@ -232,12 +234,12 @@ export class WorkerService extends Service {
     }
 
     runRequest = (message:ServiceMessage|any, worker:undefined|string|Worker|MessagePort, callbackId:string|number) => {  
-        //console.log('running request:',message, 'for worker', worker, 'callback', callbackId) 
         let res = this.receive(message);
         if(typeof worker === 'string' && this.workers[worker]) {
             if(this.workers[worker].port) worker = this.workers[worker].port;
             else worker = this.workers[worker].worker;
         }
+        //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
         if(res instanceof Promise) {
             res.then((r) => {
                 if(worker instanceof Worker || worker instanceof MessagePort) 

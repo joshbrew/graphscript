@@ -360,7 +360,7 @@ export class Service extends Graph {
             for(const key in this.routes) {
                 if(this.routes[key] instanceof GraphNode) {
                     this.nodes.set(key,this.routes[key]);
-                    this.nNodes++;
+                    this.nNodes = this.nodes.size;
                 }
             }
         }

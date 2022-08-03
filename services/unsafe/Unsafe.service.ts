@@ -7,6 +7,21 @@ export const unsafeRoutes = {
     //add a route and parse it from text
     setRoute:(self:GraphNode,origin:any,fn:string|((...args:[])=>any),fnName?:string) => {
         //console.log(origin, fn, fnName)
+        //if(fnName === 'setupChart') console.log(fn);
+        if(typeof fn === 'string') fn = parseFunctionFromText(fn);
+        //if(fnName === 'setupChart') console.log(fn);
+        if(typeof fn === 'function') {
+            if(!fnName) fnName = fn.name;
+            if(self.graph.get(fnName)) {
+                self.graph.get(fnName).setOperator(fn); //overwrite operator
+            }
+            else (self.graph as Graph).load({[fnName]:{operator:fn}});
+            return true;
+        }
+        return false;
+    },
+    setNode:(self:GraphNode,origin:any,fn:string|((...args:[])=>any),fnName?:string) => {
+        //console.log(origin, fn, fnName)
         if(typeof fn === 'string') fn = parseFunctionFromText(fn);
         //console.log(fn);
         if(typeof fn === 'function') {
