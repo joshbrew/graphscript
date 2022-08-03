@@ -54,7 +54,6 @@ export declare type ServiceOptions = {
 export declare class Service extends Graph {
     routes: Routes;
     loadDefaultRoutes: boolean;
-    name: string;
     keepState: boolean;
     firstLoad: boolean;
     constructor(options?: ServiceOptions);

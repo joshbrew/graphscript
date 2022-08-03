@@ -14,9 +14,9 @@ export declare type DOMRoutes = {
 };
 export declare class DOMService extends Service {
     loadDefaultRoutes: boolean;
-    name: string;
     keepState: boolean;
     parentNode: HTMLElement;
+    name: string;
     customRoutes: ServiceOptions["customRoutes"];
     customChildren: ServiceOptions["customChildren"];
     constructor(options?: ServiceOptions, parentNode?: HTMLElement);

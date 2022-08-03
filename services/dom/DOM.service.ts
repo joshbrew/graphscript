@@ -36,10 +36,9 @@ export class DOMService extends Service {
     //routes denote paths and properties callable across interfaces and inherited by parent services (adding the service name in the 
     // front of the route like 'http/createServer'.
     loadDefaultRoutes = false; //load default routes?
-    name:string=`dom${Math.floor(Math.random()*1000000000000000)}`;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
     parentNode:HTMLElement=document.body; //default parent elements for elements added
-
+    name:string;
     
 
     customRoutes:ServiceOptions["customRoutes"] = {
@@ -75,8 +74,7 @@ export class DOMService extends Service {
     }
 
     constructor(options?:ServiceOptions,parentNode?:HTMLElement) {
-            super({props:options.props,name:options.name});
-
+            super({props:options.props,name:options.name ? options.name : `dom${Math.floor(Math.random()*1000000000000000)}`});
             if(parentNode instanceof HTMLElement) this.parentNode = parentNode;
             else if(options.parentNode instanceof HTMLElement) this.parentNode = parentNode;
 
