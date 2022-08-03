@@ -34,7 +34,7 @@ export declare type ComponentOptions = GraphNodeProperties & {
     useShadow?: boolean;
     onrender?: (self: DOMElement, info?: DOMElementInfo) => void;
     onresize?: (self: DOMElement, info?: DOMElementInfo) => void;
-    ondelete?: (self: DOMElement, info?: DOMElementInfo) => void;
+    onremove?: (self: DOMElement, info?: DOMElementInfo) => void;
     onchanged?: (props: any) => void;
     renderonchanged?: boolean | ((self: DOMElement, info: DOMElementInfo) => void);
     props?: {

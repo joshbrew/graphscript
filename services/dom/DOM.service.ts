@@ -143,6 +143,11 @@ export class DOMService extends Service {
         }
 
         this.elements[options.id] = {element:elm, node, parentNode: (options as CompleteOptions).parentNode, divs};
+        
+        if(!node.ondelete) node.ondelete = (node) => { 
+            elm.remove(); 
+            if(options.onremove) options.onremove(elm, this.elements[options.id]); 
+        } //in this case we need to remove the element from the dom via the node and run callbacks here due to elements lacking an 'onremove' event
 
         if(options.onresize) {
             let onresize = options.onresize;
@@ -236,9 +241,9 @@ export class DOMService extends Service {
                 onresize(self, options as DOMElementInfo);
             }
         }
-        if(options.ondelete) {
-            let ondelete = options.ondelete;
-            (options.ondelete as any) = (self:DOMElement) => {
+        if(options.onremove) {
+            let ondelete = options.onremove;
+            (options.onremove as any) = (self:DOMElement) => {
                 ondelete(self, options as DOMElementInfo);
             }
         }
@@ -256,7 +261,7 @@ export class DOMService extends Service {
             template = options.template as any;
             oncreate = options.onrender;
             onresize = options.onresize;
-            ondelete = options.ondelete;
+            ondelete = options.onremove;
             renderonchanged = options.renderonchanged as any;
         }
 
@@ -304,6 +309,8 @@ export class DOMService extends Service {
                 this
             );
         }
+
+        if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }
 
         (elm as any).node = node; //self.node references the graphnode on the div now
 
@@ -356,8 +363,8 @@ export class DOMService extends Service {
             }
         }
         if(options.ondelete) {
-            let ondelete = options.ondelete;
-            (options.ondelete as any) = (self:DOMElement) => {
+            let ondelete = options.onremove;
+            (options.onremove as any) = (self:DOMElement) => {
                 ondelete(self, options as any);
             }
         }
@@ -375,7 +382,7 @@ export class DOMService extends Service {
             template = options.template;
             oncreate = options.onrender;
             onresize = options.onresize;
-            ondelete = options.ondelete;
+            ondelete = options.onremove;
             renderonchanged = options.renderonchanged as any;
         }
 
@@ -427,6 +434,8 @@ export class DOMService extends Service {
         }
 
         (elm as any).node = node; //self.node references the graphnode on the div now
+
+        if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }
 
         let canvas = elm.querySelector('canvas');
         if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object

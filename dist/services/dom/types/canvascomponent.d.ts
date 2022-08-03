@@ -15,7 +15,7 @@ export declare type CanvasElementProps = GraphNodeProperties & {
     height?: string;
     onrender?: (self: DOMElement, info?: CanvasElementInfo) => void;
     onresize?: (self: DOMElement, info?: CanvasElementInfo) => void;
-    ondelete?: (self: DOMElement, info?: CanvasElementInfo) => void;
+    onremove?: (self: DOMElement, info?: CanvasElementInfo) => void;
     renderonchanged?: boolean | ((self: DOMElement, info?: CanvasElementInfo) => void);
     children?: {
         [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
@@ -53,7 +53,7 @@ export declare type CanvasOptions = {
     styles?: string;
     onrender?: (self: DOMElement, info?: CanvasElementInfo) => void;
     onresize?: (self: DOMElement, info?: CanvasElementInfo) => void;
-    ondelete?: (self: DOMElement, info?: CanvasElementInfo) => void;
+    onremove?: (self: DOMElement, info?: CanvasElementInfo) => void;
     onchanged?: (props: any) => void;
     renderonchanged?: boolean | ((self: DOMElement, info?: CanvasElementInfo) => void);
     props?: {

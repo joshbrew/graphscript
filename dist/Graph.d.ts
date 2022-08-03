@@ -37,6 +37,7 @@ export declare type GraphNodeProperties = {
     animation?: OperatorType;
     looper?: OperatorType;
     oncreate?: (self: GraphNode | any, ...args: any[]) => void;
+    ondelete?: (self: GraphNode | any, ...args: any[]) => void;
     DEBUGNODE?: boolean;
     [key: string]: any;
 };

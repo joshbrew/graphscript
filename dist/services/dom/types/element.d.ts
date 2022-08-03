@@ -36,7 +36,7 @@ export declare type ElementOptions = GraphNodeProperties & {
     parentNode?: string | HTMLElement;
     onrender?: (self: HTMLElement, info: ElementInfo) => void;
     onresize?: (ev: any, self: HTMLElement, info: ElementInfo) => void;
-    ondelete?: (self: HTMLElement, info: ElementInfo) => void;
+    onremove?: (self: HTMLElement, info: ElementInfo) => void;
     innerText?: string;
     innerHTML?: string;
     children?: {
