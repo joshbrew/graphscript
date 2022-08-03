@@ -846,12 +846,16 @@ export class GraphNode {
         if(typeof node === 'string') node = this.nodes.get(node);
         if(node instanceof GraphNode) {
             this.nodes.delete(node.tag);
+            if(this.children[node.tag]) delete this.children[node.tag];
             if(this.graph) {
                 this.graph.nodes.delete(node.tag);
                 this.graph.nNodes = this.graph.nodes.size;
             }
             this.nodes.forEach((n:GraphNode) => {
-                if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
+                if(n.nodes.get((node as GraphNode).tag)) {
+                    n.nodes.delete((node as GraphNode).tag);
+                    if(n.children[(node as GraphNode).tag]) delete n.children[(node as GraphNode).tag];
+                }
             }); 
             
             if(node.ondelete) node.ondelete(node);
@@ -880,9 +884,13 @@ export class GraphNode {
     }
 
     //append child
-    addChildren = (children:{[key:string]:string|boolean|undefined|GraphNode|Graph|GraphNodeProperties}) => {
+    addChildren = (children:{
+        [key:string]:string|boolean|undefined|GraphNode|Graph|GraphNodeProperties
+    }) => {
         if(!this.children) this.children = {};
-        if(typeof children === 'object') Object.assign(this.children,children);
+        if(typeof children === 'object') {
+            Object.assign(this.children,children);
+        }
         this.convertChildrenToNodes();
         if(this.forward) this.runSync = false;
     }
@@ -969,7 +977,7 @@ export class GraphNode {
                         if(node.children[key].stopNode) node.children[key].stopNode();
                             if(node.children[key].tag) {
                                 if(this.nodes.get(node.children[key].tag)) this.nodes.delete(node.children[key].tag);
-                                if(this[node.children[key].tag] instanceof GraphNode) delete this[node.children[key].tag];
+                                if(node[node.children[key].tag] instanceof GraphNode) delete node[node.children[key].tag];
                             }
                             this.nodes.forEach((n) => {
                                 if(n.nodes.get(node.children[key].tag)) n.nodes.delete(node.children[key].tag);
@@ -982,6 +990,7 @@ export class GraphNode {
             if(node.stopNode) node.stopNode();
             if(node.tag) {
                 this.nodes.delete(node.tag);
+                if(this.children[node.tag]) delete this.children[node.tag];
                 if(this[node.tag] instanceof GraphNode) delete this[node.tag];
                 this.nodes.forEach((n) => {
                     if((node as GraphNode)?.tag) {
