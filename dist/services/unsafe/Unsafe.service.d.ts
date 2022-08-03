@@ -1,6 +1,7 @@
 import { GraphNode } from "../../Graph";
 export declare const unsafeRoutes: {
     setRoute: (self: GraphNode, origin: any, fn: string | (() => any), fnName?: string) => boolean;
+    setNode: (self: GraphNode, origin: any, fn: string | (() => any), fnName?: string) => boolean;
     setMethod: (self: GraphNode, origin: any, route: string, fn: string | (() => any), fnName?: string) => boolean;
     assignRoute: (self: GraphNode, origin: any, route: string, source: {
         [key: string]: any;
