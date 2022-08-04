@@ -35,6 +35,7 @@ export type SocketProps = {
     onopen?:(ws:WebSocket,wsinfo:SocketProps)=>void,
     onclose?:(code:any,reason:any,ws:WebSocket,wsinfo:SocketProps)=>void,
     onerror?:(er:Error, ws:WebSocket,wsinfo:SocketProps)=>void,
+    
     protocol?:'ws'|'wss',
     type?:'socket',
     _id?:string,
@@ -43,7 +44,11 @@ export type SocketProps = {
 
 export type SocketInfo = {
     socket:WebSocket,
-    address?:string
+    address?:string,
+    send:(message:any)=>void,
+    request:(message:any, origin?:string, method?:string)=>Promise<any>,
+    post:(route:any, args?:any)=>void,
+    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>
 } & SocketProps;
 
 //server side (node) websockets
@@ -210,10 +215,72 @@ export class WSSbackend extends Service {
         if(options.onclose) socket.on('close',(code,reason)=>{(options as any).onclose(code,reason,socket,this.sockets[address]);});
         if(options.onerror) socket.on('error',(er)=>{(options as any).onerror(er,socket,this.sockets[address]);});
 
+        let send = (message:any) => {
+            //console.log('sent', message)
+            return this.transmit(message,socket);
+        }
+
+        let post = (route:any,args?:any, origin?:string, method?:string) => {
+            //console.log('sent', message)
+            let message:any = {
+                route,
+                args
+            };
+            if(origin) message.origin = origin;
+            if(method) message.method = method;
+
+            return this.transmit(message,socket);
+        }
+
+        let run = (route:any,args?:any, origin?:string, method?:string) => {
+            return new Promise ((res,rej) => {
+                let callbackId = Math.random();
+                let req = {route:'runRequest', args:[{route, args}, options._id, callbackId]} as any;
+                //console.log(req)
+                if(origin) req.args[0].origin = origin;
+                if(method) req.args[0].method = method;
+                let onmessage = (ev)=>{
+                    if(typeof ev.data === 'object') {
+                        if(ev.data.callbackId === callbackId) {
+                            socket.removeEventListener('message',onmessage);
+                            res(ev.data.args); //resolve the request with the corresponding message
+                        }
+                    }
+                }
+                socket.addEventListener('message',onmessage)
+                this.transmit(req, socket);
+            });
+        }
+        
+        let request = (message:ServiceMessage|any, origin?:string, method?:string) => {
+            return new Promise ((res,rej) => {
+                let callbackId = Math.random();
+                let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
+                //console.log(req)
+                if(origin) req.origin = origin;
+                if(method) req.method = method;
+                let onmessage = (ev)=>{
+                    if(typeof ev.data === 'object') {
+                        if(ev.data.callbackId === callbackId) {
+                            socket.removeEventListener('message',onmessage);
+                            res(ev.data.args); //resolve the request with the corresponding message
+                        }
+                    }
+                }
+                socket.addEventListener('message',onmessage)
+                this.transmit(req, socket);
+            });
+        }
+
+
         this.sockets[address] = {
             type:'socket',
             socket,
             address,
+            send,
+            post,
+            request,
+            run,
             ...options
         }
 
