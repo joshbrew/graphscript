@@ -40,5 +40,7 @@ export declare class WorkerService extends Service {
     establishMessageChannel: (worker: Worker | string | MessagePort, worker2?: Worker | string | MessagePort) => string | false;
     request: (message: ServiceMessage | any, workerId: string, transfer?: any, origin?: string, method?: string) => Promise<unknown>;
     runRequest: (message: ServiceMessage | any, worker: undefined | string | Worker | MessagePort, callbackId: string | number) => any;
+    subscribeWorker(route: string, worker: Worker | string | MessagePort): number;
+    subscribeToWorker(route: string, workerId: string, callback: (res: any) => void): number;
     routes: Routes;
 }

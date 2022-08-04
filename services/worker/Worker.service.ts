@@ -184,9 +184,10 @@ export class WorkerService extends Service {
             worker.postMessage(message,transfer);
         } else if(typeof worker === 'string') {
             if(this.workers[worker as string]) {
-            if(this.workers[worker as string].port)
-                (this.workers[worker as string].port as any).postMessage(message,transfer);
-            else if (this.workers[worker as string].worker) this.workers[worker as string].worker.postMessage(message,transfer);
+                if(this.workers[worker as string].port)
+                    (this.workers[worker as string].port as any).postMessage(message,transfer);
+                else if (this.workers[worker as string].worker) 
+                    this.workers[worker as string].worker.postMessage(message,transfer);
             }
         } else {
             let keys = Object.keys(this.workers);
@@ -293,12 +294,55 @@ export class WorkerService extends Service {
         return res;
     }
 
+    subscribeWorker(route:string, worker:Worker|string|MessagePort) {
+        if(typeof worker === 'string' && this.workers[worker]) {
+            if(this.workers[worker].port) worker = this.workers[worker].port;
+            else worker = this.workers[worker].worker;
+        }
+        return this.subscribe(route, (res:any) => {
+            //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
+            if(res instanceof Promise) {
+                res.then((r) => {
+                    if(worker instanceof Worker || worker instanceof MessagePort) 
+                        worker.postMessage({args:res,route})
+                    else if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
+                        globalThis.postMessage({args:res,route});
+                });
+            } else {
+                if(worker instanceof Worker || worker instanceof MessagePort) 
+                    worker.postMessage({args:res,route})
+                else if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
+                    globalThis.postMessage({args:res,route});
+            }
+        });
+    }
+
+    subscribeToWorker(route:string, workerId:string, callback:(res:any)=>void) {
+        if(typeof workerId === 'string' && this.workers[workerId]) {
+            let w;
+            if(this.workers[workerId].port) w = this.workers[workerId].port;
+            else w = this.workers[workerId].worker;
+
+            if(w) {
+                w.postMessage({route:'runRequest', args:{route:'subscribeWorker', args:[route,workerId]}})
+                return this.subscribe(workerId, (res) => {
+                    if(res?.route === route) {
+                        callback(res.args);
+                    }
+                })
+            }
+        }
+    }
+
     routes:Routes={
         addWorker:this.addWorker,
         toObjectURL:this.toObjectURL,
         request:this.request,
         runRequest:this.runRequest,
-        establishMessageChannel:this.establishMessageChannel
+        establishMessageChannel:this.establishMessageChannel,
+        subscribeWorker:this.subscribeWorker,
+        subscribeToWorker:this.subscribeToWorker,
+        unsubscribe:this.unsubscribe
     }
 
 }

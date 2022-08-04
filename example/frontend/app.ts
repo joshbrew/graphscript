@@ -43,7 +43,7 @@ const sseinfo = router.run('sse.openSSE',{
 } as EventSourceProps) as EventSourceInfo;
 
 router.run(
-    'http/GET',
+    'http.get',
     'http://localhost:8080/ping'
 ).then((res:string) => console.log("http GET", res));
 
@@ -51,7 +51,7 @@ let button = document.createElement('button');
 button.innerHTML = 'ping!';
 button.onclick = () => {
     router.run(
-        'http/GET',
+        'http.get',
         'http://localhost:8080/ping'
     ).then((res:string) => console.log("http GET", res));
 }
