@@ -472,7 +472,7 @@ export class WebRTCfrontend extends Service {
                 })
                 return c.request(JSON.stringify({
                     route:'runRequest', 
-                    args:{route:'subscribeSocket', args:[route,channelId]}
+                    args:{route:'subscribeRTC', args:[route,channelId]}
                 }));
             }
         }
