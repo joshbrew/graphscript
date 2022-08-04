@@ -28,6 +28,10 @@ export declare type WebRTCProps = {
 export declare type WebRTCInfo = {
     rtcTransmit: RTCPeerConnection;
     rtcReceive: RTCPeerConnection;
+    send: (message: any) => void;
+    request: (message: any, origin?: string, method?: string) => Promise<any>;
+    post: (route: any, args?: any) => void;
+    run: (route: any, args?: any, origin?: string, method?: string) => Promise<any>;
 } & WebRTCProps;
 export declare class WebRTCfrontend extends Service {
     name: string;

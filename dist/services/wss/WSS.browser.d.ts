@@ -16,6 +16,10 @@ export declare type WebSocketProps = {
 export declare type WebSocketInfo = {
     socket: WebSocket;
     address: string;
+    send: (message: any) => void;
+    request: (message: any, origin?: string, method?: string) => Promise<any>;
+    post: (route: any, args?: any) => void;
+    run: (route: any, args?: any, origin?: string, method?: string) => Promise<any>;
 } & WebSocketProps;
 export declare class WSSfrontend extends Service {
     name: string;
