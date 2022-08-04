@@ -242,6 +242,7 @@ export class WSSbackend extends Service {
                 if(origin) req.args[0].origin = origin;
                 if(method) req.args[0].method = method;
                 let onmessage = (ev)=>{
+                    if(typeof ev.data === 'string' && ev.data.indexOf('{') > -1) ev.data = JSON.parse(ev.data);
                     if(typeof ev.data === 'object') {
                         if(ev.data.callbackId === callbackId) {
                             socket.removeEventListener('message',onmessage);
@@ -262,6 +263,7 @@ export class WSSbackend extends Service {
                 if(origin) req.origin = origin;
                 if(method) req.method = method;
                 let onmessage = (ev)=>{
+                    if(typeof ev.data === 'string' && ev.data.indexOf('{') > -1) ev.data = JSON.parse(ev.data);
                     if(typeof ev.data === 'object') {
                         if(ev.data.callbackId === callbackId) {
                             socket.removeEventListener('message',onmessage);
