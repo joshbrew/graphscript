@@ -32,6 +32,8 @@ export declare type WebRTCInfo = {
     request: (message: any, origin?: string, method?: string) => Promise<any>;
     post: (route: any, args?: any) => void;
     run: (route: any, args?: any, origin?: string, method?: string) => Promise<any>;
+    subscribe: (route: any, callback: (res: any) => void) => Promise<number>;
+    unsubscribe: (route: any, sub: number) => Promise<boolean>;
 } & WebRTCProps;
 export declare class WebRTCfrontend extends Service {
     name: string;
@@ -61,5 +63,7 @@ export declare class WebRTCfrontend extends Service {
     terminate: (rtc: RTCPeerConnection | WebRTCInfo | string) => boolean;
     request: (message: ServiceMessage | any, channel: RTCDataChannel, _id: string, origin?: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, channel: RTCDataChannel | string, callbackId: string | number) => any;
+    subscribeRTC: (route: string, rtcId: string, channel: string | RTCDataChannel) => number;
+    subscribeToRTC: (route: string, rtcId: string, channelId: string, callback: (res: any) => void) => any;
     routes: Routes;
 }

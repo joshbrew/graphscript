@@ -29,7 +29,9 @@ export type WebRTCInfo = {
     send:(message:any)=>void, //these callbacks work on the first available data channel to call to other webrtc services
     request:(message:any, origin?:string, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
-    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>
+    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
+    subscribe:(route:any, callback:(res:any)=>void)=>Promise<number>,
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & WebRTCProps
 
 //webrtc establishes secure P2P contexts between two users directly.
@@ -137,7 +139,7 @@ export class WebRTCfrontend extends Service {
                 return this.transmit(message,options.channels[firstChannel] as RTCDataChannel);
             }
 
-            let run = (route:any,args?:any, origin?:string, method?:string) => {
+            let run = (route:any,args?:any, origin?:string, method?:string):Promise<any> => {
                 return new Promise ((res,rej) => {
                     let callbackId = Math.random();
                     let req = {route:'runRequest', args:[{route, args}, options._id, callbackId]} as any;
@@ -157,7 +159,7 @@ export class WebRTCfrontend extends Service {
                 });
             }
             
-            let request = (message:ServiceMessage|any, origin?:string, method?:string) => {
+            let request = (message:ServiceMessage|any, origin?:string, method?:string):Promise<any> => {
                 return new Promise ((res,rej) => {
                     let callbackId = Math.random();
                     let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
@@ -177,6 +179,14 @@ export class WebRTCfrontend extends Service {
                 });
             }
 
+            let subscribe = (route:any, callback:(res:any)=>void) => {
+                return this.subscribeToRTC(route, options._id, firstChannel, callback);
+            }
+
+            let unsubscribe = (route:any, sub:number) => {
+                return run('unsubscribe',[route,sub]);
+            }
+
             this.rtc[options._id] = {
                 rtcTransmit,
                 rtcReceive,
@@ -185,6 +195,8 @@ export class WebRTCfrontend extends Service {
                 run,
                 post,
                 send,
+                subscribe,
+                unsubscribe,
                 ...options
             }
         } else {
@@ -430,6 +442,41 @@ export class WebRTCfrontend extends Service {
         }
         return res;
     }
+            
+    subscribeRTC = (route:string, rtcId:string, channel:string|RTCDataChannel) => {
+        if(typeof channel === 'string' && this.rtc[rtcId]) {
+            channel = this.rtc[rtcId].channels[channel] as RTCDataChannel;
+        }
+        return this.subscribe(route, (res:any) => {
+            //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
+            if(res instanceof Promise) {
+                res.then((r) => {
+                    (channel as RTCDataChannel).send(JSON.stringify({args:r, route}));
+                });
+            } else {
+                (channel as RTCDataChannel).send(JSON.stringify({args:res, route}));
+            }
+        });
+    } 
+
+    subscribeToRTC = (route:string, rtcId:string, channelId:string, callback:(res:any)=>void) => {
+        if(typeof channelId === 'string' && this.rtc[rtcId]) {
+            let c = this.rtc[rtcId];
+            let channel = c.channels[channelId];
+
+            if(channel) {
+                this.subscribe(rtcId, (res) => {
+                    if(res?.route === route) {
+                        callback(res.args);
+                    }
+                })
+                return c.request(JSON.stringify({
+                    route:'runRequest', 
+                    args:{route:'subscribeSocket', args:[route,channelId]}
+                }));
+            }
+        }
+    }
     
     routes:Routes = {
         //just echos webrtc info for server subscriptions to grab onto
@@ -440,7 +487,10 @@ export class WebRTCfrontend extends Service {
         addUserMedia:this.addUserMedia,
         addTrack:this.addTrack,
         removeTrack:this.removeTrack,
-        addDataChannel:this.addDataChannel
+        addDataChannel:this.addDataChannel,
+        subscribeRTC:this.subscribeRTC,
+        subscribeToRTC:this.subscribeToRTC,
+        unsubscribe:this.unsubscribe
     }
 
 }

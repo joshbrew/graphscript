@@ -23,6 +23,8 @@ export type WorkerInfo = {
     request:(message:any, transfer?:any, origin?:string, method?:string)=>Promise<any>,
     post:(route:any, args?:any, transfer?:any)=>void,
     run:(route:any, args?:any, transfer?:any, origin?:string, method?:string)=>Promise<any>
+    subscribe:(route:any, callback:(res:any)=>void)=>any,
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & WorkerProps
 
 //this spawns the workers
@@ -147,6 +149,14 @@ export class WorkerService extends Service {
             });
         }
 
+        let subscribe = (route:any, callback:(res:any)=>void) => {
+            return this.subscribeToWorker(route, options._id, callback);
+        }
+
+        let unsubscribe = (route:any, sub:number):Promise<any> => {
+            return run('unsubscribe',[route,sub]);
+        }
+
         if(!options.onmessage) options.onmessage = (ev) => {
             let res = this.receive(ev.data);
             this.setState({[options._id as string]:res});
@@ -167,6 +177,8 @@ export class WorkerService extends Service {
             post,
             run,
             request,
+            subscribe,
+            unsubscribe,
             ...options
         }
 
@@ -319,18 +331,15 @@ export class WorkerService extends Service {
 
     subscribeToWorker(route:string, workerId:string, callback:(res:any)=>void) {
         if(typeof workerId === 'string' && this.workers[workerId]) {
-            let w;
-            if(this.workers[workerId].port) w = this.workers[workerId].port;
-            else w = this.workers[workerId].worker;
-
-            if(w) {
-                w.postMessage({route:'runRequest', args:{route:'subscribeWorker', args:[route,workerId]}})
-                return this.subscribe(workerId, (res) => {
-                    if(res?.route === route) {
-                        callback(res.args);
-                    }
-                })
-            }
+            this.subscribe(workerId, (res) => {
+                if(res?.route === route) {
+                    callback(res.args);
+                }
+            });
+            return this.workers[workerId].request({
+                route:'runRequest', 
+                args:{route:'subscribeWorker', args:[route,workerId]}
+            });
         }
     }
 

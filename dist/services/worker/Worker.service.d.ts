@@ -18,6 +18,8 @@ export declare type WorkerInfo = {
     request: (message: any, transfer?: any, origin?: string, method?: string) => Promise<any>;
     post: (route: any, args?: any, transfer?: any) => void;
     run: (route: any, args?: any, transfer?: any, origin?: string, method?: string) => Promise<any>;
+    subscribe: (route: any, callback: (res: any) => void) => any;
+    unsubscribe: (route: any, sub: number) => Promise<boolean>;
 } & WorkerProps;
 export declare class WorkerService extends Service {
     name: string;
@@ -41,6 +43,6 @@ export declare class WorkerService extends Service {
     request: (message: ServiceMessage | any, workerId: string, transfer?: any, origin?: string, method?: string) => Promise<unknown>;
     runRequest: (message: ServiceMessage | any, worker: undefined | string | Worker | MessagePort, callbackId: string | number) => any;
     subscribeWorker(route: string, worker: Worker | string | MessagePort): number;
-    subscribeToWorker(route: string, workerId: string, callback: (res: any) => void): number;
+    subscribeToWorker(route: string, workerId: string, callback: (res: any) => void): Promise<any>;
     routes: Routes;
 }

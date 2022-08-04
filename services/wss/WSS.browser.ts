@@ -21,7 +21,9 @@ export type WebSocketInfo = {
     send:(message:any)=>void,
     request:(message:any, origin?:string, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
-    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>
+    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
+    subscribe:(route:any, callback:(res:any)=>void)=>any,
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & WebSocketProps
 
 //browser side websockets
@@ -158,15 +160,25 @@ export class WSSfrontend extends Service {
             });
         }
 
+        let subscribe = (route:any, callback:(res:any)=>void):Promise<number> => {
+            return this.subscribeToSocket(route, options._id, callback);
+        }
+
+        let unsubscribe = (route:any, sub:number):Promise<any> => {
+            return run('unsubscribe',[route,sub]);
+        }
+
 
         this.sockets[address] = {
+            type:'socket',
             socket,
             address,
             send,
             post,
             run,
             request,
-            type:'socket',
+            subscribe,
+            unsubscribe,
             ...options
         };
 
@@ -251,11 +263,44 @@ export class WSSfrontend extends Service {
         return res;
     }
 
+    subscribeSocket(route:string, socket:WebSocket|string) {
+        if(typeof socket === 'string' && this.sockets[socket]) {
+            socket = this.sockets[socket].socket;
+        }
+        return this.subscribe(route, (res:any) => {
+            //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
+            if(res instanceof Promise) {
+                res.then((r) => {
+                    (socket as WebSocket).send(JSON.stringify({args:r, route}));
+                });
+            } else {
+                (socket as WebSocket).send(JSON.stringify({args:res, route}));
+            }
+        });
+    } 
+
+    subscribeToSocket(route:string, socketId:string, callback:(res:any)=>void) {
+        if(typeof socketId === 'string' && this.sockets[socketId]) {
+            this.subscribe(socketId, (res) => {
+                if(res?.route === route) {
+                    callback(res.args);
+                }
+            });
+            return this.sockets[socketId].request(JSON.stringify({
+                route:'runRequest', 
+                args:{route:'subscribeSocket', args:[route,socketId]}
+            }));
+        }
+    }
+
     routes:Routes = {
         openWS:this.openWS,
         request:this.request,
         runRequest:this.runRequest,
-        terminate:this.terminate
+        terminate:this.terminate,
+        subscribeSocket:this.subscribeSocket,
+        subscribeToSocket:this.subscribeToSocket,
+        unsubscribe:this.unsubscribe
     }
 
 }

@@ -48,7 +48,9 @@ export type SocketInfo = {
     send:(message:any)=>void,
     request:(message:any, origin?:string, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
-    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>
+    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
+    subscribe:(route:any, callback:(res:any)=>void)=>any,
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & SocketProps;
 
 //server side (node) websockets
@@ -232,7 +234,7 @@ export class WSSbackend extends Service {
             return this.transmit(message,socket);
         }
 
-        let run = (route:any,args?:any, origin?:string, method?:string) => {
+        let run = (route:any,args?:any, origin?:string, method?:string):Promise<any> => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
                 let req = {route:'runRequest', args:[{route, args}, options._id, callbackId]} as any;
@@ -252,7 +254,7 @@ export class WSSbackend extends Service {
             });
         }
         
-        let request = (message:ServiceMessage|any, origin?:string, method?:string) => {
+        let request = (message:ServiceMessage|any, origin?:string, method?:string):Promise<any> => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
                 let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
@@ -272,6 +274,13 @@ export class WSSbackend extends Service {
             });
         }
 
+        let subscribe = (route:any, callback:(res:any)=>void) => {
+            return this.subscribeToSocket(route, address, callback);
+        }
+
+        let unsubscribe = (route:any, sub:number):Promise<any> => {
+            return run('unsubscribe',[route,sub]);
+        }
 
         this.sockets[address] = {
             type:'socket',
@@ -281,6 +290,8 @@ export class WSSbackend extends Service {
             post,
             request,
             run,
+            subscribe,
+            unsubscribe,
             ...options
         }
 
@@ -413,28 +424,46 @@ export class WSSbackend extends Service {
         return res;
     }
 
+    subscribeSocket(route:string, socket:WebSocket|string) {
+        if(typeof socket === 'string' && this.sockets[socket]) {
+            socket = this.sockets[socket].socket;
+        }
+        return this.subscribe(route, (res:any) => {
+            //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
+            if(res instanceof Promise) {
+                res.then((r) => {
+                    (socket as WebSocket).send(JSON.stringify({args:r, route}));
+                });
+            } else {
+                (socket as WebSocket).send(JSON.stringify({args:res, route}));
+            }
+        });
+    } 
+
+    subscribeToSocket(route:string, socketId:string, callback:(res:any)=>void) {
+        if(typeof socketId === 'string' && this.sockets[socketId]) {
+            this.subscribe(socketId, (res) => {
+                if(res?.route === route) {
+                    callback(res.args);
+                }
+            })
+            return this.sockets[socketId].request(JSON.stringify({ 
+                route:'runRequest', 
+                args:{route:'subscribeSocket', args:[route,socketId]}
+            }));
+        }
+    }
+
     routes:Routes={
         setupWSS:this.setupWSS,
         openWS:this.openWS,
         closeWS:this.closeWS,
         request:this.request,
         runRequest:this.runRequest,
-        terminate:(path:string) => {
-            if(path) {
-                for (const address in this.servers) {
-                    if(address.includes(path)) {
-                        this.terminate(this.servers[address].wss);
-                        delete this.servers[address];
-
-                    }
-                }
-            } else {
-                path = Object.keys(this.servers)[0];
-                this.terminate(this.servers[path].wss);
-                delete this.servers[path];
-            }
-            return true;
-        }
+        terminate:this.terminate,
+        subscribeSocket:this.subscribeSocket,
+        subscribeToSocket:this.subscribeToSocket,
+        unsubscribe:this.unsubscribe
     }
 
 }
