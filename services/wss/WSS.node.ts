@@ -200,15 +200,17 @@ export class WSSbackend extends Service {
                             this.sockets[address]._id = data.args;
                             socket.removeEventListener('message',socketonmessage);
                             socket.on('message', (data:any)=> {
-                                const result = this.receive(data,socket,this.sockets[address]); 
-                                if(options.keepState) this.setState({[address]:result}); 
+                                this.receive(data,socket,this.sockets[address]); 
+                                if(options.keepState) {
+                                    this.setState({[address as string]:data});
+                                }
                             }); //clear this extra logic after id is set
                         }
                     }
                 } 
 
-                const result = this.receive(data,socket,this.sockets[address]); 
-                if(options.keepState) this.setState({[address]:result}); 
+                this.receive(data,socket,this.sockets[address]); 
+                if(options.keepState) this.setState({[address]:data}); 
             }
             socket.on('message',socketonmessage); //add default callback if none specified
             options.onmessage = socketonmessage;
@@ -434,10 +436,10 @@ export class WSSbackend extends Service {
             //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
             if(res instanceof Promise) {
                 res.then((r) => {
-                    (socket as WebSocket).send(JSON.stringify({args:r, route}));
+                    (socket as WebSocket).send(JSON.stringify({args:r, callbackId:route}));
                 });
             } else {
-                (socket as WebSocket).send(JSON.stringify({args:res, route}));
+                (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
             }
         });
     } 
@@ -445,14 +447,11 @@ export class WSSbackend extends Service {
     subscribeToSocket(route:string, socketId:string, callback:(res:any)=>void) {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
             this.subscribe(socketId, (res) => {
-                if(res?.route === route) {
+                if(res?.callbackId === route) {
                     callback(res.args);
                 }
             })
-            return this.sockets[socketId].request(JSON.stringify({ 
-                route:'runRequest', 
-                args:{route:'subscribeSocket', args:[route,socketId]}
-            }));
+            return this.sockets[socketId].request(JSON.stringify({route:'subscribeSocket', args:[route,socketId]}));
         }
     }
 

@@ -211,6 +211,7 @@ export class WebRTCfrontend extends Service {
             if(!(options as any).ondata)
                 ev.channel.onmessage = (mev) => {
                     this.receive(mev.data, ev.channel, this.rtc[(options as any)._id]);
+                    this.setState({[options._id]:mev.data});
                 }
             else ev.channel.onmessage = (mev) => { (options as any).ondata(mev.data, ev.channel, this.rtc[(options as any)._id]); }
         
@@ -453,10 +454,10 @@ export class WebRTCfrontend extends Service {
             //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
             if(res instanceof Promise) {
                 res.then((r) => {
-                    (channel as RTCDataChannel).send(JSON.stringify({args:r, route}));
+                    (channel as RTCDataChannel).send(JSON.stringify({args:r, callbackId:route}));
                 });
             } else {
-                (channel as RTCDataChannel).send(JSON.stringify({args:res, route}));
+                (channel as RTCDataChannel).send(JSON.stringify({args:res, callbackId:route}));
             }
         });
     } 
@@ -468,14 +469,12 @@ export class WebRTCfrontend extends Service {
 
             if(channel) {
                 this.subscribe(rtcId, (res) => {
-                    if(res?.route === route) {
+                    if(res?.callbackId === route) {
                         callback(res.args);
                     }
                 })
-                return c.request(JSON.stringify({
-                    route:'runRequest', 
-                    args:{route:'subscribeRTC', args:[route,channelId]}
-                }));
+                return c.request(JSON.stringify({route:'subscribeRTC', args:[route,channelId]}
+                ));
             }
         }
     }

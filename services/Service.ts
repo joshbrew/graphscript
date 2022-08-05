@@ -245,60 +245,62 @@ export class Service extends Graph {
         for(const tag in routes) {
             incr++;
             let childrenIter = (route:RouteProp, routeKey:string) => {
-                if(!route.tag) route.tag = routeKey;
-                if(typeof route?.children === 'object') {
-                    nested:
-                    for(const key in route.children) {
-                        incr++;
-                        if(typeof route.children[key] === 'object') {
-                            let rt = (route.children[key] as any);
-                           
-                            if(rt.tag && allRoutes[rt.tag]) continue;
+                if(typeof route === 'object') {
+                    if(!route.tag) route.tag = routeKey;
+                    if(typeof route?.children === 'object') {
+                        nested:
+                        for(const key in route.children) {
+                            incr++;
+                            if(typeof route.children[key] === 'object') {
+                                let rt = (route.children[key] as any);
+                            
+                                if(rt.tag && allRoutes[rt.tag]) continue;
 
-                            if(customChildren) {
-                                for(const k in customChildren) {
-                                    rt = customChildren[k](rt,key,route,routes,allRoutes);
-                                    if(!rt) continue nested;
+                                if(customChildren) {
+                                    for(const k in customChildren) {
+                                        rt = customChildren[k](rt,key,route,routes,allRoutes);
+                                        if(!rt) continue nested;
+                                    }
                                 }
+
+                                if(rt.id && !rt.tag) {
+                                    rt.tag = rt.id;
+                                } 
+
+                                let k:any;
+                                if (rt.tag) {
+                                    if(allRoutes[rt.tag]) {
+                                        let randkey = `${rt.tag}${incr}`;
+                                        allRoutes[randkey] = rt; 
+                                        rt.tag = randkey;
+                                        childrenIter(allRoutes[randkey],key)
+                                        k = randkey;
+                                    }
+                                    else {
+                                        allRoutes[rt.tag] = rt;
+                                        childrenIter(allRoutes[rt.tag],key)
+                                        k = rt.tag;
+                                    }
+                                } else {
+                                    if(allRoutes[key]) {
+                                        let randkey = `${key}${incr}`;
+                                        allRoutes[randkey] = rt; 
+                                        rt.tag = randkey;
+                                        childrenIter(allRoutes[randkey],key)
+                                        k = randkey;
+                                    }
+                                    else {
+                                        allRoutes[key] = rt;
+                                        childrenIter(allRoutes[key],key)
+                                        k = key;
+                                    }
+                                }
+
+                                if(service?.name && includeClassName) {
+                                    allRoutes[service.name+routeFormat+k] = rt;
+                                    delete allRoutes[k];
+                                } else allRoutes[k] = rt;
                             }
-
-                            if(rt.id && !rt.tag) {
-                                rt.tag = rt.id;
-                            } 
-
-                            let k:any;
-                            if (rt.tag) {
-                                if(allRoutes[rt.tag]) {
-                                    let randkey = `${rt.tag}${incr}`;
-                                    allRoutes[randkey] = rt; 
-                                    rt.tag = randkey;
-                                    childrenIter(allRoutes[randkey],key)
-                                    k = randkey;
-                                }
-                                else {
-                                    allRoutes[rt.tag] = rt;
-                                    childrenIter(allRoutes[rt.tag],key)
-                                    k = rt.tag;
-                                }
-                            } else {
-                                if(allRoutes[key]) {
-                                    let randkey = `${key}${incr}`;
-                                    allRoutes[randkey] = rt; 
-                                    rt.tag = randkey;
-                                    childrenIter(allRoutes[randkey],key)
-                                    k = randkey;
-                                }
-                                else {
-                                    allRoutes[key] = rt;
-                                    childrenIter(allRoutes[key],key)
-                                    k = key;
-                                }
-                            }
-
-                            if(service?.name && includeClassName) {
-                                allRoutes[service.name+routeFormat+k] = rt;
-                                delete allRoutes[k];
-                            } else allRoutes[k] = rt;
                         }
                     }
                 }
@@ -471,6 +473,7 @@ export class Service extends Graph {
                 if(args[0].node)
                     this.setState({[args[0].node]:args[0].args});
             }
+            return args;
         } else return args;
     } 
 
@@ -500,7 +503,8 @@ export class Service extends Graph {
                     this.setState({[args[0].route]:args[0].args});
                 if(args[0].node)
                     this.setState({[args[0].node]:args[0].args});
-            }
+            } 
+            return args;
         } else return args;
     }//these are fairly identical on the base template plus json parsing on the receive end
 

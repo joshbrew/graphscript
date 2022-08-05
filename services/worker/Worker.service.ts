@@ -158,8 +158,8 @@ export class WorkerService extends Service {
         }
 
         if(!options.onmessage) options.onmessage = (ev) => {
-            let res = this.receive(ev.data);
-            this.setState({[options._id as string]:res});
+            this.receive(ev.data);
+            this.setState({[options._id as string]:ev.data});
         }
 
         if(!options.onerror) {
@@ -306,40 +306,39 @@ export class WorkerService extends Service {
         return res;
     }
 
-    subscribeWorker(route:string, worker:Worker|string|MessagePort) {
+    subscribeWorker = (route:string, worker:Worker|string|MessagePort) => {
+        //console.log('subscribed!',worker, this.workers, WorkerGlobalScope);
         if(typeof worker === 'string' && this.workers[worker]) {
             if(this.workers[worker].port) worker = this.workers[worker].port;
             else worker = this.workers[worker].worker;
         }
         return this.subscribe(route, (res:any) => {
             //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
+            //console.log('subscription triggered for', route, 'to', worker instanceof Worker ? worker : 'window', 'result:', res);
             if(res instanceof Promise) {
                 res.then((r) => {
-                    if(worker instanceof Worker || worker instanceof MessagePort) 
-                        worker.postMessage({args:r,route})
-                    else if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
-                        globalThis.postMessage({args:r,route});
+                    if((worker as any)?.postMessage) 
+                        (worker as any).postMessage({args:r,route})
+                    else if(globalThis.postMessage)
+                        globalThis.postMessage({args:r,callbackId:route});
                 });
             } else {
-                if(worker instanceof Worker || worker instanceof MessagePort) 
-                    worker.postMessage({args:res,route})
-                else if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
-                    globalThis.postMessage({args:res,route});
+                if((worker as any)?.postMessage) 
+                    (worker as any).postMessage({args:res,route})
+                else if(globalThis.postMessage)
+                    globalThis.postMessage({args:res,callbackId:route});
             }
         });
     }
 
-    subscribeToWorker(route:string, workerId:string, callback:(res:any)=>void) {
+    subscribeToWorker = (route:string, workerId:string, callback:(res:any)=>void) => {
         if(typeof workerId === 'string' && this.workers[workerId]) {
             this.subscribe(workerId, (res) => {
-                if(res?.route === route) {
+                if(res?.callbackId === route) {
                     callback(res.args);
                 }
             });
-            return this.workers[workerId].request({
-                route:'runRequest', 
-                args:{route:'subscribeWorker', args:[route,workerId]}
-            });
+            return this.workers[workerId].run('subscribeWorker', [route, workerId]);
         }
     }
 

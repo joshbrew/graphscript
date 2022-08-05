@@ -81,15 +81,17 @@ export class WSSfrontend extends Service {
                         if(data.route === 'setId') {
                             this.sockets[address]._id = data.args;
                             options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { //clear extra logic after id is set
-                                let res = this.receive(data); 
-                                if(options.keepState) this.setState({[address]:res}); 
+                                this.receive(data); 
+                                if(options.keepState) {
+                                    this.setState({[address as string]:data});
+                                }
                             }
                         }
                     }
                 } 
                 
                 let res = this.receive(data); 
-                if(options.keepState) this.setState({[address]:res}); 
+                if(options.keepState) this.setState({[address]:data}); 
             } //default onmessage
         }
 
@@ -273,10 +275,10 @@ export class WSSfrontend extends Service {
             //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
             if(res instanceof Promise) {
                 res.then((r) => {
-                    (socket as WebSocket).send(JSON.stringify({args:r, route}));
+                    (socket as WebSocket).send(JSON.stringify({args:r, callbackId:route}));
                 });
             } else {
-                (socket as WebSocket).send(JSON.stringify({args:res, route}));
+                (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
             }
         });
     } 
@@ -284,14 +286,11 @@ export class WSSfrontend extends Service {
     subscribeToSocket(route:string, socketId:string, callback:(res:any)=>void) {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
             this.subscribe(socketId, (res) => {
-                if(res?.route === route) {
+                if(res?.callbackId === route) {
                     callback(res.args);
                 }
             });
-            return this.sockets[socketId].request(JSON.stringify({
-                route:'runRequest', 
-                args:{route:'subscribeSocket', args:[route,socketId]}
-            }));
+            return this.sockets[socketId].request(JSON.stringify({route:'subscribeSocket', args:[route,socketId]}));
         }
     }
 
