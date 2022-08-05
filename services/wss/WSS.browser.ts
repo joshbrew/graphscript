@@ -252,7 +252,7 @@ export class WSSfrontend extends Service {
         if(ws) {
             if(res instanceof Promise) {
                 res.then((v) => {        
-                    res = {args:res, callbackId};
+                    res = {args:v, callbackId};
                     if(ws instanceof WebSocket) ws.send(JSON.stringify(res));
                 })
             }

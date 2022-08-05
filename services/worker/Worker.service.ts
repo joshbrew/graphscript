@@ -292,9 +292,9 @@ export class WorkerService extends Service {
         if(res instanceof Promise) {
             res.then((r) => {
                 if(worker instanceof Worker || worker instanceof MessagePort) 
-                    worker.postMessage({args:res,callbackId})
+                    worker.postMessage({args:r,callbackId})
                 else if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
-                    globalThis.postMessage({args:res,callbackId});
+                    globalThis.postMessage({args:r,callbackId});
             });
         } else {
             if(worker instanceof Worker || worker instanceof MessagePort) 
@@ -316,9 +316,9 @@ export class WorkerService extends Service {
             if(res instanceof Promise) {
                 res.then((r) => {
                     if(worker instanceof Worker || worker instanceof MessagePort) 
-                        worker.postMessage({args:res,route})
+                        worker.postMessage({args:r,route})
                     else if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
-                        globalThis.postMessage({args:res,route});
+                        globalThis.postMessage({args:r,route});
                 });
             } else {
                 if(worker instanceof Worker || worker instanceof MessagePort) 
