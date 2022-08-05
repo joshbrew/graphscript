@@ -41,6 +41,14 @@ export class WorkerService extends Service {
     constructor(options?:ServiceOptions) {
         super(options);
         this.load(this.routes);
+
+        if(typeof WorkerGlobalScope !== 'undefined' && globalThis instanceof WorkerGlobalScope) {
+            globalThis.onmessage = (ev:MessageEvent) => {
+                let result = this.receive(ev.data); //this will handle graph logic and can run requests for the window or messsage ports etc etc.
+                //console.log(JSON.stringify(ev.data), JSON.stringify(result),JSON.stringify(Array.from((self as any).SERVICE.nodes.keys())))
+                //console.log(result);
+            }
+        }
     }
 
     customRoutes:ServiceOptions["customRoutes"] = {
@@ -342,6 +350,30 @@ export class WorkerService extends Service {
         }
     }
 
+    //requires unsafe service to load on other end
+    transferFunction(worker:WorkerInfo, fn:Function, fnName?:string) {
+        if(!fnName) fnName = fn.name;
+        return worker.request({
+            route:'setRoute',
+            args:[
+                fn.toString(),
+                fnName
+            ]
+        } as ServiceMessage);
+    }
+
+    //requires unsafe service to load on other end
+    transferClass(worker:WorkerInfo, cls:Function, className?:string) {
+        if(!className) className = cls.name;
+        return worker.request({
+            route:'receiveClass',
+            args:[
+                cls.toString(),
+                className
+            ] 
+        } as ServiceMessage);
+    }
+    
     routes:Routes={
         addWorker:this.addWorker,
         toObjectURL:this.toObjectURL,

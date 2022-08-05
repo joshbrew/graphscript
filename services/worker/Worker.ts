@@ -1,4 +1,4 @@
-import { Router } from '../../routers/Router';
+//import { Router } from '../../routers/Router';
 
 //functionality
 import { WorkerService } from './Worker.service';
@@ -22,12 +22,6 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         ],
         includeClassName:false
     });
-
-    self.onmessage = (ev:MessageEvent) => {
-        let result = ((self as any).SERVICE as WorkerService).receive(ev.data); //this will handle graph logic and can run requests for the window or messsage ports etc etc.
-        //console.log(ev.data, result, (self as any).SERVICE)
-        //console.log(result);
-    }
     
 }
 
