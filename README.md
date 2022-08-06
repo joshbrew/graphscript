@@ -1,6 +1,8 @@
 
 # graphscript
 
+`npm i graphscript`
+
 <img src="gs_logo_min.png"  width=300px height=300px>
 
 # READMEs (WIP):
