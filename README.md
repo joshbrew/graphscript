@@ -4,6 +4,7 @@
 `npm i graphscript`
 
 <img src="gs_logo_min.png"  width=300px height=300px>
+For happy code!
 
 # READMEs (WIP):
 We are still in alpha so docs aren't the priority yet.
