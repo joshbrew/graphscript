@@ -1,6 +1,10 @@
 
-# READMEs (WIP):
+# graphscript
 
+<img src="gs_logo_min.png"  width=300px height=300px>
+
+# READMEs (WIP):
+We are still in alpha so docs aren't the priority yet.
 
 ## * [Graph](./docs/Graph.md)
 ## * [Service](./docs/Service.md)
