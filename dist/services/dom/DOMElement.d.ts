@@ -1,5 +1,5 @@
 
-
+//todo: make this the permanent version so I can stop copying manually each build
 export function addCustomElement(cls: any, tag: any, extend?: any): void;
 export function randomId(tag?: string): string;
 export function parseFunctionFromText(method: any): any;

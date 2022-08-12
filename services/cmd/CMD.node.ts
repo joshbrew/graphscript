@@ -2,6 +2,7 @@
 import {ChildProcess, fork, Serializable, spawn} from 'child_process'
 import { Route, Routes, Service, ServiceMessage, ServiceOptions } from '../Service';
 import { GraphNodeProperties } from '../../Graph';
+import path from 'path';
 
 //enable message passing between child processes.
 //You can use these services across processes to enable full scripting abilities
@@ -66,6 +67,8 @@ export class CMDService extends Service {
 
     createProcess = (properties:CMDRoute) => {
         let rt = properties;
+        if(!rt.command) rt.command = 'node' //default command
+        if(!rt.args) rt.args = [path.join(process.cwd(),'services','cmd','childprocess.js')] //default child process
         if(rt.command) {
             let p:ChildProcess;
             if(!rt.options) {
