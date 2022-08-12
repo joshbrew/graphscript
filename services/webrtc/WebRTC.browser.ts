@@ -30,7 +30,7 @@ export type WebRTCInfo = {
     request:(message:any, origin?:string, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
     run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
-    subscribe:(route:any, callback:(res:any)=>void)=>Promise<number>,
+    subscribe:(route:any, callback?:((res:any)=>void)|string)=>Promise<number>,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & WebRTCProps
 
@@ -181,7 +181,7 @@ export class WebRTCfrontend extends Service {
                 });
             }
 
-            let subscribe = (route:any, callback:(res:any)=>void) => {
+            let subscribe = (route:any, callback?:((res:any)=>void)|string) => {
                 return this.subscribeToRTC(route, options._id, firstChannel, callback);
             }
 
@@ -462,7 +462,7 @@ export class WebRTCfrontend extends Service {
         });
     } 
 
-    subscribeToRTC = (route:string, rtcId:string, channelId:string, callback:(res:any)=>void) => {
+    subscribeToRTC = (route:string, rtcId:string, channelId:string, callback?:string|((res:any)=>void)) => {
         if(typeof channelId === 'string' && this.rtc[rtcId]) {
             let c = this.rtc[rtcId];
             let channel = c.channels[channelId];
@@ -470,7 +470,11 @@ export class WebRTCfrontend extends Service {
             if(channel) {
                 this.subscribe(rtcId, (res) => {
                     if(res?.callbackId === route) {
-                        callback(res.args);
+                        if(!callback) this.setState({[rtcId]:res.args}); //just set state
+                        else if(typeof callback === 'string') { //run a local node
+                            this.run(callback,res.args);
+                        }
+                        else callback(res.args);
                     }
                 })
                 return c.request(JSON.stringify({route:'subscribeRTC', args:[route,channelId]}

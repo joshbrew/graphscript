@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { ChildProcess, Serializable } from 'child_process';
-import { Routes, Service, ServiceOptions } from '../Service';
+import { Routes, Service, ServiceMessage, ServiceOptions } from '../Service';
 import { GraphNodeProperties } from '../../Graph';
 export declare type CMDRoute = {
     command: string | ChildProcess;
@@ -33,9 +33,11 @@ export declare class CMDService extends Service {
     customRoutes: ServiceOptions['customRoutes'];
     constructor(options?: ServiceOptions);
     createProcess: (properties: CMDRoute) => CMDRoute;
-    abort: (process: ChildProcess | CMDInfo) => boolean;
-    send: (process: ChildProcess, data: Serializable) => boolean;
-    request: () => void;
-    runRequest: () => void;
+    abort: (childprocess: ChildProcess | CMDInfo) => boolean;
+    send: (childprocess: ChildProcess, data: Serializable) => boolean;
+    request: (message: ServiceMessage | any, processId: string, origin?: string, method?: string) => Promise<unknown>;
+    runRequest: (message: any, callbackId: string | number, childprocess?: ChildProcess | string) => any;
+    subscribeProcess(route: string, childprocess: ChildProcess | string): number;
+    subscribeToProcess(route: string, processId: string, callback?: ((res: any) => void) | string): any;
     routes: Routes;
 }

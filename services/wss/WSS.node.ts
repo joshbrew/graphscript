@@ -49,7 +49,7 @@ export type SocketInfo = {
     request:(message:any, origin?:string, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
     run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
-    subscribe:(route:any, callback:(res:any)=>void)=>any,
+    subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & SocketProps;
 
@@ -278,7 +278,7 @@ export class WSSbackend extends Service {
             });
         }
 
-        let subscribe = (route:any, callback:(res:any)=>void) => {
+        let subscribe = (route:any, callback?:((res:any)=>void)|string) => {
             return this.subscribeToSocket(route, address, callback);
         }
 
@@ -444,11 +444,15 @@ export class WSSbackend extends Service {
         });
     } 
 
-    subscribeToSocket(route:string, socketId:string, callback:(res:any)=>void) {
+    subscribeToSocket(route:string, socketId:string, callback?:string|((res:any)=>void)) {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
             this.subscribe(socketId, (res) => {
                 if(res?.callbackId === route) {
-                    callback(res.args);
+                    if(!callback) this.setState({[socketId]:res.args});
+                    else if(typeof callback === 'string') { //just set state 
+                        this.setState({[callback]:res.args});
+                    }
+                    else callback(res.args);
                 }
             })
             return this.sockets[socketId].request(JSON.stringify({route:'subscribeSocket', args:[route,socketId]}));

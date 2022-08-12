@@ -22,7 +22,7 @@ export type WebSocketInfo = {
     request:(message:any, origin?:string, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
     run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
-    subscribe:(route:any, callback:(res:any)=>void)=>any,
+    subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & WebSocketProps
 
@@ -164,7 +164,7 @@ export class WSSfrontend extends Service {
             });
         }
 
-        let subscribe = (route:any, callback:(res:any)=>void):Promise<number> => {
+        let subscribe = (route:any, callback?:((res:any)=>void)|string):Promise<number> => {
             return this.subscribeToSocket(route, options._id, callback);
         }
 
@@ -283,11 +283,15 @@ export class WSSfrontend extends Service {
         });
     } 
 
-    subscribeToSocket(route:string, socketId:string, callback:(res:any)=>void) {
+    subscribeToSocket(route:string, socketId:string, callback?:((res:any)=>void)|string) {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
             this.subscribe(socketId, (res) => {
                 if(res?.callbackId === route) {
-                    callback(res.args);
+                    if(!callback) this.setState({[socketId]:res.args}); //just set state
+                    else if(typeof callback === 'string') { //run a local node
+                        this.run(callback,res.args);
+                    }
+                    else callback(res.args);
                 }
             });
             return this.sockets[socketId].request(JSON.stringify({route:'subscribeSocket', args:[route,socketId]}));
