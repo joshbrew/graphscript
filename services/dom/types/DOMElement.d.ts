@@ -11,7 +11,7 @@ export class DOMElement extends HTMLElement {
     useShadow: boolean;
     styles: string;
     oncreate: ((self: DOMElement, props: any) => void);
-    onresize: ((self: DOMElement, props: any) => void);
+    onresize: ((self: DOMElement, props: any) => void)|any;
     ondelete: ((self: DOMElement, props: any) => void);
     onchanged: ((self: DOMElement, props: any) => void);
     renderonchanged: boolean | ((self: DOMElement, props: any) => void);
