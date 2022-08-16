@@ -323,7 +323,7 @@ export class Service extends Graph {
                             if(!r) continue top; //nothing returned so continue
                         }
                     }
-
+ 
                     if(r.get) { //maybe all of the http method mimics should get some shared extra specifications? 
                         if(typeof r.get == 'object') {
                             

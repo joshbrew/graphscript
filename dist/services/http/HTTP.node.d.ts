@@ -11,9 +11,11 @@ export declare type ServerProps = {
     passphrase?: string;
     startpage?: string;
     errpage?: string;
-    pageOptions?: {
-        [key: 'all' | string]: {
-            inject: {
+    pages?: {
+        [key: 'all' | string]: string | {
+            template?: string;
+            redirect?: string;
+            inject?: {
                 [key: string]: {} | null;
             } | string[] | string | ((...args: any) => any);
         };
@@ -93,6 +95,7 @@ export declare class HTTPbackend extends Service {
         origin?: string;
         node?: string;
         served?: ServerInfo;
+        redirect?: string;
     }) => Promise<unknown>;
     request: (options: ReqOptions | any, send?: any, ondata?: (chunk: any) => void, onend?: () => void) => http.ClientRequest;
     post: (url: string | URL, data: any, headers?: {

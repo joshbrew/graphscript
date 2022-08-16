@@ -1,4 +1,4 @@
-import { DOMElementProps } from "./component"
+import { ComponentProps } from "./component"
 import { DOMElement } from "../DOMElement"
 import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph"
 import { ElementProps } from "./element"
@@ -18,7 +18,7 @@ export type CanvasElementProps = GraphNodeProperties & {
     onresize?:(self:DOMElement,info?:CanvasElementInfo)=>void,
     onremove?:(self:DOMElement,info?:CanvasElementInfo)=>void,
     renderonchanged?:boolean|((self:DOMElement,info?:CanvasElementInfo)=>void),
-    children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph|DOMElementProps|ElementProps|CanvasElementProps},
+    children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph|ComponentProps|ElementProps|CanvasElementProps},
 } 
 
 export type CanvasElementInfo = { //returned from addCanvasComponent
@@ -53,6 +53,6 @@ export type CanvasOptions = {
     onchanged?:(props:any)=>void,
     renderonchanged?:boolean|((self:DOMElement,info?:CanvasElementInfo)=>void),
     props?:{[key:string]:any},
-    children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph|DOMElementProps|ElementProps|CanvasElementProps},
+    children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph|ComponentProps|ElementProps|CanvasElementProps},
     id?:string
 } & GraphNodeProperties

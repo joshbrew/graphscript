@@ -3,8 +3,8 @@ import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph
 import { RouteProp, Service, ServiceOptions } from "../Service";
 
 import {CompleteOptions} from './types/general';
-import {ElementOptions, ElementInfo, ElementProps} from './types/element';
-import {DOMElementProps, ComponentOptions, DOMElementInfo} from './types/component';
+import { ElementInfo, ElementProps} from './types/element';
+import { ComponentProps, ComponentInfo} from './types/component';
 import {CanvasElementProps, CanvasOptions, CanvasElementInfo} from './types/canvascomponent';
 
 //alternative base service that additioanlly allows 'DOMRoutes' to be loaded which can tie in html and webcomponent blocks
@@ -12,7 +12,7 @@ import {CanvasElementProps, CanvasOptions, CanvasElementInfo} from './types/canv
 
 export type DOMRouteProp = 
     ElementProps |
-    DOMElementProps |
+    ComponentProps |
     CanvasElementProps
 
 export type DOMServiceRoute = 
@@ -40,6 +40,44 @@ export class DOMService extends Service {
     parentNode:HTMLElement=document.body; //default parent elements for elements added
     name:string;
     
+    interpreters = {
+        md:(template:string, options:ComponentProps) => { //https://unpkg.com/markdown-it@latest/dist/markdown-it.min.js 
+            //@ts-ignore
+            if(typeof markdownit === 'undefined') { //this should synchronously load this script
+                document.head.insertAdjacentHTML('beforeend',`
+                    <script src='https://unpkg.com/markdown-it@latest/dist/markdown-it.min.js'></script>`
+                )
+            }
+
+            //@ts-ignore
+            let md = globalThis.markdownit(); //window.markdownit.parse() also
+            let html = md.render(template);
+        
+            options.template = html; // new template is the rendered markdown
+        },
+        jsx:(template:any, options:ComponentProps) => { //https://unpkg.com/react@latest/umd/react.production.min.js and https://unpkg.com/react-dom@latest/umd/react-dom.production.min.js
+            if(!options.parentNode) options.parentNode = this.parentNode;
+            if(typeof options.parentNode === 'string')  options.parentNode = document.getElementById( options.parentNode);
+
+            //@ts-ignore
+            if(typeof ReactDOM === 'undefined') {
+                document.head.insertAdjacentHTML('beforeend',`
+                    <script src='https://unpkg.com/react@latest/umd/react.production.min.js'></script>
+                    <script src='https://unpkg.com/react-dom@latest/umd/react-dom.production.min.js'></script>`
+                ); //get the necessary packages
+            }
+
+            options.template = '';
+
+            let onrender = options.onrender
+            options.onrender = (self: DOMElement, info?: ComponentInfo) => {
+                //@ts-ignore
+                const modal = ReactDOM.createPortal(template,options.id); //append the react modal to the new web component
+                onrender(self,info)
+            }
+            
+        }
+    }
 
     customRoutes:ServiceOptions["customRoutes"] = {
         'dom':(r:DOMServiceRoute|any, route:string, routes:DOMRoutes|any) => {
@@ -73,10 +111,16 @@ export class DOMService extends Service {
         }
     }
 
-    constructor(options?:ServiceOptions,parentNode?:HTMLElement) {
+    constructor(options?:ServiceOptions,parentNode?:HTMLElement,interpreters?:{[key:string]:(template:string,options:ComponentProps) => void}) {
             super({props:options.props,name:options.name ? options.name : `dom${Math.floor(Math.random()*1000000000000000)}`});
+            
+            if(options.parentNode) parentNode = options.parentNode;
+            if(typeof parentNode === 'string') parentNode = document.getElementById(parentNode);
             if(parentNode instanceof HTMLElement) this.parentNode = parentNode;
-            else if(options.parentNode instanceof HTMLElement) this.parentNode = parentNode;
+
+            if(interpreters) {
+                Object.assign(this.interpreters,interpreters);
+            }
 
             this.init(options);
             
@@ -87,15 +131,15 @@ export class DOMService extends Service {
     } = {}
 
     components:{
-        [key:string]:DOMElementInfo|CanvasElementInfo
+        [key:string]:ComponentInfo|CanvasElementInfo
     } = {}
 
     templates:{ //pass these in as options for quicker iteration
-        [key:string]:DOMElementProps|CanvasElementProps
+        [key:string]:ComponentProps|CanvasElementProps
     } = {}
 
     addElement=(
-        options: ElementOptions,
+        options: ElementProps,
         generateChildElementNodes=false      
     )=>{
 
@@ -181,7 +225,7 @@ export class DOMService extends Service {
         return this.elements[options.id] as ElementInfo;
     }
 
-    createElement = (options: ElementOptions) => {
+    createElement = (options: ElementProps) => {
 
         let elm: HTMLElement
 
@@ -225,33 +269,37 @@ export class DOMService extends Service {
     //create an element that is tied to a specific node, multiple elements can aggregate
     // with the node
     addComponent=(
-        options: ComponentOptions,
+        options: ComponentProps,
         generateChildElementNodes=true
     )=>{
         
         if(options.onrender) {
             let oncreate = options.onrender;
             (options.onrender as any) = (self:DOMElement) => {
-                oncreate(self, options as DOMElementInfo);
+                oncreate(self, options as ComponentInfo);
             }
         }
         if(options.onresize) {
             let onresize = options.onresize;
             (options.onresize as any) = (self:DOMElement) => {
-                onresize(self, options as DOMElementInfo);
+                onresize(self, options as ComponentInfo);
             }
         }
         if(options.onremove) {
             let ondelete = options.onremove;
             (options.onremove as any) = (self:DOMElement) => {
-                ondelete(self, options as DOMElementInfo);
+                ondelete(self, options as ComponentInfo);
             }
         }
         if(typeof options.renderonchanged === 'function') {
             let renderonchanged = options.renderonchanged;
             (options.renderonchanged as any) = (self:DOMElement) => {
-                renderonchanged(self, options as DOMElementInfo);
+                renderonchanged(self, options as ComponentInfo);
             }
+        }
+
+        if(options.interpreter && options.interpreter !== 'wc') {
+            this.interpreters[options.interpreter](options.template as string, options);
         }
 
         class CustomElement extends DOMElement {
@@ -270,7 +318,7 @@ export class DOMService extends Service {
         CustomElement.addElement(options.tagName); 
 
         let elm = document.createElement(options.tagName);
-        let completeOptions = this.updateOptions(options, elm) as DOMElementProps
+        let completeOptions = this.updateOptions(options, elm) as ComponentProps
         this.templates[completeOptions.id] = completeOptions;
 
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
@@ -335,7 +383,7 @@ export class DOMService extends Service {
             },0.01);
         }
 
-        return this.components[completeOptions.id] as DOMElementInfo;
+        return this.components[completeOptions.id] as ComponentInfo;
     }
 
     //create a canvas with a draw loop that can respond to props
@@ -478,18 +526,18 @@ export class DOMService extends Service {
 
     }
     
-    terminate = (element:string|DOMElement|HTMLElement|DOMElementInfo|CanvasElementInfo)=>{
+    terminate = (element:string|DOMElement|HTMLElement|ComponentInfo|CanvasElementInfo)=>{
         if(typeof element === 'object') {
             if((element as CanvasElementInfo).animating)
                (element as CanvasElementInfo).animating = false;
 
-            if((element as DOMElementInfo|CanvasElementInfo).element) element = (element as DOMElementInfo|CanvasElementInfo).element;
+            if((element as ComponentInfo|CanvasElementInfo).element) element = (element as ComponentInfo|CanvasElementInfo).element;
          }
         else if(typeof element === 'string' && this.components[element]) {
             if((this.components[element] as CanvasElementInfo).node.isAnimating)
                 (this.components[element] as CanvasElementInfo).node.stopNode();
-            if((this.components[element] as DOMElementInfo).divs)
-                (this.components[element] as DOMElementInfo).divs.forEach((d) => this.terminate(d));
+            if((this.components[element] as ComponentInfo).divs)
+                (this.components[element] as ComponentInfo).divs.forEach((d) => this.terminate(d));
                 
             let temp = this.components[element].element;
             delete this.components[element]

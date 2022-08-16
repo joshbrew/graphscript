@@ -1,6 +1,6 @@
 import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph";
 import { CanvasElementProps } from "./canvascomponent";
-import { DOMElementProps } from "./component";
+import { ComponentProps } from "./component";
 export declare type ElementProps = GraphNodeProperties & {
     tagName?: string;
     element?: HTMLElement;
@@ -16,7 +16,7 @@ export declare type ElementProps = GraphNodeProperties & {
     innerHTML?: string;
     id?: string;
     children?: {
-        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | ComponentProps | ElementProps | CanvasElementProps;
     };
     generateChildElementNodes?: boolean;
 };
@@ -40,7 +40,7 @@ export declare type ElementOptions = GraphNodeProperties & {
     innerText?: string;
     innerHTML?: string;
     children?: {
-        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | ComponentProps | ElementProps | CanvasElementProps;
     };
     id?: string;
 };

@@ -1,6 +1,6 @@
 import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph";
 import { CanvasElementProps } from "./canvascomponent";
-import { DOMElementProps } from "./component";
+import { ComponentProps } from "./component";
 
 export type ElementProps = GraphNodeProperties & {
     tagName?:string, //e.g. 'div', 'canvas'
@@ -14,7 +14,7 @@ export type ElementProps = GraphNodeProperties & {
     innerText?:string,
     innerHTML?:string,
     id?:string,
-    children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph|DOMElementProps|ElementProps|CanvasElementProps},
+    children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph|ComponentProps|ElementProps|CanvasElementProps},
     generateChildElementNodes?:boolean //generate these element info and graphnodes for every node in an element hierarchy
 }
 
@@ -36,6 +36,6 @@ export type ElementOptions = GraphNodeProperties & {
     onremove?:(self:HTMLElement,info:ElementInfo)=>void,
     innerText?:string,
     innerHTML?:string,
-    children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph|DOMElementProps|ElementProps|CanvasElementProps},
+    children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph|ComponentProps|ElementProps|CanvasElementProps},
     id?:string
 } 

@@ -12,10 +12,10 @@ process.on('SIGINT', exitHandler.bind(null, {exit:true}));
 
 //run backends
 //import { Router } from "../../routers/Router";
-import { UserProps, UserRouter } from "../../routers/users/User.router";
-import { HTTPbackend, ServerProps, ServerInfo } from '../../services/http/HTTP.node';
-import { SSEbackend, SSEProps } from '../../services/sse/SSE.node';
-import { WSSbackend, SocketServerProps } from '../../services/wss/WSS.node';
+import { UserProps, UserRouter } from "../../../routers/users/User.router";
+import { HTTPbackend, ServerProps, ServerInfo } from '../../../services/http/HTTP.node';
+import { SSEbackend, SSEProps } from '../../../services/sse/SSE.node';
+import { WSSbackend, SocketServerProps } from '../../../services/wss/WSS.node';
 
 import fs from 'fs'
 
@@ -51,7 +51,7 @@ router.run(
         // keypath:'key.pem',
         // passphrase:'encryption',
         //errpage:undefined,
-        pageOptions:{
+        pages:{
             all:{
                 inject:{
                     hotreload:'ws://localhost:8080/hotreload'

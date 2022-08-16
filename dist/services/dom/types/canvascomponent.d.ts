@@ -1,4 +1,4 @@
-import { DOMElementProps } from "./component";
+import { ComponentProps } from "./component";
 import { DOMElement } from "../DOMElement";
 import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph";
 import { ElementProps } from "./element";
@@ -18,7 +18,7 @@ export declare type CanvasElementProps = GraphNodeProperties & {
     onremove?: (self: DOMElement, info?: CanvasElementInfo) => void;
     renderonchanged?: boolean | ((self: DOMElement, info?: CanvasElementInfo) => void);
     children?: {
-        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | ComponentProps | ElementProps | CanvasElementProps;
     };
 };
 export declare type CanvasElementInfo = {
@@ -60,7 +60,7 @@ export declare type CanvasOptions = {
         [key: string]: any;
     };
     children?: {
-        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | DOMElementProps | ElementProps | CanvasElementProps;
+        [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | ComponentProps | ElementProps | CanvasElementProps;
     };
     id?: string;
 } & GraphNodeProperties;

@@ -13,9 +13,11 @@ export type ServerProps = {
     passphrase?:string,
     startpage?: string,
     errpage?:string,
-    pageOptions?:{
-        [key:'all'|string]:{
-            inject:{[key:string]:{}|null}|string[]|string| ((...args:any)=>any) //append html      
+    pages?:{
+        [key:'all'|string]:string|{
+            template?:string,
+            redirect?:string, // can redirect the url to call a different route instead, e.g. '/':{redirect:'home'} sets the route passed to the receiver as 'home'
+            inject?:{[key:string]:{}|null}|string[]|string| ((...args:any)=>any) //append html      
         }
     },
     protocol?:'http'|'https',
@@ -101,6 +103,19 @@ export class HTTPbackend extends Service {
         requestListener?:http.RequestListener,
         onStarted?:()=>void
     )=>{
+
+        if(options.pages) {
+            for(const key in options.pages) {
+                if(typeof options.pages[key] === 'object') {
+                    if((options.pages[key] as any).template) {
+                        this.addPage(key,(options.pages[key] as any).template as string);
+                    }
+                } else if (typeof options.pages[key] === 'string') {
+                    this.addPage(key,options.pages[key] as string)
+                }
+            }
+        }
+
         if(options.protocol === 'https') {
             return this.setupHTTPSserver(options as any,requestListener, onStarted);
         }
@@ -140,7 +155,25 @@ export class HTTPbackend extends Service {
         }
 
         if(!requestListener) requestListener =  (request:http.IncomingMessage,response:http.ServerResponse) => { 
-            this.receive({route:(request as any).url.slice(1), args:{request, response}, method:request.method, served:(served as any)}); 
+            
+            let received:any = {
+                args:{request, response}, 
+                method:request.method, 
+                served
+            }
+
+            let url = (request as any).url.slice(1);
+            if(!url) url = '/';
+            if(options.pages) {
+                if(typeof options.pages[url] === 'object') {
+                    if((options.pages[url] as any).redirect) {
+                        url = (options.pages[url] as any).redirect;
+                        received.redirect = url;
+                    }
+                }
+            }
+            received.route = url;
+            this.receive(received); 
         } //default requestListener
 
         //var http = require('http');
@@ -209,12 +242,25 @@ export class HTTPbackend extends Service {
 
         //default requestListener
         if(!requestListener) requestListener = (request:http.IncomingMessage,response:http.ServerResponse) => { 
-            this.receive({
-                route:(request as any).url.slice(1), //gets rid of the '/' for the node tree to interpret... 
+
+            let received:any = {
                 args:{request, response}, 
                 method:request.method, 
                 served
-            }); 
+            }
+
+            let url = (request as any).url.slice(1);
+            if(!url) url = '/';
+            if(options.pages) {
+                if(typeof options.pages[url] === 'object') {
+                    if((options.pages[url] as any).redirect) {
+                        url = (options.pages[url] as any).redirect;
+                        received.redirect = url;
+                    }
+                }
+            }
+            received.route = url;
+            this.receive(received); 
         } //default requestListener
 
         //var http = require('http');
@@ -308,7 +354,7 @@ export class HTTPbackend extends Service {
             if(typeof result === 'string') {
                 if(result.includes('<') && result.includes('>') && (result.indexOf('<') < result.indexOf('>'))) //probably an html template
                     {
-                        if(message?.served?.pageOptions?.all || message?.served?.pageOptions?.[message.route]) {
+                        if(message?.served?.pages?.all || message?.served?.pages?.[message.route]) {
                             result = this.injectPageCode(result,message.route,message.served) as any;
                         }
                         response.writeHead(200,{'Content-Type':'text/html'});
@@ -335,21 +381,21 @@ export class HTTPbackend extends Service {
         served:ServerInfo 
     ) => { 
         
-        if (served?.pageOptions?.[url]?.inject) { //inject per url
-            if(typeof served.pageOptions[url].inject === 'object') 
-                templateString = this.buildPage(served.pageOptions[url].inject, templateString);
-            else if (typeof served.pageOptions[url].inject === 'function') 
-                templateString += (served.pageOptions[url].inject as any)();
-            else if (typeof served.pageOptions[url].inject === 'string' || typeof served.pageOptions[url].inject === 'number') 
-                templateString += served.pageOptions[url].inject;
+        if ((served?.pages?.[url] as any)?.inject) { //inject per url
+            if(typeof (served as any).pages[url].inject === 'object') 
+                templateString = this.buildPage((served as any).pages[url].inject as any, templateString);
+            else if (typeof (served as any).pages[url].inject === 'function') 
+                templateString += ((served as any).pages[url].inject as any)();
+            else if (typeof (served as any).pages[url].inject === 'string' || typeof (served as any).pages[url].inject === 'number') 
+                templateString += (served as any).pages[url].inject;
         }
-        if(served?.pageOptions?.all?.inject) { //any per server
-            if(typeof served.pageOptions.all.inject === 'object') 
-                templateString = this.buildPage(served.pageOptions.all.inject, templateString);
-            else if (typeof served.pageOptions.all.inject === 'function') 
-                templateString += served.pageOptions.all.inject();
-            else if (typeof served.pageOptions.all.inject === 'string' || typeof served.pageOptions.all.inject === 'number') 
-                templateString += served.pageOptions.all.inject;
+        if((served?.pages?.all as any)?.inject) { //any per server
+            if(typeof (served.pages as any).all.inject === 'object') 
+                templateString = this.buildPage((served as any).pages.all.inject, templateString);
+            else if (typeof (served as any).pages.all.inject === 'function') 
+                templateString += (served as any).pages.all.inject();
+            else if (typeof (served as any).pages.all.inject === 'string' || typeof (served as any).pages.all.inject === 'number') 
+                templateString += (served as any).pages.all.inject;
         }  
         return templateString;
     }
@@ -361,7 +407,8 @@ export class HTTPbackend extends Service {
             method?:string,
             origin?:string,
             node?:string, // alt for route
-            served?:ServerInfo //server deets
+            served?:ServerInfo, //server deets
+            redirect?:string //if we redirected the route according to page options
         }
     ) => {
         const request = message.args.request; 
@@ -388,7 +435,7 @@ export class HTTPbackend extends Service {
                 if(response.writableEnded || response.destroyed) reject(requestURL); 
                 if(requestURL == './' || requestURL == served?.startpage) {
                     let template = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Brains@Play Server</h1></body></html>`; //start page dummy
-                    if(served?.pageOptions?.all || served?.pageOptions?.error) {
+                    if(served?.pages?.all || served?.pages?.error) {
                         template = this.injectPageCode(template,message.route,served) as any;
                     }
                     response.writeHead(200, { 'Content-Type': 'text/html' });
@@ -432,7 +479,7 @@ export class HTTPbackend extends Service {
                                         //     content = addHotReloadClient(content,`${cfg.socket_protocol}://${cfg.host}:${cfg.port}/hotreload`);
                                         // }
 
-                                        if(served.pageOptions?.all || served.pageOptions?.error) {
+                                        if(served.pages?.all || served.pages?.error) {
                                             content = this.injectPageCode(content.toString(),message.route,served) as any;
                                         }
     
@@ -444,7 +491,7 @@ export class HTTPbackend extends Service {
                                 else {
                                     response.writeHead(404, { 'Content-Type': 'text/html' });
                                     let content = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Error: ${error.code}</h1></body></html>`
-                                    if(served?.pageOptions?.all || served?.pageOptions?.[message.route]) {
+                                    if(served?.pages?.all || served?.pages?.[message.route]) {
                                         content = this.injectPageCode(content.toString(),message.route,served as any) as any;
                                     }
                                     response.end(content,'utf-8', () => {
@@ -468,7 +515,7 @@ export class HTTPbackend extends Service {
     
                             var contentType = this.mimeTypes[extname] || 'application/octet-stream';
 
-                            if(contentType === 'text/html' && (served?.pageOptions?.all || served?.pageOptions?.[message.route])) {
+                            if(contentType === 'text/html' && (served?.pages?.all || served?.pages?.[message.route])) {
                                 content = this.injectPageCode(content.toString(),message.route,served as any) as any;
                             }
 
@@ -510,6 +557,11 @@ export class HTTPbackend extends Service {
                             resolve(res);
                            // return;
                         } //else we can move on to check the get post
+                    }
+                    else if (message.redirect) {
+                        response.writeHead(301, {'Location':message.redirect});
+                        response.end();
+                        resolve(true);
                     } 
                     else getFailed();
                 } else getFailed();
@@ -804,7 +856,7 @@ export class HTTPbackend extends Service {
     routes:Routes={
         setupServer:this.setupServer,
         terminate:(path:string|number)=>{
-            for(const address in this.servers) {
+            if(path) for(const address in this.servers) {
                 if(address.includes(`${path}`)) {
                     this.terminate(this.servers[address]);
                     delete this.servers[address];
