@@ -87,18 +87,23 @@ export class Router { //instead of extending acyclicgraph or service again we ar
         this.service.load(service, includeClassName, routeFormat, customRoutes, customChildren);
         
         if(linkServices) {
-            for(const name in this.services) { //tie node references together across service node maps so they can call each other
-                this.service.nodes.forEach((n) => {
-                    if(this.services[name]?.nodes) {
-                        if(!this.services[name].nodes.get(n.tag)) {
-                            this.services[name].nodes.set(n.tag,n);
-                        } 
-                    }
-                });
-            }
+            this.syncServices();
         }
 
         return this.services[service.name];
+    }
+
+    //tie node references together across service node maps so they can call each other's relative routes
+    syncServices = () => {
+        for(const name in this.services) { 
+            this.service.nodes.forEach((n) => {
+                if(this.services[name]?.nodes) {
+                    if(!this.services[name].nodes.get(n.tag)) {
+                        this.services[name].nodes.set(n.tag,n);
+                    } 
+                }
+            });
+        }
     }
 
     //pipe state updates from a source route/node through an available protocol to a destination route/node
