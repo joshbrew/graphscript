@@ -3,6 +3,7 @@ import * as http from 'http'
 import * as https from 'https'
 import * as fs from 'fs'
 import * as path from 'path'
+import { stringifyWithCircularRefs } from "../../Graph";
 
 
 export type ServerProps = {
@@ -78,6 +79,7 @@ export class HTTPbackend extends Service {
         super(options);
         this.load(this.routes);
 
+        //console.log(settings);
         if(settings) {
             if(settings.protocol === 'https') {
                 this.setupHTTPSserver( settings as any )
@@ -366,7 +368,7 @@ export class HTTPbackend extends Service {
             let mimeType = 'text/plain';
 
             if(typeof result === 'object') {
-                result = JSON.stringify(result);
+                result = stringifyWithCircularRefs(result);
                 mimeType = 'application/json';
             }
 
@@ -463,7 +465,7 @@ export class HTTPbackend extends Service {
                 }
                 
                 //console.log(path.join(process.cwd(),requestURL),fs.existsSync(path.join(process.cwd(),requestURL)));
-                if(fs.existsSync(path.join(process.cwd(),requestURL))) {
+                if(request.url !== '/' && fs.existsSync(path.join(process.cwd(),requestURL))) {
                     if(response.writableEnded || response.destroyed) reject(requestURL);
                     //read the file on the server
                     fs.readFile(path.join(process.cwd(),requestURL), (error, content) => {
@@ -537,12 +539,12 @@ export class HTTPbackend extends Service {
                     if(route) {
                         let res:any;
                         if(message.method) {
-                            res = this.handleMethod(message.route, message.method, message.args, message.origin); //these methods are being passed request/response in the data here, post methods will parse the command objects instead while this can be used to get html templates or play with req/res custom callbakcs
+                            res = this.handleMethod(message.route, message.method, undefined, message.origin); //these methods are being passed request/response in the data here, post methods will parse the command objects instead while this can be used to get html templates or play with req/res custom callbakcs
                         }
                         else if (message.node) {
-                            res = this.handleGraphNodeCall(message.node, message.args);
+                            res = this.handleGraphNodeCall(message.node, undefined);
                         }
-                        else res = this.handleServiceMessage(message);
+                        else res = this.handleServiceMessage({route:message.route,args:undefined,method:message.method,origin:message.origin});
     
                         if(res instanceof Promise) res.then((r) => {
                             if(served?.keepState) this.setState({[served.address]:res});

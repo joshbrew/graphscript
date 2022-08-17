@@ -3,9 +3,8 @@
   "version": "0.0.0",
   "description": "Barebones esbuild and test node server implementation. For building",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "start": "tinybuild && node dist/server.js",
+    "start": "tinybuild && node dist/backend.node.js",
     "build": "tinybuild build",
     "serve": "tinybuild serve",
     "init": "node tinybuild/init.js",
@@ -22,7 +21,9 @@
   "author": "",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "graphscript": "^0.0.115"
+    "bufferutil": "^4.0.6",
+    "graphscript": "~0.0.119",
+    "utf-8-validate": "^5.0.9"
   },
   "nodemonConfig": {
     "env": {

@@ -5,11 +5,11 @@ document.body.innerHTML += "Hello World!";
 document.body.insertAdjacentHTML('beforeend',`<div id='webrtc'></div>`)
 
 //import { Router } from "../../routers/Router";
-import { UserProps, UserRouter } from "../../routers/users/User.router";
-import { HTTPfrontend } from "../../services/http/HTTP.browser";
-import { SSEfrontend, EventSourceProps, EventSourceInfo } from "../../services/sse/SSE.browser";
-import { WSSfrontend, WebSocketProps, WebSocketInfo } from '../../services/wss/WSS.browser';
-import { WebRTCfrontend, WebRTCInfo, WebRTCProps } from '../../services/webrtc/WebRTC.browser';
+import { UserProps, UserRouter } from "../../../routers/users/User.router";
+import { HTTPfrontend } from "../../../services/http/HTTP.browser";
+import { SSEfrontend, EventSourceProps, EventSourceInfo } from "../../../services/sse/SSE.browser";
+import { WSSfrontend, WebSocketProps, WebSocketInfo } from '../../../services/wss/WSS.browser';
+import { WebRTCfrontend, WebRTCInfo, WebRTCProps } from '../../../services/webrtc/WebRTC.browser';
 
 const router = new UserRouter({
     HTTPfrontend,

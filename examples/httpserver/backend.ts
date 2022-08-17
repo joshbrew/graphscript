@@ -20,6 +20,7 @@ let router = new UserRouter([
     SSEbackend
 ]);
 
+console.log(router);
 
 router.run(
     'http.setupServer',
@@ -29,10 +30,13 @@ router.run(
         port:8080,
         pages:{
             '/':{
-                template:`<div>Nice Badonkadonk</div>`
+                template:`<div>Nice...</div>`
             },
             'home':{
                 redirect:'/'
+            },
+            'redir':{
+                redirect:'https://google.com'
             },
             'test':'<div>TEST</div>',
             all:{
