@@ -97,15 +97,28 @@ We will elaborate on all of this with individual docs for each microservice, as 
 For all services with remote message passing support (http, wss, sse, webrtc, etc.) they are by default configured to handle our service messages alongside arbitrary callbacks or basic standard functions (e.g. file serving in the http server). This allows them to be quickly wired together with your custom services without worrying about formats matching up.
 
 - HTTP - Create an http server and manage REST calls. The server is set up to handle custom GET/POST requests using our route format encoded in the request body as well as standard GET/POST calls for serving files. The backend HTTP service allows you to construct webpages just from strings and inject code e.g. for hotreloading into your page with simple one liners. You can even build whole pages from lists of functions and template strings.
+    - - [HTTPbackend](./services/http/http.node.md)
+    - - [HTTPfrontend](./services/http/http.browser.md)
 
 - WSS - Websocket server frontend and backend to route service messages. It's a simple single function call to create the socket server on the backend with your http server and then open connections on the frontend.
+    - - [WSSbackend](./services/wss/wss.node.md)
+    - - [WSSfrontend](./services/wss/wss.browser.md)
 
 - SSE - Server sent events using `better-sse`, this allows for one way communication to connected clients. This program gives you handles for each client as well, so individuals can be messaged on a shared channel without notifying others. This has much less overhead when two way communication is unnecessary or when you can fire-and-forget message results.
+    - - [SSEbackend](./services/sse/sse.node.md)
+    - - [SSEfrontend](./services/sse/sse.browser.md)
+
+- Worker - Multithreading is essential for high performance applications, and essentially all logic not running directly on the UI should be offloaded to workers in a production environment, so we handled the message passing system for you. In nodejs, threads can even run their entire own servers. In browser, they can handle canvas draw calls, sockets, REST calls, etc. 
+    - - [WorkerService](./services/worker/worker.service.md)
+    - - [Workers](./services/worker/worker.md)
 
 - WebRTC - Browser supported peer 2 peer streaming. We can easily use the sessions framework internal to Routers/UserRouters to share room information over a server persistently. 
 
-- Worker - Multithreading is essential for high performance applications, and essentially all logic not running directly on the UI should be offloaded to workers in a production environment, so we handled the message passing system for you. In nodejs, threads can even run their entire own servers. In browser, they can handle canvas draw calls, sockets, REST calls, etc. 
-
 - E2EE - End 2 End encryption made easy with the minimal Stanford Javascript Cryptography Library. It's set up to generate keys which you can copy to the desired endpoint (should do it securely) to pass encrypted service messages that automatically reroute through the encryption service. It can even encrypt the hash key table with a server side secret. 
 
+- CMD - Command child processes, load processes that run their own CMD services to listen for cross-process service messages. This is the entry point for containerized applications with independent memory pools e.g. for rapid testing or for server multiplexing.
+
 - Struct - WIP reimplementation of a comprehensive data structure system for users. This includes basic access permissions, persistent notifications e.g. for chatroom data, and options to hook into MongoDB or basic local in-memory data maps. 
+
+- GPU - This service implements an instance of gpu.js via our `gpujsutils` library, which is a stable gpu.js distribution and macro set. Kernels are created persistently on the gpu via webgl2 and i/o can be resized dynamically, so this runs as fast as Webgl2 allows. Hoping gpujs sees some upgrades for WebGPU as it lets you write shader code in plain loosely typed javascript!
+

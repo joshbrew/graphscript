@@ -18,7 +18,7 @@ export type SSESessionInfo = {
     sessions:{
         [key:string]:any
     }
-} & SSEProps
+} & SSEProps;
 
 export class SSEbackend extends Service {
 

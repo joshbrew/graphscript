@@ -1,6 +1,8 @@
-The HTTP Backend puts the power of graphs and services into a full featured HTTP or HTTPS server. This lets you serve static assets or dynamic content straight from routes all through standard or customizable http fetch calls. This means you can implement your entire own http protocols and state machines willy nilly and feel like a backend master, it's a lot of fun! 
+## HTTPbackend
 
-The extended `RouteProp` in Service.ts was made for this:
+The HTTPbackend service puts the power of graphs and services into a full featured HTTP or HTTPS server. This lets you serve static assets or dynamic content straight from routes all through standard or customizable http fetch calls. This means you can implement your entire own http protocols and state machines willy nilly and feel like a backend master, it's a lot of fun! 
+
+The extended `RouteProp` when declaring routes/nodes in Service.ts was made for this:
 ```ts
 type RouteProp = { //these are just multiple methods you can call on a route/node tag kind of like http requests but really it applies to any function you want to add to a route object if you specify that method even beyond these http themed names :D
     get?:OperatorType|((...args:any)=>any|void),  //returned in HTTP GET requests, defasults to the operator. Returned strings get posted as HTTP, or returned file paths will be evaluated as strings
@@ -24,9 +26,36 @@ Now let's spin up a quick server:
 
 ```ts
 
-import {HTTPBackend, ServerProps, ServerInfo} from 'graphscript-node'
+import {HTTPbackend} from 'graphscript-node'
 
-const http = new HTTPBackend();
+type ServerProps = {
+    host:string,
+    port:number,
+    certpath?:string, 
+    keypath?:string,
+    passphrase?:string,
+    startpage?: string,
+    errpage?:string,
+    pages?:{
+        [key:'all'|string]:string|{  //objects get loaded as nodes which you can modify props on
+            template?:string,
+            onrequest?:GraphNode|string|((self:HTTPbackend, node:GraphNode, request:http.IncomingMessage, response:http.ServerResponse)=>void), //run a function or node? the template, request and response are passed as arguments, you can write custom node logic within this function to customize inputs etc.
+            redirect?:string, // can redirect the url to call a different route instead, e.g. '/':{redirect:'home'} sets the route passed to the receiver as 'home'
+            inject?:{[key:string]:{}|null}|string[]|string| ((...args:any)=>any) //append html      
+        } & RouteProp
+    },
+    protocol?:'http'|'https',
+    type?:'httpserver'|string,
+    keepState?:boolean, //setState whenever a route is run? State will be available at the address (same key of the object storing it here)
+    [key:string]:any
+}
+
+type ServerInfo = {
+    server:https.Server|http.Server,
+    address:string
+} & ServerProps
+
+const http = new HTTPbackend();
 
 http.setupServer(
     {
