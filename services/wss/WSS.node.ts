@@ -429,19 +429,29 @@ export class WSSbackend extends Service {
     }
 
     subscribeSocket(route:string, socket:WebSocket|string) {
-        if(typeof socket === 'string' && this.sockets[socket]) {
-            socket = this.sockets[socket].socket;
-        }
-        return this.subscribe(route, (res:any) => {
-            //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
-            if(res instanceof Promise) {
-                res.then((r) => {
-                    (socket as WebSocket).send(JSON.stringify({args:r, callbackId:route}));
-                });
-            } else {
-                (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
+        if(typeof socket === 'string') {
+            if(this.sockets[socket]) socket = this.sockets[socket].socket;
+            else {
+                for(const prop in this.servers) {
+                    if(this.servers[prop].clients[socket as string])
+                        socket = this.servers[prop].clients[socket as string];
+                }
             }
-        });
+        }
+    
+        if(typeof socket === 'object')
+            return this.subscribe(route, (res:any) => {
+                //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
+                if((socket as WebSocket).readyState === (socket as WebSocket).OPEN) {
+                    if(res instanceof Promise) {
+                        res.then((r) => {
+                            (socket as WebSocket).send(JSON.stringify({args:r, callbackId:route}));
+                        });
+                    } else {
+                        (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
+                    }
+                } 
+            });
     } 
 
     subscribeToSocket(route:string, socketId:string, callback?:string|((res:any)=>void)) {

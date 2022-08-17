@@ -273,12 +273,14 @@ export class WSSfrontend extends Service {
         }
         return this.subscribe(route, (res:any) => {
             //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
-            if(res instanceof Promise) {
-                res.then((r) => {
-                    (socket as WebSocket).send(JSON.stringify({args:r, callbackId:route}));
-                });
-            } else {
-                (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
+            if((socket as WebSocket).readyState === (socket as WebSocket).OPEN) {
+                if(res instanceof Promise) {
+                    res.then((r) => {
+                        (socket as WebSocket).send(JSON.stringify({args:r, callbackId:route}));
+                    });
+                } else {
+                    (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
+                }
             }
         });
     } 
