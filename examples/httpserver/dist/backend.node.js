@@ -17980,7 +17980,8 @@ ${F.join("")}}`;
                 if (options2.pages[key].template) {
                   options2.pages[key].get = options2.pages[key].template;
                 }
-                this.load({ [key]: options2.pages[key] });
+                if (key !== "all")
+                  this.load({ [key]: options2.pages[key] });
               }
             }
           }
@@ -18123,7 +18124,7 @@ ${F.join("")}}`;
           if (result && !response.writableEnded && !response.destroyed) {
             if (typeof result === "string") {
               if (result.includes("<") && result.includes(">") && result.indexOf("<") < result.indexOf(">")) {
-                if (message?.served?.pages?.all || message?.served?.pages?.[message.route]) {
+                if (message?.served?.pages?._all || message?.served?.pages?.[message.route]) {
                   result = this.injectPageCode(result, message.route, message.served);
                 }
                 response.writeHead(200, { "Content-Type": "text/html" });
@@ -18149,13 +18150,13 @@ ${F.join("")}}`;
             else if (typeof served.pages[url].inject === "string" || typeof served.pages[url].inject === "number")
               templateString += served.pages[url].inject;
           }
-          if (served?.pages?.all?.inject) {
-            if (typeof served.pages.all.inject === "object")
-              templateString = this.buildPage(served.pages.all.inject, templateString);
-            else if (typeof served.pages.all.inject === "function")
-              templateString += served.pages.all.inject();
-            else if (typeof served.pages.all.inject === "string" || typeof served.pages.all.inject === "number")
-              templateString += served.pages.all.inject;
+          if (served?.pages?._all?.inject) {
+            if (typeof served.pages._all.inject === "object")
+              templateString = this.buildPage(served.pages._all.inject, templateString);
+            else if (typeof served.pages._all.inject === "function")
+              templateString += served.pages._all.inject();
+            else if (typeof served.pages._all.inject === "string" || typeof served.pages._all.inject === "number")
+              templateString += served.pages._all.inject;
           }
           return templateString;
         };
@@ -18180,7 +18181,7 @@ ${F.join("")}}`;
                 reject(requestURL);
               if (requestURL == "./" || requestURL == served?.startpage) {
                 let template = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Brains@Play Server</h1></body></html>`;
-                if (served?.pages?.all || served?.pages?.error) {
+                if (served?.pages?._all || served?.pages?.error) {
                   template = this.injectPageCode(template, message.route, served);
                 }
                 response.writeHead(200, { "Content-Type": "text/html" });
@@ -18210,7 +18211,7 @@ ${F.join("")}}`;
                       if (served?.errpage) {
                         fs.readFile(served.errpage, (er, content2) => {
                           response.writeHead(404, { "Content-Type": "text/html" });
-                          if (served.pages?.all || served.pages?.error) {
+                          if (served.pages?._all || served.pages?.error) {
                             content2 = this.injectPageCode(content2.toString(), message.route, served);
                           }
                           response.end(content2, "utf-8");
@@ -18219,7 +18220,7 @@ ${F.join("")}}`;
                       } else {
                         response.writeHead(404, { "Content-Type": "text/html" });
                         let content2 = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Error: ${error.code}</h1></body></html>`;
-                        if (served?.pages?.all || served?.pages?.[message.route]) {
+                        if (served?.pages?._all || served?.pages?.[message.route]) {
                           content2 = this.injectPageCode(content2.toString(), message.route, served);
                         }
                         response.end(content2, "utf-8", () => {
@@ -18235,7 +18236,7 @@ ${F.join("")}}`;
                   } else {
                     var extname2 = String(path.extname(requestURL)).toLowerCase();
                     var contentType = this.mimeTypes[extname2] || "application/octet-stream";
-                    if (contentType === "text/html" && (served?.pages?.all || served?.pages?.[message.route])) {
+                    if (contentType === "text/html" && (served?.pages?._all || served?.pages?.[message.route])) {
                       content = this.injectPageCode(content.toString(), message.route, served);
                     }
                     response.writeHead(200, { "Content-Type": contentType });
@@ -21168,7 +21169,7 @@ router.run(
         redirect: "https://google.com"
       },
       "test": "<div>TEST</div>",
-      all: {
+      _all: {
         inject: {
           hotreload: "ws://localhost:8080/hotreload"
         }

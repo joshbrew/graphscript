@@ -52,7 +52,7 @@ router.run(
         // passphrase:'encryption',
         //errpage:undefined,
         pages:{
-            all:{
+            _all:{
                 inject:{
                     hotreload:'ws://localhost:8080/hotreload'
                 }

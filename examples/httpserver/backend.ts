@@ -42,7 +42,7 @@ router.run(
                 redirect:'https://google.com'
             },
             'test':'<div>TEST</div>',
-            all:{
+            _all:{
                 inject:{ //page building
                     hotreload:'ws://localhost:8080/hotreload' //this is a route that exists as dynamic content with input arguments, in this case it's a url, could pass objects etc in as arguments
                 }

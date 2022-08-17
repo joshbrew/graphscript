@@ -115,7 +115,7 @@ export class HTTPbackend extends Service {
                     if((options.pages[key] as any).template) {
                         (options.pages[key] as any).get = (options.pages[key] as any).template;
                     }
-                    this.load({[key]:options.pages[key]});
+                    if(key !== 'all') this.load({[key]:options.pages[key]});
                 }
             }
         }
@@ -383,7 +383,7 @@ export class HTTPbackend extends Service {
             if(typeof result === 'string') {
                 if(result.includes('<') && result.includes('>') && (result.indexOf('<') < result.indexOf('>'))) //probably an html template
                     {
-                        if(message?.served?.pages?.all || message?.served?.pages?.[message.route]) {
+                        if(message?.served?.pages?._all || message?.served?.pages?.[message.route]) {
                             result = this.injectPageCode(result,message.route,message.served) as any;
                         }
                         response.writeHead(200,{'Content-Type':'text/html'});
@@ -418,13 +418,13 @@ export class HTTPbackend extends Service {
             else if (typeof (served as any).pages[url].inject === 'string' || typeof (served as any).pages[url].inject === 'number') 
                 templateString += (served as any).pages[url].inject;
         }
-        if((served?.pages?.all as any)?.inject) { //any per server
-            if(typeof (served.pages as any).all.inject === 'object') 
-                templateString = this.buildPage((served as any).pages.all.inject, templateString);
-            else if (typeof (served as any).pages.all.inject === 'function') 
-                templateString += (served as any).pages.all.inject();
-            else if (typeof (served as any).pages.all.inject === 'string' || typeof (served as any).pages.all.inject === 'number') 
-                templateString += (served as any).pages.all.inject;
+        if((served?.pages?._all as any)?.inject) { //any per server
+            if(typeof (served.pages as any)._all.inject === 'object') 
+                templateString = this.buildPage((served as any).pages._all.inject, templateString);
+            else if (typeof (served as any).pages._all.inject === 'function') 
+                templateString += (served as any).pages._all.inject();
+            else if (typeof (served as any).pages._all.inject === 'string' || typeof (served as any).pages._all.inject === 'number') 
+                templateString += (served as any).pages._all.inject;
         }  
         return templateString;
     }
@@ -464,7 +464,7 @@ export class HTTPbackend extends Service {
                 if(response.writableEnded || response.destroyed) reject(requestURL); 
                 if(requestURL == './' || requestURL == served?.startpage) {
                     let template = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Brains@Play Server</h1></body></html>`; //start page dummy
-                    if(served?.pages?.all || served?.pages?.error) {
+                    if(served?.pages?._all || served?.pages?.error) {
                         template = this.injectPageCode(template,message.route,served) as any;
                     }
                     response.writeHead(200, { 'Content-Type': 'text/html' });
@@ -508,7 +508,7 @@ export class HTTPbackend extends Service {
                                         //     content = addHotReloadClient(content,`${cfg.socket_protocol}://${cfg.host}:${cfg.port}/hotreload`);
                                         // }
 
-                                        if(served.pages?.all || served.pages?.error) {
+                                        if(served.pages?._all || served.pages?.error) {
                                             content = this.injectPageCode(content.toString(),message.route,served) as any;
                                         }
     
@@ -520,7 +520,7 @@ export class HTTPbackend extends Service {
                                 else {
                                     response.writeHead(404, { 'Content-Type': 'text/html' });
                                     let content = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Error: ${error.code}</h1></body></html>`
-                                    if(served?.pages?.all || served?.pages?.[message.route]) {
+                                    if(served?.pages?._all || served?.pages?.[message.route]) {
                                         content = this.injectPageCode(content.toString(),message.route,served as any) as any;
                                     }
                                     response.end(content,'utf-8', () => {
@@ -544,7 +544,7 @@ export class HTTPbackend extends Service {
     
                             var contentType = this.mimeTypes[extname] || 'application/octet-stream';
 
-                            if(contentType === 'text/html' && (served?.pages?.all || served?.pages?.[message.route])) {
+                            if(contentType === 'text/html' && (served?.pages?._all || served?.pages?.[message.route])) {
                                 content = this.injectPageCode(content.toString(),message.route,served as any) as any;
                             }
 
