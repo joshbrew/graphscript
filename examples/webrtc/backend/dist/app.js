@@ -2152,17 +2152,20 @@
         }
         this.service.load(service, includeClassName, routeFormat, customRoutes, customChildren);
         if (linkServices) {
-          for (const name in this.services) {
-            this.service.nodes.forEach((n) => {
-              if (this.services[name]?.nodes) {
-                if (!this.services[name].nodes.get(n.tag)) {
-                  this.services[name].nodes.set(n.tag, n);
-                }
-              }
-            });
-          }
+          this.syncServices();
         }
         return this.services[service.name];
+      };
+      this.syncServices = () => {
+        for (const name in this.services) {
+          this.service.nodes.forEach((n) => {
+            if (this.services[name]?.nodes) {
+              if (!this.services[name].nodes.get(n.tag)) {
+                this.services[name].nodes.set(n.tag, n);
+              }
+            }
+          });
+        }
       };
       this.pipe = (source, destination, transmitter, origin, method, callback) => {
         if (!transmitter && source && destination) {
@@ -4273,15 +4276,18 @@
       if (typeof socket === "string" && this.sockets[socket]) {
         socket = this.sockets[socket].socket;
       }
-      return this.subscribe(route, (res) => {
-        if (res instanceof Promise) {
-          res.then((r) => {
-            socket.send(JSON.stringify({ args: r, callbackId: route }));
-          });
-        } else {
-          socket.send(JSON.stringify({ args: res, callbackId: route }));
-        }
-      });
+      if (typeof socket === "object")
+        return this.subscribe(route, (res) => {
+          if (socket.readyState === socket.OPEN) {
+            if (res instanceof Promise) {
+              res.then((r) => {
+                socket.send(JSON.stringify({ args: r, callbackId: route }));
+              });
+            } else {
+              socket.send(JSON.stringify({ args: res, callbackId: route }));
+            }
+          }
+        });
     }
     subscribeToSocket(route, socketId, callback) {
       if (typeof socketId === "string" && this.sockets[socketId]) {

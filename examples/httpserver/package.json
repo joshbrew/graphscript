@@ -21,7 +21,7 @@
   "author": "",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "graphscript-node": "~0.0.138"
+    "graphscript-node": "~0.0.139"
   },
   "nodemonConfig": {
     "env": {

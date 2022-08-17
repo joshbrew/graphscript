@@ -5165,17 +5165,20 @@ var Router = class {
       }
       this.service.load(service, includeClassName, routeFormat, customRoutes, customChildren);
       if (linkServices) {
-        for (const name in this.services) {
-          this.service.nodes.forEach((n) => {
-            if (this.services[name]?.nodes) {
-              if (!this.services[name].nodes.get(n.tag)) {
-                this.services[name].nodes.set(n.tag, n);
-              }
-            }
-          });
-        }
+        this.syncServices();
       }
       return this.services[service.name];
+    };
+    this.syncServices = () => {
+      for (const name in this.services) {
+        this.service.nodes.forEach((n) => {
+          if (this.services[name]?.nodes) {
+            if (!this.services[name].nodes.get(n.tag)) {
+              this.services[name].nodes.set(n.tag, n);
+            }
+          }
+        });
+      }
     };
     this.pipe = (source, destination, transmitter, origin, method, callback) => {
       if (!transmitter && source && destination) {
@@ -6822,13 +6825,13 @@ var HTTPbackend = class extends Service {
       if (options.pages) {
         for (const key in options.pages) {
           if (typeof options.pages[key] === "string") {
-            this.addPage(key, options.pages[key]);
+            this.addPage(`${options.port}/${key}`, options.pages[key]);
           } else if (typeof options.pages[key] === "object") {
             if (options.pages[key].template) {
               options.pages[key].get = options.pages[key].template;
             }
-            if (key !== "all")
-              this.load({ [key]: options.pages[key] });
+            if (key !== "_all")
+              this.load({ [`${options.port}/${key}`]: options.pages[key] });
           }
         }
       }
@@ -6873,10 +6876,6 @@ var HTTPbackend = class extends Service {
             url = "/";
           if (options.pages) {
             if (typeof options.pages[url] === "object") {
-              if (options.pages[url].redirect) {
-                url = options.pages[url].redirect;
-                received.redirect = url;
-              }
               if (options.pages[url].onrequest) {
                 if (typeof options.pages[url].onrequest === "string") {
                   options.pages[url].onrequest = this.nodes.get(options.pages[url].onrequest);
@@ -6888,6 +6887,10 @@ var HTTPbackend = class extends Service {
                 } else if (typeof options.pages[url].onrequest === "function") {
                   options.pages[url].onrequest(this, options.pages[url], request, response);
                 }
+              }
+              if (options.pages[url].redirect) {
+                url = options.pages[url].redirect;
+                received.redirect = url;
               }
             }
           }
@@ -7031,6 +7034,9 @@ var HTTPbackend = class extends Service {
     this.withResult = (response, result, message) => {
       if (result && !response.writableEnded && !response.destroyed) {
         if (typeof result === "string") {
+          if (path.extname(result) && fs.existsSync(path.join(process.cwd(), result))) {
+            result = fs.readFileSync(path.join(process.cwd(), result)).toString();
+          }
           if (result.includes("<") && result.includes(">") && result.indexOf("<") < result.indexOf(">")) {
             if (message?.served?.pages?._all || message?.served?.pages?.[message.route]) {
               result = this.injectPageCode(result, message.route, message.served);
@@ -7154,18 +7160,22 @@ var HTTPbackend = class extends Service {
               }
             });
           } else if (message.route) {
-            let route = this.nodes.get(message.route);
-            if (!route) {
-              route = this.routes[request.url];
+            let route;
+            if (served) {
+              let rt = `${served.port}/${message.route}`;
+              if (this.nodes.get(rt))
+                route = rt;
             }
+            if (!route && this.nodes.get(message.route))
+              route = message.route;
             if (route) {
               let res;
               if (message.method) {
-                res = this.handleMethod(message.route, message.method, void 0, message.origin);
+                res = this.handleMethod(route, message.method, void 0, message.origin);
               } else if (message.node) {
                 res = this.handleGraphNodeCall(message.node, void 0);
               } else
-                res = this.handleServiceMessage({ route: message.route, args: void 0, method: message.method, origin: message.origin });
+                res = this.handleServiceMessage({ route, args: void 0, method: message.method, origin: message.origin });
               if (res instanceof Promise)
                 res.then((r) => {
                   if (served?.keepState)
@@ -8031,18 +8041,28 @@ var WSSbackend = class extends Service {
     this.load(this.routes);
   }
   subscribeSocket(route, socket) {
-    if (typeof socket === "string" && this.sockets[socket]) {
-      socket = this.sockets[socket].socket;
-    }
-    return this.subscribe(route, (res) => {
-      if (res instanceof Promise) {
-        res.then((r) => {
-          socket.send(JSON.stringify({ args: r, callbackId: route }));
-        });
-      } else {
-        socket.send(JSON.stringify({ args: res, callbackId: route }));
+    if (typeof socket === "string") {
+      if (this.sockets[socket])
+        socket = this.sockets[socket].socket;
+      else {
+        for (const prop in this.servers) {
+          if (this.servers[prop].clients[socket])
+            socket = this.servers[prop].clients[socket];
+        }
       }
-    });
+    }
+    if (typeof socket === "object")
+      return this.subscribe(route, (res) => {
+        if (socket.readyState === socket.OPEN) {
+          if (res instanceof Promise) {
+            res.then((r) => {
+              socket.send(JSON.stringify({ args: r, callbackId: route }));
+            });
+          } else {
+            socket.send(JSON.stringify({ args: res, callbackId: route }));
+          }
+        }
+      });
   }
   subscribeToSocket(route, socketId, callback) {
     if (typeof socketId === "string" && this.sockets[socketId]) {
