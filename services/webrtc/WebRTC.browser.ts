@@ -109,7 +109,7 @@ export class WebRTCfrontend extends Service {
                    //OK
                 }
                 else if( typeof options.channels[channel] === 'object') {
-                    options.channels[channel] = this.addDataChannel(rtcTransmit,channel,(options.channels as any)[channel]);
+                    options.channels[channel] = this.addDataChannel(rtcTransmit,channel,(options.channels)[channel] as any);
                 } else options.channels[channel] = this.addDataChannel(rtcTransmit,channel);
             }
         } 
@@ -207,60 +207,62 @@ export class WebRTCfrontend extends Service {
 
         //console.log('opening webrtc channel',this.rtc)
         if(!options.ondatachannel) options.ondatachannel = (ev:RTCDataChannelEvent) => {
-            this.rtc[(options as any)._id].channels[ev.channel.label] = ev.channel;
-            if(!(options as any).ondata)
+            this.rtc[options._id].channels[ev.channel.label] = ev.channel;
+            if(!options.ondata)
                 ev.channel.onmessage = (mev) => {
-                    this.receive(mev.data, ev.channel, this.rtc[(options as any)._id]);
+                    this.receive(mev.data, ev.channel, this.rtc[options._id]);
                     this.setState({[options._id]:mev.data});
                 }
-            else ev.channel.onmessage = (mev) => { (options as any).ondata(mev.data, ev.channel, this.rtc[(options as any)._id]); }
+            else ev.channel.onmessage = (mev) => { options.ondata(mev.data, ev.channel, this.rtc[options._id]); }
         
         }
 
 
-        rtcTransmit.ontrack = options.ontrack as any;
-        rtcTransmit.onicecandidate = options.onicecandidate as any;
-        rtcTransmit.onicecandidateerror = options.onicecandidateerror as any; 
-        rtcTransmit.ondatachannel = options.ondatachannel as any; 
-        rtcTransmit.onnegotiationneeded = options.onnegotiationneeded as any; 
-        rtcTransmit.oniceconnectionstatechange = options.oniceconnectionstatechange as any; 
-        rtcTransmit.onconnectionstatechange = options.onconnectionstatechange as any; 
-        rtcReceive.ontrack = options.ontrack as any; 
-        rtcReceive.onicecandidate = options.onicecandidate as any; 
-        rtcReceive.onicecandidateerror = options.onicecandidateerror as any;  
-        rtcReceive.ondatachannel = options.ondatachannel as any; 
-        rtcReceive.onnegotiationneeded = options.onnegotiationneeded as any; 
-        rtcReceive.oniceconnectionstatechange = options.oniceconnectionstatechange as any; 
-        rtcReceive.onconnectionstatechange = options.onconnectionstatechange as any; 
+        rtcTransmit.ontrack = options.ontrack;
+        rtcTransmit.onicecandidate = options.onicecandidate;
+        rtcTransmit.onicecandidateerror = options.onicecandidateerror; 
+        rtcTransmit.ondatachannel = options.ondatachannel; 
+        rtcTransmit.onnegotiationneeded = options.onnegotiationneeded; 
+        rtcTransmit.oniceconnectionstatechange = options.oniceconnectionstatechange; 
+        rtcTransmit.onconnectionstatechange = options.onconnectionstatechange; 
+        rtcReceive.ontrack = options.ontrack; 
+        rtcReceive.onicecandidate = options.onicecandidate; 
+        rtcReceive.onicecandidateerror = options.onicecandidateerror;  
+        rtcReceive.ondatachannel = options.ondatachannel; 
+        rtcReceive.onnegotiationneeded = options.onnegotiationneeded; 
+        rtcReceive.oniceconnectionstatechange = options.oniceconnectionstatechange; 
+        rtcReceive.onconnectionstatechange = options.onconnectionstatechange; 
     
         if(options.hostdescription && !options.peerdescription)   {
             if(!options.onicecandidate) options.onicecandidate = (ev:RTCPeerConnectionIceEvent) => {
                 if(ev.candidate) {
                     let icecandidate = ev.candidate; 
     
-                    if(!this.rtc[(options as any)._id].peercandidates) this.rtc[(options as any)._id].peercandidates = {};
-                    this.rtc[(options as any)._id].peercandidates[`peercandidate${Math.floor(Math.random()*1000000000000000)}`] = icecandidate;
+                    if(!this.rtc[options._id].peercandidates) this.rtc[options._id].peercandidates = {};
+                    this.rtc[options._id].peercandidates[`peercandidate${Math.floor(Math.random()*1000000000000000)}`] = icecandidate;
     
                 }
             }
     
         // console.log(options.hostdescription)
             return await new Promise((res,rej) => {
-                (options as any).hostdescription.sdp = ((options as any).hostdescription.sdp as any).replaceAll('rn',`\r\n`); //fix the jsonified newlines
-                //console.log(options.hostdescription);
-                rtcReceive.setRemoteDescription((options as any).hostdescription).then((desc)=>{
-                    if((options as any).hostcandidates) {
-                        for(const prop in (options as any).hostcandidates) {
-                            rtcReceive.addIceCandidate((options as any).hostcandidates[prop]);
+                console.log('desc', options.hostdescription)
+                const description = new RTCSessionDescription(options.hostdescription);
+                console.log('desc2', description)
+
+                options.hostdescription = description
+                rtcReceive.setRemoteDescription(description).then(()=>{
+                    if(options.hostcandidates) {
+                        for(const prop in options.hostcandidates) {
+                            const candidate = new RTCIceCandidate(options.hostcandidates[prop])
+                            rtcReceive.addIceCandidate(candidate).catch(console.error);
                         }
                     }
-                    rtcReceive.createAnswer((options as any).answer).then((answer)=>{
-                        rtcReceive.setLocalDescription(answer).then(()=>{
-                            //console.log(answer, desc, answer)
-                            this.rtc[(options as any)._id].peerdescription =  {type:(rtcReceive as any).localDescription.type,sdp:(rtcReceive as any).localDescription.sdp};
-                            res(this.rtc[(options as any)._id]);
-
-                        });
+                    rtcReceive.createAnswer(options.answer)
+                    .then((answer)=> rtcReceive.setLocalDescription(answer))
+                    .then(()=>{
+                        this.rtc[options._id].peerdescription =  rtcReceive.localDescription;
+                        res(this.rtc[options._id]);
                     });
                 }); //we can now receive data
             });
@@ -269,14 +271,16 @@ export class WebRTCfrontend extends Service {
         if(options.peerdescription)  {
             
             return await new Promise((res,rej) => {
-                (options as any).peerdescription.sdp = ((options as any).peerdescription.sdp as any).replaceAll('rn',`\r\n`); //fix the jsonified newlines
-                rtcReceive.setRemoteDescription((options as any).peerdescription).then(()=>{
-                    if((options as any).peercandidates) {
-                        for(const prop in (options as any).peercandidates) {
-                            rtcReceive.addIceCandidate((options as any).peercandidates[prop]);
+                const description = new RTCSessionDescription(options.peerdescription);
+                options.peerdescription = description
+                rtcReceive.setRemoteDescription(description).then(()=>{
+                    if(options.peercandidates) {
+                        for(const prop in options.peercandidates) {
+                            const candidate = new RTCIceCandidate(options.peercandidates[prop])
+                            rtcReceive.addIceCandidate(candidate).catch(console.error);
                         }
                     }
-                    res(this.rtc[(options as any)._id]);
+                    res(this.rtc[options._id]);
                 }); //we can now receive data
             });
         }
@@ -285,19 +289,19 @@ export class WebRTCfrontend extends Service {
             if(ev.candidate) {
                 let icecandidate = ev.candidate; 
 
-                if(!this.rtc[(options as any)._id].hostcandidates) this.rtc[(options as any)._id].hostcandidates = {};
-                this.rtc[(options as any)._id].hostcandidates[`hostcandidate${Math.floor(Math.random()*1000000000000000)}`] = icecandidate;
+                if(!this.rtc[options._id].hostcandidates) this.rtc[options._id].hostcandidates = {};
+                this.rtc[options._id].hostcandidates[`hostcandidate${Math.floor(Math.random()*1000000000000000)}`] = icecandidate;
 
             }
         }
 
         return await new Promise((res,rej) => {
-            rtcTransmit.createOffer((options as any).offer).then((offer) => {
-                rtcTransmit.setLocalDescription(offer).then(()=>{
-                    this.rtc[(options as any)._id as string].hostdescription = {type:offer.type,sdp:offer.sdp};
-                    res(this.rtc[(options as any)._id as string]); //this is to be transmitted to the user 
+            rtcTransmit.createOffer(options.offer)
+            .then((offer) => rtcTransmit.setLocalDescription(offer))
+            .then(()=>{
+                    this.rtc[options._id].hostdescription =  rtcTransmit.localDescription;
+                    res(this.rtc[options._id]); //this is to be transmitted to the user 
                 });
-            });
         });
     
     }

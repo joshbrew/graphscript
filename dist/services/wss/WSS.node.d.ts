@@ -1,4 +1,6 @@
 /// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
 import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 import WebSocket, { WebSocketServer } from 'ws';
 import http from 'http';
