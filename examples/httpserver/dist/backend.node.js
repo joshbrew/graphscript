@@ -17974,12 +17974,13 @@ ${F.join("")}}`;
         this.setupServer = (options2 = { protocol: "http", host: "localhost", port: 8080, startpage: "index.html" }, requestListener, onStarted) => {
           if (options2.pages) {
             for (const key in options2.pages) {
-              if (typeof options2.pages[key] === "object") {
-                if (options2.pages[key].template) {
-                  this.addPage(key, options2.pages[key].template);
-                }
-              } else if (typeof options2.pages[key] === "string") {
+              if (typeof options2.pages[key] === "string") {
                 this.addPage(key, options2.pages[key]);
+              } else if (typeof options2.pages[key] === "object") {
+                if (options2.pages[key].template) {
+                  options2.pages[key].get = options2.pages[key].template;
+                }
+                this.load({ [key]: options2.pages[key] });
               }
             }
           }
@@ -18014,16 +18015,16 @@ ${F.join("")}}`;
                     url = options2.pages[url].redirect;
                     received.redirect = url;
                   }
-                  if (options2.pages[url].run) {
-                    if (typeof options2.pages[url].run === "string") {
-                      options2.pages[url].run = this.nodes.get(options2.pages[url].run);
+                  if (options2.pages[url].onrequest) {
+                    if (typeof options2.pages[url].onrequest === "string") {
+                      options2.pages[url].onrequest = this.nodes.get(options2.pages[url].onrequest);
                     }
-                    if (typeof options2.pages[url].run === "object") {
-                      if (options2.pages[url].run.run) {
-                        options2.pages[url].run.run(request, response);
+                    if (typeof options2.pages[url].onrequest === "object") {
+                      if (options2.pages[url].onrequest.run) {
+                        options2.pages[url].onrequest.run(options2.pages[url], request, response);
                       }
-                    } else if (typeof options2.pages[url].run === "function") {
-                      options2.pages[url].run(this, request, response);
+                    } else if (typeof options2.pages[url].onrequest === "function") {
+                      options2.pages[url].onrequest(this, options2.pages[url], request, response);
                     }
                   }
                 }
@@ -18071,16 +18072,16 @@ ${F.join("")}}`;
                     url = options2.pages[url].redirect;
                     received.redirect = url;
                   }
-                  if (options2.pages[url].run) {
-                    if (typeof options2.pages[url].run === "string") {
-                      options2.pages[url].run = this.nodes.get(options2.pages[url].run);
+                  if (options2.pages[url].onrequest) {
+                    if (typeof options2.pages[url].onrequest === "string") {
+                      options2.pages[url].onrequest = this.nodes.get(options2.pages[url].onrequest);
                     }
-                    if (typeof options2.pages[url].run === "object") {
-                      if (options2.pages[url].run.run) {
-                        options2.pages[url].run.run(request, response);
+                    if (typeof options2.pages[url].onrequest === "object") {
+                      if (options2.pages[url].onrequest.run) {
+                        options2.pages[url].onrequest.run(options2.pages[url], request, response);
                       }
-                    } else if (typeof options2.pages[url].run === "function") {
-                      options2.pages[url].run(request, response);
+                    } else if (typeof options2.pages[url].onrequest === "function") {
+                      options2.pages[url].onrequest(this, options2.pages[url], request, response);
                     }
                   }
                 }
@@ -18435,9 +18436,10 @@ ${F.join("")}}`;
             if (!template.includes("<html"))
               template = "<!DOCTYPE html><html>" + template + "</html>";
           }
-          if (typeof this.routes[path3] === "object")
+          if (typeof this.routes[path3] === "object") {
             this.routes[path3].get = template;
-          else
+            this.nodes.get(path3).get = template;
+          } else
             this.load({ [path3]: { get: template } });
         };
         this.addHTML = (path3, template) => {
@@ -18445,9 +18447,10 @@ ${F.join("")}}`;
             if (!template.includes("<") || !template.includes(">"))
               template = "<div>" + template + "</div>";
           }
-          if (typeof this.routes[path3] === "object")
+          if (typeof this.routes[path3] === "object") {
             this.routes[path3].get = template;
-          else
+            this.nodes.get(path3).get = template;
+          } else
             this.load({ [path3]: { get: template } });
         };
         this.buildPage = (pageStructure, baseTemplate) => {
@@ -21154,8 +21157,8 @@ router.run(
     pages: {
       "/": {
         template: `<div>Nice...</div>`,
-        run: (self2, req, res) => {
-          console.log("Hello World!");
+        onrequest: (self2, node, req, res) => {
+          node.get = `<h3>Hello World!! The Time: ${new Date(Date.now()).toISOString()}</h3>`;
         }
       },
       "home": {

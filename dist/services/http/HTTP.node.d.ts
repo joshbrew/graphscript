@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 import * as http from 'http';
 import * as https from 'https';
 import * as path from 'path';
@@ -13,14 +13,14 @@ export declare type ServerProps = {
     startpage?: string;
     errpage?: string;
     pages?: {
-        [key: 'all' | string]: string | {
+        [key: 'all' | string]: string | ({
             template?: string;
-            run?: GraphNode | string | ((self: HTTPbackend, request: http.IncomingMessage, response: http.ServerResponse) => void);
+            onrequest?: GraphNode | string | ((self: HTTPbackend, node: GraphNode, request: http.IncomingMessage, response: http.ServerResponse) => void);
             redirect?: string;
             inject?: {
                 [key: string]: {} | null;
             } | string[] | string | ((...args: any) => any);
-        };
+        } & RouteProp);
     };
     protocol?: 'http' | 'https';
     type?: 'httpserver' | string;

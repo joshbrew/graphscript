@@ -31,7 +31,9 @@ router.run(
         pages:{
             '/':{
                 template:`<div>Nice...</div>`,
-                run:(self,req,res)=>{console.log('Hello World!')}
+                onrequest:(self,node,req,res)=>{ 
+                    node.get = `<h3>Hello World!! The Time: ${new Date(Date.now()).toISOString()}</h3>`  
+                }
             },
             'home':{
                 redirect:'/'

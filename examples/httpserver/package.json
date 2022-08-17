@@ -21,9 +21,7 @@
   "author": "",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "bufferutil": "^4.0.6",
-    "graphscript-node": "~0.0.121",
-    "utf-8-validate": "^5.0.9"
+    "graphscript-node": "~0.0.127"
   },
   "nodemonConfig": {
     "env": {

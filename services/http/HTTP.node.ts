@@ -1,4 +1,4 @@
-import { RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { Route, RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 import * as http from 'http'
 import * as https from 'https'
 import * as fs from 'fs'
@@ -15,12 +15,12 @@ export type ServerProps = {
     startpage?: string,
     errpage?:string,
     pages?:{
-        [key:'all'|string]:string|{
+        [key:'all'|string]:string|{  //objects get loaded as nodes which you can modify props on
             template?:string,
-            run?:GraphNode|string|((self:HTTPbackend, request:http.IncomingMessage, response:http.ServerResponse)=>void), //run a function or node? the request and response are passed as arguments, you can write custom node logic within this function to customize inputs etc.
+            onrequest?:GraphNode|string|((self:HTTPbackend, node:GraphNode, request:http.IncomingMessage, response:http.ServerResponse)=>void), //run a function or node? the template, request and response are passed as arguments, you can write custom node logic within this function to customize inputs etc.
             redirect?:string, // can redirect the url to call a different route instead, e.g. '/':{redirect:'home'} sets the route passed to the receiver as 'home'
             inject?:{[key:string]:{}|null}|string[]|string| ((...args:any)=>any) //append html      
-        }
+        } & RouteProp
     },
     protocol?:'http'|'https',
     type?:'httpserver'|string,
@@ -109,12 +109,13 @@ export class HTTPbackend extends Service {
 
         if(options.pages) {
             for(const key in options.pages) {
-                if(typeof options.pages[key] === 'object') {
-                    if((options.pages[key] as any).template) {
-                        this.addPage(key,(options.pages[key] as any).template as string);
-                    }
-                } else if (typeof options.pages[key] === 'string') {
+                if (typeof options.pages[key] === 'string') {
                     this.addPage(key,options.pages[key] as string)
+                } else if (typeof options.pages[key] === 'object') {
+                    if((options.pages[key] as any).template) {
+                        (options.pages[key] as any).get = (options.pages[key] as any).template;
+                    }
+                    this.load({[key]:options.pages[key]});
                 }
             }
         }
@@ -173,16 +174,16 @@ export class HTTPbackend extends Service {
                         url = (options.pages[url] as any).redirect;
                         received.redirect = url;
                     }
-                    if((options.pages[url] as any).run) {
-                        if(typeof (options.pages[url] as any).run === 'string') {
-                            (options.pages[url] as any).run = this.nodes.get((options.pages[url] as any).run);
+                    if((options.pages[url] as any).onrequest) {
+                        if(typeof (options.pages[url] as any).onrequest === 'string') {
+                            (options.pages[url] as any).onrequest = this.nodes.get((options.pages[url] as any).onrequest);
                         }
-                        if(typeof (options.pages[url] as any).run === 'object') {
-                            if((options.pages[url] as any).run.run) {
-                                ((options.pages[url] as any).run as GraphNode).run(request,response);
+                        if(typeof (options.pages[url] as any).onrequest === 'object') {
+                            if((options.pages[url] as any).onrequest.run) {
+                                ((options.pages[url] as any).onrequest as GraphNode).run(options.pages[url], request, response);
                             } 
-                        } else if(typeof (options.pages[url] as any).run === 'function') {
-                            (options.pages[url] as any).run(this, request,response);
+                        } else if(typeof (options.pages[url] as any).onrequest === 'function') {
+                            (options.pages[url] as any).onrequest(this,options.pages[url], request, response);
                         }
                     }
                 }
@@ -272,16 +273,16 @@ export class HTTPbackend extends Service {
                         url = (options.pages[url] as any).redirect;
                         received.redirect = url;
                     }
-                    if((options.pages[url] as any).run) {
-                        if(typeof (options.pages[url] as any).run === 'string') {
-                            (options.pages[url] as any).run = this.nodes.get((options.pages[url] as any).run);
+                    if((options.pages[url] as any).onrequest) {
+                        if(typeof (options.pages[url] as any).onrequest === 'string') {
+                            (options.pages[url] as any).onrequest = this.nodes.get((options.pages[url] as any).onrequest);
                         }
-                        if(typeof (options.pages[url] as any).run === 'object') {
-                            if((options.pages[url] as any).run.run) {
-                                ((options.pages[url] as any).run as GraphNode).run(request,response);
+                        if(typeof (options.pages[url] as any).onrequest === 'object') {
+                            if((options.pages[url] as any).onrequest.run) {
+                                ((options.pages[url] as any).onrequest as GraphNode).run(options.pages[url], request, response);
                             } 
-                        } else if(typeof (options.pages[url] as any).run === 'function') {
-                            (options.pages[url] as any).run(request,response);
+                        } else if(typeof (options.pages[url] as any).onrequest === 'function') {
+                            (options.pages[url] as any).onrequest(this,options.pages[url], request, response);
                         }
                     }
                 }
@@ -807,11 +808,14 @@ export class HTTPbackend extends Service {
     //     })
     // }
 
-    addPage = (path:string, template:string) => { //add an html page template
+    addPage = (path:string, template:string) => { //add an html page template as a get
         if(typeof template === 'string') {
             if(!template.includes('<html')) template = '<!DOCTYPE html><html>'+template+'</html>'; //add a root
         }
-        if(typeof this.routes[path] === 'object') (this.routes[path] as any).get = template;
+        if(typeof this.routes[path] === 'object') {
+            (this.routes[path] as any).get = template;
+            this.nodes.get(path).get = template;
+        }
         else this.load({
                 [path]: {
                     get:template
@@ -823,7 +827,10 @@ export class HTTPbackend extends Service {
         if(typeof template === 'string') {
             if(!template.includes('<') || (!template.includes('>'))) template = '<div>'+template+'</div>';
         }
-        if(typeof this.routes[path] === 'object') (this.routes[path] as any).get = template;
+        if(typeof this.routes[path] === 'object') {
+            (this.routes[path] as any).get = template;
+            this.nodes.get(path).get = template;
+        }
         else this.load({
                 [path]: {
                     get:template
