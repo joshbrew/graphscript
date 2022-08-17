@@ -380,11 +380,21 @@ export class HTTPbackend extends Service {
     ) => {
         if(result && !response.writableEnded && !response.destroyed) {
         
+            let mimeType = 'text/plain';
+            
             if(typeof result === 'string') {
-                if(path.extname(result) && fs.existsSync(path.join(process.cwd(),result))) { //load file paths if returned
-                    result = fs.readFileSync(path.join(process.cwd(),result)).toString();
+                let extname = path.extname(result);
+
+                if(extname && fs.existsSync(path.join(process.cwd(),result))) { //load file paths if returned
+                    mimeType = this.mimeTypes[extname] || 'application/octet-stream';
+
+                    result = fs.readFileSync(path.join(process.cwd(),result));
+
+                    if(mimeType === 'text/html' && (message.served?.pages?._all || message.served?.pages?.[message.route])) {
+                        result = this.injectPageCode(result.toString(),message.route,message.served as any) as any;
+                    }
                 }
-                if(result.includes('<') && result.includes('>') && (result.indexOf('<') < result.indexOf('>'))) //probably an html template
+                if(typeof result === 'string' && result.includes('<') && result.includes('>') && (result.indexOf('<') < result.indexOf('>'))) //probably an html template
                     {
                         if(message?.served?.pages?._all || message?.served?.pages?.[message.route]) {
                             result = this.injectPageCode(result,message.route,message.served) as any;
@@ -393,13 +403,9 @@ export class HTTPbackend extends Service {
                         response.end(result,'utf-8');
                         return;
                     }
-            }
-            
-            let mimeType = 'text/plain';
-
-            if(typeof result === 'object') {
-                result = stringifyWithCircularRefs(result);
-                mimeType = 'application/json';
+            } else if(typeof result === 'object') {
+                result = JSON.stringify(result);
+                mimeType = 'application/json'
             }
 
             response.writeHead(200,{'Content-Type':mimeType});
