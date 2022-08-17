@@ -3,10 +3,7 @@ The HTTP Backend puts the power of graphs and services into a full featured HTTP
 The extended `RouteProp` in Service.ts was made for this:
 ```ts
 type RouteProp = { //these are just multiple methods you can call on a route/node tag kind of like http requests but really it applies to any function you want to add to a route object if you specify that method even beyond these http themed names :D
-    get?:{ //returned in HTTP GET requests, defasults to the operator. Returned strings get posted as HTTP, or returned file paths will be evaluated as strings
-        object:any,
-        transform:(...args:any)=>any
-    }|OperatorType|((...args:any)=>any|void),
+    get?:OperatorType|((...args:any)=>any|void),  //returned in HTTP GET requests, defasults to the operator. Returned strings get posted as HTTP, or returned file paths will be evaluated as strings
     post?:OperatorType|((...args)=>any|void), //post response 
     put?:(...args:any)=>any|void,
     head?:(...args:any)=>any|void,
@@ -21,24 +18,22 @@ type RouteProp = { //these are just multiple methods you can call on a route/nod
 
 ```
 
+These routes work like any other graph nodes, but we reserve the http methods (lower case!) to allow for multiplexing with http requests, or any other methods specified via service messages or http requests.
 
-
+Now let's spin up a quick server:
 
 ```ts
 
-let router = new UserRouter([
-    HTTPbackend
-]);
+import {HTTPBackend, ServerProps, ServerInfo} from 'graphscript-node'
 
-console.log(router);
+const http = new HTTPBackend();
 
-router.run(
-    'http.setupServer',
+http.setupServer(
     {
         protocol:'http',
         host:'localhost',
         port:8080,
-        pages:{ //these will all get 
+        pages:{ //other than _all, these routes are created unique to this port. Specify any route props, as well as some custom properties for useful behaviors like custom request handling e.g. dynamic http, redirects, customizing file loads (if a valid file path is returned)
             '/':{
                 template:`<div>Nice...</div>`,
                 onrequest:(self,node,req,res)=>{ 
@@ -74,3 +69,11 @@ router.run(
 });
 
 ```
+
+Easy!
+
+The page specification lets you quickly set up static and dynamic page behaviors, if you pass an object then the routes are interpreted as node definitions which you can make as complicated as you want to run graph trees.
+
+If a node's .get/.template returns a file path it will see if it can load the file on the server, just a nice way for dynamic file routing. 
+
+From here we can apply websocket, sse, and other services to build efficient web servers.
