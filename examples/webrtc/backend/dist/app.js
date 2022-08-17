@@ -4480,31 +4480,33 @@
               }
             };
           return await new Promise((res, rej) => {
-            options.hostdescription.sdp = options.hostdescription.sdp.replaceAll("rn", `\r
-`);
-            rtcReceive.setRemoteDescription(options.hostdescription).then((desc) => {
+            console.log("desc", options.hostdescription);
+            const description = new RTCSessionDescription(options.hostdescription);
+            console.log("desc2", description);
+            options.hostdescription = description;
+            rtcReceive.setRemoteDescription(description).then(() => {
               if (options.hostcandidates) {
                 for (const prop in options.hostcandidates) {
-                  rtcReceive.addIceCandidate(options.hostcandidates[prop]);
+                  const candidate = new RTCIceCandidate(options.hostcandidates[prop]);
+                  rtcReceive.addIceCandidate(candidate).catch(console.error);
                 }
               }
-              rtcReceive.createAnswer(options.answer).then((answer) => {
-                rtcReceive.setLocalDescription(answer).then(() => {
-                  this.rtc[options._id].peerdescription = { type: rtcReceive.localDescription.type, sdp: rtcReceive.localDescription.sdp };
-                  res(this.rtc[options._id]);
-                });
+              rtcReceive.createAnswer(options.answer).then((answer) => rtcReceive.setLocalDescription(answer)).then(() => {
+                this.rtc[options._id].peerdescription = JSON.stringify(rtcReceive.localDescription);
+                res(this.rtc[options._id]);
               });
             });
           });
         }
         if (options.peerdescription) {
           return await new Promise((res, rej) => {
-            options.peerdescription.sdp = options.peerdescription.sdp.replaceAll("rn", `\r
-`);
-            rtcReceive.setRemoteDescription(options.peerdescription).then(() => {
+            const description = new RTCSessionDescription(options.peerdescription);
+            options.peerdescription = description;
+            rtcReceive.setRemoteDescription(description).then(() => {
               if (options.peercandidates) {
                 for (const prop in options.peercandidates) {
-                  rtcReceive.addIceCandidate(options.peercandidates[prop]);
+                  const candidate = new RTCIceCandidate(options.peercandidates[prop]);
+                  rtcReceive.addIceCandidate(candidate).catch(console.error);
                 }
               }
               res(this.rtc[options._id]);
@@ -4521,11 +4523,9 @@
             }
           };
         return await new Promise((res, rej) => {
-          rtcTransmit.createOffer(options.offer).then((offer) => {
-            rtcTransmit.setLocalDescription(offer).then(() => {
-              this.rtc[options._id].hostdescription = { type: offer.type, sdp: offer.sdp };
-              res(this.rtc[options._id]);
-            });
+          rtcTransmit.createOffer(options.offer).then((offer) => rtcTransmit.setLocalDescription(offer)).then(() => {
+            this.rtc[options._id].hostdescription = JSON.stringify(rtcTransmit.localDescription);
+            res(this.rtc[options._id]);
           });
         });
       };

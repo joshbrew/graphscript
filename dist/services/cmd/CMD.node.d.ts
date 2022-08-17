@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { ChildProcess, Serializable } from 'child_process';
 import { Routes, Service, ServiceMessage, ServiceOptions } from '../Service';
 import { GraphNodeProperties } from '../../Graph';
