@@ -18127,6 +18127,9 @@ ${F.join("")}}`;
         this.withResult = (response, result, message) => {
           if (result && !response.writableEnded && !response.destroyed) {
             if (typeof result === "string") {
+              if (path.extname(result) && fs.existsSync(path.join(process.cwd(), result))) {
+                result = fs.readFileSync(path.join(process.cwd(), result)).toString();
+              }
               if (result.includes("<") && result.includes(">") && result.indexOf("<") < result.indexOf(">")) {
                 if (message?.served?.pages?._all || message?.served?.pages?.[message.route]) {
                   result = this.injectPageCode(result, message.route, message.served);
@@ -19047,18 +19050,28 @@ ${F.join("")}}`;
         this.load(this.routes);
       }
       subscribeSocket(route, socket) {
-        if (typeof socket === "string" && this.sockets[socket]) {
-          socket = this.sockets[socket].socket;
-        }
-        return this.subscribe(route, (res) => {
-          if (res instanceof Promise) {
-            res.then((r) => {
-              socket.send(JSON.stringify({ args: r, callbackId: route }));
-            });
-          } else {
-            socket.send(JSON.stringify({ args: res, callbackId: route }));
+        if (typeof socket === "string") {
+          if (this.sockets[socket])
+            socket = this.sockets[socket].socket;
+          else {
+            for (const prop in this.servers) {
+              if (this.servers[prop].clients[socket])
+                socket = this.servers[prop].clients[socket];
+            }
           }
-        });
+        }
+        if (typeof socket === "object")
+          return this.subscribe(route, (res) => {
+            if (socket.readyState === socket.OPEN) {
+              if (res instanceof Promise) {
+                res.then((r) => {
+                  socket.send(JSON.stringify({ args: r, callbackId: route }));
+                });
+              } else {
+                socket.send(JSON.stringify({ args: res, callbackId: route }));
+              }
+            }
+          });
       }
       subscribeToSocket(route, socketId, callback) {
         if (typeof socketId === "string" && this.sockets[socketId]) {
@@ -21165,6 +21178,9 @@ router.run(
         onrequest: (self2, node, req, res) => {
           node.get = `<h3>Hello World!! The Time: ${new Date(Date.now()).toISOString()}</h3>`;
         }
+      },
+      "config": {
+        template: "tinybuild.config.js"
       },
       "home": {
         redirect: "/"

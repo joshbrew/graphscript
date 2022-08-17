@@ -381,6 +381,9 @@ export class HTTPbackend extends Service {
         if(result && !response.writableEnded && !response.destroyed) {
         
             if(typeof result === 'string') {
+                if(path.extname(result) && fs.existsSync(path.join(process.cwd(),result))) { //load file paths if returned
+                    result = fs.readFileSync(path.join(process.cwd(),result)).toString();
+                }
                 if(result.includes('<') && result.includes('>') && (result.indexOf('<') < result.indexOf('>'))) //probably an html template
                     {
                         if(message?.served?.pages?._all || message?.served?.pages?.[message.route]) {

@@ -35,6 +35,9 @@ router.run(
                     node.get = `<h3>Hello World!! The Time: ${new Date(Date.now()).toISOString()}</h3>`  
                 }
             },
+            'config':{
+                template:'tinybuild.config.js'
+            },
             'home':{
                 redirect:'/'
             },
