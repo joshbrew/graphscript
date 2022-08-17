@@ -15,7 +15,7 @@ export declare type ServerProps = {
     pages?: {
         [key: 'all' | string]: string | {
             template?: string;
-            run?: GraphNode | string | ((self: HTTPbackend, origin: any, request: http.IncomingMessage, response: http.ServerResponse) => void);
+            run?: GraphNode | string | ((self: HTTPbackend, request: http.IncomingMessage, response: http.ServerResponse) => void);
             redirect?: string;
             inject?: {
                 [key: string]: {} | null;

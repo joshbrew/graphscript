@@ -31,7 +31,7 @@ router.run(
         pages:{
             '/':{
                 template:`<div>Nice...</div>`,
-                run:(req,res)=>{console.log('Hello World!')}
+                run:(self,req,res)=>{console.log('Hello World!')}
             },
             'home':{
                 redirect:'/'

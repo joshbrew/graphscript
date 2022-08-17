@@ -17,7 +17,7 @@ export type ServerProps = {
     pages?:{
         [key:'all'|string]:string|{
             template?:string,
-            run?:GraphNode|string|((self:HTTPbackend,origin:any, request:http.IncomingMessage, response:http.ServerResponse)=>void), //run a function or node? the request and response are passed as arguments, you can write custom node logic within this function to customize inputs etc.
+            run?:GraphNode|string|((self:HTTPbackend, request:http.IncomingMessage, response:http.ServerResponse)=>void), //run a function or node? the request and response are passed as arguments, you can write custom node logic within this function to customize inputs etc.
             redirect?:string, // can redirect the url to call a different route instead, e.g. '/':{redirect:'home'} sets the route passed to the receiver as 'home'
             inject?:{[key:string]:{}|null}|string[]|string| ((...args:any)=>any) //append html      
         }
@@ -182,7 +182,7 @@ export class HTTPbackend extends Service {
                                 ((options.pages[url] as any).run as GraphNode).run(request,response);
                             } 
                         } else if(typeof (options.pages[url] as any).run === 'function') {
-                            (options.pages[url] as any).run(request,response);
+                            (options.pages[url] as any).run(this, request,response);
                         }
                     }
                 }
