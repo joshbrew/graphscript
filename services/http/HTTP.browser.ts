@@ -176,7 +176,7 @@ export class HTTPfrontend extends Service {
 
     //clone and monitor page fetch responses //https://stackoverflow.com/questions/44440532/fetch-and-addeventlistener
     listen = (
-        path:string|undefined|0=0, //can listen for specific partial or whole url paths to trigger the response
+        path:string|undefined|'0'='0', //can listen for specific partial or whole url paths to trigger the response
         fetched = async (
             clone:Response, //cloned response data
             args:any[], //fetch args
@@ -200,7 +200,7 @@ export class HTTPfrontend extends Service {
                     // Do whatever you want with the resulting Promise
                     result.then((response:Response) => {
                         if(!response.ok) return;
-                        if(this.listening[0]) { //clone all
+                        if(this.listening['0']) { //clone all
                             const clone = response.clone();
                             fetched(clone, args, response);
                         } else {

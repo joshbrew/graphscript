@@ -68,7 +68,7 @@ export class CMDService extends Service {
     createProcess = (properties:CMDRoute) => {
         let rt = properties;
         if(!rt.command) rt.command = 'node' //default command
-        if(!rt.args) rt.args = [path.join(process.cwd(),'services','cmd','childprocess.js')] //default child process
+        if(!rt.args) rt.args = [path.join(process.cwd(),'node_modules','graphscript-node','services','cmd','childprocess.js')] //default child process
         if(rt.command) {
             let p:ChildProcess;
             if(!rt.options) {

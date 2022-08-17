@@ -7,10 +7,7 @@ import { Graph, GraphNode, GraphNodeProperties, OperatorType, stringifyWithCircu
  */
 
 export type RouteProp = { //these are just multiple methods you can call on a route/node tag kind of like http requests but really it applies to any function you want to add to a route object if you specify that method even beyond these http themed names :D
-    get?:{ 
-        object:any,
-        transform:(...args:any)=>any
-    }|((...args:any)=>any|void),
+    get?:((...args:any)=>any|void),
     post?:OperatorType|((...args)=>any|void), 
     put?:(...args:any)=>any|void,
     head?:(...args:any)=>any|void,

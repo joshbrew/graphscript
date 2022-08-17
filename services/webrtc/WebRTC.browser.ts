@@ -7,8 +7,8 @@ export type WebRTCProps = {
         [key:string]:(true|RTCDataChannelInit|RTCDataChannel)
     },
     config?:RTCConfiguration,
-    hostdescription?:RTCSessionDescriptionInit,
-    peerdescription?:RTCSessionDescriptionInit,
+    hostdescription?:RTCSessionDescriptionInit|string,
+    peerdescription?:RTCSessionDescriptionInit|string,
     offer?:RTCOfferOptions,
     hostcandidates?:{[key:string]:RTCIceCandidate},
     peercandidates?:{[key:string]:RTCIceCandidate},
@@ -247,7 +247,10 @@ export class WebRTCfrontend extends Service {
         // console.log(options.hostdescription)
             return await new Promise((res,rej) => {
                 console.log('desc', options.hostdescription)
-                const description = new RTCSessionDescription(options.hostdescription);
+                if(typeof options.hostdescription === 'string') {
+                    options.hostdescription = JSON.parse(decodeURIComponent(options.hostdescription));
+                }
+                const description = new RTCSessionDescription(options.hostdescription as RTCSessionDescriptionInit);
                 console.log('desc2', description)
 
                 options.hostdescription = description
@@ -261,7 +264,7 @@ export class WebRTCfrontend extends Service {
                     rtcReceive.createAnswer(options.answer)
                     .then((answer)=> rtcReceive.setLocalDescription(answer))
                     .then(()=>{
-                        this.rtc[options._id].peerdescription =  JSON.stringify(rtcReceive.localDescription);
+                        this.rtc[options._id].peerdescription = encodeURIComponent(JSON.stringify(rtcReceive.localDescription));
                         res(this.rtc[options._id]);
                     });
                 }); //we can now receive data
@@ -271,7 +274,10 @@ export class WebRTCfrontend extends Service {
         if(options.peerdescription)  {
             
             return await new Promise((res,rej) => {
-                const description = new RTCSessionDescription(options.peerdescription);
+                if(typeof options.peerdescription === 'string') {
+                    options.peerdescription = JSON.parse(decodeURIComponent(options.peerdescription));
+                }
+                const description = new RTCSessionDescription(options.peerdescription as RTCSessionDescriptionInit);
                 options.peerdescription = description
                 rtcReceive.setRemoteDescription(description).then(()=>{
                     if(options.peercandidates) {
@@ -299,7 +305,7 @@ export class WebRTCfrontend extends Service {
             rtcTransmit.createOffer(options.offer)
             .then((offer) => rtcTransmit.setLocalDescription(offer))
             .then(()=>{
-                    this.rtc[options._id].hostdescription =  JSON.stringify(rtcTransmit.localDescription);
+                    this.rtc[options._id].hostdescription = encodeURIComponent(JSON.stringify(rtcTransmit.localDescription));
                     res(this.rtc[options._id]); //this is to be transmitted to the user 
                 });
         });
