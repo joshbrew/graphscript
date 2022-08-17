@@ -3,6 +3,7 @@ import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 import * as http from 'http';
 import * as https from 'https';
 import * as path from 'path';
+import { GraphNode } from "../../Graph";
 export declare type ServerProps = {
     host: string;
     port: number;
@@ -14,6 +15,7 @@ export declare type ServerProps = {
     pages?: {
         [key: 'all' | string]: string | {
             template?: string;
+            run?: GraphNode | string | ((self: HTTPbackend, origin: any, request: http.IncomingMessage, response: http.ServerResponse) => void);
             redirect?: string;
             inject?: {
                 [key: string]: {} | null;

@@ -1,4 +1,4 @@
-import { UserRouter, HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "graphscript/dist/index.node";
+import { UserRouter, HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "graphscript-node";
 
 
 function exitHandler(options, exitCode) {
@@ -30,7 +30,8 @@ router.run(
         port:8080,
         pages:{
             '/':{
-                template:`<div>Nice...</div>`
+                template:`<div>Nice...</div>`,
+                run:(req,res)=>{console.log('Hello World!')}
             },
             'home':{
                 redirect:'/'

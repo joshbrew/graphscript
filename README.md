@@ -3,6 +3,9 @@
 
 `npm i graphscript`
 
+For node.js
+`npm i graphscript-node`
+
 <img src="gs_logo_min.png"  width=300px height=300px>
 For happy code!
 

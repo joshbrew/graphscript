@@ -3,7 +3,7 @@ import * as http from 'http'
 import * as https from 'https'
 import * as fs from 'fs'
 import * as path from 'path'
-import { stringifyWithCircularRefs } from "../../Graph";
+import { GraphNode, stringifyWithCircularRefs } from "../../Graph";
 
 
 export type ServerProps = {
@@ -17,6 +17,7 @@ export type ServerProps = {
     pages?:{
         [key:'all'|string]:string|{
             template?:string,
+            run?:GraphNode|string|((self:HTTPbackend,origin:any, request:http.IncomingMessage, response:http.ServerResponse)=>void), //run a function or node? the request and response are passed as arguments, you can write custom node logic within this function to customize inputs etc.
             redirect?:string, // can redirect the url to call a different route instead, e.g. '/':{redirect:'home'} sets the route passed to the receiver as 'home'
             inject?:{[key:string]:{}|null}|string[]|string| ((...args:any)=>any) //append html      
         }
@@ -172,6 +173,18 @@ export class HTTPbackend extends Service {
                         url = (options.pages[url] as any).redirect;
                         received.redirect = url;
                     }
+                    if((options.pages[url] as any).run) {
+                        if(typeof (options.pages[url] as any).run === 'string') {
+                            (options.pages[url] as any).run = this.nodes.get((options.pages[url] as any).run);
+                        }
+                        if(typeof (options.pages[url] as any).run === 'object') {
+                            if((options.pages[url] as any).run.run) {
+                                ((options.pages[url] as any).run as GraphNode).run(request,response);
+                            } 
+                        } else if(typeof (options.pages[url] as any).run === 'function') {
+                            (options.pages[url] as any).run(request,response);
+                        }
+                    }
                 }
             }
             received.route = url;
@@ -244,7 +257,7 @@ export class HTTPbackend extends Service {
 
         //default requestListener
         if(!requestListener) requestListener = (request:http.IncomingMessage,response:http.ServerResponse) => { 
-
+            
             let received:any = {
                 args:{request, response}, 
                 method:request.method, 
@@ -259,11 +272,24 @@ export class HTTPbackend extends Service {
                         url = (options.pages[url] as any).redirect;
                         received.redirect = url;
                     }
+                    if((options.pages[url] as any).run) {
+                        if(typeof (options.pages[url] as any).run === 'string') {
+                            (options.pages[url] as any).run = this.nodes.get((options.pages[url] as any).run);
+                        }
+                        if(typeof (options.pages[url] as any).run === 'object') {
+                            if((options.pages[url] as any).run.run) {
+                                ((options.pages[url] as any).run as GraphNode).run(request,response);
+                            } 
+                        } else if(typeof (options.pages[url] as any).run === 'function') {
+                            (options.pages[url] as any).run(request,response);
+                        }
+                    }
                 }
             }
             received.route = url;
             this.receive(received); 
         } //default requestListener
+
 
         //var http = require('http');
         const server = https.createServer(

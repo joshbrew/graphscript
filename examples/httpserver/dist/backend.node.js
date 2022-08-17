@@ -288,9 +288,9 @@ var require_utf_8_validate = __commonJS({
   }
 });
 
-// node_modules/graphscript/dist/index.node.js
+// node_modules/graphscript-node/dist/index.node.js
 var require_index_node = __commonJS({
-  "node_modules/graphscript/dist/index.node.js"(exports, module2) {
+  "node_modules/graphscript-node/dist/index.node.js"(exports, module2) {
     var __create2 = Object.create;
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18014,6 +18014,18 @@ ${F.join("")}}`;
                     url = options2.pages[url].redirect;
                     received.redirect = url;
                   }
+                  if (options2.pages[url].run) {
+                    if (typeof options2.pages[url].run === "string") {
+                      options2.pages[url].run = this.nodes.get(options2.pages[url].run);
+                    }
+                    if (typeof options2.pages[url].run === "object") {
+                      if (options2.pages[url].run.run) {
+                        options2.pages[url].run.run(request, response);
+                      }
+                    } else if (typeof options2.pages[url].run === "function") {
+                      options2.pages[url].run(request, response);
+                    }
+                  }
                 }
               }
               received.route = url;
@@ -18058,6 +18070,18 @@ ${F.join("")}}`;
                   if (options2.pages[url].redirect) {
                     url = options2.pages[url].redirect;
                     received.redirect = url;
+                  }
+                  if (options2.pages[url].run) {
+                    if (typeof options2.pages[url].run === "string") {
+                      options2.pages[url].run = this.nodes.get(options2.pages[url].run);
+                    }
+                    if (typeof options2.pages[url].run === "object") {
+                      if (options2.pages[url].run.run) {
+                        options2.pages[url].run.run(request, response);
+                      }
+                    } else if (typeof options2.pages[url].run === "function") {
+                      options2.pages[url].run(request, response);
+                    }
                   }
                 }
               }
@@ -21106,7 +21130,7 @@ ${F.join("")}}`;
 });
 
 // backend.ts
-var import_dist = __toESM(require_index_node());
+var import_graphscript_node = __toESM(require_index_node());
 function exitHandler(options, exitCode) {
   if (exitCode || exitCode === 0)
     console.log("SERVER EXITED WITH CODE: ", exitCode);
@@ -21115,10 +21139,10 @@ function exitHandler(options, exitCode) {
 }
 process.on("exit", exitHandler.bind(null, { cleanup: true }));
 process.on("SIGINT", exitHandler.bind(null, { exit: true }));
-var router = new import_dist.UserRouter([
-  import_dist.HTTPbackend,
-  import_dist.WSSbackend,
-  import_dist.SSEbackend
+var router = new import_graphscript_node.UserRouter([
+  import_graphscript_node.HTTPbackend,
+  import_graphscript_node.WSSbackend,
+  import_graphscript_node.SSEbackend
 ]);
 console.log(router);
 router.run(
@@ -21129,7 +21153,10 @@ router.run(
     port: 8080,
     pages: {
       "/": {
-        template: `<div>Nice...</div>`
+        template: `<div>Nice...</div>`,
+        run: (req, res) => {
+          console.log("Hello World!");
+        }
       },
       "home": {
         redirect: "/"
