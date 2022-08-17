@@ -4481,6 +4481,9 @@
             };
           return await new Promise((res, rej) => {
             console.log("desc", options.hostdescription);
+            if (typeof options.hostdescription === "string") {
+              options.hostdescription = JSON.parse(decodeURIComponent(options.hostdescription));
+            }
             const description = new RTCSessionDescription(options.hostdescription);
             console.log("desc2", description);
             options.hostdescription = description;
@@ -4492,7 +4495,7 @@
                 }
               }
               rtcReceive.createAnswer(options.answer).then((answer) => rtcReceive.setLocalDescription(answer)).then(() => {
-                this.rtc[options._id].peerdescription = JSON.stringify(rtcReceive.localDescription);
+                this.rtc[options._id].peerdescription = encodeURIComponent(JSON.stringify(rtcReceive.localDescription));
                 res(this.rtc[options._id]);
               });
             });
@@ -4500,6 +4503,9 @@
         }
         if (options.peerdescription) {
           return await new Promise((res, rej) => {
+            if (typeof options.peerdescription === "string") {
+              options.peerdescription = JSON.parse(decodeURIComponent(options.peerdescription));
+            }
             const description = new RTCSessionDescription(options.peerdescription);
             options.peerdescription = description;
             rtcReceive.setRemoteDescription(description).then(() => {
@@ -4524,7 +4530,7 @@
           };
         return await new Promise((res, rej) => {
           rtcTransmit.createOffer(options.offer).then((offer) => rtcTransmit.setLocalDescription(offer)).then(() => {
-            this.rtc[options._id].hostdescription = JSON.stringify(rtcTransmit.localDescription);
+            this.rtc[options._id].hostdescription = encodeURIComponent(JSON.stringify(rtcTransmit.localDescription));
             res(this.rtc[options._id]);
           });
         });
