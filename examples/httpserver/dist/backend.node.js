@@ -3731,7 +3731,6 @@ var require_index_node = __commonJS({
             info.set(name2, { state: (0, eval)(`(${value2})`), spread });
         } catch (e) {
           info.set(name2, {});
-          console.warn(`Argument ${name2} could be parsed for`, fn.toString());
         }
       });
       return info;
@@ -5210,9 +5209,10 @@ var require_index_node = __commonJS({
         this.keepState = true;
         this.firstLoad = true;
         this.init = (options2) => {
-          options2 = Object.assign({}, options2);
-          if ("loadDefaultRoutes" in options2)
-            this.loadDefaultRoutes = options2.loadDefaultRoutes;
+          if (options2)
+            options2 = Object.assign({}, options2);
+          else
+            options2 = {};
           if (options2.customRoutes)
             Object.assign(options2.customRoutes, this.customRoutes);
           else
@@ -5225,7 +5225,7 @@ var require_index_node = __commonJS({
             options2.routes.forEach((r) => {
               this.load(r, options2.includeClassName, options2.routeFormat, options2.customRoutes, options2.customChildren);
             });
-          } else if (options2.routes || Object.keys(this.routes).length > 0 && this.firstLoad)
+          } else if (options2.routes || (Object.keys(this.routes).length > 0 || this.loadDefaultRoutes) && this.firstLoad)
             this.load(options2.routes, options2.includeClassName, options2.routeFormat, options2.customRoutes, options2.customChildren);
         };
         this.load = (routes, includeClassName = true, routeFormat = ".", customRoutes, customChildren) => {
@@ -5673,7 +5673,11 @@ var require_index_node = __commonJS({
           this.name = options.name;
         else
           options.name = this.tag;
-        if (options.routes || Object.keys(this.routes).length > 0)
+        if ("loadDefaultRoutes" in options) {
+          this.loadDefaultRoutes = options.loadDefaultRoutes;
+          this.routes = Object.assign(this.defaultRoutes, this.routes);
+        }
+        if (options || Object.keys(this.routes).length > 0)
           this.init(options);
       }
       handleServiceMessage(message) {
@@ -18202,7 +18206,7 @@ ${F.join("")}}`;
               if (requestURL == "./" && served?.startpage) {
                 requestURL = served.startpage;
               }
-              if (request.url !== "/" && fs.existsSync(path.join(process.cwd(), requestURL))) {
+              if ((request.url !== "/" || served?.startpage) && fs.existsSync(path.join(process.cwd(), requestURL))) {
                 if (response.writableEnded || response.destroyed)
                   reject(requestURL);
                 fs.readFile(path.join(process.cwd(), requestURL), (error, content) => {
@@ -18246,7 +18250,7 @@ ${F.join("")}}`;
                   }
                 });
               } else if (message.route) {
-                let route = this.routes[message.route];
+                let route = this.nodes.get(message.route);
                 if (!route) {
                   route = this.routes[request.url];
                 }
