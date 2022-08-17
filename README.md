@@ -20,39 +20,6 @@ This is the new Brains@Play core, which seeks to be a true graph based programmi
 
 ![exg](./docs/graphex.png)
 
-The core stack of classes are as follows:
-### * [Graph](./Graph.ts) 
-GraphNode and Graph
-### * [Service](./services/Service.ts)
-### * [Router](./routers/Router.ts)
-### * [UserRouter](./routers/users/User.router.ts)
-
-
-This is kind of a bloated example right now but this is actively being used to test bugs and think even bigger for the framework:
-![ex](example.png)
-
-
 Joshua Brewster and Garrett Flynn
 
 AGPL v3.0 License (copyleft)
-
-### Library Usage
-#### Node.js
-```bash
-npm install graphscript
-``` 
-
-##### ES Modules
-```javascript
-import * as graphscript from 'brainsatplay'
-```
-
-##### CommonJS
-```javascript
-const graphscript = require('graphscript')
-``` 
-
-#### Browser
-```html
-<script src="https://cdn.jsdelivr.net/npm/graphscript@latest"></script>
-```
