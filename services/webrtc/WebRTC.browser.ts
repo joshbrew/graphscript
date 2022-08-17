@@ -261,7 +261,7 @@ export class WebRTCfrontend extends Service {
                     rtcReceive.createAnswer(options.answer)
                     .then((answer)=> rtcReceive.setLocalDescription(answer))
                     .then(()=>{
-                        this.rtc[options._id].peerdescription =  rtcReceive.localDescription;
+                        this.rtc[options._id].peerdescription =  JSON.stringify(rtcReceive.localDescription);
                         res(this.rtc[options._id]);
                     });
                 }); //we can now receive data
@@ -299,7 +299,7 @@ export class WebRTCfrontend extends Service {
             rtcTransmit.createOffer(options.offer)
             .then((offer) => rtcTransmit.setLocalDescription(offer))
             .then(()=>{
-                    this.rtc[options._id].hostdescription =  rtcTransmit.localDescription;
+                    this.rtc[options._id].hostdescription =  JSON.stringify(rtcTransmit.localDescription);
                     res(this.rtc[options._id]); //this is to be transmitted to the user 
                 });
         });

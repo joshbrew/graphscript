@@ -4492,8 +4492,7 @@
                 }
               }
               rtcReceive.createAnswer(options.answer).then((answer) => rtcReceive.setLocalDescription(answer)).then(() => {
-                console.log("rtcReceive.localDescription", rtcReceive.localDescription, JSON.stringify(rtcReceive.localDescription));
-                this.rtc[options._id].peerdescription = rtcReceive.localDescription;
+                this.rtc[options._id].peerdescription = JSON.stringify(rtcReceive.localDescription);
                 res(this.rtc[options._id]);
               });
             });
@@ -4525,8 +4524,7 @@
           };
         return await new Promise((res, rej) => {
           rtcTransmit.createOffer(options.offer).then((offer) => rtcTransmit.setLocalDescription(offer)).then(() => {
-            console.log("rtcTransmit.localDescription", rtcTransmit.localDescription, JSON.stringify(rtcTransmit.localDescription));
-            this.rtc[options._id].hostdescription = rtcTransmit.localDescription;
+            this.rtc[options._id].hostdescription = JSON.stringify(rtcTransmit.localDescription);
             res(this.rtc[options._id]);
           });
         });

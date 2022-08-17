@@ -7033,11 +7033,17 @@ var HTTPbackend = class extends Service {
     };
     this.withResult = (response, result, message) => {
       if (result && !response.writableEnded && !response.destroyed) {
+        let mimeType = "text/plain";
         if (typeof result === "string") {
-          if (path.extname(result) && fs.existsSync(path.join(process.cwd(), result))) {
-            result = fs.readFileSync(path.join(process.cwd(), result)).toString();
+          let extname2 = path.extname(result);
+          if (extname2 && fs.existsSync(path.join(process.cwd(), result))) {
+            mimeType = this.mimeTypes[extname2] || "application/octet-stream";
+            result = fs.readFileSync(path.join(process.cwd(), result));
+            if (mimeType === "text/html" && (message.served?.pages?._all || message.served?.pages?.[message.route])) {
+              result = this.injectPageCode(result.toString(), message.route, message.served);
+            }
           }
-          if (result.includes("<") && result.includes(">") && result.indexOf("<") < result.indexOf(">")) {
+          if (typeof result === "string" && result.includes("<") && result.includes(">") && result.indexOf("<") < result.indexOf(">")) {
             if (message?.served?.pages?._all || message?.served?.pages?.[message.route]) {
               result = this.injectPageCode(result, message.route, message.served);
             }
@@ -7045,10 +7051,8 @@ var HTTPbackend = class extends Service {
             response.end(result, "utf-8");
             return;
           }
-        }
-        let mimeType = "text/plain";
-        if (typeof result === "object") {
-          result = stringifyWithCircularRefs(result);
+        } else if (typeof result === "object") {
+          result = JSON.stringify(result);
           mimeType = "application/json";
         }
         response.writeHead(200, { "Content-Type": mimeType });
