@@ -271,18 +271,20 @@ export class WSSfrontend extends Service {
         if(typeof socket === 'string' && this.sockets[socket]) {
             socket = this.sockets[socket].socket;
         }
-        return this.subscribe(route, (res:any) => {
-            //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
-            if((socket as WebSocket).readyState === (socket as WebSocket).OPEN) {
-                if(res instanceof Promise) {
-                    res.then((r) => {
-                        (socket as WebSocket).send(JSON.stringify({args:r, callbackId:route}));
-                    });
-                } else {
-                    (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
+
+        if(typeof socket === 'object')
+            return this.subscribe(route, (res:any) => {
+                //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
+                if((socket as WebSocket).readyState === (socket as WebSocket).OPEN) {
+                    if(res instanceof Promise) {
+                        res.then((r) => {
+                            (socket as WebSocket).send(JSON.stringify({args:r, callbackId:route}));
+                        });
+                    } else {
+                        (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
+                    }
                 }
-            }
-        });
+            });
     } 
 
     subscribeToSocket(route:string, socketId:string, callback?:((res:any)=>void)|string) {
