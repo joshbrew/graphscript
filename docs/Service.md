@@ -125,3 +125,4 @@ For all services with remote message passing support (http, wss, sse, webrtc, et
 
 - GPU - This service implements an instance of gpu.js via our `gpujsutils` library, which is a stable gpu.js distribution and macro set. Kernels are created persistently on the gpu via webgl2 and i/o can be resized dynamically, so this runs as fast as Webgl2 allows. Hoping gpujs sees some upgrades for WebGPU as it lets you write shader code in plain loosely typed javascript!
 
+- Unsafe - These let you dynamically transfer functions and classes or read/write global values across service instances, e.g. to other threads or between frontend/backend. Use with caution as it is reliant on eval()
