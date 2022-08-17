@@ -53,6 +53,7 @@ export declare class Router {
         name: string;
         module: any;
     } | any, linkServices: boolean, includeClassName: boolean, routeFormat: string, customRoutes: ServiceOptions["customRoutes"], customChildren: ServiceOptions["customChildren"]) => Service;
+    syncServices: () => void;
     pipe: (source: string | GraphNode, destination: string, transmitter?: Protocol | string, origin?: string, method?: string, callback?: (res: any) => any | void) => number | false;
     pipeOnce: (source: string | GraphNode, destination: string, transmitter?: Protocol | string, origin?: string, method?: string, callback?: (res: any) => any | void) => false | void;
     sendAll: (message: ServiceMessage | any, connections: {

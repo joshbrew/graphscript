@@ -170,10 +170,6 @@ export class HTTPbackend extends Service {
             if(!url) url = '/';
             if(options.pages) {
                 if(typeof options.pages[url] === 'object') {
-                    if((options.pages[url] as any).redirect) {
-                        url = (options.pages[url] as any).redirect;
-                        received.redirect = url;
-                    }
                     if((options.pages[url] as any).onrequest) {
                         if(typeof (options.pages[url] as any).onrequest === 'string') {
                             (options.pages[url] as any).onrequest = this.nodes.get((options.pages[url] as any).onrequest);
@@ -185,6 +181,10 @@ export class HTTPbackend extends Service {
                         } else if(typeof (options.pages[url] as any).onrequest === 'function') {
                             (options.pages[url] as any).onrequest(this,options.pages[url], request, response);
                         }
+                    }
+                    if((options.pages[url] as any).redirect) {
+                        url = (options.pages[url] as any).redirect;
+                        received.redirect = url;
                     }
                 }
             }

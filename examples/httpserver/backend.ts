@@ -1,4 +1,4 @@
-import { UserRouter, HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "../../index.node"//"graphscript-node";
+import { UserRouter, HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "graphscript-node";//"../../index.node"//"graphscript-node";
 
 
 function exitHandler(options, exitCode) {
