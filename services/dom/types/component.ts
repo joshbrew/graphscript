@@ -8,7 +8,7 @@ export type ComponentProps = GraphNodeProperties & {
     template?:string|((self:DOMElement, props:any)=>string|HTMLElement)|HTMLElement, //string or function that passes the modifiable props on the element (the graph node properties)
     interpreter?:'wc'|'md'|'jsx' //standard web components, md file text, react jsx?
     parentNode?:string|HTMLElement,
-    styles?:string, //will use the shadow DOM automatically in this case
+    styles?:string,  //Insert a stylesheet in front of the template
     onrender?:(self:DOMElement,info?:ComponentInfo)=>void, //use self.querySelector to select nested elements without worrying about the rest of the page.
     onresize?:(self:DOMElement,info?:ComponentInfo)=>void,
     ondelete?:(self:DOMElement,info?:ComponentInfo)=>void,
