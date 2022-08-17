@@ -110,12 +110,12 @@ export class HTTPbackend extends Service {
         if(options.pages) {
             for(const key in options.pages) {
                 if (typeof options.pages[key] === 'string') {
-                    this.addPage(key,options.pages[key] as string)
+                    this.addPage(`${options.port}/${key}`,options.pages[key] as string)
                 } else if (typeof options.pages[key] === 'object') {
                     if((options.pages[key] as any).template) {
                         (options.pages[key] as any).get = (options.pages[key] as any).template;
                     }
-                    if(key !== 'all') this.load({[key]:options.pages[key]});
+                    if(key !== '_all') this.load({[`${options.port}/${key}`]:options.pages[key]});
                 }
             }
         }
@@ -562,20 +562,22 @@ export class HTTPbackend extends Service {
                         }
                     });
                 } else if (message.route) {
-                    let route = this.nodes.get(message.route);
-                    if(!route) {
-                        route = this.routes[request.url as string];
+                    let route;
+                    if(served) {
+                        let rt = `${served.port}/${message.route}`;
+                        if(this.nodes.get(rt)) route = rt
                     }
+                    if(!route && this.nodes.get(message.route)) route = message.route;
                     
                     if(route) {
                         let res:any;
                         if(message.method) {
-                            res = this.handleMethod(message.route, message.method, undefined, message.origin); //these methods are being passed request/response in the data here, post methods will parse the command objects instead while this can be used to get html templates or play with req/res custom callbakcs
+                            res = this.handleMethod(route, message.method, undefined, message.origin); //these methods are being passed request/response in the data here, post methods will parse the command objects instead while this can be used to get html templates or play with req/res custom callbakcs
                         }
                         else if (message.node) {
                             res = this.handleGraphNodeCall(message.node, undefined);
                         }
-                        else res = this.handleServiceMessage({route:message.route,args:undefined,method:message.method,origin:message.origin});
+                        else res = this.handleServiceMessage({route,args:undefined,method:message.method,origin:message.origin});
     
                         if(res instanceof Promise) res.then((r) => {
                             if(served?.keepState) this.setState({[served.address]:res});

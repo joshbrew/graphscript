@@ -1,4 +1,4 @@
-import { UserRouter, HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "graphscript-node";
+import { UserRouter, HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "../../index.node"//"graphscript-node";
 
 
 function exitHandler(options, exitCode) {
@@ -59,6 +59,8 @@ router.run(
     } as ServerProps
 ).then((served:ServerInfo) => { //this function returns a promise so we can use .then, only explicitly async or promise-returning functions can be awaited or .then'd for good performance!
     
+    console.log(router.services.http.nodes.keys())
+
     const socketserver = router.run(
         'wss.setupWSS',
         {
