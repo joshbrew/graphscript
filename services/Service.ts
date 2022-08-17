@@ -75,12 +75,17 @@ export class Service extends Graph {
         if(options.name) this.name = options.name;
         else options.name = this.tag;
         
-        if(options.routes || Object.keys(this.routes).length > 0) this.init(options);
+        if('loadDefaultRoutes' in options) {
+            this.loadDefaultRoutes = options.loadDefaultRoutes;
+            this.routes = Object.assign(this.defaultRoutes,this.routes);
+        }
+        
+        if(options || Object.keys(this.routes).length > 0) this.init(options);
     }
 
-    init = (options:ServiceOptions) => {
-        options = Object.assign({},options);
-        if('loadDefaultRoutes' in options) this.loadDefaultRoutes = options.loadDefaultRoutes;
+    init = (options?:ServiceOptions) => {
+        if(options) options = Object.assign({},options);
+        else options = {};
 
         if(options.customRoutes) Object.assign(options.customRoutes,this.customRoutes);
         else options.customRoutes = this.customRoutes;
@@ -99,7 +104,7 @@ export class Service extends Graph {
                 );
             });
         }
-        else if(options.routes || (Object.keys(this.routes).length > 0 && this.firstLoad)) 
+        else if(options.routes || ((Object.keys(this.routes).length > 0 || this.loadDefaultRoutes) && this.firstLoad)) 
             this.load(
                 options.routes, 
                 options.includeClassName, 

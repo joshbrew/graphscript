@@ -26,7 +26,7 @@ export class HTTPfrontend extends Service {
     listening = {}
 
     constructor(options?:ServiceOptions) {
-        super(options)
+        super(options);
         this.load(this.routes);
     }
 
@@ -55,7 +55,7 @@ export class HTTPfrontend extends Service {
         return xhr;
     }
 
-    get = (
+    GET = (
         url:string|URL='http://localhost:8080/ping', 
         type:XMLHttpRequestResponseType='', 
         mimeType?:string|undefined
@@ -80,7 +80,7 @@ export class HTTPfrontend extends Service {
         }).catch(console.error);
     }
 
-    post = (
+    POST = (
         message:any|ServiceMessage, 
         url:string|URL='http://localhost:8080/echo', 
         type:XMLHttpRequestResponseType='', 
@@ -120,7 +120,7 @@ export class HTTPfrontend extends Service {
         if(typeof obj === 'object') {
             message = JSON.stringify(obj);
         }
-        if(obj?.method?.toLowerCase() == 'get' || message?.toLowerCase() === 'get') return this.get(url);
+        if(obj?.method?.toLowerCase() == 'get' || message?.toLowerCase() === 'get') return this.GET(url);
         return this.post(message,url);
      
     }
@@ -230,8 +230,8 @@ export class HTTPfrontend extends Service {
 
     routes:Routes={
         request:this.request,
-        GET:this.get,
-        POST:this.post,
+        GET:this.GET,
+        POST:this.POST,
         transponder:this.transponder,
         listen:this.listen,
         stopListening:this.stopListening

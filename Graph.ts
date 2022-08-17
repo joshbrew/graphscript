@@ -39,7 +39,7 @@ export function getFnParamInfo(fn):Map<string, any>{
             })
         } catch (e) {
             info.set(name,  {})
-            console.warn(`Argument ${name} could be parsed for`, fn.toString());
+            //console.warn(`Argument ${name} could be parsed for`, fn.toString());
         }
     })
 

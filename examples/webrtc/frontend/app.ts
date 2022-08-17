@@ -17,7 +17,7 @@ const router = new UserRouter({
     SSEfrontend,
     WebRTCfrontend,
     Math
-});
+},{loadDefaultRoutes:true});
 
 // router.run( 
 //     'http/listen'
@@ -42,8 +42,11 @@ const sseinfo = router.run('sse.openSSE',{
     }
 } as EventSourceProps) as EventSourceInfo;
 
+
+console.log("Router:",router);
+
 router.run(
-    'http.get',
+    'http.GET',
     'http://localhost:8080/ping'
 ).then((res:string) => console.log("http GET", res));
 
@@ -51,7 +54,7 @@ let button = document.createElement('button');
 button.innerHTML = 'ping!';
 button.onclick = () => {
     router.run(
-        'http.get',
+        'http.GET',
         'http://localhost:8080/ping'
     ).then((res:string) => console.log("http GET", res));
 }
@@ -59,7 +62,6 @@ button.onclick = () => {
 document.body.appendChild(button);
 
 
-console.log("Router:",router);
 
 //console.log(router,socketinfo,sseinfo);
 

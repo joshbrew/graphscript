@@ -15,20 +15,23 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target, mod));
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 
-// ../../node_modules/better-sse/build/index.js
+// ../../../node_modules/better-sse/build/index.js
 var require_build = __commonJS({
-  "../../node_modules/better-sse/build/index.js"(exports, module2) {
+  "../../../node_modules/better-sse/build/index.js"(exports, module2) {
     !function(e, t) {
-      if (typeof exports == "object" && typeof module2 == "object")
+      if ("object" == typeof exports && "object" == typeof module2)
         module2.exports = t();
-      else if (typeof define == "function" && define.amd)
+      else if ("function" == typeof define && define.amd)
         define([], t);
       else {
         var s = t();
         for (var i in s)
-          (typeof exports == "object" ? exports : e)[i] = s[i];
+          ("object" == typeof exports ? exports : e)[i] = s[i];
       }
     }(global, function() {
       return (() => {
@@ -40,7 +43,7 @@ var require_build = __commonJS({
           for (var i2 in s2)
             e.o(s2, i2) && !e.o(t2, i2) && Object.defineProperty(t2, i2, { enumerable: true, get: s2[i2] });
         }, o: (e2, t2) => Object.prototype.hasOwnProperty.call(e2, t2), r: (e2) => {
-          typeof Symbol != "undefined" && Symbol.toStringTag && Object.defineProperty(e2, Symbol.toStringTag, { value: "Module" }), Object.defineProperty(e2, "__esModule", { value: true });
+          "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(e2, Symbol.toStringTag, { value: "Module" }), Object.defineProperty(e2, "__esModule", { value: true });
         } }, t = {};
         e.r(t), e.d(t, { Channel: () => d, Session: () => a, createChannel: () => c, createSession: () => l });
         const s = require("crypto"), i = require("events");
@@ -82,12 +85,12 @@ var require_build = __commonJS({
               var e3, t3, s2;
               const i3 = `http://${this.req.headers.host}${this.req.url}`, n3 = new URL(i3).searchParams;
               if (this.trustClientEventId) {
-                const i4 = (s2 = (t3 = (e3 = this.req.headers["last-event-id"]) !== null && e3 !== void 0 ? e3 : n3.get("lastEventId")) !== null && t3 !== void 0 ? t3 : n3.get("evs_last_event_id")) !== null && s2 !== void 0 ? s2 : "";
+                const i4 = null !== (s2 = null !== (t3 = null !== (e3 = this.req.headers["last-event-id"]) && void 0 !== e3 ? e3 : n3.get("lastEventId")) && void 0 !== t3 ? t3 : n3.get("evs_last_event_id")) && void 0 !== s2 ? s2 : "";
                 this.lastId = i4;
               }
               Object.entries(this.headers).forEach(([e4, t4]) => {
-                this.res.setHeader(e4, t4 != null ? t4 : "");
-              }), this.res.statusCode = this.statusCode, this.res.setHeader("Content-Type", "text/event-stream"), this.res.setHeader("Cache-Control", "no-cache, no-transform"), this.res.setHeader("Connection", "keep-alive"), this.res.flushHeaders(), n3.has("padding") && this.comment(" ".repeat(2049)).dispatch(), n3.has("evs_preamble") && this.comment(" ".repeat(2056)).dispatch(), this.initialRetry !== null && this.retry(this.initialRetry).dispatch(), this.keepAliveInterval !== null && (this.keepAliveTimer = setInterval(this.keepAlive, this.keepAliveInterval)), this.isConnected = true, this.emit("connected");
+                this.res.setHeader(e4, null != t4 ? t4 : "");
+              }), this.res.statusCode = this.statusCode, this.res.setHeader("Content-Type", "text/event-stream"), this.res.setHeader("Cache-Control", "no-cache, no-transform"), this.res.setHeader("Connection", "keep-alive"), this.res.flushHeaders(), n3.has("padding") && this.comment(" ".repeat(2049)).dispatch(), n3.has("evs_preamble") && this.comment(" ".repeat(2056)).dispatch(), null !== this.initialRetry && this.retry(this.initialRetry).dispatch(), null !== this.keepAliveInterval && (this.keepAliveTimer = setInterval(this.keepAlive, this.keepAliveInterval)), this.isConnected = true, this.emit("connected");
             }, this.onDisconnected = () => {
               this.keepAliveTimer && clearInterval(this.keepAliveTimer), this.isConnected = false, this.emit("disconnected");
             }, this.writeField = (e3, t3) => {
@@ -105,7 +108,7 @@ var require_build = __commonJS({
             }, this.retry = (e3) => {
               const t3 = e3.toString();
               return this.writeField("retry", t3), this;
-            }, this.comment = (e3) => (this.writeField("", e3 != null ? e3 : ""), this), this.push = (e3, t3, i3) => (t3 || (t3 = "message"), i3 || (i3 = (0, s.randomBytes)(4).toString("hex")), this.event(t3).id(i3).data(e3).dispatch(), this.emit("push", e3, t3, i3), this), this.stream = async (e3, t3 = {}) => {
+            }, this.comment = (e3) => (this.writeField("", null != e3 ? e3 : ""), this), this.push = (e3, t3, i3) => (t3 || (t3 = "message"), i3 || (i3 = (0, s.randomBytes)(4).toString("hex")), this.event(t3).id(i3).data(e3).dispatch(), this.emit("push", e3, t3, i3), this), this.stream = async (e3, t3 = {}) => {
               const { eventName: s2 = "stream" } = t3;
               return new Promise((t4, i3) => {
                 e3.on("data", (e4) => {
@@ -117,7 +120,7 @@ var require_build = __commonJS({
               const { eventName: s2 = "iteration" } = t3;
               for await (const t4 of e3)
                 this.push(t4, s2);
-            }, this.req = e2, this.res = t2, this.serialize = (n2 = i2.serializer) !== null && n2 !== void 0 ? n2 : o, this.sanitize = (r2 = i2.sanitizer) !== null && r2 !== void 0 ? r2 : h, this.trustClientEventId = (a2 = i2.trustClientEventId) === null || a2 === void 0 || a2, this.initialRetry = i2.retry === null ? null : (l2 = i2.retry) !== null && l2 !== void 0 ? l2 : 2e3, this.keepAliveInterval = i2.keepAlive === null ? null : (d2 = i2.keepAlive) !== null && d2 !== void 0 ? d2 : 1e4, this.statusCode = (c2 = i2.statusCode) !== null && c2 !== void 0 ? c2 : 200, this.headers = (u = i2.headers) !== null && u !== void 0 ? u : {}, this.req.on("close", this.onDisconnected), setImmediate(this.onConnected);
+            }, this.req = e2, this.res = t2, this.serialize = null !== (n2 = i2.serializer) && void 0 !== n2 ? n2 : o, this.sanitize = null !== (r2 = i2.sanitizer) && void 0 !== r2 ? r2 : h, this.trustClientEventId = null === (a2 = i2.trustClientEventId) || void 0 === a2 || a2, this.initialRetry = null === i2.retry ? null : null !== (l2 = i2.retry) && void 0 !== l2 ? l2 : 2e3, this.keepAliveInterval = null === i2.keepAlive ? null : null !== (d2 = i2.keepAlive) && void 0 !== d2 ? d2 : 1e4, this.statusCode = null !== (c2 = i2.statusCode) && void 0 !== c2 ? c2 : 200, this.headers = null !== (u = i2.headers) && void 0 !== u ? u : {}, this.req.on("close", this.onDisconnected), setImmediate(this.onConnected);
           }
           event(e2) {
             return this.writeField("event", e2), this;
@@ -163,9 +166,9 @@ var require_build = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/stream.js
+// ../../../node_modules/ws/lib/stream.js
 var require_stream = __commonJS({
-  "../../node_modules/ws/lib/stream.js"(exports, module2) {
+  "../../../node_modules/ws/lib/stream.js"(exports, module2) {
     "use strict";
     var { Duplex } = require("stream");
     function emitClose(stream) {
@@ -268,9 +271,9 @@ var require_stream = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/constants.js
+// ../../../node_modules/ws/lib/constants.js
 var require_constants = __commonJS({
-  "../../node_modules/ws/lib/constants.js"(exports, module2) {
+  "../../../node_modules/ws/lib/constants.js"(exports, module2) {
     "use strict";
     module2.exports = {
       BINARY_TYPES: ["nodebuffer", "arraybuffer", "fragments"],
@@ -286,9 +289,9 @@ var require_constants = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/buffer-util.js
+// ../../../node_modules/ws/lib/buffer-util.js
 var require_buffer_util = __commonJS({
-  "../../node_modules/ws/lib/buffer-util.js"(exports, module2) {
+  "../../../node_modules/ws/lib/buffer-util.js"(exports, module2) {
     "use strict";
     var { EMPTY_BUFFER } = require_constants();
     function concat(list, totalLength) {
@@ -369,9 +372,9 @@ var require_buffer_util = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/limiter.js
+// ../../../node_modules/ws/lib/limiter.js
 var require_limiter = __commonJS({
-  "../../node_modules/ws/lib/limiter.js"(exports, module2) {
+  "../../../node_modules/ws/lib/limiter.js"(exports, module2) {
     "use strict";
     var kDone = Symbol("kDone");
     var kRun = Symbol("kRun");
@@ -403,9 +406,9 @@ var require_limiter = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/permessage-deflate.js
+// ../../../node_modules/ws/lib/permessage-deflate.js
 var require_permessage_deflate = __commonJS({
-  "../../node_modules/ws/lib/permessage-deflate.js"(exports, module2) {
+  "../../../node_modules/ws/lib/permessage-deflate.js"(exports, module2) {
     "use strict";
     var zlib = require("zlib");
     var bufferUtil = require_buffer_util();
@@ -468,7 +471,11 @@ var require_permessage_deflate = __commonJS({
           this._deflate.close();
           this._deflate = null;
           if (callback) {
-            callback(new Error("The deflate stream was closed while data was being processed"));
+            callback(
+              new Error(
+                "The deflate stream was closed while data was being processed"
+              )
+            );
           }
         }
       }
@@ -509,7 +516,9 @@ var require_permessage_deflate = __commonJS({
             params.client_max_window_bits = this._options.clientMaxWindowBits;
           }
         } else if (this._options.clientMaxWindowBits === false || typeof this._options.clientMaxWindowBits === "number" && params.client_max_window_bits > this._options.clientMaxWindowBits) {
-          throw new Error('Unexpected or invalid parameter "client_max_window_bits"');
+          throw new Error(
+            'Unexpected or invalid parameter "client_max_window_bits"'
+          );
         }
         return params;
       }
@@ -525,21 +534,29 @@ var require_permessage_deflate = __commonJS({
               if (value !== true) {
                 const num = +value;
                 if (!Number.isInteger(num) || num < 8 || num > 15) {
-                  throw new TypeError(`Invalid value for parameter "${key}": ${value}`);
+                  throw new TypeError(
+                    `Invalid value for parameter "${key}": ${value}`
+                  );
                 }
                 value = num;
               } else if (!this._isServer) {
-                throw new TypeError(`Invalid value for parameter "${key}": ${value}`);
+                throw new TypeError(
+                  `Invalid value for parameter "${key}": ${value}`
+                );
               }
             } else if (key === "server_max_window_bits") {
               const num = +value;
               if (!Number.isInteger(num) || num < 8 || num > 15) {
-                throw new TypeError(`Invalid value for parameter "${key}": ${value}`);
+                throw new TypeError(
+                  `Invalid value for parameter "${key}": ${value}`
+                );
               }
               value = num;
             } else if (key === "client_no_context_takeover" || key === "server_no_context_takeover") {
               if (value !== true) {
-                throw new TypeError(`Invalid value for parameter "${key}": ${value}`);
+                throw new TypeError(
+                  `Invalid value for parameter "${key}": ${value}`
+                );
               }
             } else {
               throw new Error(`Unknown parameter "${key}"`);
@@ -592,7 +609,10 @@ var require_permessage_deflate = __commonJS({
             callback(err);
             return;
           }
-          const data2 = bufferUtil.concat(this._inflate[kBuffers], this._inflate[kTotalLength]);
+          const data2 = bufferUtil.concat(
+            this._inflate[kBuffers],
+            this._inflate[kTotalLength]
+          );
           if (this._inflate._readableState.endEmitted) {
             this._inflate.close();
             this._inflate = null;
@@ -625,7 +645,10 @@ var require_permessage_deflate = __commonJS({
           if (!this._deflate) {
             return;
           }
-          let data2 = bufferUtil.concat(this._deflate[kBuffers], this._deflate[kTotalLength]);
+          let data2 = bufferUtil.concat(
+            this._deflate[kBuffers],
+            this._deflate[kTotalLength]
+          );
           if (fin)
             data2 = data2.slice(0, data2.length - 4);
           this._deflate[kCallback] = null;
@@ -663,9 +686,9 @@ var require_permessage_deflate = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/validation.js
+// ../../../node_modules/ws/lib/validation.js
 var require_validation = __commonJS({
-  "../../node_modules/ws/lib/validation.js"(exports, module2) {
+  "../../../node_modules/ws/lib/validation.js"(exports, module2) {
     "use strict";
     var tokenChars = [
       0,
@@ -846,9 +869,9 @@ var require_validation = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/receiver.js
+// ../../../node_modules/ws/lib/receiver.js
 var require_receiver = __commonJS({
-  "../../node_modules/ws/lib/receiver.js"(exports, module2) {
+  "../../../node_modules/ws/lib/receiver.js"(exports, module2) {
     "use strict";
     var { Writable } = require("stream");
     var PerMessageDeflate = require_permessage_deflate();
@@ -955,12 +978,24 @@ var require_receiver = __commonJS({
         const buf = this.consume(2);
         if ((buf[0] & 48) !== 0) {
           this._loop = false;
-          return error(RangeError, "RSV2 and RSV3 must be clear", true, 1002, "WS_ERR_UNEXPECTED_RSV_2_3");
+          return error(
+            RangeError,
+            "RSV2 and RSV3 must be clear",
+            true,
+            1002,
+            "WS_ERR_UNEXPECTED_RSV_2_3"
+          );
         }
         const compressed = (buf[0] & 64) === 64;
         if (compressed && !this._extensions[PerMessageDeflate.extensionName]) {
           this._loop = false;
-          return error(RangeError, "RSV1 must be clear", true, 1002, "WS_ERR_UNEXPECTED_RSV_1");
+          return error(
+            RangeError,
+            "RSV1 must be clear",
+            true,
+            1002,
+            "WS_ERR_UNEXPECTED_RSV_1"
+          );
         }
         this._fin = (buf[0] & 128) === 128;
         this._opcode = buf[0] & 15;
@@ -968,35 +1003,77 @@ var require_receiver = __commonJS({
         if (this._opcode === 0) {
           if (compressed) {
             this._loop = false;
-            return error(RangeError, "RSV1 must be clear", true, 1002, "WS_ERR_UNEXPECTED_RSV_1");
+            return error(
+              RangeError,
+              "RSV1 must be clear",
+              true,
+              1002,
+              "WS_ERR_UNEXPECTED_RSV_1"
+            );
           }
           if (!this._fragmented) {
             this._loop = false;
-            return error(RangeError, "invalid opcode 0", true, 1002, "WS_ERR_INVALID_OPCODE");
+            return error(
+              RangeError,
+              "invalid opcode 0",
+              true,
+              1002,
+              "WS_ERR_INVALID_OPCODE"
+            );
           }
           this._opcode = this._fragmented;
         } else if (this._opcode === 1 || this._opcode === 2) {
           if (this._fragmented) {
             this._loop = false;
-            return error(RangeError, `invalid opcode ${this._opcode}`, true, 1002, "WS_ERR_INVALID_OPCODE");
+            return error(
+              RangeError,
+              `invalid opcode ${this._opcode}`,
+              true,
+              1002,
+              "WS_ERR_INVALID_OPCODE"
+            );
           }
           this._compressed = compressed;
         } else if (this._opcode > 7 && this._opcode < 11) {
           if (!this._fin) {
             this._loop = false;
-            return error(RangeError, "FIN must be set", true, 1002, "WS_ERR_EXPECTED_FIN");
+            return error(
+              RangeError,
+              "FIN must be set",
+              true,
+              1002,
+              "WS_ERR_EXPECTED_FIN"
+            );
           }
           if (compressed) {
             this._loop = false;
-            return error(RangeError, "RSV1 must be clear", true, 1002, "WS_ERR_UNEXPECTED_RSV_1");
+            return error(
+              RangeError,
+              "RSV1 must be clear",
+              true,
+              1002,
+              "WS_ERR_UNEXPECTED_RSV_1"
+            );
           }
           if (this._payloadLength > 125) {
             this._loop = false;
-            return error(RangeError, `invalid payload length ${this._payloadLength}`, true, 1002, "WS_ERR_INVALID_CONTROL_PAYLOAD_LENGTH");
+            return error(
+              RangeError,
+              `invalid payload length ${this._payloadLength}`,
+              true,
+              1002,
+              "WS_ERR_INVALID_CONTROL_PAYLOAD_LENGTH"
+            );
           }
         } else {
           this._loop = false;
-          return error(RangeError, `invalid opcode ${this._opcode}`, true, 1002, "WS_ERR_INVALID_OPCODE");
+          return error(
+            RangeError,
+            `invalid opcode ${this._opcode}`,
+            true,
+            1002,
+            "WS_ERR_INVALID_OPCODE"
+          );
         }
         if (!this._fin && !this._fragmented)
           this._fragmented = this._opcode;
@@ -1004,11 +1081,23 @@ var require_receiver = __commonJS({
         if (this._isServer) {
           if (!this._masked) {
             this._loop = false;
-            return error(RangeError, "MASK must be set", true, 1002, "WS_ERR_EXPECTED_MASK");
+            return error(
+              RangeError,
+              "MASK must be set",
+              true,
+              1002,
+              "WS_ERR_EXPECTED_MASK"
+            );
           }
         } else if (this._masked) {
           this._loop = false;
-          return error(RangeError, "MASK must be clear", true, 1002, "WS_ERR_UNEXPECTED_MASK");
+          return error(
+            RangeError,
+            "MASK must be clear",
+            true,
+            1002,
+            "WS_ERR_UNEXPECTED_MASK"
+          );
         }
         if (this._payloadLength === 126)
           this._state = GET_PAYLOAD_LENGTH_16;
@@ -1034,7 +1123,13 @@ var require_receiver = __commonJS({
         const num = buf.readUInt32BE(0);
         if (num > Math.pow(2, 53 - 32) - 1) {
           this._loop = false;
-          return error(RangeError, "Unsupported WebSocket frame: payload length > 2^53 - 1", false, 1009, "WS_ERR_UNSUPPORTED_DATA_PAYLOAD_LENGTH");
+          return error(
+            RangeError,
+            "Unsupported WebSocket frame: payload length > 2^53 - 1",
+            false,
+            1009,
+            "WS_ERR_UNSUPPORTED_DATA_PAYLOAD_LENGTH"
+          );
         }
         this._payloadLength = num * Math.pow(2, 32) + buf.readUInt32BE(4);
         return this.haveLength();
@@ -1044,7 +1139,13 @@ var require_receiver = __commonJS({
           this._totalPayloadLength += this._payloadLength;
           if (this._totalPayloadLength > this._maxPayload && this._maxPayload > 0) {
             this._loop = false;
-            return error(RangeError, "Max payload size exceeded", false, 1009, "WS_ERR_UNSUPPORTED_MESSAGE_LENGTH");
+            return error(
+              RangeError,
+              "Max payload size exceeded",
+              false,
+              1009,
+              "WS_ERR_UNSUPPORTED_MESSAGE_LENGTH"
+            );
           }
         }
         if (this._masked)
@@ -1093,7 +1194,15 @@ var require_receiver = __commonJS({
           if (buf.length) {
             this._messageLength += buf.length;
             if (this._messageLength > this._maxPayload && this._maxPayload > 0) {
-              return cb(error(RangeError, "Max payload size exceeded", false, 1009, "WS_ERR_UNSUPPORTED_MESSAGE_LENGTH"));
+              return cb(
+                error(
+                  RangeError,
+                  "Max payload size exceeded",
+                  false,
+                  1009,
+                  "WS_ERR_UNSUPPORTED_MESSAGE_LENGTH"
+                )
+              );
             }
             this._fragments.push(buf);
           }
@@ -1125,7 +1234,13 @@ var require_receiver = __commonJS({
             const buf = concat(fragments, messageLength);
             if (!this._skipUTF8Validation && !isValidUTF8(buf)) {
               this._loop = false;
-              return error(Error, "invalid UTF-8 sequence", true, 1007, "WS_ERR_INVALID_UTF8");
+              return error(
+                Error,
+                "invalid UTF-8 sequence",
+                true,
+                1007,
+                "WS_ERR_INVALID_UTF8"
+              );
             }
             this.emit("message", buf, false);
           }
@@ -1139,15 +1254,33 @@ var require_receiver = __commonJS({
             this.emit("conclude", 1005, EMPTY_BUFFER);
             this.end();
           } else if (data.length === 1) {
-            return error(RangeError, "invalid payload length 1", true, 1002, "WS_ERR_INVALID_CONTROL_PAYLOAD_LENGTH");
+            return error(
+              RangeError,
+              "invalid payload length 1",
+              true,
+              1002,
+              "WS_ERR_INVALID_CONTROL_PAYLOAD_LENGTH"
+            );
           } else {
             const code = data.readUInt16BE(0);
             if (!isValidStatusCode(code)) {
-              return error(RangeError, `invalid status code ${code}`, true, 1002, "WS_ERR_INVALID_CLOSE_CODE");
+              return error(
+                RangeError,
+                `invalid status code ${code}`,
+                true,
+                1002,
+                "WS_ERR_INVALID_CLOSE_CODE"
+              );
             }
             const buf = data.slice(2);
             if (!this._skipUTF8Validation && !isValidUTF8(buf)) {
-              return error(Error, "invalid UTF-8 sequence", true, 1007, "WS_ERR_INVALID_UTF8");
+              return error(
+                Error,
+                "invalid UTF-8 sequence",
+                true,
+                1007,
+                "WS_ERR_INVALID_UTF8"
+              );
             }
             this.emit("conclude", code, buf);
             this.end();
@@ -1162,7 +1295,9 @@ var require_receiver = __commonJS({
     };
     module2.exports = Receiver2;
     function error(ErrorCtor, message, prefix, statusCode, errorCode) {
-      const err = new ErrorCtor(prefix ? `Invalid WebSocket frame: ${message}` : message);
+      const err = new ErrorCtor(
+        prefix ? `Invalid WebSocket frame: ${message}` : message
+      );
       Error.captureStackTrace(err, error);
       err.code = errorCode;
       err[kStatusCode] = statusCode;
@@ -1171,9 +1306,9 @@ var require_receiver = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/sender.js
+// ../../../node_modules/ws/lib/sender.js
 var require_sender = __commonJS({
-  "../../node_modules/ws/lib/sender.js"(exports, module2) {
+  "../../../node_modules/ws/lib/sender.js"(exports, module2) {
     "use strict";
     var net = require("net");
     var tls = require("tls");
@@ -1401,16 +1536,19 @@ var require_sender = __commonJS({
             this.dispatch(data, this._compress, opts, cb);
           }
         } else {
-          this.sendFrame(Sender2.frame(data, {
-            [kByteLength]: byteLength,
-            fin: options.fin,
-            generateMask: this._generateMask,
-            mask: options.mask,
-            maskBuffer: this._maskBuffer,
-            opcode,
-            readOnly,
-            rsv1: false
-          }), cb);
+          this.sendFrame(
+            Sender2.frame(data, {
+              [kByteLength]: byteLength,
+              fin: options.fin,
+              generateMask: this._generateMask,
+              mask: options.mask,
+              maskBuffer: this._maskBuffer,
+              opcode,
+              readOnly,
+              rsv1: false
+            }),
+            cb
+          );
         }
       }
       dispatch(data, compress, options, cb) {
@@ -1423,7 +1561,9 @@ var require_sender = __commonJS({
         this._deflating = true;
         perMessageDeflate.compress(data, options.fin, (_, buf) => {
           if (this._socket.destroyed) {
-            const err = new Error("The socket was closed while data was being compressed");
+            const err = new Error(
+              "The socket was closed while data was being compressed"
+            );
             if (typeof cb === "function")
               cb(err);
             for (let i = 0; i < this._queue.length; i++) {
@@ -1467,9 +1607,9 @@ var require_sender = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/event-target.js
+// ../../../node_modules/ws/lib/event-target.js
 var require_event_target = __commonJS({
-  "../../node_modules/ws/lib/event-target.js"(exports, module2) {
+  "../../../node_modules/ws/lib/event-target.js"(exports, module2) {
     "use strict";
     var { kForOnEventAttribute, kListener } = require_constants();
     var kCode = Symbol("kCode");
@@ -1605,9 +1745,9 @@ var require_event_target = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/extension.js
+// ../../../node_modules/ws/lib/extension.js
 var require_extension = __commonJS({
-  "../../node_modules/ws/lib/extension.js"(exports, module2) {
+  "../../../node_modules/ws/lib/extension.js"(exports, module2) {
     "use strict";
     var { tokenChars } = require_validation();
     function push(dest, name, elem) {
@@ -1760,12 +1900,14 @@ var require_extension = __commonJS({
         if (!Array.isArray(configurations))
           configurations = [configurations];
         return configurations.map((params) => {
-          return [extension].concat(Object.keys(params).map((k) => {
-            let values = params[k];
-            if (!Array.isArray(values))
-              values = [values];
-            return values.map((v) => v === true ? k : `${k}=${v}`).join("; ");
-          })).join("; ");
+          return [extension].concat(
+            Object.keys(params).map((k) => {
+              let values = params[k];
+              if (!Array.isArray(values))
+                values = [values];
+              return values.map((v) => v === true ? k : `${k}=${v}`).join("; ");
+            })
+          ).join("; ");
         }).join(", ");
       }).join(", ");
     }
@@ -1773,9 +1915,9 @@ var require_extension = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/websocket.js
+// ../../../node_modules/ws/lib/websocket.js
 var require_websocket = __commonJS({
-  "../../node_modules/ws/lib/websocket.js"(exports, module2) {
+  "../../../node_modules/ws/lib/websocket.js"(exports, module2) {
     "use strict";
     var EventEmitter = require("events");
     var https2 = require("https");
@@ -1950,7 +2092,10 @@ var require_websocket = __commonJS({
             this._socket.end();
           }
         });
-        this._closeTimer = setTimeout(this._socket.destroy.bind(this._socket), closeTimeout);
+        this._closeTimer = setTimeout(
+          this._socket.destroy.bind(this._socket),
+          closeTimeout
+        );
       }
       pause() {
         if (this.readyState === WebSocket3.CONNECTING || this.readyState === WebSocket3.CLOSED) {
@@ -2139,7 +2284,9 @@ var require_websocket = __commonJS({
         port: void 0
       };
       if (!protocolVersions.includes(opts.protocolVersion)) {
-        throw new RangeError(`Unsupported protocol version: ${opts.protocolVersion} (supported versions: ${protocolVersions.join(", ")})`);
+        throw new RangeError(
+          `Unsupported protocol version: ${opts.protocolVersion} (supported versions: ${protocolVersions.join(", ")})`
+        );
       }
       let parsedUrl;
       if (address instanceof URL2) {
@@ -2191,7 +2338,11 @@ var require_websocket = __commonJS({
       opts.path = parsedUrl.pathname + parsedUrl.search;
       opts.timeout = opts.handshakeTimeout;
       if (opts.perMessageDeflate) {
-        perMessageDeflate = new PerMessageDeflate(opts.perMessageDeflate !== true ? opts.perMessageDeflate : {}, false, opts.maxPayload);
+        perMessageDeflate = new PerMessageDeflate(
+          opts.perMessageDeflate !== true ? opts.perMessageDeflate : {},
+          false,
+          opts.maxPayload
+        );
         opts.headers["Sec-WebSocket-Extensions"] = format({
           [PerMessageDeflate.extensionName]: perMessageDeflate.offer()
         });
@@ -2199,7 +2350,9 @@ var require_websocket = __commonJS({
       if (protocols.length) {
         for (const protocol of protocols) {
           if (typeof protocol !== "string" || !subprotocolRegex.test(protocol) || protocolSet.has(protocol)) {
-            throw new SyntaxError("An invalid or duplicated subprotocol was specified");
+            throw new SyntaxError(
+              "An invalid or duplicated subprotocol was specified"
+            );
           }
           protocolSet.add(protocol);
         }
@@ -2282,7 +2435,11 @@ var require_websocket = __commonJS({
           }
           initAsClient(websocket, addr, protocols, options);
         } else if (!websocket.emit("unexpected-response", req, res)) {
-          abortHandshake(websocket, req, `Unexpected server response: ${res.statusCode}`);
+          abortHandshake(
+            websocket,
+            req,
+            `Unexpected server response: ${res.statusCode}`
+          );
         }
       });
       req.on("upgrade", (res, socket, head) => {
@@ -2396,7 +2553,9 @@ var require_websocket = __commonJS({
           websocket._bufferedAmount += length;
       }
       if (cb) {
-        const err = new Error(`WebSocket is not open: readyState ${websocket.readyState} (${readyStates[websocket.readyState]})`);
+        const err = new Error(
+          `WebSocket is not open: readyState ${websocket.readyState} (${readyStates[websocket.readyState]})`
+        );
         cb(err);
       }
     }
@@ -2488,9 +2647,9 @@ var require_websocket = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/subprotocol.js
+// ../../../node_modules/ws/lib/subprotocol.js
 var require_subprotocol = __commonJS({
-  "../../node_modules/ws/lib/subprotocol.js"(exports, module2) {
+  "../../../node_modules/ws/lib/subprotocol.js"(exports, module2) {
     "use strict";
     var { tokenChars } = require_validation();
     function parse(header) {
@@ -2536,9 +2695,9 @@ var require_subprotocol = __commonJS({
   }
 });
 
-// ../../node_modules/ws/lib/websocket-server.js
+// ../../../node_modules/ws/lib/websocket-server.js
 var require_websocket_server = __commonJS({
-  "../../node_modules/ws/lib/websocket-server.js"(exports, module2) {
+  "../../../node_modules/ws/lib/websocket-server.js"(exports, module2) {
     "use strict";
     var EventEmitter = require("events");
     var http2 = require("http");
@@ -2575,7 +2734,9 @@ var require_websocket_server = __commonJS({
           ...options
         };
         if (options.port == null && !options.server && !options.noServer || options.port != null && (options.server || options.noServer) || options.server && options.noServer) {
-          throw new TypeError('One and only one of the "port", "server", or "noServer" options must be specified');
+          throw new TypeError(
+            'One and only one of the "port", "server", or "noServer" options must be specified'
+          );
         }
         if (options.port != null) {
           this._server = http2.createServer((req, res) => {
@@ -2586,7 +2747,12 @@ var require_websocket_server = __commonJS({
             });
             res.end(body);
           });
-          this._server.listen(options.port, options.host, options.backlog, callback);
+          this._server.listen(
+            options.port,
+            options.host,
+            options.backlog,
+            callback
+          );
         } else if (options.server) {
           this._server = options.server;
         }
@@ -2706,7 +2872,11 @@ var require_websocket_server = __commonJS({
         const secWebSocketExtensions = req.headers["sec-websocket-extensions"];
         const extensions = {};
         if (this.options.perMessageDeflate && secWebSocketExtensions !== void 0) {
-          const perMessageDeflate = new PerMessageDeflate(this.options.perMessageDeflate, true, this.options.maxPayload);
+          const perMessageDeflate = new PerMessageDeflate(
+            this.options.perMessageDeflate,
+            true,
+            this.options.maxPayload
+          );
           try {
             const offers = extension.parse(secWebSocketExtensions);
             if (offers[PerMessageDeflate.extensionName]) {
@@ -2730,7 +2900,15 @@ var require_websocket_server = __commonJS({
               if (!verified) {
                 return abortHandshake(socket, code || 401, message, headers);
               }
-              this.completeUpgrade(extensions, key, protocols, req, socket, head, cb);
+              this.completeUpgrade(
+                extensions,
+                key,
+                protocols,
+                req,
+                socket,
+                head,
+                cb
+              );
             });
             return;
           }
@@ -2743,7 +2921,9 @@ var require_websocket_server = __commonJS({
         if (!socket.readable || !socket.writable)
           return socket.destroy();
         if (socket[kWebSocket]) {
-          throw new Error("server.handleUpgrade() was called more than once with the same socket, possibly due to a misconfiguration");
+          throw new Error(
+            "server.handleUpgrade() was called more than once with the same socket, possibly due to a misconfiguration"
+          );
         }
         if (this._state > RUNNING)
           return abortHandshake(socket, 503);
@@ -2815,8 +2995,10 @@ var require_websocket_server = __commonJS({
         ...headers
       };
       socket.once("finish", socket.destroy);
-      socket.end(`HTTP/1.1 ${code} ${http2.STATUS_CODES[code]}\r
-` + Object.keys(headers).map((h) => `${h}: ${headers[h]}`).join("\r\n") + "\r\n\r\n" + message);
+      socket.end(
+        `HTTP/1.1 ${code} ${http2.STATUS_CODES[code]}\r
+` + Object.keys(headers).map((h) => `${h}: ${headers[h]}`).join("\r\n") + "\r\n\r\n" + message
+      );
     }
     function abortHandshakeOrEmitwsClientError(server, req, socket, code, message) {
       if (server.listenerCount("wsClientError")) {
@@ -2831,22 +3013,64 @@ var require_websocket_server = __commonJS({
 });
 
 // ../../../Graph.ts
-function getFnParamNames(fn) {
+var ARGUMENT_NAMES = /([^,]*)/g;
+function getFnParamInfo(fn) {
   var fstr = fn.toString();
-  return fstr.match(/\(.*?\)/)[0].replace(/[()]/gi, "").replace(/\s/gi, "").split(",");
+  const openPar = fstr.indexOf("(");
+  const closePar = fstr.indexOf(")");
+  const getFirstBracket = (str, offset = 0) => {
+    const fb = offset + str.indexOf("{");
+    if (fb < closePar && fb > openPar) {
+      return getFirstBracket(str.slice(fb), offset + fb);
+    } else
+      return fb;
+  };
+  const firstBracket = getFirstBracket(fstr);
+  let innerMatch;
+  if (firstBracket === -1 || closePar < firstBracket)
+    innerMatch = fstr.slice(fstr.indexOf("(") + 1, fstr.indexOf(")"));
+  else
+    innerMatch = fstr.match(/([a-zA-Z]\w*|\([a-zA-Z]\w*(,\s*[a-zA-Z]\w*)*\)) =>/)?.[1];
+  if (!innerMatch)
+    return void 0;
+  const matches = innerMatch.match(ARGUMENT_NAMES).filter((e) => !!e);
+  const info = /* @__PURE__ */ new Map();
+  matches.forEach((v) => {
+    let [name, value] = v.split("=");
+    name = name.trim();
+    name = name.replace(/\d+$/, "");
+    const spread = name.includes("...");
+    name = name.replace("...", "");
+    try {
+      if (name)
+        info.set(name, {
+          state: (0, eval)(`(${value})`),
+          spread
+        });
+    } catch (e) {
+      info.set(name, {});
+    }
+  });
+  return info;
 }
 function parseFunctionFromText(method = "") {
   let getFunctionBody = (methodString) => {
     return methodString.replace(/^\W*(function[^{]+\{([\s\S]*)\}|[^=]+=>[^{]*\{([\s\S]*)\}|[^=]+=>(.+))/i, "$2$3$4");
   };
   let getFunctionHead = (methodString) => {
-    let startindex = methodString.indexOf(")");
+    let startindex = methodString.indexOf("=>") + 1;
+    if (startindex <= 0) {
+      startindex = methodString.indexOf("){");
+    }
+    if (startindex <= 0) {
+      startindex = methodString.indexOf(") {");
+    }
     return methodString.slice(0, methodString.indexOf("{", startindex) + 1);
   };
   let newFuncHead = getFunctionHead(method);
   let newFuncBody = getFunctionBody(method);
   let newFunc;
-  if (newFuncHead.includes("function ")) {
+  if (newFuncHead.includes("function")) {
     let varName = newFuncHead.split("(")[1].split(")")[0];
     newFunc = new Function(varName, newFuncBody);
   } else {
@@ -2915,7 +3139,8 @@ var state = {
 var GraphNode = class {
   constructor(properties = {}, parentNode, graph) {
     this.nodes = /* @__PURE__ */ new Map();
-    this.attributes = /* @__PURE__ */ new Set();
+    this.arguments = /* @__PURE__ */ new Map();
+    this._initial = {};
     this.state = state;
     this.isLooping = false;
     this.isAnimating = false;
@@ -2925,22 +3150,74 @@ var GraphNode = class {
     this.backward = false;
     this.runSync = false;
     this.firstRun = true;
+    this.DEBUGNODE = false;
     this.operator = (self = this, origin, ...args) => {
       return args;
     };
     this.runOp = (node = this, origin = this, ...args) => {
+      if (node.DEBUGNODE)
+        console.time(node.tag);
       let result = node.operator(node, origin, ...args);
       if (result instanceof Promise) {
         result.then((res) => {
           if (res !== void 0)
             this.setState({ [node.tag]: res });
+          if (node.DEBUGNODE) {
+            console.timeEnd(node.tag);
+            if (result !== void 0)
+              console.log(`${node.tag} result:`, result);
+          }
+          ;
           return res;
         });
       } else {
         if (result !== void 0)
           this.setState({ [node.tag]: result });
+        if (node.DEBUGNODE) {
+          console.timeEnd(node.tag);
+          if (result !== void 0)
+            console.log(`${node.tag} result:`, result);
+        }
+        ;
       }
       return result;
+    };
+    this.setOperator = (operator) => {
+      if (typeof operator !== "function")
+        return operator;
+      let params = getFnParamInfo(operator);
+      let pass = false;
+      if (params) {
+        const keys = params.keys();
+        const paramOne = keys.next().value;
+        const paramTwo = keys.next().value;
+        const restrictedOne = ["self", "node"];
+        const restrictedTwo = ["origin", "parent", "graph", "router"];
+        if (paramOne)
+          restrictedOne.forEach((a) => {
+            if (paramOne.includes(a))
+              pass = true;
+          });
+        if (paramTwo)
+          restrictedTwo.forEach((a) => {
+            if (paramTwo.includes(a))
+              pass = true;
+          });
+        if (this.arguments) {
+          params.forEach((o, k) => {
+            if (!this.arguments.has(k))
+              this.arguments.set(k, o.state);
+          });
+        }
+      }
+      if (!pass) {
+        let fn = operator;
+        operator = (self, origin, ...args) => {
+          return fn(...args);
+        };
+      }
+      this.operator = operator;
+      return operator;
     };
     this.run = (...args) => {
       return this._run(this, void 0, ...args);
@@ -2950,11 +3227,12 @@ var GraphNode = class {
         res(this._run(this, void 0, ...args));
       });
     };
+    this.transformArgs = (args = []) => args;
     this._run = (node = this, origin, ...args) => {
-      if (!(node instanceof GraphNode)) {
-        if (!node)
-          return void 0;
-        if (Object.getPrototypeOf(node) === String.prototype) {
+      if (typeof this.transformArgs === "function")
+        args = this.transformArgs(args, node);
+      if (!(typeof node === "object")) {
+        if (typeof node === "string") {
           let fnd = void 0;
           if (this.graph)
             fnd = this.graph.nodes.get(node);
@@ -2962,6 +3240,8 @@ var GraphNode = class {
             fnd = this.nodes.get(node);
           node = fnd;
         }
+        if (!node)
+          return void 0;
       }
       if (node.firstRun) {
         node.firstRun = false;
@@ -3035,7 +3315,7 @@ var GraphNode = class {
           let runnode = async () => {
             let res = await run(node, void 0, ...args);
             if (res !== void 0) {
-              if (node.backward && node.parent?._run) {
+              if (node.backward && node.parent instanceof GraphNode) {
                 if (Array.isArray(res))
                   await this.runParent(node, ...res);
                 else
@@ -3078,75 +3358,76 @@ var GraphNode = class {
           } else
             node.parent = this.nodes.get(node.parent);
         }
-        if (node.parent?.run)
+        if (node.parent instanceof GraphNode)
           await node.parent._run(node.parent, this, ...args);
       }
     };
     this.runChildren = async (node, ...args) => {
-      if (Array.isArray(node.children)) {
-        for (let i = 0; i < node.children.length; i++) {
-          if (Object.getPrototypeOf(node.children[i]) === String.prototype) {
-            if (node.graph && node.graph?.get(node.children[i])) {
-              node.children[i] = node.graph.get(node.children[i]);
-              if (!node.nodes.get(node.children[i].tag))
-                node.nodes.set(node.children[i].tag, node.children[i]);
+      if (typeof node.children === "object") {
+        for (const key in node.children) {
+          if (typeof node.children[key] === "string") {
+            if (node.graph && node.graph?.get(node.children[key])) {
+              node.children[key] = node.graph.get(node.children[key]);
+              if (!node.nodes.get(node.children[key].tag))
+                node.nodes.set(node.children[key].tag, node.children[key]);
             }
-            if (!node.children[i] && node.nodes.get(node.children[i]))
-              node.children[i] = node.nodes.get(node.children[i]);
+            if (!node.children[key] && node.nodes.get(node.children[key]))
+              node.children[key] = node.nodes.get(node.children[key]);
+          } else if (typeof node.children[key] === "undefined" || node.children[key] === true) {
+            if (node.graph && node.graph?.get(key)) {
+              node.children[key] = node.graph.get(key);
+              if (!node.nodes.get(node.children[key].tag))
+                node.nodes.set(node.children[key].tag, node.children[key]);
+            }
+            if (!node.children[key] && node.nodes.get(key))
+              node.children[key] = node.nodes.get(key);
           }
-          if (node.children[i]?.runOp)
-            await node.children[i]._run(node.children[i], node, ...args);
+          if (node.children[key]?.runOp)
+            await node.children[key]._run(node.children[key], node, ...args);
         }
-      } else if (node.children) {
-        if (Object.getPrototypeOf(node.children) === String.prototype) {
-          if (node.graph && node.graph?.get(node.children)) {
-            node.children = node.graph.get(node.children);
-            if (!node.nodes.get(node.children.tag))
-              node.nodes.set(node.children.tag, node.children);
-          }
-          if (!node.children && node.nodes.get(node.children))
-            node.children = node.nodes.get(node.children);
-        }
-        if (node.children?.runOp)
-          await node.children._run(node.children, node, ...args);
       }
     };
     this.runBranch = async (node, output) => {
       if (node.branch) {
         let keys = Object.keys(node.branch);
         await Promise.all(keys.map(async (k) => {
-          if (output instanceof Object) {
-            if (node.branch[k].if instanceof Object)
-              node.branch[k].if = stringifyFast(node.branch[k].if);
-            if (stringifyFast(output) === node.branch[k].if) {
+          if (typeof node.branch[k].if === "object")
+            node.branch[k].if = stringifyFast(node.branch[k].if);
+          let pass = false;
+          if (typeof node.branch[k].if === "function") {
+            pass = node.branch[k].if(output);
+          } else {
+            if (typeof output === "object") {
+              if (stringifyFast(output) === node.branch[k].if)
+                pass = true;
+            } else if (output === node.branch[k].if)
+              pass = true;
+          }
+          if (pass) {
+            if (node.branch[k].then instanceof GraphNode) {
+              if (Array.isArray(output))
+                await node.branch[k].then._run(node.branch[k].then, node, ...output);
+              else
+                await node.branch[k].then._run(node.branch[k].then, node, ...output);
+            } else if (typeof node.branch[k].then === "function") {
+              if (Array.isArray(output))
+                await node.branch[k].then(...output);
+              else
+                await node.branch[k].then(output);
+            } else if (typeof node.branch[k].then === "string") {
+              if (node.graph)
+                node.branch[k].then = node.graph.nodes.get(node.branch[k].then);
+              else
+                node.branch[k].then = node.nodes.get(node.branch[k].then);
               if (node.branch[k].then instanceof GraphNode) {
                 if (Array.isArray(output))
-                  await node.branch[k].then.run(...output);
+                  await node.branch[k].then._run(node.branch[k].then, node, ...output);
                 else
-                  await node.branch[k].then.run(output);
-              } else if (typeof node.branch[k].then === "function") {
-                if (Array.isArray(output))
-                  await node.branch[k].then(...output);
-                else
-                  await node.branch[k].then(output);
-              } else if (typeof node.branch[k].then === "string") {
-                if (node.graph)
-                  node.branch[k].then = node.graph.nodes.get(node.branch[k].then);
-                else
-                  node.branch[k].then = node.graph.nodes.get(node.branch[k].then);
-                if (node.branch[k].then instanceof GraphNode) {
-                  if (Array.isArray(output))
-                    await node.branch[k].then.run(...output);
-                  else
-                    await node.branch[k].then.run(output);
-                }
+                  await node.branch[k].then._run(node.branch[k].then, node, ...output);
               }
-              return true;
             }
-          } else {
-            await node.branch[k].then(output);
-            return true;
           }
+          return pass;
         }));
       }
     };
@@ -3154,14 +3435,26 @@ var GraphNode = class {
       this.animation = animation;
       if (!animation)
         this.animation = this.operator;
-      if (node.animate && !node.isAnimating) {
+      if (node.animate && !node.isAnimating && "requestAnimationFrame" in window) {
         node.isAnimating = true;
         let anim = async () => {
           if (node.isAnimating) {
-            let result = this.animation(node, origin, ...args);
+            if (node.DEBUGNODE)
+              console.time(node.tag);
+            let result = this.animation(
+              node,
+              origin,
+              ...args
+            );
             if (result instanceof Promise) {
               result = await result;
             }
+            if (node.DEBUGNODE) {
+              console.timeEnd(node.tag);
+              if (result !== void 0)
+                console.log(`${node.tag} result:`, result);
+            }
+            ;
             if (result !== void 0) {
               if (this.tag)
                 this.setState({ [this.tag]: result });
@@ -3196,10 +3489,22 @@ var GraphNode = class {
         node.isLooping = true;
         let looping = async () => {
           if (node.isLooping) {
-            let result = node.looper(node, origin, ...args);
+            if (node.DEBUGNODE)
+              console.time(node.tag);
+            let result = node.looper(
+              node,
+              origin,
+              ...args
+            );
             if (result instanceof Promise) {
               result = await result;
             }
+            if (node.DEBUGNODE) {
+              console.timeEnd(node.tag);
+              if (result !== void 0)
+                console.log(`${node.tag} result:`, result);
+            }
+            ;
             if (result !== void 0) {
               if (node.tag)
                 node.setState({ [node.tag]: result });
@@ -3228,9 +3533,6 @@ var GraphNode = class {
         looping();
       }
     };
-    this.setOperator = (operator) => {
-      this.operator = operator;
-    };
     this.setParent = (parent) => {
       this.parent = parent;
       if (this.backward)
@@ -3247,8 +3549,10 @@ var GraphNode = class {
       if (!(node instanceof GraphNode))
         node = new GraphNode(node, this, this.graph);
       this.nodes.set(node.tag, node);
-      if (this.graph)
+      if (this.graph) {
         this.graph.nodes.set(node.tag, node);
+        this.graph.nNodes = this.graph.nodes.size;
+      }
       return node;
     };
     this.remove = (node) => {
@@ -3256,12 +3560,23 @@ var GraphNode = class {
         node = this.nodes.get(node);
       if (node instanceof GraphNode) {
         this.nodes.delete(node.tag);
-        if (this.graph)
+        if (this.children[node.tag])
+          delete this.children[node.tag];
+        if (this.graph) {
           this.graph.nodes.delete(node.tag);
+          this.graph.nNodes = this.graph.nodes.size;
+        }
         this.nodes.forEach((n) => {
-          if (n.nodes.get(node.tag))
+          if (n.nodes.get(node.tag)) {
             n.nodes.delete(node.tag);
+            if (n.children[node.tag])
+              delete n.children[node.tag];
+            if (n.parent?.tag === node.tag)
+              delete n.parent;
+          }
         });
+        if (node.ondelete)
+          node.ondelete(node);
       }
     };
     this.append = (node, parentNode = this) => {
@@ -3284,31 +3599,11 @@ var GraphNode = class {
     };
     this.addChildren = (children) => {
       if (!this.children)
-        this.children = [];
-      if (!Array.isArray(this.children)) {
-        this.children = [children];
-        if (typeof children === "object" && children.tag) {
-          this.nodes.set(children.tag, children);
-          if (this.graph)
-            this.graph.nodes.set(children.tag, children);
-        }
-      } else if (Array.isArray(children)) {
-        this.children.push(...children);
-        children.forEach((c) => {
-          if (typeof c === "object" && c.tag) {
-            this.nodes.set(c.tag, c);
-            if (this.graph)
-              this.graph.nodes.set(c.tag, c);
-          }
-        });
-      } else {
-        this.children.push(children);
-        if (typeof children === "object" && children.tag) {
-          this.nodes.set(children.tag, children);
-          if (this.graph)
-            this.graph.nodes.set(children.tag, children);
-        }
+        this.children = {};
+      if (typeof children === "object") {
+        Object.assign(this.children, children);
       }
+      this.convertChildrenToNodes();
       if (this.forward)
         this.runSync = false;
     };
@@ -3328,88 +3623,73 @@ var GraphNode = class {
     this.callChildren = (idx, ...args) => {
       const origin = this;
       let result;
-      if (Array.isArray(this.children)) {
-        if (idx) {
-          if (Object.getPrototypeOf(this.children[idx]) === String.prototype) {
-            if (this.graph && this.graph.get(this.children[idx])) {
-              this.children[idx] = this.graph.get(this.children[idx]);
-              if (!this.nodes.get(this.children[idx].tag))
-                this.nodes.set(this.children[idx].tag, this.children[idx]);
-            }
-            if (!this.children[idx] && this.nodes.get(this.children[idx]))
-              this.children[idx] = this.nodes.get(this.children[idx]);
-          }
-          if (this.children[idx]?.runOp)
-            result = this.children[idx].runOp(this.children[idx], origin, ...args);
-        } else {
-          result = [];
-          for (let i = 0; i < this.children.length; i++) {
-            if (Object.getPrototypeOf(this.children[i]) === String.prototype) {
-              if (this.graph && this.graph.get(this.children[i])) {
-                this.children[i] = this.graph.get(this.children[i]);
-                if (!this.nodes.get(this.children[i].tag))
-                  this.nodes.set(this.children[i].tag, this.children[i]);
-              }
-              if (!this.children[i] && this.nodes.get(this.children[i]))
-                this.children[i] = this.nodes.get(this.children[i]);
-            }
-            if (this.children[i]?.runOp)
-              result.push(this.children[i].runOp(this.children[i], origin, ...args));
-          }
+      if (typeof this.children === "object") {
+        for (const key in this.children) {
+          if (this.children[key]?.runOp)
+            this.children[key].runOp(this.children[key], origin, ...args);
         }
-      } else if (this.children) {
-        if (Object.getPrototypeOf(this.children) === String.prototype) {
-          if (this.graph && this.graph.get(this.children)) {
-            this.children = this.graph.get(this.children);
-            if (!this.nodes.get(this.children.tag))
-              this.nodes.set(this.children.tag, this.children);
-          }
-          if (!this.children && this.nodes.get(this.children))
-            this.children = this.nodes.get(this.children);
-        }
-        result = this.children.runOp(this.children, origin, ...args);
       }
       return result;
     };
+    this.getProps = (node = this) => {
+      return {
+        tag: node.tag,
+        operator: node.operator,
+        graph: node.graph,
+        children: node.children,
+        parent: node.parent,
+        forward: node.forward,
+        backward: node.bacward,
+        loop: node.loop,
+        animate: node.animate,
+        frame: node.frame,
+        delay: node.delay,
+        recursive: node.recursive,
+        repeat: node.repeat,
+        branch: node.branch,
+        oncreate: node.oncreate,
+        DEBUGNODE: node.DEBUGNODE,
+        ...this._initial
+      };
+    };
     this.setProps = (props = {}) => {
-      Object.assign(this, props);
+      let tmp = Object.assign({}, props);
+      if (tmp.children) {
+        this.addChildren(props.children);
+        delete tmp.children;
+      }
+      if (tmp.operator) {
+        this.setOperator(props.operator);
+        delete tmp.operator;
+      }
+      Object.assign(tmp, props);
       if (!(this.children && this.forward || this.parent && this.backward || this.repeat || this.delay || this.frame || this.recursive))
         this.runSync = true;
     };
     this.removeTree = (node) => {
       if (node) {
-        if (Object.getPrototypeOf(node) === String.prototype)
+        if (typeof node === "string")
           node = this.nodes.get(node);
       }
       if (node instanceof GraphNode) {
+        let checked = {};
         const recursivelyRemove = (node2) => {
-          if (node2.children) {
-            if (Array.isArray(node2.children)) {
-              node2.children.forEach((c) => {
-                if (c.stopNode)
-                  c.stopNode();
-                if (c.tag) {
-                  if (this.nodes.get(c.tag))
-                    this.nodes.delete(c.tag);
-                }
+          if (typeof node2.children === "object" && !checked[node2.tag]) {
+            checked[node2.tag] = true;
+            for (const key in node2.children) {
+              if (node2.children[key].stopNode)
+                node2.children[key].stopNode();
+              if (node2.children[key].tag) {
+                if (this.nodes.get(node2.children[key].tag))
+                  this.nodes.delete(node2.children[key].tag);
                 this.nodes.forEach((n) => {
-                  if (n.nodes.get(c.tag))
-                    n.nodes.delete(c.tag);
+                  if (n.nodes.get(node2.children[key].tag))
+                    n.nodes.delete(node2.children[key].tag);
+                  if (n.children[key] instanceof GraphNode)
+                    delete n.children[key];
                 });
-                recursivelyRemove(c);
-              });
-            } else if (typeof node2.children === "object") {
-              if (node2.stopNode)
-                node2.stopNode();
-              if (node2.tag) {
-                if (this.nodes.get(node2.tag))
-                  this.nodes.delete(node2.tag);
+                recursivelyRemove(node2.children[key]);
               }
-              this.nodes.forEach((n) => {
-                if (n.nodes.get(node2.tag))
-                  n.nodes.delete(node2.tag);
-              });
-              recursivelyRemove(node2);
             }
           }
         };
@@ -3417,61 +3697,112 @@ var GraphNode = class {
           node.stopNode();
         if (node.tag) {
           this.nodes.delete(node.tag);
+          if (this.children[node.tag])
+            delete this.children[node.tag];
+          if (this.parent?.tag === node.tag)
+            delete this.parent;
+          if (this[node.tag] instanceof GraphNode)
+            delete this[node.tag];
           this.nodes.forEach((n) => {
-            if (n.nodes.get(node.tag))
-              n.nodes.delete(node.tag);
+            if (node?.tag) {
+              if (n.nodes.get(node.tag))
+                n.nodes.delete(node.tag);
+              if (n.children[node.tag] instanceof GraphNode)
+                delete n.children[node.tag];
+            }
           });
           recursivelyRemove(node);
           if (this.graph)
-            this.graph.nodes.removeTree(node);
+            this.graph.removeTree(node, checked);
+          else if (node.ondelete)
+            node.ondelete(node);
         }
       }
     };
-    this.convertChildrenToNodes = (n) => {
-      if (n?.children instanceof GraphNode) {
-        if (!this.graph?.nodes.get(n.tag))
-          this.graph.nodes.set(n.tag, n);
-        if (!this.nodes.get(n.tag))
-          this.nodes.set(n.tag, n);
-      } else if (Array.isArray(n.children)) {
-        for (let i = 0; i < n.children.length; i++) {
-          if (n.children[i] instanceof GraphNode) {
-            if (!this.graph?.nodes.get(n.children[i].tag))
-              this.graph.nodes.set(n.children[i].tag, n.children[i]);
-            if (!this.nodes.get(n.children[i].tag))
-              this.nodes.set(n.children[i].tag, n.children[i]);
-            continue;
-          } else if (typeof n.children[i] === "object" || typeof n.children[i] === "function") {
-            n.children[i] = new GraphNode(n.children[i], n, this.graph);
-            this.nodes.set(n.children[i].tag, n.children[i]);
-            this.convertChildrenToNodes(n.children[i]);
-          } else if (typeof n.children[i] === "string") {
-            if (this.graph && this.graph.get(n.children[i])) {
-              n.children[i] = this.graph.get(n.children[i]);
-              if (!this.nodes.get(n.children[i].tag))
-                this.nodes.set(n.children[i].tag, n.children[i]);
+    this.checkNodesHaveChildMapped = (node, child, checked = {}) => {
+      let tag = node.tag;
+      if (!tag)
+        tag = node.name;
+      if (!checked[tag]) {
+        checked[tag] = true;
+        if (node.children) {
+          if (child.tag in node.children) {
+            if (node.children[child.tag] instanceof GraphNode) {
+              if (!node.nodes.get(child.tag))
+                node.nodes.set(child.tag, child);
+              node.children[child.tag] = child;
+              if (!node.firstRun)
+                node.firstRun = true;
             }
-            if (!n.children[i] && this.nodes.get(n.children[i]))
-              n.children[i] = this.nodes.get(n.children[i]);
           }
         }
-      } else if (typeof n.children === "object" || typeof n.children === "function") {
-        n.children = new GraphNode(n.children, n, this.graph);
-        this.nodes.set(n.children.tag, n.children);
-        this.convertChildrenToNodes(n.children);
-      } else if (typeof n.children === "string") {
-        if (this.graph && this.graph.get(n.children)) {
-          n.children = this.graph.get(n.children);
-          if (!this.nodes.get(n.children.tag))
-            this.nodes.set(n.children.tag, n.children);
+        if (node.parent instanceof GraphNode) {
+          if (node.nodes.get(child.tag) && !node.parent.nodes.get(child.tag))
+            node.parent.nodes.set(child.tag, child);
+          if (node.parent.children) {
+            this.checkNodesHaveChildMapped(node.parent, child, checked);
+          } else if (node.nodes) {
+            node.nodes.forEach((n) => {
+              if (!checked[n.tag]) {
+                this.checkNodesHaveChildMapped(n, child, checked);
+              }
+            });
+          }
         }
-        if (!n.children && this.nodes.get(n.children))
-          n.children = this.nodes.get(n.children);
+        if (node.graph) {
+          if (node.parent && node.parent.name !== node.graph.name) {
+            node.graph.nodes.forEach((n) => {
+              if (!checked[n.tag]) {
+                this.checkNodesHaveChildMapped(n, child, checked);
+              }
+            });
+          }
+        }
+      }
+    };
+    this.convertChildrenToNodes = (n = this) => {
+      if (n?.children) {
+        for (const key in n.children) {
+          if (!(n.children[key] instanceof GraphNode)) {
+            if (typeof n.children[key] === "object") {
+              if (!n.children[key].tag)
+                n.children[key].tag = key;
+              if (!n.nodes.get(n.children[key].tag)) {
+                n.children[key] = new GraphNode(n.children[key], n, n.graph);
+                this.checkNodesHaveChildMapped(n, n.children[key]);
+              }
+            } else {
+              if (typeof n.children[key] === "undefined" || n.children[key] == true) {
+                n.children[key] = n.graph.get(key);
+                if (!n.children[key])
+                  n.children[key] = n.nodes.get(key);
+              } else if (typeof n.children[key] === "string") {
+                let k = n.children[key];
+                n.children[key] = n.graph.get(k);
+                if (!n.children[key])
+                  n.children[key] = n.nodes.get(key);
+              }
+              if (n.children[key] instanceof GraphNode) {
+                if (n.graph) {
+                  let props = n.children[key].getProps();
+                  delete props.parent;
+                  delete props.graph;
+                  if (n.source instanceof Graph) {
+                    n.children[key] = new GraphNode(props, n, n.source);
+                  } else {
+                    n.children[key] = new GraphNode(props, n, n.graph);
+                  }
+                }
+                n.nodes.set(n.children[key].tag, n.children[key]);
+                this.checkNodesHaveChildMapped(n, n.children[key]);
+                if (!(n.children[key].tag in n))
+                  n[n.children[key].tag] = n.children[key];
+              }
+            }
+          }
+        }
       }
       return n.children;
-    };
-    this.get = (tag) => {
-      return this.nodes.get(tag);
     };
     this.stopLooping = (node = this) => {
       node.isLooping = false;
@@ -3502,28 +3833,17 @@ var GraphNode = class {
         };
         if (node.parent)
           jsonToPrint.parent = node.parent.tag;
-        if (node.children) {
-          if (Array.isArray(node.children)) {
-            node.children = node.children.map((c) => {
-              if (typeof c === "string")
-                return c;
-              if (nodesPrinted.includes(c.tag))
-                return c.tag;
-              else if (!printChildren) {
-                return c.tag;
-              } else
-                return c.print(c, printChildren, nodesPrinted);
-            });
-          } else if (typeof node.children === "object") {
-            if (!printChildren) {
-              jsonToPrint.children = [node.children.tag];
-            }
-            if (nodesPrinted.includes(node.children.tag))
-              jsonToPrint.children = [node.children.tag];
-            else
-              jsonToPrint.children = [node.children.print(node.children, printChildren, nodesPrinted)];
-          } else if (typeof node.children === "string")
-            jsonToPrint.children = [node.children];
+        if (typeof node.children === "object") {
+          for (const key in node.children) {
+            if (typeof node.children[key] === "string")
+              return node.children[key];
+            if (nodesPrinted.includes(node.children[key].tag))
+              return node.children[key].tag;
+            else if (!printChildren) {
+              return node.children[key].tag;
+            } else
+              return node.children[key].print(node.children[key], printChildren, nodesPrinted);
+          }
         }
         for (const prop in node) {
           if (prop === "parent" || prop === "children")
@@ -3547,36 +3867,128 @@ var GraphNode = class {
         return this.add(parsed);
     };
     this.setState = this.state.setState;
+    this.DEBUGNODES = (debugging = true) => {
+      this.DEBUGNODE = debugging;
+      this.nodes.forEach((n) => {
+        if (debugging)
+          n.DEBUGNODE = true;
+        else
+          n.DEBUGNODE = false;
+      });
+    };
     if (typeof properties === "function") {
       properties = { operator: properties };
     }
     if (typeof properties === "object") {
-      if (properties.tag) {
-        if (graph?.nodes) {
-          let hasnode = graph.nodes.get(properties.tag);
-          if (hasnode)
-            return hasnode;
+      if (properties instanceof GraphNode && properties._initial)
+        Object.assign(properties, properties._initial);
+      if (properties instanceof Graph) {
+        let source = properties;
+        properties = {
+          source,
+          operator: (input) => {
+            if (typeof input === "object") {
+              let result = {};
+              for (const key in input) {
+                if (typeof source[key] === "function") {
+                  if (Array.isArray(input[key]))
+                    result[key] = source[key](...input[key]);
+                  else
+                    result[key] = source[key](input[key]);
+                } else {
+                  source[key] = input[key];
+                  result[key] = source[key];
+                }
+              }
+              return result;
+            }
+            return source;
+          }
+        };
+        if (source.operator)
+          properties.operator = source.operator;
+        if (source.children)
+          properties.children = source.children;
+        if (source.forward)
+          properties.forward = source.forward;
+        if (source.backward)
+          properties.backward = source.backward;
+        if (source.repeat)
+          properties.repeat = source.repeat;
+        if (source.recursive)
+          properties.recursive = source.recursive;
+        if (source.loop)
+          properties.loop = source.loop;
+        if (source.animate)
+          properties.animate = source.animate;
+        if (source.looper)
+          properties.looper = source.looper;
+        if (source.animation)
+          properties.animation = source.animation;
+        if (source.delay)
+          properties.delay = source.delay;
+        if (source.tag)
+          properties.tag = source.tag;
+        if (source.oncreate)
+          properties.oncreate = source.oncreate;
+        if (source.node) {
+          if (source.node._initial)
+            Object.assign(properties, source.node._initial);
         }
-        if (parentNode?.nodes) {
-          let hasnode = parentNode.nodes.get(properties.tag);
-          if (hasnode)
-            return hasnode;
+        if (source._initial)
+          Object.assign(properties, source._initial);
+        this.nodes = source.nodes;
+        source.node = this;
+        if (graph) {
+          source.nodes.forEach((n) => {
+            if (!graph.nodes.get(n.tag)) {
+              graph.nodes.set(n.tag, n);
+              graph.nNodes++;
+            }
+          });
+        }
+      }
+      if (properties.tag && (graph || parentNode)) {
+        let hasnode;
+        if (graph?.nodes) {
+          hasnode = graph.nodes.get(properties.tag);
+        }
+        if (!hasnode && parentNode?.nodes) {
+          hasnode = parentNode.nodes.get(properties.tag);
+        }
+        if (hasnode) {
+          Object.assign(this, hasnode);
+          if (!this.source)
+            this.source = hasnode;
+          let props = hasnode.getProps();
+          delete props.graph;
+          delete props.parent;
+          Object.assign(properties, props);
         }
       }
       if (properties?.operator) {
-        let params = getFnParamNames(properties.operator);
-        if (!(params[0] == "self" || params[0] == "node" || params[1] == "origin" || params[1] == "parent" || params[1] == "graph" || params[1] == "router")) {
-          let fn = properties.operator;
-          properties.operator = (self, origin, ...args) => {
-            return fn(...args);
-          };
-        }
+        properties.operator = this.setOperator(properties.operator);
       }
       if (!properties.tag && graph) {
         properties.tag = `node${graph.nNodes}`;
       } else if (!properties.tag) {
         properties.tag = `node${Math.floor(Math.random() * 1e10)}`;
       }
+      if ("arguments" in properties) {
+        if (properties.arguments) {
+          for (let key in properties.arguments) {
+            this.arguments.set(key, properties.arguments[key]);
+          }
+        }
+        properties.arguments = this.arguments;
+      }
+      let keys = Object.getOwnPropertyNames(this);
+      for (const key in properties) {
+        if (!keys.includes(key))
+          this._initial[key] = properties[key];
+      }
+      if (properties.children)
+        this._initial.children = Object.assign({}, properties.children);
       Object.assign(this, properties);
       if (!this.tag) {
         if (graph) {
@@ -3585,20 +3997,44 @@ var GraphNode = class {
           this.tag = `node${Math.floor(Math.random() * 1e10)}`;
         }
       }
-      this.parent = parentNode;
-      this.graph = graph;
       if (graph) {
-        graph.nNodes++;
+        this.graph = graph;
+        if (graph.nodes.get(this.tag)) {
+          this.tag = `${this.tag}${graph.nNodes + 1}`;
+        }
         graph.nodes.set(this.tag, this);
+        graph.nNodes++;
+      }
+      if (parentNode) {
+        this.parent = parentNode;
+        if (parentNode instanceof GraphNode || parentNode instanceof Graph)
+          parentNode.nodes.set(this.tag, this);
+      }
+      if (typeof properties.tree === "object") {
+        for (const key in properties.tree) {
+          if (typeof properties.tree[key] === "object") {
+            if ((!properties.tree[key]).tag) {
+              properties.tree[key].tag = key;
+            }
+          }
+          let node = new GraphNode(properties.tree[key], this, graph);
+          this.nodes.set(node.tag, node);
+        }
       }
       if (this.children)
         this.convertChildrenToNodes(this);
+      if (this.parent instanceof GraphNode || this.parent instanceof Graph)
+        this.checkNodesHaveChildMapped(this.parent, this);
+      if (typeof this.oncreate === "function")
+        this.oncreate(this);
+      if (!this.firstRun)
+        this.firstRun = true;
     } else
       return properties;
   }
 };
 var Graph = class {
-  constructor(tree, tag) {
+  constructor(tree, tag, props) {
     this.nNodes = 0;
     this.nodes = /* @__PURE__ */ new Map();
     this.state = state;
@@ -3606,8 +4042,14 @@ var Graph = class {
     this.add = (node = {}) => {
       let props = node;
       if (!(node instanceof GraphNode))
-        node = new GraphNode(props, void 0, this);
-      this.tree[node.tag] = props;
+        node = new GraphNode(props, this, this);
+      else {
+        this.nNodes = this.nodes.size;
+        if (node.tag) {
+          this.tree[node.tag] = props;
+          this.nodes.set(node.tag, node);
+        }
+      }
       return node;
     };
     this.setTree = (tree = this.tree) => {
@@ -3631,11 +4073,83 @@ var Graph = class {
               return tree[node];
             } });
           }
+        } else {
+          let n = this.nodes.get(node);
+          if (typeof tree[node] === "function") {
+            n.setOperator(tree[node]);
+          } else if (typeof tree[node] === "object") {
+            if (tree[node] instanceof GraphNode) {
+              this.add(tree[node]);
+            } else if (tree[node] instanceof Graph) {
+              let source = tree[node];
+              let properties = {};
+              if (source.operator)
+                properties.operator = source.operator;
+              if (source.children)
+                properties.children = source.children;
+              if (source.forward)
+                properties.forward = source.forward;
+              if (source.backward)
+                properties.backward = source.backward;
+              if (source.repeat)
+                properties.repeat = source.repeat;
+              if (source.recursive)
+                properties.recursive = source.recursive;
+              if (source.loop)
+                properties.loop = source.loop;
+              if (source.animate)
+                properties.animate = source.animate;
+              if (source.looper)
+                properties.looper = source.looper;
+              if (source.animation)
+                properties.animation = source.animation;
+              if (source.delay)
+                properties.delay = source.delay;
+              if (source.tag)
+                properties.tag = source.tag;
+              if (source.oncreate)
+                properties.oncreate = source.oncreate;
+              if (source.node?._initial)
+                Object.assign(properties, source.node._initial);
+              properties.nodes = source.nodes;
+              properties.source = source;
+              n.setProps(properties);
+            } else {
+              n.setProps(tree[node]);
+            }
+          }
         }
       }
+      this.nodes.forEach((node) => {
+        if (typeof node.children === "object") {
+          for (const key in node.children) {
+            if (typeof node.children[key] === "string") {
+              if (this.nodes.get(node.children[key])) {
+                node.children[key] = this.nodes.get(node.children[key]);
+              }
+            } else if (node.children[key] === true || typeof node.children[key] === "undefined") {
+              if (this.nodes.get(key)) {
+                node.children[key] = this.nodes.get(key);
+              }
+            }
+            if (node.children[key] instanceof GraphNode) {
+              node.checkNodesHaveChildMapped(node, node.children[key]);
+            }
+          }
+        }
+        if (typeof node.parent === "string") {
+          if (this.nodes.get(node.parent)) {
+            node.parent = this.nodes.get(node.parent);
+            node.nodes.set(node.parent.tag, node.parent);
+          }
+        }
+      });
     };
     this.get = (tag) => {
       return this.nodes.get(tag);
+    };
+    this.set = (node) => {
+      return this.nodes.set(node.tag, node);
     };
     this.run = (node, ...args) => {
       if (typeof node === "string")
@@ -3665,12 +4179,15 @@ var Graph = class {
       else
         return void 0;
     };
-    this.removeTree = (node) => {
+    this.removeTree = (node, checked) => {
       if (typeof node === "string")
         node = this.nodes.get(node);
       if (node instanceof GraphNode) {
+        if (!checked)
+          checked = {};
         const recursivelyRemove = (node2) => {
-          if (node2.children) {
+          if (node2.children && !checked[node2.tag]) {
+            checked[node2.tag] = true;
             if (Array.isArray(node2.children)) {
               node2.children.forEach((c) => {
                 if (c.stopNode)
@@ -3708,17 +4225,19 @@ var Graph = class {
             if (n.nodes.get(node.tag))
               n.nodes.delete(node.tag);
           });
+          this.nNodes = this.nodes.size;
           recursivelyRemove(node);
         }
+        if (node.ondelete)
+          node.ondelete(node);
       }
+      return node;
     };
     this.remove = (node) => {
       if (typeof node === "string")
         node = this.nodes.get(node);
-      if (node?.tag) {
+      if (node instanceof GraphNode) {
         node.stopNode();
-        if (node?.tag)
-          this.nodes.delete(node.tag);
         if (node?.tag) {
           if (this.nodes.get(node.tag)) {
             this.nodes.delete(node.tag);
@@ -3728,7 +4247,10 @@ var Graph = class {
             });
           }
         }
+        if (node.ondelete)
+          node.ondelete(node);
       }
+      return node;
     };
     this.append = (node, parentNode) => {
       parentNode.addChildren(node);
@@ -3746,11 +4268,9 @@ var Graph = class {
     this.subscribe = (node, callback) => {
       if (!callback)
         return;
-      if (typeof node !== "string")
-        node = node.tag;
       if (node instanceof GraphNode) {
         return node.subscribe(callback);
-      } else
+      } else if (typeof node == "string")
         return this.state.subscribeTrigger(node, callback);
     };
     this.unsubscribe = (tag, sub) => {
@@ -3795,7 +4315,19 @@ var Graph = class {
       return createNode(operator, parentNode, props, this);
     };
     this.setState = this.state.setState;
+    this.DEBUGNODES = (debugging = true) => {
+      this.nodes.forEach((n) => {
+        if (debugging)
+          n.DEBUGNODE = true;
+        else
+          n.DEBUGNODE = false;
+      });
+    };
     this.tag = tag ? tag : `graph${Math.floor(Math.random() * 1e11)}`;
+    if (props) {
+      Object.assign(this, props);
+      this._initial = props;
+    }
     if (tree || Object.keys(this.tree).length > 0)
       this.setTree(tree);
   }
@@ -4017,98 +4549,273 @@ function createNode(operator, parentNode, props, graph) {
   return new GraphNode({ operator }, parentNode, graph);
 }
 
-// ../../services/Service.ts
+// ../../../services/Service.ts
 var Service = class extends Graph {
-  constructor(routes, name) {
-    super(void 0, name);
+  constructor(options = {}) {
+    super(void 0, options.name ? options.name : `service${Math.floor(Math.random() * 1e14)}`, options.props);
     this.routes = {};
-    this.firstLoad = true;
-    this.name = `service${Math.floor(Math.random() * 1e14)}`;
+    this.loadDefaultRoutes = false;
     this.keepState = true;
-    this.load = (routes) => {
-      if (!routes && !this.firstLoad)
+    this.firstLoad = true;
+    this.init = (options) => {
+      if (options)
+        options = Object.assign({}, options);
+      else
+        options = {};
+      if (options.customRoutes)
+        Object.assign(options.customRoutes, this.customRoutes);
+      else
+        options.customRoutes = this.customRoutes;
+      if (options.customChildren)
+        Object.assign(options.customChildren, this.customChildren);
+      else
+        options.customChildren = this.customChildren;
+      if (Array.isArray(options.routes)) {
+        options.routes.forEach((r) => {
+          this.load(
+            r,
+            options.includeClassName,
+            options.routeFormat,
+            options.customRoutes,
+            options.customChildren
+          );
+        });
+      } else if (options.routes || (Object.keys(this.routes).length > 0 || this.loadDefaultRoutes) && this.firstLoad)
+        this.load(
+          options.routes,
+          options.includeClassName,
+          options.routeFormat,
+          options.customRoutes,
+          options.customChildren
+        );
+    };
+    this.load = (routes, includeClassName = true, routeFormat = ".", customRoutes, customChildren) => {
+      if (!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad))
         return;
+      if (this.firstLoad)
+        this.firstLoad = false;
       let service;
-      if (!(routes instanceof Service) && routes?.name) {
-        if (routes.module) {
-          let mod = routes;
+      let allRoutes = {};
+      if (routes) {
+        if (!(routes instanceof Graph) && routes?.name) {
+          if (routes.module) {
+            let mod = routes;
+            routes = {};
+            Object.getOwnPropertyNames(routes.module).forEach((prop) => {
+              if (includeClassName)
+                routes[mod.name + routeFormat + prop] = routes.module[prop];
+              else
+                routes[prop] = routes.module[prop];
+            });
+          } else if (typeof routes === "function") {
+            service = new routes({ loadDefaultRoutes: this.loadDefaultRoutes });
+            service.load();
+            routes = service.routes;
+          }
+        } else if (routes instanceof Graph || routes.source instanceof Graph) {
+          service = routes;
           routes = {};
-          Object.getOwnPropertyNames(routes.module).forEach((prop) => {
-            routes[mod.name + "/" + prop] = routes.module[prop];
+          let name;
+          if (includeClassName) {
+            name = service.name;
+            if (!name) {
+              name = service.tag;
+              service.name = name;
+            }
+            if (!name) {
+              name = `graph${Math.floor(Math.random() * 1e15)}`;
+              service.name = name;
+              service.tag = name;
+            }
+          }
+          if (service.customRoutes && !this.customRoutes)
+            this.customRoutes = service.customRoutes;
+          else if (service.customRoutes && this.customRoutes)
+            Object.assign(this.customRoutes, service.customRoutes);
+          if (service.customChildren && !this.customChildren)
+            this.customChildren = service.customChildren;
+          else if (service.customChildren && this.customChildren)
+            Object.assign(this.customChildren, service.customChildren);
+          service.nodes.forEach((node) => {
+            routes[node.tag] = node;
+            let checked = {};
+            let checkChildGraphNodes = (nd, par) => {
+              if (!checked[nd.tag] || par && includeClassName && !checked[par?.tag + routeFormat + nd.tag]) {
+                if (!par)
+                  checked[nd.tag] = true;
+                else
+                  checked[par.tag + routeFormat + nd.tag] = true;
+                if (nd instanceof Graph || nd.source instanceof Graph) {
+                  if (includeClassName) {
+                    let nm = nd.name;
+                    if (!nm) {
+                      nm = nd.tag;
+                      nd.name = nm;
+                    }
+                    if (!nm) {
+                      nm = `graph${Math.floor(Math.random() * 1e15)}`;
+                      nd.name = nm;
+                      nd.tag = nm;
+                    }
+                  }
+                  nd.nodes.forEach((n) => {
+                    if (includeClassName && !routes[nd.tag + routeFormat + n.tag])
+                      routes[nd.tag + routeFormat + n.tag] = n;
+                    else if (!routes[n.tag])
+                      routes[n.tag] = n;
+                    checkChildGraphNodes(n, nd);
+                  });
+                }
+              }
+            };
+            checkChildGraphNodes(node);
           });
-        } else {
-          service = new routes();
-          service.load();
-          routes = service.routes;
+        } else if (typeof routes === "object") {
+          let name = routes.constructor.name;
+          if (name === "Object") {
+            name = Object.prototype.toString.call(routes);
+            if (name)
+              name = name.split(" ")[1];
+            if (name)
+              name = name.split("]")[0];
+          }
+          if (name && name !== "Object") {
+            let module2 = routes;
+            routes = {};
+            Object.getOwnPropertyNames(module2).forEach((route) => {
+              if (includeClassName)
+                routes[name + routeFormat + route] = module2[route];
+              else
+                routes[route] = module2[route];
+            });
+          }
         }
-      } else if (routes instanceof Service) {
-        service = routes;
-        routes = routes.routes;
-      } else if (typeof routes === "object") {
-        let name = routes.constructor.name;
-        if (name === "Object") {
-          name = Object.prototype.toString.call(routes);
-          if (name)
-            name = name.split(" ")[1];
-          if (name)
-            name = name.split("]")[0];
-        }
-        if (name && name !== "Object") {
-          let module2 = routes;
-          routes = {};
-          Object.getOwnPropertyNames(module2).forEach((route) => {
-            routes[name + "/" + route] = module2[route];
-          });
+        if (service instanceof Graph && service.name && includeClassName) {
+          routes = Object.assign({}, routes);
+          for (const prop in routes) {
+            let route = routes[prop];
+            delete routes[prop];
+            routes[service.name + routeFormat + prop] = route;
+          }
         }
       }
-      if (service instanceof Service) {
-        routes = Object.assign({}, routes);
-        for (const prop in routes) {
-          let route = routes[prop];
-          delete routes[prop];
-          routes[service.name + "/" + prop] = route;
-        }
-      }
-      if (this.firstLoad) {
+      if (this.loadDefaultRoutes) {
         let rts = Object.assign({}, this.defaultRoutes);
         if (routes) {
           Object.assign(rts, this.routes);
           routes = Object.assign(rts, routes);
         } else
           routes = Object.assign(rts, this.routes);
-        this.firstLoad = false;
+        this.loadDefaultRoutes = false;
       }
-      for (const route in routes) {
-        if (typeof routes[route] === "object") {
-          let r = routes[route];
-          for (const prop in r) {
-            r[prop.toLowerCase()] = r[prop];
-          }
-          if (r.get) {
-            if (typeof r.get == "object") {
+      if (!routes)
+        routes = this.routes;
+      let incr = 0;
+      for (const tag in routes) {
+        incr++;
+        let childrenIter = (route, routeKey) => {
+          if (typeof route === "object") {
+            if (!route.tag)
+              route.tag = routeKey;
+            if (typeof route?.children === "object") {
+              nested:
+                for (const key in route.children) {
+                  incr++;
+                  if (typeof route.children[key] === "object") {
+                    let rt = route.children[key];
+                    if (rt.tag && allRoutes[rt.tag])
+                      continue;
+                    if (customChildren) {
+                      for (const k2 in customChildren) {
+                        rt = customChildren[k2](rt, key, route, routes, allRoutes);
+                        if (!rt)
+                          continue nested;
+                      }
+                    }
+                    if (rt.id && !rt.tag) {
+                      rt.tag = rt.id;
+                    }
+                    let k;
+                    if (rt.tag) {
+                      if (allRoutes[rt.tag]) {
+                        let randkey = `${rt.tag}${incr}`;
+                        allRoutes[randkey] = rt;
+                        rt.tag = randkey;
+                        childrenIter(allRoutes[randkey], key);
+                        k = randkey;
+                      } else {
+                        allRoutes[rt.tag] = rt;
+                        childrenIter(allRoutes[rt.tag], key);
+                        k = rt.tag;
+                      }
+                    } else {
+                      if (allRoutes[key]) {
+                        let randkey = `${key}${incr}`;
+                        allRoutes[randkey] = rt;
+                        rt.tag = randkey;
+                        childrenIter(allRoutes[randkey], key);
+                        k = randkey;
+                      } else {
+                        allRoutes[key] = rt;
+                        childrenIter(allRoutes[key], key);
+                        k = key;
+                      }
+                    }
+                    if (service?.name && includeClassName) {
+                      allRoutes[service.name + routeFormat + k] = rt;
+                      delete allRoutes[k];
+                    } else
+                      allRoutes[k] = rt;
+                  }
+                }
             }
           }
-          if (r.post) {
+        };
+        allRoutes[tag] = routes[tag];
+        childrenIter(routes[tag], tag);
+      }
+      top:
+        for (const route in allRoutes) {
+          if (typeof allRoutes[route] === "object") {
+            let r = allRoutes[route];
+            if (typeof r === "object") {
+              if (customRoutes) {
+                for (const key in customRoutes) {
+                  r = customRoutes[key](r, route, allRoutes);
+                  if (!r)
+                    continue top;
+                }
+              }
+              if (r.get) {
+                if (typeof r.get == "object") {
+                }
+              }
+              if (r.post) {
+              }
+              if (r.delete) {
+              }
+              if (r.put) {
+              }
+              if (r.head) {
+              }
+              if (r.patch) {
+              }
+              if (r.options) {
+              }
+              if (r.connect) {
+              }
+              if (r.trace) {
+              }
+              if (r.post && !r.operator) {
+                allRoutes[route].operator = r.post;
+              } else if (!r.operator && typeof r.get == "function") {
+                allRoutes[route].operator = r.get;
+              }
+            }
           }
-          if (r.delete) {
-          }
-          if (r.put) {
-          }
-          if (r.head) {
-          }
-          if (r.patch) {
-          }
-          if (r.options) {
-          }
-          if (r.connect) {
-          }
-          if (r.trace) {
-          }
-          if (r.post && !r.operator) {
-            routes[route].operator = r.post;
-          } else if (!r.operator && typeof r.get == "function") {
-            routes[route].operator = r.get;
-          }
+        }
+      for (const route in routes) {
+        if (typeof routes[route] === "object") {
           if (this.routes[route]) {
             if (typeof this.routes[route] === "object")
               Object.assign(this.routes[route], routes[route]);
@@ -4124,13 +4831,21 @@ var Service = class extends Graph {
         } else
           this.routes[route] = routes[route];
       }
-      this.setTree(this.routes);
+      if (service) {
+        for (const key in this.routes) {
+          if (this.routes[key] instanceof GraphNode) {
+            this.nodes.set(key, this.routes[key]);
+            this.nNodes = this.nodes.size;
+          }
+        }
+      } else
+        this.setTree(this.routes);
       for (const prop in this.routes) {
         if (this.routes[prop]?.aliases) {
           let aliases = this.routes[prop].aliases;
           aliases.forEach((a) => {
-            if (service)
-              routes[service.name + "/" + a] = this.routes[prop];
+            if (service?.name && includeClassName)
+              routes[service.name + routeFormat + a] = this.routes[prop];
             else
               routes[a] = this.routes[prop];
           });
@@ -4165,6 +4880,8 @@ var Service = class extends Graph {
       }
       if (this.routes[route]?.[m]) {
         if (!(this.routes[route][m] instanceof Function)) {
+          if (args)
+            this.routes[route][m] = args;
           return this.routes[route][m];
         } else
           return this.routes[route][m](args);
@@ -4172,7 +4889,7 @@ var Service = class extends Graph {
         return this.handleServiceMessage({ route, args, method, origin });
     };
     this.transmit = (...args) => {
-      if (args[0] instanceof Object) {
+      if (typeof args[0] === "object") {
         if (args[0].method) {
           return this.handleMethod(args[0].route, args[0].method, args[0].args);
         } else if (args[0].route) {
@@ -4185,12 +4902,13 @@ var Service = class extends Graph {
           if (args[0].node)
             this.setState({ [args[0].node]: args[0].args });
         }
+        return args;
       } else
         return args;
     };
     this.receive = (...args) => {
       if (args[0]) {
-        if (Object.getPrototypeOf(args[0]) === String.prototype) {
+        if (typeof args[0] === "string") {
           let substr = args[0].substring(0, 8);
           if (substr.includes("{") || substr.includes("[")) {
             if (substr.includes("\\"))
@@ -4203,7 +4921,7 @@ var Service = class extends Graph {
           }
         }
       }
-      if (args[0] instanceof Object) {
+      if (typeof args[0] === "object") {
         if (args[0].method) {
           return this.handleMethod(args[0].route, args[0].method, args[0].args);
         } else if (args[0].route) {
@@ -4216,6 +4934,7 @@ var Service = class extends Graph {
           if (args[0].node)
             this.setState({ [args[0].node]: args[0].args });
         }
+        return args;
       } else
         return args;
     };
@@ -4264,8 +4983,8 @@ var Service = class extends Graph {
     };
     this.recursivelyAssign = (target, obj) => {
       for (const key in obj) {
-        if (obj[key] instanceof Object) {
-          if (target[key] instanceof Object)
+        if (typeof obj[key] === "object") {
+          if (typeof target[key] === "object")
             this.recursivelyAssign(target[key], obj[key]);
           else
             target[key] = this.recursivelyAssign({}, obj[key]);
@@ -4290,14 +5009,14 @@ var Service = class extends Graph {
         return args;
       },
       assign: (source) => {
-        if (source instanceof Object) {
+        if (typeof source === "object") {
           Object.assign(this, source);
           return true;
         }
         return false;
       },
       recursivelyAssign: (source) => {
-        if (source instanceof Object) {
+        if (typeof source === "object") {
           this.recursivelyAssign(this, source);
           return true;
         }
@@ -4348,14 +5067,20 @@ var Service = class extends Graph {
       handleServiceMessage: this.handleServiceMessage,
       handleGraphNodeCall: this.handleGraphNodeCall
     };
-    if (name)
-      this.name = name;
-    if (routes)
-      this.load(routes);
+    if (options.name)
+      this.name = options.name;
+    else
+      options.name = this.tag;
+    if ("loadDefaultRoutes" in options) {
+      this.loadDefaultRoutes = options.loadDefaultRoutes;
+      this.routes = Object.assign(this.defaultRoutes, this.routes);
+    }
+    if (options || Object.keys(this.routes).length > 0)
+      this.init(options);
   }
   handleServiceMessage(message) {
     let call;
-    if (message instanceof Object) {
+    if (typeof message === "object") {
       if (message.route)
         call = message.route;
       else if (message.node)
@@ -4396,11 +5121,12 @@ var Service = class extends Graph {
   }
 };
 
-// ../../routers/Router.ts
+// ../../../routers/Router.ts
 var Router = class {
-  constructor(services) {
+  constructor(services, options) {
     this.id = `router${Math.floor(Math.random() * 1e15)}`;
     this.service = new Service();
+    this.nodes = this.service.nodes;
     this.run = this.service.run;
     this._run = this.service._run;
     this.add = this.service.add;
@@ -4413,15 +5139,16 @@ var Router = class {
     this.setState = this.service.setState;
     this.recursivelyAssign = this.service.recursivelyAssign;
     this.state = this.service.state;
-    this.routes = {};
+    this.routes = this.service.routes;
     this.services = {};
-    this.load = (service) => {
-      if (!(service instanceof Service) && typeof service === "function") {
-        service = new service(void 0, service.name);
+    this.loadDefaultRoutes = false;
+    this.load = (service, linkServices = true, includeClassName = true, routeFormat = ".", customRoutes, customChildren) => {
+      if (!(service instanceof Graph) && typeof service === "function") {
+        service = new service({ loadDefaultRoutes: this.loadDefaultRoutes, name: service.name });
         service.load();
       } else if (!service)
         return;
-      if (service instanceof Service) {
+      if (service instanceof Graph && service.name) {
         this.services[service.name] = service;
       } else {
         if (service.constructor.name === "Object") {
@@ -4436,15 +5163,17 @@ var Router = class {
         } else
           this.services[service.constructor.name] = service;
       }
-      this.service.load(service);
-      for (const name in this.services) {
-        this.service.nodes.forEach((n) => {
-          if (this.services[name]?.nodes) {
-            if (!this.services[name].nodes.get(n.tag)) {
-              this.services[name].nodes.set(n.tag, n);
+      this.service.load(service, includeClassName, routeFormat, customRoutes, customChildren);
+      if (linkServices) {
+        for (const name in this.services) {
+          this.service.nodes.forEach((n) => {
+            if (this.services[name]?.nodes) {
+              if (!this.services[name].nodes.get(n.tag)) {
+                this.services[name].nodes.set(n.tag, n);
+              }
             }
-          }
-        });
+          });
+        }
       }
       return this.services[service.name];
     };
@@ -4471,7 +5200,9 @@ var Router = class {
               let mod = callback(res);
               if (mod)
                 res = mod;
-              radio.transmit({ route: destination, args: res, origin, method });
+              radio.transmit(
+                { route: destination, args: res, origin, method }
+              );
             });
           } else
             return this.subscribe(source, (res) => {
@@ -4511,7 +5242,9 @@ var Router = class {
               let mod = callback(res);
               if (mod)
                 res = mod;
-              radio.transmit({ route: destination, args: res, origin, method });
+              radio.transmit(
+                { route: destination, args: res, origin, method }
+              );
             });
           } else
             return this.state.subscribeTriggerOnce(source, (res) => {
@@ -4528,7 +5261,7 @@ var Router = class {
     };
     this.sendAll = (message, connections, channel) => {
       let sent = false;
-      if (connections instanceof Object) {
+      if (typeof connections === "object") {
         for (const protocol in connections) {
           for (const info in connections[protocol]) {
             let obj = connections[protocol][info];
@@ -4825,7 +5558,10 @@ var Router = class {
       for (const prop in this.streamSettings) {
         this.streamSettings[prop].settings.keys.forEach((key) => {
           if (this.streamSettings[prop].settings[key]) {
-            let data = this.streamSettings[prop].settings[key].callback(this.streamSettings[prop].object[key], this.streamSettings[prop].settings[key]);
+            let data = this.streamSettings[prop].settings[key].callback(
+              this.streamSettings[prop].object[key],
+              this.streamSettings[prop].settings[key]
+            );
             if (data !== void 0)
               updateObj[key] = data;
           }
@@ -4869,30 +5605,30 @@ var Router = class {
         loop: 10
       }
     };
-    this.load(this.defaultRoutes);
-    if (this.routes) {
-      if (Object.keys(this.routes).length > 0)
-        this.load(this.routes);
+    if (options && "loadDefaultRoutes" in options) {
+      this.loadDefaultRoutes = options.loadDefaultRoutes;
     }
+    if (this.loadDefaultRoutes)
+      this.load(this.defaultRoutes, options?.linkServices, options?.includeClassName, options?.routeFormat, options?.customRoutes, options?.customChildren);
     if (Array.isArray(services)) {
-      services.forEach((s) => this.load(s));
+      services.forEach((s) => this.load(s, options?.linkServices, options?.includeClassName, options?.routeFormat, options?.customRoutes, options?.customChildren));
     } else if (typeof services === "object") {
-      Object.keys(services).forEach((s) => this.load(services[s]));
+      Object.keys(services).forEach((s) => this.load(services[s], options?.linkServices, options?.includeClassName, options?.routeFormat, options?.customRoutes, options?.customChildren));
     }
   }
 };
 
-// ../../routers/users/User.router.ts
+// ../../../routers/users/User.router.ts
 var UserRouter = class extends Router {
-  constructor(services) {
-    super(services);
+  constructor(services, options) {
+    super(services, options);
     this.users = {};
     this.sessions = {
       private: {},
       shared: {}
     };
     this.runAs = (node, userId, ...args) => {
-      if (userId instanceof Object)
+      if (typeof userId === "object")
         userId = userId._id;
       return this._run(node, userId, ...args);
     };
@@ -5029,10 +5765,10 @@ var UserRouter = class extends Router {
           user.send = (message, channel) => {
             if (!this.users[user._id])
               return;
-            if (this.users[user._id].sendAll instanceof Object) {
+            if (typeof this.users[user._id].sendAll === "object") {
               if (message.route && !message.origin)
                 message.origin = user._id;
-              if (message instanceof Object)
+              if (typeof message === "object")
                 message = JSON.stringify(message);
               for (const protocol in this.users[user._id].sendAll) {
                 for (const info in this.users[user._id].sendAll[protocol]) {
@@ -5080,7 +5816,7 @@ var UserRouter = class extends Router {
             } else {
               let connections;
               if (this.users[user._id].sendAll) {
-                if (Object.getPrototypeOf(this.users[user._id].sendAll) === String.prototype) {
+                if (typeof this.users[user._id].sendAll === "string") {
                   connections = this.user[this.users[user._id].sendAll];
                   this.users[user._id].sendAll = {};
                 }
@@ -5170,7 +5906,7 @@ var UserRouter = class extends Router {
                   if (data.includes("callbackId"))
                     data = JSON.parse(data);
                 }
-                if (data instanceof Object) {
+                if (typeof data === "object") {
                   if (data.callbackId === callbackId) {
                     connection.removeEventListener("message", onmessage);
                     res(data.args);
@@ -5294,14 +6030,14 @@ var UserRouter = class extends Router {
     };
     this.setUser = (user, props) => {
       if (user) {
-        if (Object.getPrototypeOf(user) === String.prototype) {
+        if (typeof user === "string") {
           user = this.users[user];
           if (!user)
             return false;
         }
       }
       if (props) {
-        if (Object.getPrototypeOf(props) === String.prototype) {
+        if (typeof props === "string") {
           props = JSON.parse(props);
         }
       }
@@ -5383,7 +6119,7 @@ var UserRouter = class extends Router {
       return connectionInfo;
     };
     this.getSessionInfo = (sessionId, userId) => {
-      if (userId instanceof Object)
+      if (typeof userId === "object")
         userId = userId._id;
       if (!sessionId) {
         return this.sessions.shared;
@@ -5619,7 +6355,7 @@ var UserRouter = class extends Router {
       return true;
     };
     this.subscribeToSession = (session2, userId, onmessage, onopen, onclose) => {
-      if (userId instanceof Object)
+      if (typeof userId === "object")
         userId = userId._id;
       if (typeof session2 === "string") {
         let s = this.sessions.private[session2];
@@ -5636,7 +6372,7 @@ var UserRouter = class extends Router {
           this.unsubscribe("joinSession", sub);
         });
       }
-      if (session2 instanceof Object) {
+      if (typeof session2 === "object") {
         if (onmessage)
           session2.onmessage = onmessage;
         if (onopen)
@@ -5669,7 +6405,7 @@ var UserRouter = class extends Router {
           for (const prop in sesh.settings.propnames) {
             if (this.users[sesh.source][prop]) {
               if (this.sessions.private[session2].data) {
-                if (sesh.data[prop] instanceof Object) {
+                if (typeof sesh.data[prop] === "object") {
                   if (this.users[sesh.source][prop] && (stringifyFast(sesh.data[prop]) !== stringifyFast(this.users[sesh.source][prop]) || !(prop in sesh.data)))
                     updateObj.data[prop] = this.users[sesh.source][prop];
                 } else if (this.users[sesh.source][prop] && (sesh.data[prop] !== this.users[sesh.source][prop] || !(prop in sesh.data)))
@@ -5715,11 +6451,11 @@ var UserRouter = class extends Router {
               for (const prop in sesh.settings.propnames) {
                 if (this.users[user][prop]) {
                   if (sesh.data?.private && !(user in sesh.data.private)) {
-                    if (this.users[user][prop] instanceof Object)
+                    if (typeof this.users[user][prop] === "object")
                       privateData[user][prop] = this.recursivelyAssign({}, this.users[user][prop]);
                     else
                       privateData[user][prop] = this.users[user][prop];
-                  } else if (privateData[user][prop] instanceof Object && sesh.data) {
+                  } else if (typeof privateData[user][prop] === "object" && sesh.data) {
                     if (this.users[user][prop] && (stringifyFast(sesh.data?.shared[user][prop]) !== stringifyFast(this.users[user][prop]) || !(prop in sesh.data)))
                       privateData[user][prop] = this.users[user][prop];
                   } else if (this.users[user][prop] && sesh.data?.private?.[prop] !== this.users[user][prop])
@@ -5734,11 +6470,11 @@ var UserRouter = class extends Router {
               for (const prop in sesh.settings.hostprops) {
                 if (this.users[user][prop]) {
                   if (sesh.data && !(user in sesh.data.shared)) {
-                    if (this.users[user][prop] instanceof Object)
+                    if (typeof this.users[user][prop] === "object")
                       sharedData[user][prop] = this.recursivelyAssign({}, this.users[user][prop]);
                     else
                       sharedData[user][prop] = this.users[user][prop];
-                  } else if (sharedData[user][prop] instanceof Object && sesh.data) {
+                  } else if (typeof sharedData[user][prop] === "object" && sesh.data) {
                     if (this.users[user][prop] && (stringifyFast(sesh.data?.shared[user][prop]) !== stringifyFast(this.users[user][prop]) || !(prop in sesh.data.shared[user])))
                       sharedData[user][prop] = this.users[user][prop];
                   } else if (this.users[user][prop] && sesh.data?.shared[user][prop] !== this.users[user][prop])
@@ -5774,11 +6510,11 @@ var UserRouter = class extends Router {
               for (const prop in sesh.settings.propnames) {
                 if (this.users[user][prop]) {
                   if (sesh.data && !(user in sesh.data.shared)) {
-                    if (this.users[user][prop] instanceof Object)
+                    if (typeof this.users[user][prop] === "object")
                       sharedData[user][prop] = this.recursivelyAssign({}, this.users[user][prop]);
                     else
                       sharedData[user][prop] = this.users[user][prop];
-                  } else if (sesh.data?.shared[user][prop] instanceof Object) {
+                  } else if (typeof sesh.data?.shared[user][prop] === "object") {
                     if (stringifyFast(sesh.data.shared[user][prop]) !== stringifyFast(this.users[user][prop]) || !(prop in sesh.data.shared[user])) {
                       sharedData[user][prop] = this.users[user][prop];
                     }
@@ -5865,10 +6601,10 @@ var UserRouter = class extends Router {
     };
     this.receiveSessionUpdates = (self = this, origin, update) => {
       if (update) {
-        if (Object.getPrototypeOf(update) === String.prototype)
+        if (typeof update === "string")
           update = JSON.parse(update);
       }
-      if (update instanceof Object) {
+      if (typeof update === "object") {
         if (typeof origin === "object")
           origin = origin._id;
         let user = this.users[origin];
@@ -5915,7 +6651,7 @@ var UserRouter = class extends Router {
                 for (const prop in s.settings.hostprops) {
                   if (!updateObj[prop] && user[prop] && user[prop] !== void 0) {
                     if (s.data.shared?.[user._id]?.[prop]) {
-                      if (user[prop] instanceof Object) {
+                      if (typeof user[prop] === "object") {
                         if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
                           updateObj[prop] = user[prop];
                       } else if (s.data.shared[user._id][prop] !== user[prop])
@@ -5928,14 +6664,14 @@ var UserRouter = class extends Router {
                 for (const prop in s.settings.propnames) {
                   if (!updateObj[prop] && user[prop] !== void 0) {
                     if (s.settings.source) {
-                      if (user[prop] instanceof Object && s.data[prop] !== void 0) {
+                      if (typeof user[prop] === "object" && s.data[prop] !== void 0) {
                         if (stringifyFast(s.data[prop]) !== stringifyFast(user[prop]))
                           updateObj[prop] = user[prop];
                       } else if (s.data[prop] !== user[prop])
                         updateObj[prop] = user[prop];
                     } else {
                       if (s.data.shared?.[user._id]?.[prop]) {
-                        if (user[prop] instanceof Object) {
+                        if (typeof user[prop] === "object") {
                           let split = stringifyFast(user[prop]).split("");
                           if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
                             updateObj[prop] = user[prop];
@@ -5986,7 +6722,7 @@ var UserRouter = class extends Router {
         loop: 10
       }
     };
-    this.load(this.routes);
+    this.load(this.routes, options?.linkServices, options?.includeClassName, options?.routeFormat, options?.customRoutes, options?.customChildren);
   }
   getFirstMatch(obj1, obj2) {
     for (const i in obj1) {
@@ -5999,14 +6735,14 @@ var UserRouter = class extends Router {
   }
 };
 
-// ../../services/http/HTTP.node.ts
-var http = __toESM(require("http"), 1);
-var https = __toESM(require("https"), 1);
-var fs = __toESM(require("fs"), 1);
-var path = __toESM(require("path"), 1);
+// ../../../services/http/HTTP.node.ts
+var http = __toESM(require("http"));
+var https = __toESM(require("https"));
+var fs = __toESM(require("fs"));
+var path = __toESM(require("path"));
 var HTTPbackend = class extends Service {
-  constructor(routes, name, settings) {
-    super(routes, name);
+  constructor(options, settings) {
+    super(options);
     this.name = "http";
     this.debug = false;
     this.servers = {};
@@ -6072,8 +6808,10 @@ var HTTPbackend = class extends Service {
       ".3gp": "video/3gpp"
     };
     this.onStarted = (protocol, host, port) => {
-      console.log(`\u{1F431} Node server running at 
-            ${protocol}://${host}:${port}/`);
+      console.log(
+        `\u{1F431} Node server running at 
+            ${protocol}://${host}:${port}/`
+      );
     };
     this.setupServer = (options = {
       protocol: "http",
@@ -6081,6 +6819,19 @@ var HTTPbackend = class extends Service {
       port: 8080,
       startpage: "index.html"
     }, requestListener, onStarted) => {
+      if (options.pages) {
+        for (const key in options.pages) {
+          if (typeof options.pages[key] === "string") {
+            this.addPage(key, options.pages[key]);
+          } else if (typeof options.pages[key] === "object") {
+            if (options.pages[key].template) {
+              options.pages[key].get = options.pages[key].template;
+            }
+            if (key !== "all")
+              this.load({ [key]: options.pages[key] });
+          }
+        }
+      }
       if (options.protocol === "https") {
         return this.setupHTTPSserver(options, requestListener, onStarted);
       } else
@@ -6112,9 +6863,40 @@ var HTTPbackend = class extends Service {
       };
       if (!requestListener)
         requestListener = (request, response) => {
-          this.receive({ route: request.url.slice(1), args: { request, response }, method: request.method, served });
+          let received = {
+            args: { request, response },
+            method: request.method,
+            served
+          };
+          let url = request.url.slice(1);
+          if (!url)
+            url = "/";
+          if (options.pages) {
+            if (typeof options.pages[url] === "object") {
+              if (options.pages[url].redirect) {
+                url = options.pages[url].redirect;
+                received.redirect = url;
+              }
+              if (options.pages[url].onrequest) {
+                if (typeof options.pages[url].onrequest === "string") {
+                  options.pages[url].onrequest = this.nodes.get(options.pages[url].onrequest);
+                }
+                if (typeof options.pages[url].onrequest === "object") {
+                  if (options.pages[url].onrequest.run) {
+                    options.pages[url].onrequest.run(options.pages[url], request, response);
+                  }
+                } else if (typeof options.pages[url].onrequest === "function") {
+                  options.pages[url].onrequest(this, options.pages[url], request, response);
+                }
+              }
+            }
+          }
+          received.route = url;
+          this.receive(received);
         };
-      const server = http.createServer(requestListener);
+      const server = http.createServer(
+        requestListener
+      );
       served.server = server;
       this.servers[address] = served;
       return new Promise((resolve, reject) => {
@@ -6122,10 +6904,14 @@ var HTTPbackend = class extends Service {
           console.error("Server error:", err.toString());
           reject(err);
         });
-        server.listen(port, host, () => {
-          onStarted();
-          resolve(served);
-        });
+        server.listen(
+          port,
+          host,
+          () => {
+            onStarted();
+            resolve(served);
+          }
+        );
       });
     };
     this.setupHTTPSserver = (options = {
@@ -6161,14 +6947,41 @@ var HTTPbackend = class extends Service {
       };
       if (!requestListener)
         requestListener = (request, response) => {
-          this.receive({
-            route: request.url.slice(1),
+          let received = {
             args: { request, response },
             method: request.method,
             served
-          });
+          };
+          let url = request.url.slice(1);
+          if (!url)
+            url = "/";
+          if (options.pages) {
+            if (typeof options.pages[url] === "object") {
+              if (options.pages[url].redirect) {
+                url = options.pages[url].redirect;
+                received.redirect = url;
+              }
+              if (options.pages[url].onrequest) {
+                if (typeof options.pages[url].onrequest === "string") {
+                  options.pages[url].onrequest = this.nodes.get(options.pages[url].onrequest);
+                }
+                if (typeof options.pages[url].onrequest === "object") {
+                  if (options.pages[url].onrequest.run) {
+                    options.pages[url].onrequest.run(options.pages[url], request, response);
+                  }
+                } else if (typeof options.pages[url].onrequest === "function") {
+                  options.pages[url].onrequest(this, options.pages[url], request, response);
+                }
+              }
+            }
+          }
+          received.route = url;
+          this.receive(received);
         };
-      const server = https.createServer(opts, requestListener);
+      const server = https.createServer(
+        opts,
+        requestListener
+      );
       served.server = server;
       this.servers[`${host}:${port}`] = served;
       return new Promise((resolve, reject) => {
@@ -6176,10 +6989,14 @@ var HTTPbackend = class extends Service {
           console.error("Server error:", err.toString());
           reject(err);
         });
-        server.listen(port, host, () => {
-          onStarted();
-          resolve(served);
-        });
+        server.listen(
+          port,
+          host,
+          () => {
+            onStarted();
+            resolve(served);
+          }
+        );
       });
     };
     this.transmit = (message, options, ondata, onend) => {
@@ -6215,7 +7032,7 @@ var HTTPbackend = class extends Service {
       if (result && !response.writableEnded && !response.destroyed) {
         if (typeof result === "string") {
           if (result.includes("<") && result.includes(">") && result.indexOf("<") < result.indexOf(">")) {
-            if (message?.served?.pageOptions?.all || message?.served?.pageOptions?.[message.route]) {
+            if (message?.served?.pages?._all || message?.served?.pages?.[message.route]) {
               result = this.injectPageCode(result, message.route, message.served);
             }
             response.writeHead(200, { "Content-Type": "text/html" });
@@ -6225,7 +7042,7 @@ var HTTPbackend = class extends Service {
         }
         let mimeType = "text/plain";
         if (typeof result === "object") {
-          result = JSON.stringify(result);
+          result = stringifyWithCircularRefs(result);
           mimeType = "application/json";
         }
         response.writeHead(200, { "Content-Type": mimeType });
@@ -6233,21 +7050,21 @@ var HTTPbackend = class extends Service {
       }
     };
     this.injectPageCode = (templateString, url, served) => {
-      if (served?.pageOptions?.[url]?.inject) {
-        if (typeof served.pageOptions[url].inject === "object")
-          templateString = this.buildPage(served.pageOptions[url].inject, templateString);
-        else if (typeof served.pageOptions[url].inject === "function")
-          templateString += served.pageOptions[url].inject();
-        else if (typeof served.pageOptions[url].inject === "string" || typeof served.pageOptions[url].inject === "number")
-          templateString += served.pageOptions[url].inject;
+      if (served?.pages?.[url]?.inject) {
+        if (typeof served.pages[url].inject === "object")
+          templateString = this.buildPage(served.pages[url].inject, templateString);
+        else if (typeof served.pages[url].inject === "function")
+          templateString += served.pages[url].inject();
+        else if (typeof served.pages[url].inject === "string" || typeof served.pages[url].inject === "number")
+          templateString += served.pages[url].inject;
       }
-      if (served?.pageOptions?.all?.inject) {
-        if (typeof served.pageOptions.all.inject === "object")
-          templateString = this.buildPage(served.pageOptions.all.inject, templateString);
-        else if (typeof served.pageOptions.all.inject === "function")
-          templateString += served.pageOptions.all.inject();
-        else if (typeof served.pageOptions.all.inject === "string" || typeof served.pageOptions.all.inject === "number")
-          templateString += served.pageOptions.all.inject;
+      if (served?.pages?._all?.inject) {
+        if (typeof served.pages._all.inject === "object")
+          templateString = this.buildPage(served.pages._all.inject, templateString);
+        else if (typeof served.pages._all.inject === "function")
+          templateString += served.pages._all.inject();
+        else if (typeof served.pages._all.inject === "string" || typeof served.pages._all.inject === "number")
+          templateString += served.pages._all.inject;
       }
       return templateString;
     };
@@ -6272,7 +7089,7 @@ var HTTPbackend = class extends Service {
             reject(requestURL);
           if (requestURL == "./" || requestURL == served?.startpage) {
             let template = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Brains@Play Server</h1></body></html>`;
-            if (served?.pageOptions?.all || served?.pageOptions?.error) {
+            if (served?.pages?._all || served?.pages?.error) {
               template = this.injectPageCode(template, message.route, served);
             }
             response.writeHead(200, { "Content-Type": "text/html" });
@@ -6293,7 +7110,7 @@ var HTTPbackend = class extends Service {
           if (requestURL == "./" && served?.startpage) {
             requestURL = served.startpage;
           }
-          if (fs.existsSync(path.join(process.cwd(), requestURL))) {
+          if ((request.url !== "/" || served?.startpage) && fs.existsSync(path.join(process.cwd(), requestURL))) {
             if (response.writableEnded || response.destroyed)
               reject(requestURL);
             fs.readFile(path.join(process.cwd(), requestURL), (error, content) => {
@@ -6302,7 +7119,7 @@ var HTTPbackend = class extends Service {
                   if (served?.errpage) {
                     fs.readFile(served.errpage, (er, content2) => {
                       response.writeHead(404, { "Content-Type": "text/html" });
-                      if (served.pageOptions?.all || served.pageOptions?.error) {
+                      if (served.pages?._all || served.pages?.error) {
                         content2 = this.injectPageCode(content2.toString(), message.route, served);
                       }
                       response.end(content2, "utf-8");
@@ -6311,7 +7128,7 @@ var HTTPbackend = class extends Service {
                   } else {
                     response.writeHead(404, { "Content-Type": "text/html" });
                     let content2 = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Error: ${error.code}</h1></body></html>`;
-                    if (served?.pageOptions?.all || served?.pageOptions?.[message.route]) {
+                    if (served?.pages?._all || served?.pages?.[message.route]) {
                       content2 = this.injectPageCode(content2.toString(), message.route, served);
                     }
                     response.end(content2, "utf-8", () => {
@@ -6327,7 +7144,7 @@ var HTTPbackend = class extends Service {
               } else {
                 var extname2 = String(path.extname(requestURL)).toLowerCase();
                 var contentType = this.mimeTypes[extname2] || "application/octet-stream";
-                if (contentType === "text/html" && (served?.pageOptions?.all || served?.pageOptions?.[message.route])) {
+                if (contentType === "text/html" && (served?.pages?._all || served?.pages?.[message.route])) {
                   content = this.injectPageCode(content.toString(), message.route, served);
                 }
                 response.writeHead(200, { "Content-Type": contentType });
@@ -6337,18 +7154,18 @@ var HTTPbackend = class extends Service {
               }
             });
           } else if (message.route) {
-            let route = this.routes[message.route];
+            let route = this.nodes.get(message.route);
             if (!route) {
               route = this.routes[request.url];
             }
             if (route) {
               let res;
               if (message.method) {
-                res = this.handleMethod(message.route, message.method, message.args, message.origin);
+                res = this.handleMethod(message.route, message.method, void 0, message.origin);
               } else if (message.node) {
-                res = this.handleGraphNodeCall(message.node, message.args);
+                res = this.handleGraphNodeCall(message.node, void 0);
               } else
-                res = this.handleServiceMessage(message);
+                res = this.handleServiceMessage({ route: message.route, args: void 0, method: message.method, origin: message.origin });
               if (res instanceof Promise)
                 res.then((r) => {
                   if (served?.keepState)
@@ -6362,6 +7179,10 @@ var HTTPbackend = class extends Service {
                 this.withResult(response, res, message);
                 resolve(res);
               }
+            } else if (message.redirect) {
+              response.writeHead(301, { "Location": message.redirect });
+              response.end();
+              resolve(true);
             } else
               getFailed();
           } else
@@ -6487,14 +7308,17 @@ var HTTPbackend = class extends Service {
       if (split.length > 3) {
         path2 = split.slice(3).join("/");
       }
-      let req = this.request({
-        protocol,
-        host,
-        port,
-        path: path2,
-        method: "POST",
-        headers
-      }, data);
+      let req = this.request(
+        {
+          protocol,
+          host,
+          port,
+          path: path2,
+          method: "POST",
+          headers
+        },
+        data
+      );
       return req;
     };
     this.get = (url) => {
@@ -6531,9 +7355,10 @@ var HTTPbackend = class extends Service {
         if (!template.includes("<html"))
           template = "<!DOCTYPE html><html>" + template + "</html>";
       }
-      if (typeof this.routes[path2] === "object")
+      if (typeof this.routes[path2] === "object") {
         this.routes[path2].get = template;
-      else
+        this.nodes.get(path2).get = template;
+      } else
         this.load({
           [path2]: {
             get: template
@@ -6545,9 +7370,10 @@ var HTTPbackend = class extends Service {
         if (!template.includes("<") || !template.includes(">"))
           template = "<div>" + template + "</div>";
       }
-      if (typeof this.routes[path2] === "object")
+      if (typeof this.routes[path2] === "object") {
         this.routes[path2].get = template;
-      else
+        this.nodes.get(path2).get = template;
+      } else
         this.load({
           [path2]: {
             get: template
@@ -6606,12 +7432,13 @@ var HTTPbackend = class extends Service {
     this.routes = {
       setupServer: this.setupServer,
       terminate: (path2) => {
-        for (const address in this.servers) {
-          if (address.includes(`${path2}`)) {
-            this.terminate(this.servers[address]);
-            delete this.servers[address];
+        if (path2)
+          for (const address in this.servers) {
+            if (address.includes(`${path2}`)) {
+              this.terminate(this.servers[address]);
+              delete this.servers[address];
+            }
           }
-        }
       },
       GET: this.get,
       POST: this.post,
@@ -6659,6 +7486,7 @@ var HTTPbackend = class extends Service {
       pwa: (serviceWorkerPath, manifestPath) => {
       }
     };
+    this.load(this.routes);
     if (settings) {
       if (settings.protocol === "https") {
         this.setupHTTPSserver(settings);
@@ -6680,11 +7508,11 @@ var HTTPbackend = class extends Service {
   }
 };
 
-// ../../services/sse/SSE.node.ts
-var import_better_sse = __toESM(require_build(), 1);
+// ../../../services/sse/SSE.node.ts
+var import_better_sse = __toESM(require_build());
 var SSEbackend = class extends Service {
-  constructor(routes, name) {
-    super(routes, name);
+  constructor(options) {
+    super(options);
     this.name = "sse";
     this.debug = false;
     this.servers = {};
@@ -6808,10 +7636,11 @@ var SSEbackend = class extends Service {
       setupSSE: this.setupSSE,
       terminate: this.terminate
     };
+    this.load(this.routes);
   }
 };
 
-// ../../node_modules/ws/wrapper.mjs
+// ../../../node_modules/ws/wrapper.mjs
 var import_stream = __toESM(require_stream(), 1);
 var import_receiver = __toESM(require_receiver(), 1);
 var import_sender = __toESM(require_sender(), 1);
@@ -6819,10 +7648,10 @@ var import_websocket = __toESM(require_websocket(), 1);
 var import_websocket_server = __toESM(require_websocket_server(), 1);
 var wrapper_default = import_websocket.default;
 
-// ../../services/wss/WSS.node.ts
+// ../../../services/wss/WSS.node.ts
 var WSSbackend = class extends Service {
-  constructor(routes, name) {
-    super(routes, name);
+  constructor(options) {
+    super(options);
     this.name = "wss";
     this.debug = false;
     this.servers = {};
@@ -6936,7 +7765,7 @@ var WSSbackend = class extends Service {
       else {
         let socketonmessage = (data) => {
           if (data) {
-            if (Object.getPrototypeOf(data) === String.prototype) {
+            if (typeof data === "string") {
               let substr = data.substring(0, 8);
               if (substr.includes("{") || substr.includes("[")) {
                 if (substr.includes("\\"))
@@ -6950,17 +7779,18 @@ var WSSbackend = class extends Service {
                   this.sockets[address]._id = data.args;
                   socket.removeEventListener("message", socketonmessage);
                   socket.on("message", (data2) => {
-                    const result2 = this.receive(data2, socket, this.sockets[address]);
-                    if (options.keepState)
-                      this.setState({ [address]: result2 });
+                    this.receive(data2, socket, this.sockets[address]);
+                    if (options.keepState) {
+                      this.setState({ [address]: data2 });
+                    }
                   });
                 }
               }
             }
           }
-          const result = this.receive(data, socket, this.sockets[address]);
+          this.receive(data, socket, this.sockets[address]);
           if (options.keepState)
-            this.setState({ [address]: result });
+            this.setState({ [address]: data });
         };
         socket.on("message", socketonmessage);
         options.onmessage = socketonmessage;
@@ -6977,10 +7807,80 @@ var WSSbackend = class extends Service {
         socket.on("error", (er) => {
           options.onerror(er, socket, this.sockets[address]);
         });
+      let send = (message) => {
+        return this.transmit(message, socket);
+      };
+      let post = (route, args, origin, method) => {
+        let message = {
+          route,
+          args
+        };
+        if (origin)
+          message.origin = origin;
+        if (method)
+          message.method = method;
+        return this.transmit(message, socket);
+      };
+      let run = (route, args, origin, method) => {
+        return new Promise((res, rej) => {
+          let callbackId = Math.random();
+          let req = { route: "runRequest", args: [{ route, args }, options._id, callbackId] };
+          if (origin)
+            req.args[0].origin = origin;
+          if (method)
+            req.args[0].method = method;
+          let onmessage = (ev) => {
+            if (typeof ev.data === "string" && ev.data.indexOf("{") > -1)
+              ev.data = JSON.parse(ev.data);
+            if (typeof ev.data === "object") {
+              if (ev.data.callbackId === callbackId) {
+                socket.removeEventListener("message", onmessage);
+                res(ev.data.args);
+              }
+            }
+          };
+          socket.addEventListener("message", onmessage);
+          this.transmit(req, socket);
+        });
+      };
+      let request = (message, origin, method) => {
+        return new Promise((res, rej) => {
+          let callbackId = Math.random();
+          let req = { route: "runRequest", args: [message, options._id, callbackId] };
+          if (origin)
+            req.origin = origin;
+          if (method)
+            req.method = method;
+          let onmessage = (ev) => {
+            if (typeof ev.data === "string" && ev.data.indexOf("{") > -1)
+              ev.data = JSON.parse(ev.data);
+            if (typeof ev.data === "object") {
+              if (ev.data.callbackId === callbackId) {
+                socket.removeEventListener("message", onmessage);
+                res(ev.data.args);
+              }
+            }
+          };
+          socket.addEventListener("message", onmessage);
+          this.transmit(req, socket);
+        });
+      };
+      let subscribe = (route, callback) => {
+        return this.subscribeToSocket(route, address, callback);
+      };
+      let unsubscribe = (route, sub) => {
+        return run("unsubscribe", [route, sub]);
+      };
       this.sockets[address] = {
         type: "socket",
         socket,
         address,
+        send,
+        post,
+        request,
+        run,
+        subscribe,
+        unsubscribe,
         ...options
       };
       return socket;
@@ -7071,7 +7971,7 @@ var WSSbackend = class extends Service {
             if (data.includes("callbackId"))
               data = JSON.parse(data);
           }
-          if (data instanceof Object) {
+          if (typeof data === "object") {
             if (data.callbackId === callbackId) {
               ws.removeEventListener("message", onmessage);
               res(data.args);
@@ -7085,7 +7985,7 @@ var WSSbackend = class extends Service {
     this.runRequest = (message, ws, callbackId) => {
       let res = this.receive(message);
       if (ws) {
-        if (Object.getPrototypeOf(ws) === String.prototype) {
+        if (typeof ws === "string") {
           for (const key in this.servers) {
             for (const c in this.servers[key].clients) {
               if (c === ws) {
@@ -7123,22 +8023,41 @@ var WSSbackend = class extends Service {
       closeWS: this.closeWS,
       request: this.request,
       runRequest: this.runRequest,
-      terminate: (path2) => {
-        if (path2) {
-          for (const address in this.servers) {
-            if (address.includes(path2)) {
-              this.terminate(this.servers[address].wss);
-              delete this.servers[address];
-            }
-          }
-        } else {
-          path2 = Object.keys(this.servers)[0];
-          this.terminate(this.servers[path2].wss);
-          delete this.servers[path2];
-        }
-        return true;
-      }
+      terminate: this.terminate,
+      subscribeSocket: this.subscribeSocket,
+      subscribeToSocket: this.subscribeToSocket,
+      unsubscribe: this.unsubscribe
     };
+    this.load(this.routes);
+  }
+  subscribeSocket(route, socket) {
+    if (typeof socket === "string" && this.sockets[socket]) {
+      socket = this.sockets[socket].socket;
+    }
+    return this.subscribe(route, (res) => {
+      if (res instanceof Promise) {
+        res.then((r) => {
+          socket.send(JSON.stringify({ args: r, callbackId: route }));
+        });
+      } else {
+        socket.send(JSON.stringify({ args: res, callbackId: route }));
+      }
+    });
+  }
+  subscribeToSocket(route, socketId, callback) {
+    if (typeof socketId === "string" && this.sockets[socketId]) {
+      this.subscribe(socketId, (res) => {
+        if (res?.callbackId === route) {
+          if (!callback)
+            this.setState({ [socketId]: res.args });
+          else if (typeof callback === "string") {
+            this.setState({ [callback]: res.args });
+          } else
+            callback(res.args);
+        }
+      });
+      return this.sockets[socketId].request(JSON.stringify({ route: "subscribeSocket", args: [route, socketId] }));
+    }
   }
 };
 
@@ -7157,48 +8076,65 @@ var router = new UserRouter([
   HTTPbackend,
   WSSbackend,
   SSEbackend
-]);
-router.run("http/setupServer", {
-  protocol: "http",
-  host: "localhost",
-  port: 8080,
-  startpage: "index.html",
-  pageOptions: {
-    all: {
-      inject: {
-        hotreload: "ws://localhost:8080/hotreload"
+], { loadDefaultRoutes: true });
+router.run(
+  "http.setupServer",
+  {
+    protocol: "http",
+    host: "localhost",
+    port: 8080,
+    startpage: "index.html",
+    pages: {
+      _all: {
+        inject: {
+          hotreload: "ws://localhost:8080/hotreload"
+        }
       }
     }
   }
-}).then((served) => {
-  const socketserver = router.run("wss/setupWSS", {
-    server: served.server,
-    host: served.host,
-    port: 8081,
-    path: "wss",
-    onconnection: (ws, req, serverinfo, id) => {
-      ws.send("Hello from WSS!");
+).then((served) => {
+  const socketserver = router.run(
+    "wss.setupWSS",
+    {
+      server: served.server,
+      host: served.host,
+      port: 8081,
+      path: "wss",
+      onconnection: (ws, req, serverinfo, id) => {
+        ws.send("Hello from WSS!");
+      }
     }
-  });
-  const hotreload = router.run("wss/setupWSS", {
-    server: served.server,
-    host: served.host,
-    port: 7e3,
-    path: "hotreload",
-    onconnection: (ws) => {
-      ws.send("Hot reload port opened!");
+  );
+  const hotreload = router.run(
+    "wss.setupWSS",
+    {
+      server: served.server,
+      host: served.host,
+      port: 7e3,
+      path: "hotreload",
+      onconnection: (ws) => {
+        ws.send("Hot reload port opened!");
+      }
     }
-  });
-  const sseinfo = router.run("sse/setupSSE", {
-    server: served.server,
-    path: "sse",
-    channels: ["test"],
-    onconnection: (session2, sseinfo2, id, req, res) => {
-      console.log("pushing sse!");
-      session2.push("Hello from SSE!");
-      sseinfo2.channels.forEach((c) => sseinfo2.channel.broadcast("SSE connection at " + req.headers.host + "/" + req.url, c));
+  );
+  const sseinfo = router.run(
+    "sse.setupSSE",
+    {
+      server: served.server,
+      path: "sse",
+      channels: ["test"],
+      onconnection: (session2, sseinfo2, id, req, res) => {
+        console.log("pushing sse!");
+        session2.push("Hello from SSE!");
+        sseinfo2.channels.forEach(
+          (c) => sseinfo2.channel.broadcast(
+            "SSE connection at " + req.headers.host + "/" + req.url,
+            c
+          )
+        );
+      }
     }
-  });
+  );
 });
 console.log("main service routes", router.service.routes);
 console.log("http service routes", router.services.http.routes);
@@ -7218,11 +8154,13 @@ var session = router.openSharedSession({
   }
 }, "admin");
 router.subscribe("addUser", (res) => {
-  if (res instanceof Object) {
+  if (typeof res === "object") {
     let user = res;
     let joined = router.joinSession("webrtcrooms", user);
     if (joined) {
-      user.send(JSON.stringify({ route: "joinSession", args: [joined._id, user._id, joined] }));
+      user.send(
+        JSON.stringify({ route: "joinSession", args: [joined._id, user._id, joined] })
+      );
     }
   }
 });

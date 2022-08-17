@@ -28,7 +28,7 @@ export class SSEfrontend extends Service {
     }={}
 
     constructor(options?:ServiceOptions) {
-        super(options)
+        super(options);
         this.load(this.routes);
     }
     

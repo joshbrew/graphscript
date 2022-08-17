@@ -57,7 +57,7 @@ export declare class Service extends Graph {
     keepState: boolean;
     firstLoad: boolean;
     constructor(options?: ServiceOptions);
-    init: (options: ServiceOptions) => void;
+    init: (options?: ServiceOptions) => void;
     load: (routes?: any, includeClassName?: boolean, routeFormat?: string, customRoutes?: ServiceOptions["customRoutes"], customChildren?: ServiceOptions["customChildren"]) => Routes;
     unload: (routes?: Service | Routes | any) => Routes;
     handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;

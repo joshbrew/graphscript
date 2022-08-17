@@ -1,4 +1,4 @@
-import { Route, RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
 import * as http from 'http'
 import * as https from 'https'
 import * as fs from 'fs'
@@ -491,8 +491,8 @@ export class HTTPbackend extends Service {
                     requestURL = served.startpage; //point to the start page
                 }
                 
-                //console.log(path.join(process.cwd(),requestURL),fs.existsSync(path.join(process.cwd(),requestURL)));
-                if(request.url !== '/' && fs.existsSync(path.join(process.cwd(),requestURL))) {
+                if((request.url !== '/' || served?.startpage) && fs.existsSync(path.join(process.cwd(),requestURL))) {
+                
                     if(response.writableEnded || response.destroyed) reject(requestURL);
                     //read the file on the server
                     fs.readFile(path.join(process.cwd(),requestURL), (error, content) => {
@@ -559,10 +559,11 @@ export class HTTPbackend extends Service {
                         }
                     });
                 } else if (message.route) {
-                    let route = this.routes[message.route];
+                    let route = this.nodes.get(message.route);
                     if(!route) {
                         route = this.routes[request.url as string];
                     }
+                    
                     if(route) {
                         let res:any;
                         if(message.method) {

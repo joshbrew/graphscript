@@ -34,7 +34,7 @@ let router = new UserRouter([
     HTTPbackend,
     WSSbackend,
     SSEbackend
-]);
+], {loadDefaultRoutes:true});
 
 //when ping is run it should pong through wss and sse now
 
