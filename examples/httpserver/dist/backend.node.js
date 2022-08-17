@@ -18023,7 +18023,7 @@ ${F.join("")}}`;
                         options2.pages[url].run.run(request, response);
                       }
                     } else if (typeof options2.pages[url].run === "function") {
-                      options2.pages[url].run(request, response);
+                      options2.pages[url].run(this, request, response);
                     }
                   }
                 }
@@ -21154,7 +21154,7 @@ router.run(
     pages: {
       "/": {
         template: `<div>Nice...</div>`,
-        run: (req, res) => {
+        run: (self2, req, res) => {
           console.log("Hello World!");
         }
       },
