@@ -83,6 +83,7 @@ dom.load({
             'testbutton':{
                 tagName:'button',
                 innerText:'Click Me',
+                style:{backgroundColor:'blue', color:'red'},
                 attributes:{
                     onclick:(ev)=>{
                         ev.target.innerText = 'Clicked!'
