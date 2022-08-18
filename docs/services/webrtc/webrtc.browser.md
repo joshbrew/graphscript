@@ -60,6 +60,17 @@ rtc.openRTC().then((room:WebRTCInfo) => {
             }
         }
     })
+
+
+    socket.addEventListener('message',(ev) => {
+        let peerinfo = JSON.parse(ev.data);
+
+        for(const prop in peerinfo.peercandidates) {
+            if(!rtc.rooms[peerinfo._id].peercandidates[prop]) {
+                rtc.addIceCandidate(rtc.rooms[peerinfo._id].rtcReceive, peerinfo.peercandidates[prop])
+            }
+        }
+    });
 })
 
 ```
