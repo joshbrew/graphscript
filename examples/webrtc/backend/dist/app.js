@@ -4899,6 +4899,10 @@
                                 }
                               }
                               console.log("session is live!", roomId);
+                              setTimeout(() => {
+                                console.log("attempting to ping");
+                                user.localrtc[roomId].run("ping").then(console.log).catch(console.error);
+                              }, 1e3);
                             });
                           } else if (remoteroom.peercandidates) {
                             for (const c in remoteroom.peercandidates) {

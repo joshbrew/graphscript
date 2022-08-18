@@ -265,6 +265,11 @@ let p = router.addUser(
                                                         }
                                                     }
                                                     console.log('session is live!', roomId);
+
+                                                    setTimeout(() => {
+                                                        console.log('attempting to ping');
+                                                        (user.localrtc[roomId] as WebRTCInfo).run('ping').then(console.log).catch(console.error);
+                                                    }, 1000)
                                                 })
                                                 // remoteroom.peerdescription = JSON.parse(decodeURIComponent(remoteroom.peerdescription));
                                                 // (user.localrtc[roomId].rtc as RTCPeerConnection).setRemoteDescription(remoteroom.peerdescription).then(() => {
