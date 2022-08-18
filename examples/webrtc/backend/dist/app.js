@@ -4329,18 +4329,9 @@
         if (!options.config)
           options.config = { iceServers: this.iceServers };
         let rtc = new RTCPeerConnection(options.config);
-        if (!options.channels)
-          options.channels = { "data": true };
-        if (options.channels) {
-          for (const channel in options.channels) {
-            if (options.channels[channel] instanceof RTCDataChannel) {
-            } else if (typeof options.channels[channel] === "object") {
-              options.channels[channel] = this.addDataChannel(rtc, channel, options.channels[channel]);
-            } else
-              options.channels[channel] = this.addDataChannel(rtc, channel);
-          }
-        }
         if (!this.rtc[options._id]) {
+          if (!options.channels)
+            options.channels = { "data": true };
           let firstChannel;
           for (const key in options.channels) {
             firstChannel = key;
@@ -4435,6 +4426,15 @@
                   options.ondata(mev.data, ev.channel, this.rtc[options._id]);
                 };
             };
+          if (options.channels) {
+            for (const channel in options.channels) {
+              if (options.channels[channel] instanceof RTCDataChannel) {
+              } else if (typeof options.channels[channel] === "object") {
+                options.channels[channel] = this.addDataChannel(rtc, channel, options.channels[channel]);
+              } else
+                options.channels[channel] = this.addDataChannel(rtc, channel);
+            }
+          }
           rtc.ontrack = options.ontrack;
           rtc.onicecandidate = options.onicecandidate;
           rtc.onicecandidateerror = options.onicecandidateerror;
@@ -4531,11 +4531,11 @@
       this.addDataChannel = (rtc, name, options) => {
         return rtc.createDataChannel(name, options);
       };
-      this.transmit = (data, channel, id) => {
+      this.transmit = (data, id, channel) => {
         if (typeof data === "object" || typeof data === "number")
           data = JSON.stringify(data);
         if (!channel && id) {
-          let keys = Object.keys(this.rtc[id].channels)[0];
+          let keys = Object.keys(this.rtc[id].channels);
           if (keys[0])
             channel = this.rtc[id].channels[keys[0]];
         }
@@ -4551,6 +4551,7 @@
         }
         if (channel instanceof RTCDataChannel)
           channel.send(data);
+        console.log("sending", channel, data);
         return true;
       };
       this.terminate = (rtc) => {

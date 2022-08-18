@@ -101,20 +101,11 @@ export class WebRTCfrontend extends Service {
         
         let rtc = new RTCPeerConnection(options.config);
 
-        if(!options.channels) options.channels = { 'data':true  }; //need one channel at least for the default service stuff to work
-        if(options.channels) {
-            for(const channel in options.channels) {
-                if(options.channels[channel] instanceof RTCDataChannel) {
-                   //OK
-                }
-                else if( typeof options.channels[channel] === 'object') {
-                    options.channels[channel] = this.addDataChannel(rtc,channel,(options.channels)[channel] as any);
-                } else options.channels[channel] = this.addDataChannel(rtc,channel);
-            }
-        } 
 
         if(!this.rtc[options._id]) {
   
+            if(!options.channels) options.channels = { 'data':true  }; //need one channel at least for the default service stuff to work
+            
             let firstChannel;
             for(const key in options.channels) {
                 firstChannel = key;
@@ -187,7 +178,7 @@ export class WebRTCfrontend extends Service {
             let unsubscribe = (route:any, sub:number) => {
                 return run('unsubscribe',[route,sub]);
             }
-
+ 
             this.rtc[options._id] = {
                 rtc,
                 _id:options._id,
@@ -212,7 +203,18 @@ export class WebRTCfrontend extends Service {
                 else ev.channel.onmessage = (mev) => { options.ondata(mev.data, ev.channel, this.rtc[options._id]); }
             
             }
-    
+
+            if(options.channels) {
+                for(const channel in options.channels) {
+                    if(options.channels[channel] instanceof RTCDataChannel) {
+                    //OK
+                    }
+                    else if( typeof options.channels[channel] === 'object') {
+                        options.channels[channel] = this.addDataChannel(rtc,channel,(options.channels)[channel] as any);
+                    } else options.channels[channel] = this.addDataChannel(rtc,channel);
+                }
+            } 
+        
     
             rtc.ontrack = options.ontrack;
             rtc.onicecandidate = options.onicecandidate;
@@ -364,12 +366,12 @@ export class WebRTCfrontend extends Service {
     }
 
     //send data on a data channel
-    transmit = (data:ServiceMessage|any, channel?:string|RTCDataChannel, id?:string ) => {
+    transmit = (data:ServiceMessage|any, id?:string, channel?:string|RTCDataChannel ) => {
         if(typeof data === 'object' || typeof data === 'number') 
             data = JSON.stringify(data); //we need strings
         
         if(!channel && id) { //select first channel
-            let keys = Object.keys(this.rtc[id].channels)[0];
+            let keys = Object.keys(this.rtc[id].channels);
             if(keys[0])
                 channel = this.rtc[id].channels[keys[0]] as RTCDataChannel;
         }
@@ -388,6 +390,8 @@ export class WebRTCfrontend extends Service {
         if(channel instanceof RTCDataChannel)
             channel.send(data);
     
+        console.log('sending',channel,data)
+
         return true;
     }
 
