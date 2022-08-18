@@ -62,7 +62,6 @@ export declare const state: {
  */
 export declare class GraphNode {
     nodes: Map<any, any>;
-    arguments: Map<any, any>;
     _initial: {
         [key: string]: any;
     };
@@ -98,10 +97,10 @@ export declare class GraphNode {
     runOp: (node?: GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
     setOperator: (operator: OperatorType) => OperatorType;
     /**
-     * Runs the graph and passes output to connected graphs
+     * Runs the graph node and passes output to connected nodes
      *
      * ```typescript
-     * const res = await graph.run(arg1, arg2, arg3);
+     * const res = await node.run(arg1, arg2, arg3);
      * ```
      */
     run: (...args: any[]) => any;

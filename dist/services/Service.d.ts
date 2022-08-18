@@ -6,10 +6,7 @@ import { Graph, GraphNode, GraphNodeProperties, OperatorType } from "../Graph";
  *
  */
 export declare type RouteProp = {
-    get?: {
-        object: any;
-        transform: (...args: any) => any;
-    } | ((...args: any) => any | void);
+    get?: ((...args: any) => any | void);
     post?: OperatorType | ((...args: any[]) => any | void);
     put?: (...args: any) => any | void;
     head?: (...args: any) => any | void;

@@ -93,22 +93,22 @@ let p = router.addUser(
     console.log("Added user:", user);
     let info = router.getConnectionInfo(user);
 
-    let button = document.createElement('button');
-    button.innerHTML = 'Open RTC Room';
+    let connectbutton = document.createElement('button');
+    connectbutton.innerHTML = 'Open RTC Room';
     let myrooms = document.createElement('div');
     myrooms.innerHTML = 'My Rooms<br>';
     myrooms.id = user._id as string;
     let allrooms = document.createElement('div');
     allrooms.innerHTML = 'Available Rooms<br>'
 
-    document.body.appendChild(button);
+    document.body.appendChild(connectbutton);
     document.body.appendChild(allrooms);
     allrooms.appendChild(myrooms);
     
     user.rooms = {};
     user.localrtc = {};
 
-    button.onclick = () => {
+    connectbutton.onclick = () => {
 
         let newId = `rtc${Math.floor(Math.random()*1000000000000000)}`;
 

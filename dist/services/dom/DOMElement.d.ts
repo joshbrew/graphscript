@@ -9,7 +9,6 @@ export class DOMElement extends HTMLElement {
     useShadow: boolean;
     styles: any;
     oncreate: any;
-    onresize: any;
     ondelete: any;
     onchanged: any;
     renderonchanged: boolean;
@@ -19,7 +18,7 @@ export class DOMElement extends HTMLElement {
     obsAttributes: string[];
     get observedAttributes(): string[];
     attributeChangedCallback: (name: any, old: any, val: any) => void;
-    ONRESIZE: ((ev: any) => void) | ((ev: any) => void);
+    ONRESIZE: (ev: any) => void;
     connectedCallback(): void;
     delete: () => void;
     render: (props?: {}) => void;
