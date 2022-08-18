@@ -41,7 +41,7 @@ export class WebRTCfrontend extends Service {
     name='webrtc'
 
     rtc:{
-        [key:string]:any
+        [key:string]:WebRTCInfo
     } = {}
 
     iceServers:{urls:string[]}[] = [
@@ -199,31 +199,32 @@ export class WebRTCfrontend extends Service {
                 unsubscribe,
                 ...options
             }
+
+            //console.log('opening webrtc channel',this.rtc)
+            if(!options.ondatachannel) options.ondatachannel = (ev:RTCDataChannelEvent) => {
+                this.rtc[options._id].channels[ev.channel.label] = ev.channel;
+                if(!options.ondata)
+                    ev.channel.onmessage = (mev) => {
+                        this.receive(mev.data, ev.channel, this.rtc[options._id]);
+                        this.setState({[options._id]:mev.data});
+                    }
+                else ev.channel.onmessage = (mev) => { options.ondata(mev.data, ev.channel, this.rtc[options._id]); }
+            
+            }
+    
+    
+            rtc.ontrack = options.ontrack;
+            rtc.onicecandidate = options.onicecandidate;
+            rtc.onicecandidateerror = options.onicecandidateerror; 
+            rtc.ondatachannel = options.ondatachannel; 
+            rtc.onnegotiationneeded = options.onnegotiationneeded; 
+            rtc.oniceconnectionstatechange = options.oniceconnectionstatechange; 
+            rtc.onconnectionstatechange = options.onconnectionstatechange; 
+        
         } else {
             Object.assign(this.rtc[options._id],options);
         }
 
-        //console.log('opening webrtc channel',this.rtc)
-        if(!options.ondatachannel) options.ondatachannel = (ev:RTCDataChannelEvent) => {
-            this.rtc[options._id].channels[ev.channel.label] = ev.channel;
-            if(!options.ondata)
-                ev.channel.onmessage = (mev) => {
-                    this.receive(mev.data, ev.channel, this.rtc[options._id]);
-                    this.setState({[options._id]:mev.data});
-                }
-            else ev.channel.onmessage = (mev) => { options.ondata(mev.data, ev.channel, this.rtc[options._id]); }
-        
-        }
-
-
-        rtc.ontrack = options.ontrack;
-        rtc.onicecandidate = options.onicecandidate;
-        rtc.onicecandidateerror = options.onicecandidateerror; 
-        rtc.ondatachannel = options.ondatachannel; 
-        rtc.onnegotiationneeded = options.onnegotiationneeded; 
-        rtc.oniceconnectionstatechange = options.oniceconnectionstatechange; 
-        rtc.onconnectionstatechange = options.onconnectionstatechange; 
-    
         if(options.hostdescription && !options.peerdescription)   {
             if(!options.onicecandidate) options.onicecandidate = (ev:RTCPeerConnectionIceEvent) => {
                 if(ev.candidate) {
@@ -258,28 +259,12 @@ export class WebRTCfrontend extends Service {
                         this.rtc[options._id].peerdescription = encodeURIComponent(JSON.stringify(rtc.localDescription));
                         res(this.rtc[options._id]);
                     });
-                }); //we can now receive data
+                }).catch(rej); //we can now receive data
             });
         }
     
         if(options.peerdescription)  {
-            
-            return await new Promise((res,rej) => {
-                if(typeof options.peerdescription === 'string') {
-                    options.peerdescription = JSON.parse(decodeURIComponent(options.peerdescription));
-                }
-                const description = new RTCSessionDescription(options.peerdescription as RTCSessionDescriptionInit);
-                options.peerdescription = description
-                rtc.setRemoteDescription(description).then(()=>{
-                    if(options.peercandidates) {
-                        for(const prop in options.peercandidates) {
-                            const candidate = new RTCIceCandidate(options.peercandidates[prop])
-                            rtc.addIceCandidate(candidate).catch(console.error);
-                        }
-                    }
-                    res(this.rtc[options._id]);
-                }); //we can now receive data
-            });
+            this.answerPeer(rtc,options);
         }
 
         if(!options.onicecandidate && !this.rtc[options._id]?.onicecandidate) options.onicecandidate = (ev:RTCPeerConnectionIceEvent) => {
@@ -303,8 +288,31 @@ export class WebRTCfrontend extends Service {
     
     }
 
-    addIceCandidate(peer:RTCPeerConnection, candidate:RTCIceCandidate) {
-        return peer.addIceCandidate(candidate);
+    addIceCandidate(rtc:RTCPeerConnection, candidate:RTCIceCandidate) {
+        return rtc.addIceCandidate(candidate);
+    }
+
+    //use the 
+    answerPeer(rtc:RTCPeerConnection,options:WebRTCProps) {
+        return new Promise((res,rej) => {
+            if(typeof options.peerdescription === 'string') {
+                options.peerdescription = JSON.parse(decodeURIComponent(options.peerdescription));
+            }
+            const description = new RTCSessionDescription(options.peerdescription as RTCSessionDescriptionInit);
+            options.peerdescription = description;
+
+            if(this.rtc[options._id]) this.rtc[options._id].peerdescription = description;
+            rtc.setRemoteDescription(description).then(()=>{
+                if(options.peercandidates) {
+                    for(const prop in options.peercandidates) {
+                        const candidate = new RTCIceCandidate(options.peercandidates[prop])
+                        if(this.rtc[options._id]) this.rtc[options._id].peercandidates[prop] = options.peercandidates[prop];
+                        rtc.addIceCandidate(candidate).catch(console.error);
+                    }
+                }
+                res(this.rtc[options._id] ? this.rtc[options._id] : rtc);
+            }).catch(rej); //we can now receive data
+        });
     }
 
     addUserMedia = (
@@ -362,7 +370,7 @@ export class WebRTCfrontend extends Service {
         if(!channel && id) { //select first channel
             let keys = Object.keys(this.rtc[id].channels)[0];
             if(keys[0])
-                channel = this.rtc[id].channels[keys[0]];
+                channel = this.rtc[id].channels[keys[0]] as RTCDataChannel;
         }
 
         if(typeof channel === 'string')  {
@@ -371,7 +379,7 @@ export class WebRTCfrontend extends Service {
             } else { //send on all channels on all rooms
                 for(const id in this.rtc) {
                     if(this.rtc[id].channels[channel] instanceof RTCDataChannel)
-                        this.rtc[id].channels[channel].send(data);
+                        (this.rtc[id].channels[channel] as RTCDataChannel).send(data);
                 }
             }
         }
@@ -430,7 +438,7 @@ export class WebRTCfrontend extends Service {
         if(channel) {
             if(typeof channel === 'string') {
                 for(const key in this.rtc) {
-                    if(key === channel) {channel = this.rtc[key].channels.data; break;}
+                    if(key === channel) {channel = this.rtc[key].channels.data as RTCDataChannel; break;}
                 }
             }
             if(res instanceof Promise)

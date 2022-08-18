@@ -126,9 +126,11 @@ let p = router.addUser(
         (router.services.webrtc as WebRTCfrontend).openRTC({
             _id:newId,
             onicecandidate:(ev) => {
-                let cid = `hostcandidate${Math.floor(Math.random()*1000000000000000)}`;
-                user.rooms[newId].hostcandidates[cid] = ev.candidate;   
-                console.log('setting ice candidate!', cid, ev.candidate)
+                if(ev.candidate) {
+                    let cid = `hostcandidate${Math.floor(Math.random()*1000000000000000)}`;
+                    user.rooms[newId].hostcandidates[cid] = ev.candidate;   
+                    console.log('setting ice candidate!', cid, ev.candidate);
+                }
             },
         }).then((room:WebRTCInfo) => {
 
@@ -210,7 +212,7 @@ let p = router.addUser(
                                                     _id:roomId, 
                                                     hostdescription:remoteroom.hostdescription,
                                                     onicecandidate:(ev) => {
-                                                        user.rooms[roomId].peercandidates[`peercandidate${Math.floor(Math.random()*1000000000000000)}`] = ev.candidate;
+                                                        if(ev.candidate) user.rooms[roomId].peercandidates[`peercandidate${Math.floor(Math.random()*1000000000000000)}`] = ev.candidate;
                                                     },
                                                 }).then((localroom) => {
 
@@ -228,9 +230,9 @@ let p = router.addUser(
                                             }
                                          
                                     } else {
-                                        (allrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !remoteroom.joined;
 
-                                        console.log('remote room',remoteroom);
+                                        console.log('remote room',remoteroom, ', local room?',user.localrtc[roomId]);
+                                        (allrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !remoteroom.joined;
 
                                         if(remoteroom.hostcandidates && user.rooms[roomId] && user._id !== remoteroom.ownerId) {
                                             for(const c in remoteroom.hostcandidates) {
@@ -252,17 +254,27 @@ let p = router.addUser(
                                             user._id === remoteroom.ownerId 
                                         ) {
                                             if(!user.rooms[roomId].peerdescription) {
-                                                remoteroom.peerdescription = JSON.parse(decodeURIComponent(remoteroom.peerdescription));
-                                                (user.localrtc[roomId].rtc as RTCPeerConnection).setRemoteDescription(remoteroom.peerdescription).then(() => {
+                                                (router.services.webrtc as WebRTCfrontend).answerPeer((user.localrtc[roomId].rtc as RTCPeerConnection), remoteroom).then(() => {
                                                     user.rooms[roomId].isLive = true;
+                                                    user.rooms[roomId].joined = true;
                                                     user.rooms[roomId].peerdescription = remoteroom.peerdescription;
-                                                    for(const c in remoteroom.peercandidates) {
-                                                        console.log('adding new peer ice candidate!', remoteroom.peercandidates[c], 'for room', user.localrtc[roomId].rtc);
-                                                        (user.localrtc[roomId].rtc as RTCPeerConnection).addIceCandidate(remoteroom.peercandidates[c]);
-                                                        user.rooms[roomId].peercandidates[c] = true;
+                                                    if(user.rooms[roomId].peercandidates) {
+                                                        for(const c in user.rooms[roomId].peercandidates) {
+                                                            console.log('adding new peer ice candidate!', remoteroom.peercandidates[c], 'for room', user.localrtc[roomId].rtc);
+                                                            user.rooms[roomId].peercandidates[c] = true;
+                                                        }
                                                     }
-                                                    console.log('session is live!', roomId)
-                                                });
+                                                    console.log('session is live!', roomId);
+                                                })
+                                                // remoteroom.peerdescription = JSON.parse(decodeURIComponent(remoteroom.peerdescription));
+                                                // (user.localrtc[roomId].rtc as RTCPeerConnection).setRemoteDescription(remoteroom.peerdescription).then(() => {
+                                                //     user.rooms[roomId].peerdescription = remoteroom.peerdescription;
+                                                //     for(const c in remoteroom.peercandidates) {
+                                                //         console.log('adding new peer ice candidate!', remoteroom.peercandidates[c], 'for room', user.localrtc[roomId].rtc);
+                                                //         (user.localrtc[roomId].rtc as RTCPeerConnection).addIceCandidate(remoteroom.peercandidates[c]);
+                                                //         user.rooms[roomId].peercandidates[c] = true;
+                                                //     }
+                                                // });
                                             } else if(remoteroom.peercandidates) {
                                                 for(const c in remoteroom.peercandidates) {
                                                     if(!user.rooms[roomId].peercandidates[c]) {
@@ -273,6 +285,8 @@ let p = router.addUser(
                                                 }
                                             }
                                         } 
+
+                                        
                                     }
                                 }
                             }

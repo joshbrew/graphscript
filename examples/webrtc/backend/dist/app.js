@@ -4421,29 +4421,29 @@
             unsubscribe,
             ...options
           };
+          if (!options.ondatachannel)
+            options.ondatachannel = (ev) => {
+              this.rtc[options._id].channels[ev.channel.label] = ev.channel;
+              if (!options.ondata)
+                ev.channel.onmessage = (mev) => {
+                  this.receive(mev.data, ev.channel, this.rtc[options._id]);
+                  this.setState({ [options._id]: mev.data });
+                };
+              else
+                ev.channel.onmessage = (mev) => {
+                  options.ondata(mev.data, ev.channel, this.rtc[options._id]);
+                };
+            };
+          rtc.ontrack = options.ontrack;
+          rtc.onicecandidate = options.onicecandidate;
+          rtc.onicecandidateerror = options.onicecandidateerror;
+          rtc.ondatachannel = options.ondatachannel;
+          rtc.onnegotiationneeded = options.onnegotiationneeded;
+          rtc.oniceconnectionstatechange = options.oniceconnectionstatechange;
+          rtc.onconnectionstatechange = options.onconnectionstatechange;
         } else {
           Object.assign(this.rtc[options._id], options);
         }
-        if (!options.ondatachannel)
-          options.ondatachannel = (ev) => {
-            this.rtc[options._id].channels[ev.channel.label] = ev.channel;
-            if (!options.ondata)
-              ev.channel.onmessage = (mev) => {
-                this.receive(mev.data, ev.channel, this.rtc[options._id]);
-                this.setState({ [options._id]: mev.data });
-              };
-            else
-              ev.channel.onmessage = (mev) => {
-                options.ondata(mev.data, ev.channel, this.rtc[options._id]);
-              };
-          };
-        rtc.ontrack = options.ontrack;
-        rtc.onicecandidate = options.onicecandidate;
-        rtc.onicecandidateerror = options.onicecandidateerror;
-        rtc.ondatachannel = options.ondatachannel;
-        rtc.onnegotiationneeded = options.onnegotiationneeded;
-        rtc.oniceconnectionstatechange = options.oniceconnectionstatechange;
-        rtc.onconnectionstatechange = options.onconnectionstatechange;
         if (options.hostdescription && !options.peerdescription) {
           if (!options.onicecandidate)
             options.onicecandidate = (ev) => {
@@ -4473,26 +4473,11 @@
                 this.rtc[options._id].peerdescription = encodeURIComponent(JSON.stringify(rtc.localDescription));
                 res(this.rtc[options._id]);
               });
-            });
+            }).catch(rej);
           });
         }
         if (options.peerdescription) {
-          return await new Promise((res, rej) => {
-            if (typeof options.peerdescription === "string") {
-              options.peerdescription = JSON.parse(decodeURIComponent(options.peerdescription));
-            }
-            const description = new RTCSessionDescription(options.peerdescription);
-            options.peerdescription = description;
-            rtc.setRemoteDescription(description).then(() => {
-              if (options.peercandidates) {
-                for (const prop in options.peercandidates) {
-                  const candidate = new RTCIceCandidate(options.peercandidates[prop]);
-                  rtc.addIceCandidate(candidate).catch(console.error);
-                }
-              }
-              res(this.rtc[options._id]);
-            });
-          });
+          this.answerPeer(rtc, options);
         }
         if (!options.onicecandidate && !this.rtc[options._id]?.onicecandidate)
           options.onicecandidate = (ev) => {
@@ -4687,8 +4672,30 @@
       if (iceServers)
         this.iceServers = iceServers;
     }
-    addIceCandidate(peer, candidate) {
-      return peer.addIceCandidate(candidate);
+    addIceCandidate(rtc, candidate) {
+      return rtc.addIceCandidate(candidate);
+    }
+    answerPeer(rtc, options) {
+      return new Promise((res, rej) => {
+        if (typeof options.peerdescription === "string") {
+          options.peerdescription = JSON.parse(decodeURIComponent(options.peerdescription));
+        }
+        const description = new RTCSessionDescription(options.peerdescription);
+        options.peerdescription = description;
+        if (this.rtc[options._id])
+          this.rtc[options._id].peerdescription = description;
+        rtc.setRemoteDescription(description).then(() => {
+          if (options.peercandidates) {
+            for (const prop in options.peercandidates) {
+              const candidate = new RTCIceCandidate(options.peercandidates[prop]);
+              if (this.rtc[options._id])
+                this.rtc[options._id].peercandidates[prop] = options.peercandidates[prop];
+              rtc.addIceCandidate(candidate).catch(console.error);
+            }
+          }
+          res(this.rtc[options._id] ? this.rtc[options._id] : rtc);
+        }).catch(rej);
+      });
     }
   };
 
@@ -4771,9 +4778,11 @@
       router.services.webrtc.openRTC({
         _id: newId,
         onicecandidate: (ev) => {
-          let cid = `hostcandidate${Math.floor(Math.random() * 1e15)}`;
-          user.rooms[newId].hostcandidates[cid] = ev.candidate;
-          console.log("setting ice candidate!", cid, ev.candidate);
+          if (ev.candidate) {
+            let cid = `hostcandidate${Math.floor(Math.random() * 1e15)}`;
+            user.rooms[newId].hostcandidates[cid] = ev.candidate;
+            console.log("setting ice candidate!", cid, ev.candidate);
+          }
         }
       }).then((room) => {
         user.rooms[newId].hostdescription = room.hostdescription;
@@ -4846,7 +4855,8 @@
                             _id: roomId,
                             hostdescription: remoteroom.hostdescription,
                             onicecandidate: (ev) => {
-                              user.rooms[roomId].peercandidates[`peercandidate${Math.floor(Math.random() * 1e15)}`] = ev.candidate;
+                              if (ev.candidate)
+                                user.rooms[roomId].peercandidates[`peercandidate${Math.floor(Math.random() * 1e15)}`] = ev.candidate;
                             }
                           }).then((localroom) => {
                             user.localrtc[roomId] = localroom;
@@ -4861,8 +4871,8 @@
                           });
                         };
                       } else {
+                        console.log("remote room", remoteroom, ", local room?", user.localrtc[roomId]);
                         allrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !remoteroom.joined;
-                        console.log("remote room", remoteroom);
                         if (remoteroom.hostcandidates && user.rooms[roomId] && user._id !== remoteroom.ownerId) {
                           for (const c in remoteroom.hostcandidates) {
                             if (!(c in user.rooms[roomId].hostcandidates)) {
@@ -4878,14 +4888,15 @@
                         }
                         if (remoteroom.peerdescription && user.rooms[roomId] && user._id === remoteroom.ownerId) {
                           if (!user.rooms[roomId].peerdescription) {
-                            remoteroom.peerdescription = JSON.parse(decodeURIComponent(remoteroom.peerdescription));
-                            user.localrtc[roomId].rtc.setRemoteDescription(remoteroom.peerdescription).then(() => {
+                            router.services.webrtc.answerPeer(user.localrtc[roomId].rtc, remoteroom).then(() => {
                               user.rooms[roomId].isLive = true;
+                              user.rooms[roomId].joined = true;
                               user.rooms[roomId].peerdescription = remoteroom.peerdescription;
-                              for (const c in remoteroom.peercandidates) {
-                                console.log("adding new peer ice candidate!", remoteroom.peercandidates[c], "for room", user.localrtc[roomId].rtc);
-                                user.localrtc[roomId].rtc.addIceCandidate(remoteroom.peercandidates[c]);
-                                user.rooms[roomId].peercandidates[c] = true;
+                              if (user.rooms[roomId].peercandidates) {
+                                for (const c in user.rooms[roomId].peercandidates) {
+                                  console.log("adding new peer ice candidate!", remoteroom.peercandidates[c], "for room", user.localrtc[roomId].rtc);
+                                  user.rooms[roomId].peercandidates[c] = true;
+                                }
                               }
                               console.log("session is live!", roomId);
                             });
