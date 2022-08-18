@@ -25,8 +25,7 @@ export type WebRTCProps = {
 
 export type WebRTCInfo = {
     _id:string,
-    rtcTransmit:RTCPeerConnection,
-    rtcReceive:RTCPeerConnection,
+    rtc:RTCPeerConnection,
     send:(message:any)=>void, //these callbacks work on the first available data channel to call to other webrtc services
     request:(message:any, origin?:string, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
@@ -100,8 +99,7 @@ export class WebRTCfrontend extends Service {
         if(!options._id) options._id = `rtc${Math.floor(Math.random()*1000000000000000)}`;
         if(!options.config) options.config = {iceServers:this.iceServers};
         
-        let rtcTransmit = new RTCPeerConnection(options.config);
-        let rtcReceive = new RTCPeerConnection(options.config);
+        let rtc = new RTCPeerConnection(options.config);
 
         if(!options.channels) options.channels = { 'data':true  }; //need one channel at least for the default service stuff to work
         if(options.channels) {
@@ -110,8 +108,8 @@ export class WebRTCfrontend extends Service {
                    //OK
                 }
                 else if( typeof options.channels[channel] === 'object') {
-                    options.channels[channel] = this.addDataChannel(rtcTransmit,channel,(options.channels)[channel] as any);
-                } else options.channels[channel] = this.addDataChannel(rtcTransmit,channel);
+                    options.channels[channel] = this.addDataChannel(rtc,channel,(options.channels)[channel] as any);
+                } else options.channels[channel] = this.addDataChannel(rtc,channel);
             }
         } 
 
@@ -191,8 +189,7 @@ export class WebRTCfrontend extends Service {
             }
 
             this.rtc[options._id] = {
-                rtcTransmit,
-                rtcReceive,
+                rtc,
                 _id:options._id,
                 request,
                 run,
@@ -219,20 +216,13 @@ export class WebRTCfrontend extends Service {
         }
 
 
-        rtcTransmit.ontrack = options.ontrack;
-        rtcTransmit.onicecandidate = options.onicecandidate;
-        rtcTransmit.onicecandidateerror = options.onicecandidateerror; 
-        rtcTransmit.ondatachannel = options.ondatachannel; 
-        rtcTransmit.onnegotiationneeded = options.onnegotiationneeded; 
-        rtcTransmit.oniceconnectionstatechange = options.oniceconnectionstatechange; 
-        rtcTransmit.onconnectionstatechange = options.onconnectionstatechange; 
-        rtcReceive.ontrack = options.ontrack; 
-        rtcReceive.onicecandidate = options.onicecandidate; 
-        rtcReceive.onicecandidateerror = options.onicecandidateerror;  
-        rtcReceive.ondatachannel = options.ondatachannel; 
-        rtcReceive.onnegotiationneeded = options.onnegotiationneeded; 
-        rtcReceive.oniceconnectionstatechange = options.oniceconnectionstatechange; 
-        rtcReceive.onconnectionstatechange = options.onconnectionstatechange; 
+        rtc.ontrack = options.ontrack;
+        rtc.onicecandidate = options.onicecandidate;
+        rtc.onicecandidateerror = options.onicecandidateerror; 
+        rtc.ondatachannel = options.ondatachannel; 
+        rtc.onnegotiationneeded = options.onnegotiationneeded; 
+        rtc.oniceconnectionstatechange = options.oniceconnectionstatechange; 
+        rtc.onconnectionstatechange = options.onconnectionstatechange; 
     
         if(options.hostdescription && !options.peerdescription)   {
             if(!options.onicecandidate) options.onicecandidate = (ev:RTCPeerConnectionIceEvent) => {
@@ -255,17 +245,17 @@ export class WebRTCfrontend extends Service {
                 console.log('desc2', description)
 
                 options.hostdescription = description
-                rtcReceive.setRemoteDescription(description).then(()=>{
+                rtc.setRemoteDescription(description).then(()=>{
                     if(options.hostcandidates) {
                         for(const prop in options.hostcandidates) {
                             const candidate = new RTCIceCandidate(options.hostcandidates[prop])
-                            rtcReceive.addIceCandidate(candidate).catch(console.error);
+                            rtc.addIceCandidate(candidate).catch(console.error);
                         }
                     }
-                    rtcReceive.createAnswer(options.answer)
-                    .then((answer)=> rtcReceive.setLocalDescription(answer))
+                    rtc.createAnswer(options.answer)
+                    .then((answer)=> rtc.setLocalDescription(answer))
                     .then(()=>{
-                        this.rtc[options._id].peerdescription = encodeURIComponent(JSON.stringify(rtcReceive.localDescription));
+                        this.rtc[options._id].peerdescription = encodeURIComponent(JSON.stringify(rtc.localDescription));
                         res(this.rtc[options._id]);
                     });
                 }); //we can now receive data
@@ -280,11 +270,11 @@ export class WebRTCfrontend extends Service {
                 }
                 const description = new RTCSessionDescription(options.peerdescription as RTCSessionDescriptionInit);
                 options.peerdescription = description
-                rtcReceive.setRemoteDescription(description).then(()=>{
+                rtc.setRemoteDescription(description).then(()=>{
                     if(options.peercandidates) {
                         for(const prop in options.peercandidates) {
                             const candidate = new RTCIceCandidate(options.peercandidates[prop])
-                            rtcReceive.addIceCandidate(candidate).catch(console.error);
+                            rtc.addIceCandidate(candidate).catch(console.error);
                         }
                     }
                     res(this.rtc[options._id]);
@@ -303,10 +293,10 @@ export class WebRTCfrontend extends Service {
         }
 
         return await new Promise((res,rej) => {
-            rtcTransmit.createOffer(options.offer)
-            .then((offer) => rtcTransmit.setLocalDescription(offer))
+            rtc.createOffer(options.offer)
+            .then((offer) => rtc.setLocalDescription(offer))
             .then(()=>{
-                    this.rtc[options._id].hostdescription = encodeURIComponent(JSON.stringify(rtcTransmit.localDescription));
+                    this.rtc[options._id].hostdescription = encodeURIComponent(JSON.stringify(rtc.localDescription));
                     res(this.rtc[options._id]); //this is to be transmitted to the user 
                 });
         });
@@ -394,24 +384,21 @@ export class WebRTCfrontend extends Service {
 
     //close a channel
     terminate = (rtc:RTCPeerConnection|WebRTCInfo|string) => {
-        let rx, tx;
+        let tx;
         if(typeof rtc === 'string') {
             let room = this.rtc[rtc];
             delete this.rtc[rtc];
             if(room) {
-                tx = room.rtcTransmit;
-                rx = room.rtcReceive;
+                tx = room.rtc;
             }
         }
         else if (typeof rtc === 'object') {
-            tx = (rtc as WebRTCInfo).rtcTransmit;
-            rx = (rtc as WebRTCInfo).rtcReceive;
+            tx = (rtc as WebRTCInfo).rtc;
         }
     
         if(rtc instanceof RTCPeerConnection) {
             rtc.close();
-        } else if(rx || tx) {
-            if(rx) rx.close();
+        } else if(tx) {
             if(tx) tx.close();
         }
 

@@ -96,7 +96,8 @@ let p = router.addUser(
     let button = document.createElement('button');
     button.innerHTML = 'Open RTC Room';
     let myrooms = document.createElement('div');
-    myrooms.innerHTML = 'My Rooms<br>'
+    myrooms.innerHTML = 'My Rooms<br>';
+    myrooms.id = user._id as string;
     let allrooms = document.createElement('div');
     allrooms.innerHTML = 'Available Rooms<br>'
 
@@ -105,6 +106,7 @@ let p = router.addUser(
     allrooms.appendChild(myrooms);
     
     user.rooms = {};
+    user.localrtc = {};
 
     button.onclick = () => {
 
@@ -114,8 +116,11 @@ let p = router.addUser(
             joined:false,
             ownerId:user._id,
             deleted:false,
+            isLive:false,
             hostcandidates:{},
-            hostdescription:undefined
+            hostdescription:undefined,
+            peercandidates:{},
+            peerdescription:undefined
         };
 
         (router.services.webrtc as WebRTCfrontend).openRTC({
@@ -128,6 +133,7 @@ let p = router.addUser(
         }).then((room:WebRTCInfo) => {
 
             user.rooms[newId].hostdescription = room.hostdescription;
+            user.localrtc[newId] = room;
             
             myrooms.insertAdjacentHTML('beforeend',`
                 <div id='${room._id}'>
@@ -167,58 +173,105 @@ let p = router.addUser(
                                 `);
                                 userrooms = allrooms.querySelector('#'+userId);
                             } 
+
                             if(userrooms && res.data.shared[userId].rooms) {
                                 for(const roomId in res.data.shared[userId].rooms) {
 
-                                    const room = res.data.shared[userId].rooms[roomId];
+                                    const remoteroom = res.data.shared[userId].rooms[roomId];
 
-                                    if(room.deleted) {
+
+                                    if(remoteroom.deleted) {
                                         if((myrooms.querySelector('#'+roomId+'joined') as any)) (myrooms.querySelector('#'+roomId) as any).remove();
                                         else if((userrooms.querySelector('#'+roomId+'joined') as any)) (userrooms.querySelector('#'+roomId) as any).remove();
                                         delete user.rooms[roomId];
                                     } 
-                                    else if(!userrooms.querySelector('#'+roomId)) {
-                                        if(myrooms.querySelector('#'+roomId)) {
-                                            (myrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !room.joined;
-                                            user.rooms[roomId].joined = room.joined;
-                                        } else if(room.ownerId === userId) {
-
+                                    else if(!allrooms.querySelector('#'+roomId) && remoteroom.ownerId === userId) {
                                             userrooms.insertAdjacentHTML('beforeend',`
                                                 <div id='${roomId}'>
                                                     Room ID: ${roomId}<br>
-                                                    <div id='${roomId}joined'>Available: ${!room.joined}</div>
+                                                    <div id='${roomId}joined'>Available: ${!remoteroom.joined}</div>
                                                     <button id='${roomId}join'>Join</button>
                                                 </div>
                                             `);
 
                                             (document.getElementById(roomId+'join') as HTMLButtonElement).onclick = () => {
-                                                //(router.services.webrtc as WebRTCfrontend).openRTC({_id:roomId})
+
                                                 user.rooms[roomId] = {
                                                     joined:true,
-                                                    hostcandidates:{}
+                                                    ownerId:userId,
+                                                    isLive:false,
+                                                    hostcandidates:{},
+                                                    hostdescription:remoteroom.hostdescription,
+                                                    peercandidates:{},
+                                                    peerdescription:undefined
                                                 };
 
-                                                if(room.hostcandidates) {
-                                                    for(const c in room.hostcandidates) {
-                                                        console.log('adding ice candidate!', room.hostcandidates[c], 'for room', room)
-                                                        user.rooms[roomId].hostcandidates[c] = true;
-                                                        //room.rtcPeer.addIceCandidate(room.hostcandidates[c]);
+                                                (router.services.webrtc as WebRTCfrontend).openRTC({
+                                                    _id:roomId, 
+                                                    hostdescription:remoteroom.hostdescription,
+                                                    onicecandidate:(ev) => {
+                                                        user.rooms[roomId].peercandidates[`peercandidate${Math.floor(Math.random()*1000000000000000)}`] = ev.candidate;
+                                                    },
+                                                }).then((localroom) => {
+
+                                                    user.localrtc[roomId] = localroom;
+                                                    user.rooms[roomId].peerdescription = localroom.peerdescription;
+                                                    
+                                                    if(remoteroom.hostcandidates) {
+                                                        for(const c in remoteroom.hostcandidates) {
+                                                            console.log('adding host ice candidate!', remoteroom.hostcandidates[c], 'for room', localroom)
+                                                            user.rooms[roomId].hostcandidates[c] = true;
+                                                            (localroom.rtc as RTCPeerConnection).addIceCandidate(remoteroom.hostcandidates[c]);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                         
+                                    } else {
+                                        (allrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !remoteroom.joined;
+
+                                        console.log('remote room',remoteroom);
+
+                                        if(remoteroom.hostcandidates && user.rooms[roomId] && user._id !== remoteroom.ownerId) {
+                                            for(const c in remoteroom.hostcandidates) {
+                                                if(!(c in user.rooms[roomId].hostcandidates)) {
+                                                    console.log('adding new host ice candidate!', remoteroom.hostcandidates[c])
+                                                    user.rooms[roomId].hostcandidates[c] = true;
+                                                    (user.localrtc[roomId].rtc as RTCPeerConnection).addIceCandidate(remoteroom.hostcandidates[c]);
+                                                }
+                                            }
+                                            if(remoteroom.isLive) {
+                                                user.rooms[roomId].isLive = true;
+                                                console.log('session is live!', roomId)
+                                            }
+                                        } 
+                                        
+                                        if (
+                                            remoteroom.peerdescription && 
+                                            user.rooms[roomId] && 
+                                            user._id === remoteroom.ownerId 
+                                        ) {
+                                            if(!user.rooms[roomId].peerdescription) {
+                                                remoteroom.peerdescription = JSON.parse(decodeURIComponent(remoteroom.peerdescription));
+                                                (user.localrtc[roomId].rtc as RTCPeerConnection).setRemoteDescription(remoteroom.peerdescription).then(() => {
+                                                    user.rooms[roomId].isLive = true;
+                                                    user.rooms[roomId].peerdescription = remoteroom.peerdescription;
+                                                    for(const c in remoteroom.peercandidates) {
+                                                        console.log('adding new peer ice candidate!', remoteroom.peercandidates[c]);
+                                                        (user.localrtc[roomId].rtc as RTCPeerConnection).addIceCandidate(remoteroom.peercandidates[c]);
+                                                        user.rooms[roomId].peercandidates[c] = true;
+                                                    }
+                                                });
+                                            } else if(remoteroom.peercandidates) {
+                                                for(const c in remoteroom.peercandidates) {
+                                                    if(!user.rooms[roomId].peercandidates[c]) {
+                                                        console.log('adding new peer ice candidate!', remoteroom.peercandidates[c]);
+                                                        (user.localrtc[roomId].rtc as RTCPeerConnection).addIceCandidate(remoteroom.peercandidates[c]);
+                                                        user.rooms[roomId].peercandidates[c] = true;
                                                     }
                                                 }
                                             }
                                         } 
-                                    } else {
-                                        (userrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !room.joined;
-
-                                        if(room.hostcandidates && user.rooms[roomId]) {
-                                            for(const c in room.hostcandidates) {
-                                                if(!(c in user.rooms[roomId].hostcandidates)) {
-                                                    console.log('adding ice candidate!', room.hostcandidates[c])
-                                                    user.rooms[roomId].hostcandidates[c] = true;
-                                                    //room.rtcPeer.addIceCandidate(room.hostcandidates[c]);
-                                                }
-                                            }
-                                        }
                                     }
                                 }
                             }

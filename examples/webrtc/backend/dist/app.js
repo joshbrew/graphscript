@@ -4328,17 +4328,16 @@
           options._id = `rtc${Math.floor(Math.random() * 1e15)}`;
         if (!options.config)
           options.config = { iceServers: this.iceServers };
-        let rtcTransmit = new RTCPeerConnection(options.config);
-        let rtcReceive = new RTCPeerConnection(options.config);
+        let rtc = new RTCPeerConnection(options.config);
         if (!options.channels)
           options.channels = { "data": true };
         if (options.channels) {
           for (const channel in options.channels) {
             if (options.channels[channel] instanceof RTCDataChannel) {
             } else if (typeof options.channels[channel] === "object") {
-              options.channels[channel] = this.addDataChannel(rtcTransmit, channel, options.channels[channel]);
+              options.channels[channel] = this.addDataChannel(rtc, channel, options.channels[channel]);
             } else
-              options.channels[channel] = this.addDataChannel(rtcTransmit, channel);
+              options.channels[channel] = this.addDataChannel(rtc, channel);
           }
         }
         if (!this.rtc[options._id]) {
@@ -4412,8 +4411,7 @@
             return run("unsubscribe", [route, sub]);
           };
           this.rtc[options._id] = {
-            rtcTransmit,
-            rtcReceive,
+            rtc,
             _id: options._id,
             request,
             run,
@@ -4439,20 +4437,13 @@
                 options.ondata(mev.data, ev.channel, this.rtc[options._id]);
               };
           };
-        rtcTransmit.ontrack = options.ontrack;
-        rtcTransmit.onicecandidate = options.onicecandidate;
-        rtcTransmit.onicecandidateerror = options.onicecandidateerror;
-        rtcTransmit.ondatachannel = options.ondatachannel;
-        rtcTransmit.onnegotiationneeded = options.onnegotiationneeded;
-        rtcTransmit.oniceconnectionstatechange = options.oniceconnectionstatechange;
-        rtcTransmit.onconnectionstatechange = options.onconnectionstatechange;
-        rtcReceive.ontrack = options.ontrack;
-        rtcReceive.onicecandidate = options.onicecandidate;
-        rtcReceive.onicecandidateerror = options.onicecandidateerror;
-        rtcReceive.ondatachannel = options.ondatachannel;
-        rtcReceive.onnegotiationneeded = options.onnegotiationneeded;
-        rtcReceive.oniceconnectionstatechange = options.oniceconnectionstatechange;
-        rtcReceive.onconnectionstatechange = options.onconnectionstatechange;
+        rtc.ontrack = options.ontrack;
+        rtc.onicecandidate = options.onicecandidate;
+        rtc.onicecandidateerror = options.onicecandidateerror;
+        rtc.ondatachannel = options.ondatachannel;
+        rtc.onnegotiationneeded = options.onnegotiationneeded;
+        rtc.oniceconnectionstatechange = options.oniceconnectionstatechange;
+        rtc.onconnectionstatechange = options.onconnectionstatechange;
         if (options.hostdescription && !options.peerdescription) {
           if (!options.onicecandidate)
             options.onicecandidate = (ev) => {
@@ -4471,15 +4462,15 @@
             const description = new RTCSessionDescription(options.hostdescription);
             console.log("desc2", description);
             options.hostdescription = description;
-            rtcReceive.setRemoteDescription(description).then(() => {
+            rtc.setRemoteDescription(description).then(() => {
               if (options.hostcandidates) {
                 for (const prop in options.hostcandidates) {
                   const candidate = new RTCIceCandidate(options.hostcandidates[prop]);
-                  rtcReceive.addIceCandidate(candidate).catch(console.error);
+                  rtc.addIceCandidate(candidate).catch(console.error);
                 }
               }
-              rtcReceive.createAnswer(options.answer).then((answer) => rtcReceive.setLocalDescription(answer)).then(() => {
-                this.rtc[options._id].peerdescription = encodeURIComponent(JSON.stringify(rtcReceive.localDescription));
+              rtc.createAnswer(options.answer).then((answer) => rtc.setLocalDescription(answer)).then(() => {
+                this.rtc[options._id].peerdescription = encodeURIComponent(JSON.stringify(rtc.localDescription));
                 res(this.rtc[options._id]);
               });
             });
@@ -4492,11 +4483,11 @@
             }
             const description = new RTCSessionDescription(options.peerdescription);
             options.peerdescription = description;
-            rtcReceive.setRemoteDescription(description).then(() => {
+            rtc.setRemoteDescription(description).then(() => {
               if (options.peercandidates) {
                 for (const prop in options.peercandidates) {
                   const candidate = new RTCIceCandidate(options.peercandidates[prop]);
-                  rtcReceive.addIceCandidate(candidate).catch(console.error);
+                  rtc.addIceCandidate(candidate).catch(console.error);
                 }
               }
               res(this.rtc[options._id]);
@@ -4513,8 +4504,8 @@
             }
           };
         return await new Promise((res, rej) => {
-          rtcTransmit.createOffer(options.offer).then((offer) => rtcTransmit.setLocalDescription(offer)).then(() => {
-            this.rtc[options._id].hostdescription = encodeURIComponent(JSON.stringify(rtcTransmit.localDescription));
+          rtc.createOffer(options.offer).then((offer) => rtc.setLocalDescription(offer)).then(() => {
+            this.rtc[options._id].hostdescription = encodeURIComponent(JSON.stringify(rtc.localDescription));
             res(this.rtc[options._id]);
           });
         });
@@ -4577,23 +4568,19 @@
         return true;
       };
       this.terminate = (rtc) => {
-        let rx, tx;
+        let tx;
         if (typeof rtc === "string") {
           let room = this.rtc[rtc];
           delete this.rtc[rtc];
           if (room) {
-            tx = room.rtcTransmit;
-            rx = room.rtcReceive;
+            tx = room.rtc;
           }
         } else if (typeof rtc === "object") {
-          tx = rtc.rtcTransmit;
-          rx = rtc.rtcReceive;
+          tx = rtc.rtc;
         }
         if (rtc instanceof RTCPeerConnection) {
           rtc.close();
-        } else if (rx || tx) {
-          if (rx)
-            rx.close();
+        } else if (tx) {
           if (tx)
             tx.close();
         }
@@ -4761,20 +4748,25 @@
     button.innerHTML = "Open RTC Room";
     let myrooms = document.createElement("div");
     myrooms.innerHTML = "My Rooms<br>";
+    myrooms.id = user._id;
     let allrooms = document.createElement("div");
     allrooms.innerHTML = "Available Rooms<br>";
     document.body.appendChild(button);
     document.body.appendChild(allrooms);
     allrooms.appendChild(myrooms);
     user.rooms = {};
+    user.localrtc = {};
     button.onclick = () => {
       let newId = `rtc${Math.floor(Math.random() * 1e15)}`;
       user.rooms[newId] = {
         joined: false,
         ownerId: user._id,
         deleted: false,
+        isLive: false,
         hostcandidates: {},
-        hostdescription: void 0
+        hostdescription: void 0,
+        peercandidates: {},
+        peerdescription: void 0
       };
       router.services.webrtc.openRTC({
         _id: newId,
@@ -4785,6 +4777,7 @@
         }
       }).then((room) => {
         user.rooms[newId].hostdescription = room.hostdescription;
+        user.localrtc[newId] = room;
         myrooms.insertAdjacentHTML("beforeend", `
                 <div id='${room._id}'>
                     Room ID: ${room._id}<br>
@@ -4824,45 +4817,84 @@
                   }
                   if (userrooms && res2.data.shared[userId].rooms) {
                     for (const roomId in res2.data.shared[userId].rooms) {
-                      const room = res2.data.shared[userId].rooms[roomId];
-                      if (room.deleted) {
+                      const remoteroom = res2.data.shared[userId].rooms[roomId];
+                      if (remoteroom.deleted) {
                         if (myrooms.querySelector("#" + roomId + "joined"))
                           myrooms.querySelector("#" + roomId).remove();
                         else if (userrooms.querySelector("#" + roomId + "joined"))
                           userrooms.querySelector("#" + roomId).remove();
                         delete user.rooms[roomId];
-                      } else if (!userrooms.querySelector("#" + roomId)) {
-                        if (myrooms.querySelector("#" + roomId)) {
-                          myrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !room.joined;
-                          user.rooms[roomId].joined = room.joined;
-                        } else if (room.ownerId === userId) {
-                          userrooms.insertAdjacentHTML("beforeend", `
+                      } else if (!allrooms.querySelector("#" + roomId) && remoteroom.ownerId === userId) {
+                        userrooms.insertAdjacentHTML("beforeend", `
                                                 <div id='${roomId}'>
                                                     Room ID: ${roomId}<br>
-                                                    <div id='${roomId}joined'>Available: ${!room.joined}</div>
+                                                    <div id='${roomId}joined'>Available: ${!remoteroom.joined}</div>
                                                     <button id='${roomId}join'>Join</button>
                                                 </div>
                                             `);
-                          document.getElementById(roomId + "join").onclick = () => {
-                            user.rooms[roomId] = {
-                              joined: true,
-                              hostcandidates: {}
-                            };
-                            if (room.hostcandidates) {
-                              for (const c in room.hostcandidates) {
-                                console.log("adding ice candidate!", room.hostcandidates[c], "for room", room);
+                        document.getElementById(roomId + "join").onclick = () => {
+                          user.rooms[roomId] = {
+                            joined: true,
+                            ownerId: userId,
+                            isLive: false,
+                            hostcandidates: {},
+                            hostdescription: remoteroom.hostdescription,
+                            peercandidates: {},
+                            peerdescription: void 0
+                          };
+                          router.services.webrtc.openRTC({
+                            _id: roomId,
+                            hostdescription: remoteroom.hostdescription,
+                            onicecandidate: (ev) => {
+                              user.rooms[roomId].peercandidates[`peercandidate${Math.floor(Math.random() * 1e15)}`] = ev.candidate;
+                            }
+                          }).then((localroom) => {
+                            user.localrtc[roomId] = localroom;
+                            user.rooms[roomId].peerdescription = localroom.peerdescription;
+                            if (remoteroom.hostcandidates) {
+                              for (const c in remoteroom.hostcandidates) {
+                                console.log("adding host ice candidate!", remoteroom.hostcandidates[c], "for room", localroom);
                                 user.rooms[roomId].hostcandidates[c] = true;
+                                localroom.rtc.addIceCandidate(remoteroom.hostcandidates[c]);
                               }
                             }
-                          };
-                        }
+                          });
+                        };
                       } else {
-                        userrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !room.joined;
-                        if (room.hostcandidates && user.rooms[roomId]) {
-                          for (const c in room.hostcandidates) {
+                        allrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !remoteroom.joined;
+                        console.log("remote room", remoteroom);
+                        if (remoteroom.hostcandidates && user.rooms[roomId] && user._id !== remoteroom.ownerId) {
+                          for (const c in remoteroom.hostcandidates) {
                             if (!(c in user.rooms[roomId].hostcandidates)) {
-                              console.log("adding ice candidate!", room.hostcandidates[c]);
+                              console.log("adding new host ice candidate!", remoteroom.hostcandidates[c]);
                               user.rooms[roomId].hostcandidates[c] = true;
+                              user.localrtc[roomId].rtc.addIceCandidate(remoteroom.hostcandidates[c]);
+                            }
+                          }
+                          if (remoteroom.isLive) {
+                            user.rooms[roomId].isLive = true;
+                            console.log("session is live!", roomId);
+                          }
+                        }
+                        if (remoteroom.peerdescription && user.rooms[roomId] && user._id === remoteroom.ownerId) {
+                          if (!user.rooms[roomId].peerdescription) {
+                            remoteroom.peerdescription = JSON.parse(decodeURIComponent(remoteroom.peerdescription));
+                            user.localrtc[roomId].rtc.setRemoteDescription(remoteroom.peerdescription).then(() => {
+                              user.rooms[roomId].isLive = true;
+                              user.rooms[roomId].peerdescription = remoteroom.peerdescription;
+                              for (const c in remoteroom.peercandidates) {
+                                console.log("adding new peer ice candidate!", remoteroom.peercandidates[c]);
+                                user.localrtc[roomId].rtc.addIceCandidate(remoteroom.peercandidates[c]);
+                                user.rooms[roomId].peercandidates[c] = true;
+                              }
+                            });
+                          } else if (remoteroom.peercandidates) {
+                            for (const c in remoteroom.peercandidates) {
+                              if (!user.rooms[roomId].peercandidates[c]) {
+                                console.log("adding new peer ice candidate!", remoteroom.peercandidates[c]);
+                                user.localrtc[roomId].rtc.addIceCandidate(remoteroom.peercandidates[c]);
+                                user.rooms[roomId].peercandidates[c] = true;
+                              }
                             }
                           }
                         }
