@@ -3139,7 +3139,6 @@ var state = {
 var GraphNode = class {
   constructor(properties = {}, parentNode, graph) {
     this.nodes = /* @__PURE__ */ new Map();
-    this.arguments = /* @__PURE__ */ new Map();
     this._initial = {};
     this.state = state;
     this.isLooping = false;
@@ -3203,12 +3202,6 @@ var GraphNode = class {
             if (paramTwo.includes(a))
               pass = true;
           });
-        if (this.arguments) {
-          params.forEach((o, k) => {
-            if (!this.arguments.has(k))
-              this.arguments.set(k, o.state);
-          });
-        }
       }
       if (!pass) {
         let fn = operator;
@@ -3973,14 +3966,6 @@ var GraphNode = class {
         properties.tag = `node${graph.nNodes}`;
       } else if (!properties.tag) {
         properties.tag = `node${Math.floor(Math.random() * 1e10)}`;
-      }
-      if ("arguments" in properties) {
-        if (properties.arguments) {
-          for (let key in properties.arguments) {
-            this.arguments.set(key, properties.arguments[key]);
-          }
-        }
-        properties.arguments = this.arguments;
       }
       let keys = Object.getOwnPropertyNames(this);
       for (const key in properties) {
@@ -6562,7 +6547,7 @@ var UserRouter = class extends Router {
             let u = session2.settings.listener;
             if (!users[u])
               users[u] = { private: {} };
-            if (!users[u].private)
+            else if (!users[u].private)
               users[u].private = {};
             users[u].private[s] = updates.private[s];
           }
@@ -6580,7 +6565,7 @@ var UserRouter = class extends Router {
             for (const u in session2.settings.users) {
               if (!users[u])
                 users[u] = { shared: {} };
-              if (!users[u].shared)
+              else if (!users[u].shared)
                 users[u].shared = {};
               if (session2.settings.host) {
                 if (u !== session2.settings.host) {
@@ -6652,8 +6637,8 @@ var UserRouter = class extends Router {
             if (!s.settings.spectators?.[user._id]) {
               if (s.settings.host === user._id) {
                 for (const prop in s.settings.hostprops) {
-                  if (!updateObj[prop] && user[prop] && user[prop] !== void 0) {
-                    if (s.data.shared?.[user._id]?.[prop]) {
+                  if (!updateObj[prop] && prop in user) {
+                    if (s.data.shared?.[user._id] && prop in s.data.shared?.[user._id]) {
                       if (typeof user[prop] === "object") {
                         if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
                           updateObj[prop] = user[prop];
@@ -6667,15 +6652,14 @@ var UserRouter = class extends Router {
                 for (const prop in s.settings.propnames) {
                   if (!updateObj[prop] && user[prop] !== void 0) {
                     if (s.settings.source) {
-                      if (typeof user[prop] === "object" && s.data[prop] !== void 0) {
+                      if (typeof user[prop] === "object" && prop in s.data) {
                         if (stringifyFast(s.data[prop]) !== stringifyFast(user[prop]))
                           updateObj[prop] = user[prop];
                       } else if (s.data[prop] !== user[prop])
                         updateObj[prop] = user[prop];
                     } else {
-                      if (s.data.shared?.[user._id]?.[prop]) {
+                      if (s.data.shared?.[user._id] && prop in s.data.shared?.[user._id]) {
                         if (typeof user[prop] === "object") {
-                          let split = stringifyFast(user[prop]).split("");
                           if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
                             updateObj[prop] = user[prop];
                         } else if (s.data.shared[user._id][prop] !== user[prop])
@@ -8160,8 +8144,6 @@ router.run(
     }
   );
 });
-console.log("main service routes", router.service.routes);
-console.log("http service routes", router.services.http.routes);
 var sub1 = router.pipe("ping", "log", "wss");
 var sub2 = router.pipe("ping", "log", "sse");
 router.addUser({

@@ -113,8 +113,8 @@ router.run(
 //router.services.http.routes.setupServer();
 //router.routes.['http/setupServer'](); //this the original function/property object, it won't set state.
 
-console.log('main service routes',router.service.routes);
-console.log('http service routes',router.services.http.routes);
+//console.log('main service routes',router.service.routes);
+//console.log('http service routes',router.services.http.routes);
 
 const sub1 = router.pipe('ping','log','wss');
 const sub2 = router.pipe('ping','log','sse');
@@ -137,6 +137,7 @@ let session = router.openSharedSession({
 
 ///console.log('session',session, 'sessions', router.sessions);
 
+//we'll force users to join this session when they are on the page
 router.subscribe('addUser', (res) =>{
     //console.log('user joining webrtcrooms', res._id);
     if (typeof res === 'object') {
@@ -147,8 +148,8 @@ router.subscribe('addUser', (res) =>{
             user.send(
                 JSON.stringify({route:'joinSession',args:[joined._id,user._id,joined]})
             );
-     }
+        }
     }
-})
+});
 
 //elegantly represent users connecting and adding themselves to the backend incl settings their sockets etc. that they're reporting from

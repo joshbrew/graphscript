@@ -90,7 +90,7 @@ service.transmit(message); //these get customized in services representing their
 ```
 
 
-### Included Services
+# Included Services
 
 We will elaborate on all of this with individual docs for each microservice, as they can go pretty deep. 
 

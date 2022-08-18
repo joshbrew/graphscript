@@ -126,7 +126,6 @@
   var GraphNode = class {
     constructor(properties = {}, parentNode, graph) {
       this.nodes = /* @__PURE__ */ new Map();
-      this.arguments = /* @__PURE__ */ new Map();
       this._initial = {};
       this.state = state;
       this.isLooping = false;
@@ -190,12 +189,6 @@
               if (paramTwo.includes(a))
                 pass = true;
             });
-          if (this.arguments) {
-            params.forEach((o, k) => {
-              if (!this.arguments.has(k))
-                this.arguments.set(k, o.state);
-            });
-          }
         }
         if (!pass) {
           let fn = operator;
@@ -960,14 +953,6 @@
           properties.tag = `node${graph.nNodes}`;
         } else if (!properties.tag) {
           properties.tag = `node${Math.floor(Math.random() * 1e10)}`;
-        }
-        if ("arguments" in properties) {
-          if (properties.arguments) {
-            for (let key in properties.arguments) {
-              this.arguments.set(key, properties.arguments[key]);
-            }
-          }
-          properties.arguments = this.arguments;
         }
         let keys = Object.getOwnPropertyNames(this);
         for (const key in properties) {
@@ -3549,7 +3534,7 @@
               let u = session.settings.listener;
               if (!users[u])
                 users[u] = { private: {} };
-              if (!users[u].private)
+              else if (!users[u].private)
                 users[u].private = {};
               users[u].private[s] = updates.private[s];
             }
@@ -3567,7 +3552,7 @@
               for (const u in session.settings.users) {
                 if (!users[u])
                   users[u] = { shared: {} };
-                if (!users[u].shared)
+                else if (!users[u].shared)
                   users[u].shared = {};
                 if (session.settings.host) {
                   if (u !== session.settings.host) {
@@ -3639,8 +3624,8 @@
               if (!s.settings.spectators?.[user._id]) {
                 if (s.settings.host === user._id) {
                   for (const prop in s.settings.hostprops) {
-                    if (!updateObj[prop] && user[prop] && user[prop] !== void 0) {
-                      if (s.data.shared?.[user._id]?.[prop]) {
+                    if (!updateObj[prop] && prop in user) {
+                      if (s.data.shared?.[user._id] && prop in s.data.shared?.[user._id]) {
                         if (typeof user[prop] === "object") {
                           if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
                             updateObj[prop] = user[prop];
@@ -3654,15 +3639,14 @@
                   for (const prop in s.settings.propnames) {
                     if (!updateObj[prop] && user[prop] !== void 0) {
                       if (s.settings.source) {
-                        if (typeof user[prop] === "object" && s.data[prop] !== void 0) {
+                        if (typeof user[prop] === "object" && prop in s.data) {
                           if (stringifyFast(s.data[prop]) !== stringifyFast(user[prop]))
                             updateObj[prop] = user[prop];
                         } else if (s.data[prop] !== user[prop])
                           updateObj[prop] = user[prop];
                       } else {
-                        if (s.data.shared?.[user._id]?.[prop]) {
+                        if (s.data.shared?.[user._id] && prop in s.data.shared?.[user._id]) {
                           if (typeof user[prop] === "object") {
-                            let split = stringifyFast(user[prop]).split("");
                             if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
                               updateObj[prop] = user[prop];
                           } else if (s.data.shared[user._id][prop] !== user[prop])
@@ -3869,7 +3853,7 @@
             });
           }).catch(console.error);
       };
-      this.listen = (path = 0, fetched = async (clone, args, response) => {
+      this.listen = (path = "0", fetched = async (clone, args, response) => {
         const result = await clone.text();
         console.log("http listener:", result, clone);
         const returned = this.receive(result);
@@ -3883,7 +3867,7 @@
               result.then((response) => {
                 if (!response.ok)
                   return;
-                if (this.listening[0]) {
+                if (this.listening["0"]) {
                   const clone = response.clone();
                   fetched(clone, args, response);
                 } else {
@@ -4716,6 +4700,9 @@
       if (iceServers)
         this.iceServers = iceServers;
     }
+    addIceCandidate(peer, candidate) {
+      return peer.addIceCandidate(candidate);
+    }
   };
 
   // app.ts
@@ -4770,98 +4757,88 @@
   ).then((user) => {
     console.log("Added user:", user);
     let info = router.getConnectionInfo(user);
+    let button2 = document.createElement("button");
+    button2.innerHTML = "Open RTC Room";
+    let myrooms = document.createElement("div");
+    myrooms.innerHTML = "My Rooms<br>";
+    let allrooms = document.createElement("div");
+    allrooms.innerHTML = "Available Rooms<br>";
+    document.body.appendChild(button2);
+    document.body.appendChild(myrooms);
+    document.body.appendChild(allrooms);
+    user.rooms = {};
+    button2.onclick = () => {
+      router.services.webrtc.openRTC().then((room) => {
+        user.rooms[room._id] = {
+          joined: false
+        };
+        myrooms.insertAdjacentHTML("beforeend", `
+                <div id='${room._id}'>
+                    Room ID: ${room._id}<br>
+                    <div id='${room._id}joined'>Available: ${!user.rooms[room._id].joined}</div>
+                    <button id='${room._id}close'>Close</button>
+                </div>
+            `);
+        document.getElementById(room._id + "close").onclick = () => {
+          router.services.webrtc.terminate(room._id);
+        };
+      });
+    };
     router.subscribe("joinSession", (res) => {
       console.log("joinSessions fired", res);
       if (res?.settings.name === "webrtcrooms") {
-        router.services.webrtc.openRTC({ origin: user._id }).then((room) => {
-          room.rtcTransmit.addEventListener("icecandidate", (ev) => {
-            if (room._id) {
-              if (ev.candidate) {
-                if (!user.rooms)
-                  user.rooms = {};
-                if (!user.rooms[room._id]) {
-                  if (!room.hostcandidates)
-                    room.hostcandidates = {};
-                  user.rooms[room._id] = {
-                    _id: room._id,
-                    hostdescription: room.hostdescription,
-                    hostcandidates: room.hostcandidates
-                  };
+        router.subscribeToSession(
+          "webrtcrooms",
+          user._id,
+          (res2) => {
+            console.log(res2);
+            if (res2.data.shared) {
+              for (const userId in res2.data.shared) {
+                console.log(userId, res2.data.shared[userId]);
+                if (userId == user._id) {
+                  console.log(userId, "(my data, returned from server)", res2.data.shared[userId]);
                 } else {
-                  user.rooms[room._id].hostdescription = room.hostdescription;
-                  user.rooms[room._id].hostcandidates[`hostcandidate${Math.floor(Math.random() * 1e15)}`] = ev.candidate;
-                }
-              }
-            }
-          });
-        });
-        let us = {};
-        router.subscribeToSession("webrtcrooms", user._id, (res2) => {
-          if (Object.keys(res2.data.shared).length > 0) {
-            for (const key in res2.data.shared) {
-              let u = res2.data.shared[key];
-              if (u.rooms) {
-                for (const r in u.rooms) {
-                  if (us[key]) {
-                    if (!us[key][r]?.peerdescription && u.rooms[r].peerdescription) {
-                      console.log(u.rooms[r], us[key][r]);
-                      router.services.webrtc.openRTC(u.rooms[r]).then((room) => {
-                        console.log("got peer description, connection is live");
-                      });
+                  let userrooms = allrooms.querySelector("#" + userId);
+                  if (!userrooms) {
+                    allrooms.insertAdjacentHTML("beforeend", `
+                                    <div id='${userId}'>
+                                        User ${userId} rooms:<br>
+                                    </div> 
+                                `);
+                  } else if (res2.data.shared[userId].rooms) {
+                    for (const roomId in res2.data.shared[userId].rooms) {
+                      if (!userrooms.querySelector("#" + roomId)) {
+                        if (myrooms.querySelector("#" + roomId)) {
+                          myrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !res2.data.shared[userId].rooms[roomId].joined;
+                          user.rooms[roomId].joined = res2.data.shared[userId].rooms[roomId].joined;
+                        } else {
+                          userrooms.insertAdjacentHTML("beforeend", `
+                                                <div id='${roomId}'>
+                                                    Room ID: ${roomId}<br>
+                                                    <div id='${roomId}joined'>Available: ${!res2.data.shared[userId].rooms[roomId].joined}</div>
+                                                    <button id='${roomId}join'>Join</button>
+                                                </div>
+                                            `);
+                          document.getElementById(roomId + "join").onclick = () => {
+                            user.rooms[roomId] = {
+                              joined: true
+                            };
+                          };
+                        }
+                      } else {
+                        userrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !res2.data.shared[userId].rooms[roomId].joined;
+                      }
                     }
                   }
                 }
               }
-              if (u.rooms && !us[key]) {
-                document.getElementById("webrtc").insertAdjacentHTML(
-                  "beforeend",
-                  `<div><span>User: ${key}</span><span>Rooms: <table>${Object.keys(u.rooms).map((room) => {
-                    return `<tr><td>ID: ${u.rooms[room]._id}</td><td>Ice Candidates: ${u.rooms[room].hostcandidates ? Object.keys(u.rooms[room].hostcandidates).length : 0}</td>${user._id !== key ? `<td><button id='${u.rooms[room]._id}'>Connect</button></td>` : ``}</tr>`;
-                  })}</table></span></div>`
-                );
-                us[key] = true;
-                if (user._id !== key)
-                  Object.keys(u.rooms).map((roomid) => {
-                    document.getElementById(u.rooms[roomid]._id).onclick = () => {
-                      router.services.webrtc.openRTC(u.rooms[roomid]).then((room) => {
-                        room.rtcReceive.addEventListener("icecandidate", (ev) => {
-                          if (ev.candidate && room._id) {
-                            if (!user.rooms)
-                              user.rooms = {};
-                            if (!user.rooms[room._id]) {
-                              if (!room.peercandidates)
-                                room.peercandidates = {};
-                              user.rooms[room._id] = {
-                                _id: room._id,
-                                peerdescription: room.peerdescription,
-                                peercandidates: room.peercandidates
-                              };
-                            } else {
-                              user.rooms[room._id].peerdescription = room.peerdescription;
-                              user.rooms[room._id].peercandidates[`peercandidate${Math.floor(Math.random() * 1e15)}`] = ev.candidate;
-                            }
-                          }
-                        });
-                        document.getElementById(u.rooms[roomid]._id).innerHTML = "Ping!";
-                        document.getElementById(u.rooms[roomid]._id).onclick = () => {
-                          router.services.webrtc.request({ route: "ping", origin: user._id }, room.channels.data, room._id);
-                        };
-                      });
-                    };
-                  });
-              }
             }
           }
-        });
+        );
       }
     });
     user.send(JSON.stringify({ route: "addUser", args: info }));
     router.run("userUpdateLoop", user);
-    user.request({ route: "openSharedSession", args: { settings: { name: "testsession", propnames: { x: true, test: true } } } }).then((session) => {
-      let res;
-      if (session?._id)
-        res = router.run("joinSession", session._id, user, session);
-    });
   });
   console.log(p);
 })();

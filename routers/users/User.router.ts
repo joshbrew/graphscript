@@ -1041,7 +1041,7 @@ export class UserRouter extends Router {
                 if(session?.settings) {
                     let u = session.settings.listener;
                     if(!users[u]) users[u] = {private:{}};
-                    if(!users[u].private) users[u].private = {};
+                    else if(!users[u].private) users[u].private = {};
                     users[u].private[s] = updates.private[s];
                 }
             }
@@ -1057,7 +1057,7 @@ export class UserRouter extends Router {
                     }
                     for(const u in session.settings.users) {
                         if(!users[u]) users[u] = {shared:{}};
-                        if(!users[u].shared) users[u].shared = {};
+                        else if(!users[u].shared) users[u].shared = {};
                         if(session.settings.host) {
                             if(u !== session.settings.host) {
                                 users[u].shared[s] = copy;
@@ -1124,8 +1124,8 @@ export class UserRouter extends Router {
                     if(!s.settings.spectators?.[user._id as string]) {
                         if(s.settings.host === user._id) {
                             for(const prop in s.settings.hostprops) {
-                                if(!updateObj[prop] && user[prop] && user[prop] !== undefined) {
-                                    if(s.data.shared?.[user._id as string]?.[prop]) {
+                                if(!updateObj[prop] && prop in user) {
+                                    if(s.data.shared?.[user._id as string] && prop in s.data.shared?.[user._id as string]) {
                                         if(typeof user[prop] === 'object') {
                                             if(stringifyFast(s.data.shared[user._id as string][prop]) !== stringifyFast(user[prop]))
                                                 updateObj[prop] = user[prop];
@@ -1138,21 +1138,20 @@ export class UserRouter extends Router {
                             for(const prop in s.settings.propnames) {
                                 if(!updateObj[prop] && user[prop] !== undefined) {
                                     if(s.settings.source) {
-                                        if(typeof user[prop] === 'object' && s.data[prop] !== undefined) {
+                                        if(typeof user[prop] === 'object' && prop in s.data) {
                                             if(stringifyFast(s.data[prop]) !== stringifyFast(user[prop]))
                                                 updateObj[prop] = user[prop];
                                         }
                                         else if (s.data[prop] !== user[prop]) updateObj[prop] = user[prop];  
                                     }
                                     else {
-                                        if(s.data.shared?.[user._id as string]?.[prop]) { //host only sessions have a little less efficiency in this setup
+                                        if(s.data.shared?.[user._id as string] && prop in s.data.shared?.[user._id as string]) { //host only sessions have a little less efficiency in this setup
                                             if(typeof user[prop] === 'object') {
-                                                let split  = stringifyFast(user[prop]).split('');
                                                 if(stringifyFast(s.data.shared[user._id as string][prop]) !== stringifyFast(user[prop]))
                                                     updateObj[prop] = user[prop];
                                             }
                                             else if (s.data.shared[user._id as string][prop] !== user[prop]) updateObj[prop] = user[prop];
-                                        }  else updateObj[prop] = user[prop]
+                                        } else updateObj[prop] = user[prop]
                                     }
                                 }
                             }

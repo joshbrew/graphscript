@@ -24,6 +24,7 @@ export type WebRTCProps = {
 }
 
 export type WebRTCInfo = {
+    _id:string,
     rtcTransmit:RTCPeerConnection,
     rtcReceive:RTCPeerConnection,
     send:(message:any)=>void, //these callbacks work on the first available data channel to call to other webrtc services
