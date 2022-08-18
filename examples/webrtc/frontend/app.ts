@@ -50,16 +50,16 @@ router.run(
     'http://localhost:8080/ping'
 ).then((res:string) => console.log("http GET", res));
 
-let button = document.createElement('button');
-button.innerHTML = 'ping!';
-button.onclick = () => {
+let newroombutton = document.createElement('button');
+newroombutton.innerHTML = 'ping!';
+newroombutton.onclick = () => {
     router.run(
         'http.GET',
         'http://localhost:8080/ping'
     ).then((res:string) => console.log("http GET", res));
 }
 
-document.body.appendChild(button);
+document.body.appendChild(newroombutton);
 
 
 
@@ -101,19 +101,31 @@ let p = router.addUser(
     allrooms.innerHTML = 'Available Rooms<br>'
 
     document.body.appendChild(button);
-    document.body.appendChild(myrooms);
     document.body.appendChild(allrooms);
+    allrooms.appendChild(myrooms);
     
     user.rooms = {};
 
     button.onclick = () => {
-        (router.services.webrtc as WebRTCfrontend).openRTC().then((room:WebRTCInfo) => {
-            user.rooms[room._id] = {
-                joined:false,
-                ownerId:user._id,
-                deleted:false
-            };
 
+        let newId = `rtc${Math.floor(Math.random()*1000000000000000)}`;
+
+        user.rooms[newId] = {
+            joined:false,
+            ownerId:user._id,
+            deleted:false,
+            hostcandidates:{}
+        };
+
+        (router.services.webrtc as WebRTCfrontend).openRTC({
+            _id:newId,
+            onicecandidate:(ev) => {
+                let cid = `hostcandidate${Math.floor(Math.random()*1000000000000000)}`;
+                user.rooms[newId].hostcandidates[cid] = ev.candidate;   
+                console.log('setting ice candidate!', cid, ev.candidate)
+            },
+        }).then((room:WebRTCInfo) => {
+            
             myrooms.insertAdjacentHTML('beforeend',`
                 <div id='${room._id}'>
                     Room ID: ${room._id}<br>
@@ -150,9 +162,11 @@ let p = router.addUser(
                                         User ${userId} rooms:<br>
                                     </div> 
                                 `);
-                            } else if(res.data.shared[userId].rooms) {
+                                userrooms = allrooms.querySelector('#'+userId);
+                            } 
+                            if(userrooms && res.data.shared[userId].rooms) {
                                 for(const roomId in res.data.shared[userId].rooms) {
-                                    
+
                                     const room = res.data.shared[userId].rooms[roomId];
 
                                     if(room.deleted) {
@@ -177,12 +191,31 @@ let p = router.addUser(
                                             (document.getElementById(roomId+'join') as HTMLButtonElement).onclick = () => {
                                                 //(router.services.webrtc as WebRTCfrontend).openRTC({_id:roomId})
                                                 user.rooms[roomId] = {
-                                                    joined:true
+                                                    joined:true,
+                                                    hostcandidates:{}
                                                 };
+
+                                                if(room.hostcandidates) {
+                                                    for(const c in room.hostcandidates) {
+                                                        console.log('adding ice candidate!', room.hostcandidates[c])
+                                                        user.rooms[roomId].hostcandidates[c] = true;
+                                                        //room.rtcPeer.addIceCandidate(room.hostcandidates[c]);
+                                                    }
+                                                }
                                             }
                                         } 
                                     } else {
                                         (userrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !room.joined;
+
+                                        if(room.hostcandidates) {
+                                            for(const c in room.hostcandidates) {
+                                                if(!(c in user.rooms[roomId].hostcandidates)) {
+                                                    console.log('adding ice candidate!', room.hostcandidates[c])
+                                                    user.rooms[roomId].hostcandidates[c] = true;
+                                                    //room.rtcPeer.addIceCandidate(room.hostcandidates[c]);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }

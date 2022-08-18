@@ -4735,15 +4735,15 @@
     "http.GET",
     "http://localhost:8080/ping"
   ).then((res) => console.log("http GET", res));
-  var button = document.createElement("button");
-  button.innerHTML = "ping!";
-  button.onclick = () => {
+  var newroombutton = document.createElement("button");
+  newroombutton.innerHTML = "ping!";
+  newroombutton.onclick = () => {
     router.run(
       "http.GET",
       "http://localhost:8080/ping"
     ).then((res) => console.log("http GET", res));
   };
-  document.body.appendChild(button);
+  document.body.appendChild(newroombutton);
   console.log("adding user");
   var p = router.addUser(
     {
@@ -4757,23 +4757,32 @@
   ).then((user) => {
     console.log("Added user:", user);
     let info = router.getConnectionInfo(user);
-    let button2 = document.createElement("button");
-    button2.innerHTML = "Open RTC Room";
+    let button = document.createElement("button");
+    button.innerHTML = "Open RTC Room";
     let myrooms = document.createElement("div");
     myrooms.innerHTML = "My Rooms<br>";
     let allrooms = document.createElement("div");
     allrooms.innerHTML = "Available Rooms<br>";
-    document.body.appendChild(button2);
-    document.body.appendChild(myrooms);
+    document.body.appendChild(button);
     document.body.appendChild(allrooms);
+    allrooms.appendChild(myrooms);
     user.rooms = {};
-    button2.onclick = () => {
-      router.services.webrtc.openRTC().then((room) => {
-        user.rooms[room._id] = {
-          joined: false,
-          ownerId: user._id,
-          deleted: false
-        };
+    button.onclick = () => {
+      let newId = `rtc${Math.floor(Math.random() * 1e15)}`;
+      user.rooms[newId] = {
+        joined: false,
+        ownerId: user._id,
+        deleted: false,
+        hostcandidates: {}
+      };
+      router.services.webrtc.openRTC({
+        _id: newId,
+        onicecandidate: (ev) => {
+          let cid = `hostcandidate${Math.floor(Math.random() * 1e15)}`;
+          user.rooms[newId].hostcandidates[cid] = ev.candidate;
+          console.log("setting ice candidate!", cid, ev.candidate);
+        }
+      }).then((room) => {
         myrooms.insertAdjacentHTML("beforeend", `
                 <div id='${room._id}'>
                     Room ID: ${room._id}<br>
@@ -4809,7 +4818,9 @@
                                         User ${userId} rooms:<br>
                                     </div> 
                                 `);
-                  } else if (res2.data.shared[userId].rooms) {
+                    userrooms = allrooms.querySelector("#" + userId);
+                  }
+                  if (userrooms && res2.data.shared[userId].rooms) {
                     for (const roomId in res2.data.shared[userId].rooms) {
                       const room = res2.data.shared[userId].rooms[roomId];
                       if (room.deleted) {
@@ -4832,12 +4843,27 @@
                                             `);
                           document.getElementById(roomId + "join").onclick = () => {
                             user.rooms[roomId] = {
-                              joined: true
+                              joined: true,
+                              hostcandidates: {}
                             };
+                            if (room.hostcandidates) {
+                              for (const c in room.hostcandidates) {
+                                console.log("adding ice candidate!", user.rooms[roomId].hostcandidates[c]);
+                                user.rooms[roomId].hostcandidates[c] = true;
+                              }
+                            }
                           };
                         }
                       } else {
                         userrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !room.joined;
+                        if (room.hostcandidates) {
+                          for (const c in room.hostcandidates) {
+                            if (!(c in user.rooms[roomId].hostcandidates)) {
+                              console.log("adding ice candidate!", user.rooms[roomId].hostcandidates[c]);
+                              user.rooms[roomId].hostcandidates[c] = true;
+                            }
+                          }
+                        }
                       }
                     }
                   }
