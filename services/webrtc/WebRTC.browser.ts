@@ -205,6 +205,7 @@ export class WebRTCfrontend extends Service {
                 this.rtc[options._id].channels[ev.channel.label] = ev.channel;
                 if(!options.ondata)
                     ev.channel.onmessage = (mev) => {
+                        console.log('message on data channel', mev);
                         this.receive(mev.data, ev.channel, this.rtc[options._id]);
                         this.setState({[options._id]:mev.data});
                     }
