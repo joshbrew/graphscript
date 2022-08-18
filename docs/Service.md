@@ -116,6 +116,7 @@ For all services with remote message passing support (http, wss, sse, webrtc, et
     - - [Workers](./services/worker/worker.md)
 
 - WebRTC - Browser supported peer 2 peer streaming. We can easily use the sessions framework internal to Routers/UserRouters to share room information over a server persistently. 
+    - - [WebRTCfrontend](./services/webrtc/webrtc.browser.md)
 
 - E2EE - End 2 End encryption made easy with the minimal Stanford Javascript Cryptography Library. It's set up to generate keys which you can copy to the desired endpoint (should do it securely) to pass encrypted service messages that automatically reroute through the encryption service. It can even encrypt the hash key table with a server side secret. 
 

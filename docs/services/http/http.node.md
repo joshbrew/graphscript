@@ -2,6 +2,8 @@
 
 The HTTPbackend service puts the power of graphs and services into a full featured HTTP or HTTPS server. This lets you serve static assets or dynamic content straight from routes all through standard or customizable http fetch calls. This means you can implement your entire own http protocols and state machines willy nilly and feel like a backend master, it's a lot of fun! 
 
+See `examples/httpserver` to get started with a simple implementation.
+
 The extended `RouteProp` when declaring routes/nodes in Service.ts was made for this:
 ```ts
 type RouteProp = { //these are just multiple methods you can call on a route/node tag kind of like http requests but really it applies to any function you want to add to a route object if you specify that method even beyond these http themed names :D
