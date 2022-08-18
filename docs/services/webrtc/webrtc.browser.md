@@ -65,11 +65,10 @@ rtc.openRTC().then((room:WebRTCInfo) => {
     socket.addEventListener('message',(ev) => {
         let peerinfo = JSON.parse(ev.data);
 
-        for(const prop in peerinfo.peercandidates) {
-            if(!rtc.rooms[peerinfo._id].peercandidates[prop]) {
-                rtc.addIceCandidate(rtc.rooms[peerinfo._id].rtcReceive, peerinfo.peercandidates[prop])
-            }
+        if(peerinfo.peerdescription) {
+            rtc.answerPeer(room.rtc,peerinfo);
         }
+
     });
 })
 
@@ -85,7 +84,6 @@ socket.addEventListener('message',(ev) => {
 
         let room = rtc.openRTC(hostinfo as WebRTCProps).then((room:WebRTCInfo) => {
 
-            //This part I'm not sure about yet as this isn't quite working...
             room.rtcReceive.addEventListener('icecandidate',(ev)=>{
                 if(ev.candidate && room._id) {
                     socket.send(JSON.stringify({
