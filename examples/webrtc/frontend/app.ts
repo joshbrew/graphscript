@@ -114,7 +114,8 @@ let p = router.addUser(
             joined:false,
             ownerId:user._id,
             deleted:false,
-            hostcandidates:{}
+            hostcandidates:{},
+            hostdescription:undefined
         };
 
         (router.services.webrtc as WebRTCfrontend).openRTC({
@@ -125,6 +126,8 @@ let p = router.addUser(
                 console.log('setting ice candidate!', cid, ev.candidate)
             },
         }).then((room:WebRTCInfo) => {
+
+            user.rooms[newId].hostdescription = room.hostdescription;
             
             myrooms.insertAdjacentHTML('beforeend',`
                 <div id='${room._id}'>
@@ -197,7 +200,7 @@ let p = router.addUser(
 
                                                 if(room.hostcandidates) {
                                                     for(const c in room.hostcandidates) {
-                                                        console.log('adding ice candidate!', room.hostcandidates[c])
+                                                        console.log('adding ice candidate!', room.hostcandidates[c], 'for room', room)
                                                         user.rooms[roomId].hostcandidates[c] = true;
                                                         //room.rtcPeer.addIceCandidate(room.hostcandidates[c]);
                                                     }
@@ -207,7 +210,7 @@ let p = router.addUser(
                                     } else {
                                         (userrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !room.joined;
 
-                                        if(room.hostcandidates) {
+                                        if(room.hostcandidates && user.rooms[roomId]) {
                                             for(const c in room.hostcandidates) {
                                                 if(!(c in user.rooms[roomId].hostcandidates)) {
                                                     console.log('adding ice candidate!', room.hostcandidates[c])

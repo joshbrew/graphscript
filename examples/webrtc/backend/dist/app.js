@@ -4773,7 +4773,8 @@
         joined: false,
         ownerId: user._id,
         deleted: false,
-        hostcandidates: {}
+        hostcandidates: {},
+        hostdescription: void 0
       };
       router.services.webrtc.openRTC({
         _id: newId,
@@ -4783,6 +4784,7 @@
           console.log("setting ice candidate!", cid, ev.candidate);
         }
       }).then((room) => {
+        user.rooms[newId].hostdescription = room.hostdescription;
         myrooms.insertAdjacentHTML("beforeend", `
                 <div id='${room._id}'>
                     Room ID: ${room._id}<br>
@@ -4848,7 +4850,7 @@
                             };
                             if (room.hostcandidates) {
                               for (const c in room.hostcandidates) {
-                                console.log("adding ice candidate!", user.rooms[roomId].hostcandidates[c]);
+                                console.log("adding ice candidate!", room.hostcandidates[c], "for room", room);
                                 user.rooms[roomId].hostcandidates[c] = true;
                               }
                             }
@@ -4856,10 +4858,10 @@
                         }
                       } else {
                         userrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !room.joined;
-                        if (room.hostcandidates) {
+                        if (room.hostcandidates && user.rooms[roomId]) {
                           for (const c in room.hostcandidates) {
                             if (!(c in user.rooms[roomId].hostcandidates)) {
-                              console.log("adding ice candidate!", user.rooms[roomId].hostcandidates[c]);
+                              console.log("adding ice candidate!", room.hostcandidates[c]);
                               user.rooms[roomId].hostcandidates[c] = true;
                             }
                           }
