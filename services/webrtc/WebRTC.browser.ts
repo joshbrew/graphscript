@@ -312,6 +312,10 @@ export class WebRTCfrontend extends Service {
     
     }
 
+    addIceCandidate(peer:RTCPeerConnection, candidate:RTCIceCandidate) {
+        return peer.addIceCandidate(candidate);
+    }
+
     addUserMedia = (
         rtc:RTCPeerConnection,
         options:MediaStreamConstraints={
