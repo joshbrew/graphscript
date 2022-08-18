@@ -4866,12 +4866,12 @@
                         if (remoteroom.hostcandidates && user.rooms[roomId] && user._id !== remoteroom.ownerId) {
                           for (const c in remoteroom.hostcandidates) {
                             if (!(c in user.rooms[roomId].hostcandidates)) {
-                              console.log("adding new host ice candidate!", remoteroom.hostcandidates[c]);
+                              console.log("adding new host ice candidate!", remoteroom.hostcandidates[c], "for room", user.localrtc[roomId].rtc);
                               user.rooms[roomId].hostcandidates[c] = true;
                               user.localrtc[roomId].rtc.addIceCandidate(remoteroom.hostcandidates[c]);
                             }
                           }
-                          if (remoteroom.isLive) {
+                          if (remoteroom.isLive && !user.rooms[roomId].isLive) {
                             user.rooms[roomId].isLive = true;
                             console.log("session is live!", roomId);
                           }
@@ -4883,15 +4883,16 @@
                               user.rooms[roomId].isLive = true;
                               user.rooms[roomId].peerdescription = remoteroom.peerdescription;
                               for (const c in remoteroom.peercandidates) {
-                                console.log("adding new peer ice candidate!", remoteroom.peercandidates[c]);
+                                console.log("adding new peer ice candidate!", remoteroom.peercandidates[c], "for room", user.localrtc[roomId].rtc);
                                 user.localrtc[roomId].rtc.addIceCandidate(remoteroom.peercandidates[c]);
                                 user.rooms[roomId].peercandidates[c] = true;
                               }
+                              console.log("session is live!", roomId);
                             });
                           } else if (remoteroom.peercandidates) {
                             for (const c in remoteroom.peercandidates) {
                               if (!user.rooms[roomId].peercandidates[c]) {
-                                console.log("adding new peer ice candidate!", remoteroom.peercandidates[c]);
+                                console.log("adding new peer ice candidate!", remoteroom.peercandidates[c], "for room", user.localrtc[roomId].rtc);
                                 user.localrtc[roomId].rtc.addIceCandidate(remoteroom.peercandidates[c]);
                                 user.rooms[roomId].peercandidates[c] = true;
                               }
