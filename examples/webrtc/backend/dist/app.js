@@ -4338,7 +4338,7 @@
             break;
           }
           let send = (message) => {
-            return this.transmit(message, options.channels[firstChannel]);
+            return this.transmit(message, options._id, options.channels[firstChannel]);
           };
           let post = (route, args, origin, method) => {
             let message = {
@@ -4349,7 +4349,7 @@
               message.origin = origin;
             if (method)
               message.method = method;
-            return this.transmit(message, options.channels[firstChannel]);
+            return this.transmit(message, options._id, options.channels[firstChannel]);
           };
           let run = (route, args, origin, method) => {
             return new Promise((res, rej) => {
@@ -4359,18 +4359,19 @@
                 req.args[0].origin = origin;
               if (method)
                 req.args[0].method = method;
-              let onmessage = (ev) => {
-                if (typeof ev.data === "string" && ev.data.indexOf("{") > -1)
-                  ev.data = JSON.parse(ev.data);
-                if (typeof ev.data === "object") {
-                  if (ev.data.callbackId === callbackId) {
-                    options.channels[firstChannel].removeEventListener("message", onmessage);
-                    res(ev.data.args);
+              let sub;
+              let ondata = (data) => {
+                if (typeof data === "string" && data.indexOf("{") > -1)
+                  data = JSON.parse(data);
+                if (typeof data === "object") {
+                  if (data.callbackId === callbackId) {
+                    this.unsubscribe(options._id, sub);
+                    res(data.args);
                   }
                 }
               };
-              options.channels[firstChannel].addEventListener("message", onmessage);
-              this.transmit(req, options._id);
+              sub = this.subscribe(options._id, ondata);
+              this.transmit(req, options._id, options.channels[firstChannel]);
             });
           };
           let request = (message, origin, method) => {
@@ -4381,18 +4382,19 @@
                 req.origin = origin;
               if (method)
                 req.method = method;
-              let onmessage = (ev) => {
-                if (typeof ev.data === "string" && ev.data.indexOf("{") > -1)
-                  ev.data = JSON.parse(ev.data);
-                if (typeof ev.data === "object") {
-                  if (ev.data.callbackId === callbackId) {
-                    options.channels[firstChannel].removeEventListener("message", onmessage);
-                    res(ev.data.args);
+              let sub;
+              let ondata = (data) => {
+                if (typeof data === "string" && data.indexOf("{") > -1)
+                  data = JSON.parse(data);
+                if (typeof data === "object") {
+                  if (data.callbackId === callbackId) {
+                    this.unsubscribe(options._id, sub);
+                    res(data.args);
                   }
                 }
               };
-              options.channels[firstChannel].addEventListener("message", onmessage);
-              this.transmit(req, options._id);
+              sub = this.subscribe(options._id, ondata);
+              this.transmit(req, options._id, options.channels[firstChannel]);
             });
           };
           let subscribe = (route, callback) => {
@@ -4415,24 +4417,28 @@
           if (!options.ondatachannel)
             options.ondatachannel = (ev) => {
               this.rtc[options._id].channels[ev.channel.label] = ev.channel;
-              if (!options.ondata)
-                ev.channel.onmessage = (mev) => {
-                  console.log("message on data channel", mev);
+              if (!options.ondata) {
+                ev.channel.addEventListener("message", (mev) => {
                   this.receive(mev.data, ev.channel, this.rtc[options._id]);
                   this.setState({ [options._id]: mev.data });
-                };
-              else
-                ev.channel.onmessage = (mev) => {
+                });
+              } else
+                ev.channel.addEventListener("message", (mev) => {
                   options.ondata(mev.data, ev.channel, this.rtc[options._id]);
-                };
+                });
             };
           if (options.channels) {
             for (const channel in options.channels) {
               if (options.channels[channel] instanceof RTCDataChannel) {
               } else if (typeof options.channels[channel] === "object") {
                 options.channels[channel] = this.addDataChannel(rtc, channel, options.channels[channel]);
-              } else
+              } else {
                 options.channels[channel] = this.addDataChannel(rtc, channel);
+              }
+              options.channels[channel].addEventListener("message", (mev) => {
+                this.receive(mev.data, channel, this.rtc[options._id]);
+                this.setState({ [options._id]: mev.data });
+              });
             }
           }
           rtc.ontrack = options.ontrack;
@@ -4551,7 +4557,6 @@
         }
         if (channel instanceof RTCDataChannel)
           channel.send(data);
-        console.log("sending", channel, data);
         return true;
       };
       this.terminate = (rtc) => {
@@ -4903,7 +4908,9 @@
                               console.log("session is live!", roomId);
                               setTimeout(() => {
                                 console.log("attempting to ping");
-                                user.localrtc[roomId].run("ping").then(console.log).catch(console.error);
+                                user.localrtc[roomId].run("ping").then((r) => {
+                                  console.log("returned from channel", r);
+                                }).catch(console.error);
                               }, 1e3);
                             });
                           } else if (remoteroom.peercandidates) {

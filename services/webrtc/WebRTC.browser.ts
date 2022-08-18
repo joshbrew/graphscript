@@ -114,7 +114,7 @@ export class WebRTCfrontend extends Service {
 
             let send = (message:any) => {
                 //console.log('sent', message)
-                return this.transmit(message,options.channels[firstChannel] as RTCDataChannel);
+                return this.transmit(message,options._id,options.channels[firstChannel] as RTCDataChannel);
             }
 
             let post = (route:any,args?:any, origin?:string, method?:string) => {
@@ -126,7 +126,7 @@ export class WebRTCfrontend extends Service {
                 if(origin) message.origin = origin;
                 if(method) message.method = method;
 
-                return this.transmit(message,options.channels[firstChannel] as RTCDataChannel);
+                return this.transmit(message,options._id,options.channels[firstChannel] as RTCDataChannel);
             }
 
             let run = (route:any,args?:any, origin?:string, method?:string):Promise<any> => {
@@ -136,17 +136,23 @@ export class WebRTCfrontend extends Service {
                     //console.log(req)
                     if(origin) req.args[0].origin = origin;
                     if(method) req.args[0].method = method;
-                    let onmessage = (ev)=>{
-                        if(typeof ev.data === 'string' && ev.data.indexOf('{') > -1) ev.data = JSON.parse(ev.data);
-                        if(typeof ev.data === 'object') {
-                            if(ev.data.callbackId === callbackId) {
-                                (options.channels[firstChannel] as RTCDataChannel).removeEventListener('message',onmessage);
-                                res(ev.data.args); //resolve the request with the corresponding message
+                    
+                    let sub;
+                    let ondata = (data:any)=>{
+                        if(typeof data === 'string' && data.indexOf('{') > -1) data = JSON.parse(data);
+                        if(typeof data === 'object') {
+                            if(data.callbackId === callbackId) {
+                                //(options.channels[firstChannel] as RTCDataChannel).removeEventListener('message',onmessage);
+                                this.unsubscribe(options._id,sub);
+                                res(data.args); //resolve the request with the corresponding message
                             }
                         }
                     }
-                    (options.channels[firstChannel] as RTCDataChannel).addEventListener('message',onmessage)
-                    this.transmit(req, options._id);
+
+                    sub = this.subscribe(options._id,ondata);
+
+                    //(options.channels[firstChannel] as RTCDataChannel).addEventListener('message',onmessage)
+                    this.transmit(req, options._id,options.channels[firstChannel] as RTCDataChannel);
                 });
             }
             
@@ -157,17 +163,21 @@ export class WebRTCfrontend extends Service {
                     //console.log(req)
                     if(origin) req.origin = origin;
                     if(method) req.method = method;
-                    let onmessage = (ev)=>{
-                        if(typeof ev.data === 'string' && ev.data.indexOf('{') > -1) ev.data = JSON.parse(ev.data);
-                        if(typeof ev.data === 'object') {
-                            if(ev.data.callbackId === callbackId) {
-                                (options.channels[firstChannel] as RTCDataChannel).removeEventListener('message',onmessage);
-                                res(ev.data.args); //resolve the request with the corresponding message
+
+                    let sub;
+                    let ondata = (data:any)=>{
+                        if(typeof data === 'string' && data.indexOf('{') > -1) data = JSON.parse(data);
+                        if(typeof data === 'object') {
+                            if(data.callbackId === callbackId) {
+                                //(options.channels[firstChannel] as RTCDataChannel).removeEventListener('message',onmessage);
+                                this.unsubscribe(options._id,sub);
+                                res(data.args); //resolve the request with the corresponding message
                             }
                         }
                     }
-                    (options.channels[firstChannel] as RTCDataChannel).addEventListener('message',onmessage)
-                    this.transmit(req, options._id);
+
+                    sub = this.subscribe(options._id,ondata);
+                    this.transmit(req, options._id,options.channels[firstChannel] as RTCDataChannel);
                 });
             }
 
@@ -194,13 +204,14 @@ export class WebRTCfrontend extends Service {
             //console.log('opening webrtc channel',this.rtc)
             if(!options.ondatachannel) options.ondatachannel = (ev:RTCDataChannelEvent) => {
                 this.rtc[options._id].channels[ev.channel.label] = ev.channel;
-                if(!options.ondata)
-                    ev.channel.onmessage = (mev) => {
-                        console.log('message on data channel', mev);
+                if(!options.ondata) {
+                    ev.channel.addEventListener('message', (mev) => {
+                        //console.log('message on data channel', mev);
                         this.receive(mev.data, ev.channel, this.rtc[options._id]);
                         this.setState({[options._id]:mev.data});
-                    }
-                else ev.channel.onmessage = (mev) => { options.ondata(mev.data, ev.channel, this.rtc[options._id]); }
+                    });
+                }
+                else ev.channel.addEventListener('message', (mev) => { options.ondata(mev.data, ev.channel, this.rtc[options._id]); });
             
             }
 
@@ -211,7 +222,15 @@ export class WebRTCfrontend extends Service {
                     }
                     else if( typeof options.channels[channel] === 'object') {
                         options.channels[channel] = this.addDataChannel(rtc,channel,(options.channels)[channel] as any);
-                    } else options.channels[channel] = this.addDataChannel(rtc,channel);
+                    } else {
+                        options.channels[channel] = this.addDataChannel(rtc,channel);
+                    }
+
+                    (options.channels[channel] as RTCDataChannel).addEventListener('message', (mev) => {
+                        //console.log('message on data channel', mev);
+                        this.receive(mev.data, channel, this.rtc[options._id]);
+                        this.setState({[options._id]:mev.data});
+                    });
                 }
             } 
         
@@ -241,12 +260,12 @@ export class WebRTCfrontend extends Service {
     
         // console.log(options.hostdescription)
             return await new Promise((res,rej) => {
-                console.log('desc', options.hostdescription)
+                //console.log('desc', options.hostdescription)
                 if(typeof options.hostdescription === 'string') {
                     options.hostdescription = JSON.parse(decodeURIComponent(options.hostdescription));
                 }
                 const description = new RTCSessionDescription(options.hostdescription as RTCSessionDescriptionInit);
-                console.log('desc2', description)
+                //console.log('desc2', description)
 
                 options.hostdescription = description
                 rtc.setRemoteDescription(description).then(()=>{
@@ -390,7 +409,7 @@ export class WebRTCfrontend extends Service {
         if(channel instanceof RTCDataChannel)
             channel.send(data);
     
-        console.log('sending',channel,data)
+        //console.log('sending',channel,data)
 
         return true;
     }

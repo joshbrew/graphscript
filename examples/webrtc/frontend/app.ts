@@ -268,7 +268,7 @@ let p = router.addUser(
 
                                                     setTimeout(() => {
                                                         console.log('attempting to ping');
-                                                        (user.localrtc[roomId] as WebRTCInfo).run('ping').then(console.log).catch(console.error);
+                                                        (user.localrtc[roomId] as WebRTCInfo).run('ping').then((r)=>{console.log('returned from remote peer:',r);  }).catch(console.error);
                                                     }, 1000)
                                                 })
                                                 // remoteroom.peerdescription = JSON.parse(decodeURIComponent(remoteroom.peerdescription));
