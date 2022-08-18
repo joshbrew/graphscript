@@ -4770,7 +4770,9 @@
     button2.onclick = () => {
       router.services.webrtc.openRTC().then((room) => {
         user.rooms[room._id] = {
-          joined: false
+          joined: false,
+          ownerId: user._id,
+          deleted: false
         };
         myrooms.insertAdjacentHTML("beforeend", `
                 <div id='${room._id}'>
@@ -4781,6 +4783,8 @@
             `);
         document.getElementById(room._id + "close").onclick = () => {
           router.services.webrtc.terminate(room._id);
+          document.getElementById(room._id)?.remove();
+          user.rooms[room._id].deleted = true;
         };
       });
     };
@@ -4794,10 +4798,10 @@
             console.log(res2);
             if (res2.data.shared) {
               for (const userId in res2.data.shared) {
-                console.log(userId, res2.data.shared[userId]);
                 if (userId == user._id) {
                   console.log(userId, "(my data, returned from server)", res2.data.shared[userId]);
                 } else {
+                  console.log(userId, res2.data.shared[userId]);
                   let userrooms = allrooms.querySelector("#" + userId);
                   if (!userrooms) {
                     allrooms.insertAdjacentHTML("beforeend", `
@@ -4807,15 +4811,22 @@
                                 `);
                   } else if (res2.data.shared[userId].rooms) {
                     for (const roomId in res2.data.shared[userId].rooms) {
-                      if (!userrooms.querySelector("#" + roomId)) {
+                      const room = res2.data.shared[userId].rooms[roomId];
+                      if (room.deleted) {
+                        if (myrooms.querySelector("#" + roomId + "joined"))
+                          myrooms.querySelector("#" + roomId).remove();
+                        else if (userrooms.querySelector("#" + roomId + "joined"))
+                          userrooms.querySelector("#" + roomId).remove();
+                        delete user.rooms[roomId];
+                      } else if (!userrooms.querySelector("#" + roomId)) {
                         if (myrooms.querySelector("#" + roomId)) {
-                          myrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !res2.data.shared[userId].rooms[roomId].joined;
-                          user.rooms[roomId].joined = res2.data.shared[userId].rooms[roomId].joined;
-                        } else {
+                          myrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !room.joined;
+                          user.rooms[roomId].joined = room.joined;
+                        } else if (room.ownerId === userId) {
                           userrooms.insertAdjacentHTML("beforeend", `
                                                 <div id='${roomId}'>
                                                     Room ID: ${roomId}<br>
-                                                    <div id='${roomId}joined'>Available: ${!res2.data.shared[userId].rooms[roomId].joined}</div>
+                                                    <div id='${roomId}joined'>Available: ${!room.joined}</div>
                                                     <button id='${roomId}join'>Join</button>
                                                 </div>
                                             `);
@@ -4826,7 +4837,7 @@
                           };
                         }
                       } else {
-                        userrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !res2.data.shared[userId].rooms[roomId].joined;
+                        userrooms.querySelector("#" + roomId + "joined").innerHTML = "Available: " + !room.joined;
                       }
                     }
                   }

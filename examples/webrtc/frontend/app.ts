@@ -110,6 +110,7 @@ let p = router.addUser(
         (router.services.webrtc as WebRTCfrontend).openRTC().then((room:WebRTCInfo) => {
             user.rooms[room._id] = {
                 joined:false,
+                ownerId:user._id,
                 deleted:false
             };
 
@@ -151,22 +152,24 @@ let p = router.addUser(
                                 `);
                             } else if(res.data.shared[userId].rooms) {
                                 for(const roomId in res.data.shared[userId].rooms) {
+                                    
+                                    const room = res.data.shared[userId].rooms[roomId];
 
-                                    if(!userrooms.querySelector('#'+roomId)) {
-
+                                    if(room.deleted) {
+                                        if((myrooms.querySelector('#'+roomId+'joined') as any)) (myrooms.querySelector('#'+roomId) as any).remove();
+                                        else if((userrooms.querySelector('#'+roomId+'joined') as any)) (userrooms.querySelector('#'+roomId) as any).remove();
+                                        delete user.rooms[roomId];
+                                    } 
+                                    else if(!userrooms.querySelector('#'+roomId)) {
                                         if(myrooms.querySelector('#'+roomId)) {
-                                            if(res.data.shared[userId].rooms[roomId].deleted) {
-                                                (myrooms.querySelector('#'+roomId+'joined') as any).remove();
-                                            } else {
-                                                (myrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !res.data.shared[userId].rooms[roomId].joined;
-                                                user.rooms[roomId].joined = res.data.shared[userId].rooms[roomId].joined;
-                                            }
-                                        } else {
+                                            (myrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !room.joined;
+                                            user.rooms[roomId].joined = room.joined;
+                                        } else if(room.ownerId === userId) {
 
                                             userrooms.insertAdjacentHTML('beforeend',`
                                                 <div id='${roomId}'>
                                                     Room ID: ${roomId}<br>
-                                                    <div id='${roomId}joined'>Available: ${!res.data.shared[userId].rooms[roomId].joined}</div>
+                                                    <div id='${roomId}joined'>Available: ${!room.joined}</div>
                                                     <button id='${roomId}join'>Join</button>
                                                 </div>
                                             `);
@@ -177,9 +180,9 @@ let p = router.addUser(
                                                     joined:true
                                                 };
                                             }
-                                        }
+                                        } 
                                     } else {
-                                        (userrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !res.data.shared[userId].rooms[roomId].joined;
+                                        (userrooms.querySelector('#'+roomId+'joined') as any).innerHTML = 'Available: ' + !room.joined;
                                     }
                                 }
                             }
