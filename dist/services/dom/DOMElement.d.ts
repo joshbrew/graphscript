@@ -1,17 +1,20 @@
+
+//todo: make this the permanent version so I can stop copying manually each build
 export function addCustomElement(cls: any, tag: any, extend?: any): void;
 export function randomId(tag?: string): string;
 export function parseFunctionFromText(method: any): any;
 export class DOMElement extends HTMLElement {
     static get tag(): string;
     static addElement(tag?: string, cls?: typeof DOMElement, extend?: any): void;
-    template: (self: DOMElement, props: any) => string;
-    props: {};
+    template: ((self: DOMElement, props: any) => (string|HTMLElement)) | string | HTMLElement;
+    props: {[key:string]:any};
     useShadow: boolean;
-    styles: any;
-    oncreate: any;
-    ondelete: any;
-    onchanged: any;
-    renderonchanged: boolean;
+    styles: string;
+    oncreate: ((self: DOMElement, props: any) => void);
+    onresize: ((self: DOMElement, props: any) => void)|any;
+    ondelete: ((self: DOMElement, props: any) => void);
+    onchanged: ((self: DOMElement, props: any) => void);
+    renderonchanged: boolean | ((self: DOMElement, props: any) => void);
     FRAGMENT: any;
     STYLE: any;
     attachedShadow: boolean;
