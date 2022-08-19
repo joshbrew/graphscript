@@ -287,5 +287,5 @@ export const Systems = {
     } as SystemProps,
     //collision:{},
     //geometry:{},
-    //camera:{},
+    //materials:{},
 } as {[key:string]:SystemProps}
