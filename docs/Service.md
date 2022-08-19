@@ -124,7 +124,7 @@ For all services with remote message passing support (http, wss, sse, webrtc, et
 - DOM - Create elements, detailed web components, or a macro for canvases that tie in with the graph. Really quickly script out whole web pages with heavy interactivity with a lot less fuss. Includes .md and .jsx interpreting options (rough). (browser only) 
     - - [DOMService](./services/dom/dom.service.md)
 
-- HTTP - Create an http server and manage REST calls. The server is set up to handle custom GET/POST requests using our route format encoded in the request body as well as standard GET/POST calls for serving files. The backend HTTP service allows you to construct webpages just from strings and inject code e.g. for hotreloading into your page with simple one liners. You can even build whole pages from lists of functions and template strings.
+- HTTP - Create [http/https servers](https://nodejs.org/api/http.html) and manage REST calls and create static or dynamic websites instantly. The server is set up to handle custom GET/POST requests using our route format encoded in the request body as well as standard GET/POST calls for serving files. The backend HTTP service allows you to construct webpages just from strings and inject code e.g. for hotreloading into your page with simple one liners. You can even build whole pages from lists of functions and template strings.
     - - [HTTPbackend](./services/http/http.node.md)
     - - [HTTPfrontend](./services/http/http.browser.md)
 
@@ -132,26 +132,26 @@ For all services with remote message passing support (http, wss, sse, webrtc, et
     - - [WSSbackend](./services/wss/wss.node.md)
     - - [WSSfrontend](./services/wss/wss.browser.md)
 
-- SSE - Server sent events using `better-sse`, this allows for one way communication to connected clients. This program gives you handles for each client as well, so individuals can be messaged on a shared channel without notifying others. This has much less overhead when two way communication is unnecessary or when you can fire-and-forget message results.
+- SSE - [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) using [`better-sse`](https://www.npmjs.com/package/better-sse), this allows for one way communication to connected clients. This program gives you handles for each client as well, so individuals can be messaged on a shared channel without notifying others. This has much less overhead when two way communication is unnecessary or when you can fire-and-forget message results.
     - - [SSEbackend](./services/sse/sse.node.md)
     - - [SSEfrontend](./services/sse/sse.browser.md)
 
-- Worker - Multithreading is essential for high performance applications, and essentially all logic not running directly on the UI should be offloaded to workers in a production environment, so we handled the message passing system for you. In nodejs, threads can even run their entire own servers. In browser, they can handle canvas draw calls, sockets, REST calls, etc. 
+- [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) - Multithreading is essential for high performance applications, and essentially all logic not running directly on the UI should be offloaded to workers in a production environment, so we handled the message passing system for you. In nodejs, threads can even run their entire own servers. In browser, they can handle canvas draw calls, sockets, REST calls, etc. 
     - - [WorkerService](./services/worker/worker.service.md)
     - - [Workers](./services/worker/worker.md)
 
-- WebRTC - Browser supported peer 2 peer streaming. We can easily use the sessions framework internal to Routers/UserRouters to share room information over a server persistently. 
+- [WebRTC](https://webrtc.org/) - Browser supported peer 2 peer streaming and data channels with [WebRTC](https://webrtc.org/). We can easily use the service and sessions framework internal to Routers/UserRouters to share room information or create remote commander/listener instances through a server easily. 
     - - [WebRTCfrontend](./services/webrtc/webrtc.browser.md)
 
-- CMD - Command child processes, load processes that run their own CMD services to listen for cross-process service messages. This is the entry point for containerized applications with independent memory pools e.g. for rapid testing or for server multiplexing. (server only)
+- CMD - Command [child processes](https://nodejs.org/api/child_process.html), load processes that run their own CMD services to listen for cross-process service messages. This is the entry point for containerized applications with independent memory pools e.g. for rapid testing or for server multiplexing. (server only)
     - - [CMDService](./services/cmd/cmd.service.md)
 
 - Struct - Comprehensive data structure system for users. This includes basic access permissions, persistent notifications e.g. for chatroom data, and options to hook into MongoDB or basic local in-memory data maps for cloud server or frontend usage. 
 
 - E2EE - End 2 End encryption made easy with the minimal Stanford Javascript Cryptography Library. It's set up to generate keys which you can copy to the desired endpoint (should do it securely) to pass encrypted service messages that automatically reroute through the encryption service. It can even encrypt the hash key table with a server side secret. 
 
-- GPU - This service implements an instance of gpu.js via our `gpujsutils` library, which is a stable gpu.js distribution and macro set. Kernels are created persistently on the gpu via webgl2 and i/o can be resized dynamically, so this runs as fast as Webgl2 allows. Hoping gpujs sees some upgrades for WebGPU as it lets you write shader code in plain loosely typed javascript!
+- GPU - This service implements an instance of [gpu.js](https://gpu.rocks/#/) via our `gpujsutils` library, which is a stable gpu.js distribution and macro set. Kernels are created persistently on the gpu via webgl2 and i/o can be resized dynamically, so this runs as fast as Webgl2 allows. Hoping gpujs sees some upgrades for WebGPU as it lets you write shader code in plain loosely typed javascript!
 
 - Unsafe - These let you dynamically transfer functions and classes or read/write global values across service instances, e.g. to other threads or between frontend/backend. Use with caution as it is reliant on eval()
 
-- ECS - Entity Component System Service provides a simple spec to help you organize 'entities' with 'components' that tell different 'systems' to execute based on an execution order you provide. E.g. physics entities may have a collision system and a movement system before a final render system, and each entity will have values stored that get mutated by each system in an order that makes physical sense (e.g. check collision -> update velocity -> update position -> update render each frame). This is a loose spec, the rest is provided by the base Service/Graph node composition tools to give you full flow graph and state management under the hood. 
+- ECS - [Entity Component System](https://github.com/SanderMertens/ecs-faq#what-is-ecs) Service provides a simple spec to help you organize 'entities' with 'components' that tell different 'systems' to execute based on an execution order you provide. E.g. physics entities may have a collision system and a movement system before a final render system, and each entity will have values stored that get mutated by each system in an order that makes physical sense (e.g. check collision -> update velocity -> update position -> update render each frame). This is a loose spec, the rest is provided by the base Service/Graph node composition tools to give you full flow graph and state management under the hood. 

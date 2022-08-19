@@ -3,6 +3,11 @@ import { Service, ServiceOptions, RouteProp } from '../Service';
 
 //Entity Component System Service
 
+//e.g.  physics bodies: collision check -> gravity check -> force/acceleration/velocity/position check -> render check, with values stored on entities for each system to access
+// you can filter and selectively update systems in specific orders on demand or run on animation frames, you should build varied routines e.g. on-demand or on cycle based on use case
+
+//ECS faq https://github.com/SanderMertens/ecs-faq
+
 export type ECSOptions = {
     entities:{
         [key:string]:boolean|{
