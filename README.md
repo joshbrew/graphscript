@@ -6,7 +6,7 @@
 For node.js
 `npm i graphscript-node`
 
-<div style="text-align:center">
+<div style="text-align:center;display:block;">
 <img src="gs_logo_min.png"  width=350px height=350px>
 For happy code!
 </div>
