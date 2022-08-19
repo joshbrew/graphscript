@@ -137,7 +137,7 @@ export class ECSService extends Service {
         prototype:{[key:string]:any},
         components:{[key:string]:boolean}
     ) {
-        const entity = Object.assign({},prototype);
+        const entity = this.recursivelyAssign({},prototype);
         entity.components = components;
         if(entity._id && this.entities[entity._id]) {
             entity._id = `entity${Math.floor(Math.random()*1000000000000000)}`;
@@ -153,7 +153,7 @@ export class ECSService extends Service {
         prototype:{[key:string]:any}, 
         update:(entities:any)=>any
     ) {
-        const system = Object.assign({},prototype);
+        const system = this.recursivelyAssign({},prototype);
         system.operator = update;
         if(system._id && this.systems[system._id]) {
             system._id = `system${Math.floor(Math.random()*1000000000000000)}`;
