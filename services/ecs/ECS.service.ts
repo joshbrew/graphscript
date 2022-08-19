@@ -273,9 +273,10 @@ export const Systems = {
                     if(entity2.components) if(!entity2.components[self.tag]) continue;
                     if(!entity2.collisionEnabled) continue;
                  
-                    if(Systems.collision.collisionCheck(entity1,entity2)) {
-                        entity1.colliding[entity2.tag] = true;
-                        entity2.colliding[entity1.tag] = true;
+                    let colliding = Systems.collision.collisionCheck(entity1,entity2); //returns distance from origin if colliding (to reduce redundancy later)
+                    if(colliding !== false) {
+                        entity1.colliding[entity2.tag] = colliding;
+                        entity2.colliding[entity1.tag] = colliding;
                     }
                 }
             }
@@ -302,8 +303,11 @@ export const Systems = {
             if(body1.collisionEnabled === false || body2.collisionEnabled === false) return false;
 
             //Check if within a range close enough to merit a collision check
+
+            const dist = Systems.collision.distance(body1.position,body2.position);
+
             if(
-                Systems.collision.distance(body1.position,body2.position) < (   
+                dist < (   
                     Math.max(...Object.values(body1.collisionBoundsScale))*body1.collisionRadius + 
                     Math.max(...Object.values(body2.collisionBoundsScale))*body2.collisionRadius
                 )
@@ -311,23 +315,23 @@ export const Systems = {
                 //Do collision check
                 let isColliding = false;
                 if(body1.collisionType === "sphere") {
-                    if(body2.collisionType === "sphere") { isColliding = Systems.collision.sphericalCollisionCheck(body1,body2);}
-                    else if(body2.collisionType === "box") { isColliding = Systems.collision.sphereBoxCollisionCheck(body1,body2);}
-                    else if(body2.collisionType === "point") { isColliding = Systems.collision.isPointInsideSphere(body2.position,body1);}
+                    if(body2.collisionType === "sphere") { isColliding = Systems.collision.sphereCollisionCheck(body1,body2,dist);}
+                    else if(body2.collisionType === "box") { isColliding = Systems.collision.sphereBoxCollisionCheck(body1,body2,dist);}
+                    else if(body2.collisionType === "point") { isColliding = Systems.collision.isPointInsideSphere(body2.position,body1,dist);}
                 }
                 else if(body1.collisionType === "box" ) {
-                    if(body2.collisionType === "sphere") { isColliding = Systems.collision.sphereBoxCollisionCheck(body2,body1);}
+                    if(body2.collisionType === "sphere") { isColliding = Systems.collision.sphereBoxCollisionCheck(body2,body1,dist);}
                     else if(body2.collisionType === "box") { isColliding = Systems.collision.boxCollisionCheck(body1,body2);}
                     else if(body2.collisionType === "point") { isColliding = Systems.collision.isPointInsideBox(body1.position,body1); }
                 }
                 else if (body1.collisionType === "point") {
-                    if(body2.collisionType === "sphere") { isColliding = Systems.collision.isPointInsideSphere(body1.position,body2); }
+                    if(body2.collisionType === "sphere") { isColliding = Systems.collision.isPointInsideSphere(body1.position,body2,dist); }
                     else if(body2.collisionType === "box") { isColliding = Systems.collision.isPointInsideBox(body1.position,body2); }
                 }
 
-                return isColliding;
+                if(isColliding) return dist;
             }
-            else return false
+            return false
         },
         sphereCollisionCheck:(
             body1:{
@@ -341,11 +345,12 @@ export const Systems = {
                 collisionRadius:number,
                 collisionBoundsScale:{x:number,y:number,z:number},
                 [key:string]:any
-            }
+            },
+            dist?:number
         )=>{
-            let dist = Systems.collision.distance(body1.position,body2.position);
+            if(dist === undefined) dist = Systems.collision.distance(body1.position,body2.position);
 
-            return dist < (body1.collisionRadius + body2.collisionRadius);
+            return (dist as number) < (body1.collisionRadius + body2.collisionRadius);
         },
         boxCollisionCheck:(
             body1:{
@@ -393,7 +398,8 @@ export const Systems = {
                 collisionRadius:number,
                 collisionBoundsScale:{x:number,y:number,z:number},
                 [key:string]:any
-            }
+            },
+            dist?:number
         )=>{
             let boxMinX = (box.position.x-box.collisionRadius)*box.collisionBoundsScale.x;
             let boxMaxX = (box.position.x+box.collisionRadius)*box.collisionBoundsScale.x;
@@ -411,9 +417,9 @@ export const Systems = {
                 z:Math.max(boxMinZ, Math.min(sphere.position.z, boxMaxZ))
             };
     
-            let dist = Systems.collision.distance(sphere.position,clamp);
+            if(dist === undefined) dist = Systems.collision.distance(sphere.position,clamp);
     
-            return dist > sphere.collisionRadius;
+            return (dist as number) > sphere.collisionRadius;
         },
         isPointInsideSphere:(
             point:{x:number,y:number,z:number},
@@ -422,11 +428,12 @@ export const Systems = {
                 collisionRadius:number,
                 collisionBoundsScale:{x:number,y:number,z:number},
                 [key:string]:any
-            }
+            },
+            dist?:number
         )=>{
-            let dist = Systems.collision.distance(point,sphere.position);
+            if(dist === undefined) dist = Systems.collision.distance(point,sphere.position);
 
-            return dist < sphere.collisionRadius;
+            return (dist as number) < sphere.collisionRadius;
         },
         isPointInsideBox:(
             point:{x:number,y:number,z:number},
@@ -655,66 +662,81 @@ export const Systems = {
                 if(entity1.components) if(!entity1.components[self.tag] || !entity1.collisionEnabled) continue;
                 if(!entity1.collisionEnabled) continue;
 
-                for(const key2 in entity1.colliding) { //this is not perfect, the collisions act weird when multiple things collide or surfaces get too close
+                //This does (crappy) sphere collisions, for box collisions we need to reflect based on which cube surfaces are colliding
+                for(const key2 in entity1.colliding) { 
+                    if(entity1.colliding[key2] === false) continue;
                     const entity2 = entities[key2];
                     if(!entity2.collisionEnabled) continue;
 
-                    let dist = Systems.collision.distance(entity1.position,entity2.position);
-                    let vecn = Systems.collision.normalize(Systems.collision.makeVec(entity1.position,entity2.position)); // a to b
-
-                    let sumMass = entity1.mass+entity2.mass;
-                    let ratio = entity1.mass/sumMass; //displace proportional to mass
-                    let rmin = 1-ratio;
-
-                    if(entity1.fixed === false) {
-                        entity1.position.x += vecn.x*rmin*1.01;
-                        entity1.position.y += vecn.y*rmin*1.01;
-                        entity1.position.z += vecn.z*rmin*1.001;
-                    } else {
-                        entity2.position.x -= vecn.x*1.01;
-                        entity2.position.y -= vecn.y*1.01;
-                        entity2.position.z -= vecn.z*1.01;
-                    }
-                    if(entity2.fixed === false) {
-                        entity2.position.x += vecn.x*ratio*1.01;
-                        entity2.position.y += vecn.y*ratio*1.01;
-                        entity2.position.z += vecn.z*ratio*1.01;
-                    } else {
-                        entity1.position.x += vecn.x*1.01;
-                        entity1.position.y += vecn.y*1.01;
-                        entity1.position.z += vecn.z*1.01;
-                    }
-
-                    dist = Systems.collision.distance(entity1.position,entity2.position);
-
-                    let vrel = {
-                        x:entity1.velocity.x - entity2.velocity.x,
-                        y:entity1.velocity.y - entity2.velocity.y,
-                        z:entity1.velocity.z - entity2.velocity.z
-                    };
-
-                    let speed = vrel.x*vecn.x + vrel.y*vecn.y + vrel.z*vecn.z;
-
-                    if(speed > 0) {
-                        let impulse = 2*speed/sumMass;
-                        entity1.velocity.x -= impulse*vecn.x*entity2.mass*entity1.restitution///entity1.mass;
-                        entity1.velocity.y -= impulse*vecn.y*entity2.mass*entity1.restitution///entity1.mass;
-                        entity1.velocity.z -= impulse*vecn.z*entity2.mass*entity1.restitution///entity1.mass;
+                    //if(entity1.collisionType === 'sphere' && entity2.collisionType === 'sphere')
+                    Systems.collider.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
+                    //todo: box face (orthogonal) reflections
                     
-                        entity2.velocity.x += impulse*vecn.x*entity2.mass*entity2.restitution/entity2.mass;
-                        entity2.velocity.y += impulse*vecn.y*entity2.mass*entity2.restitution/entity2.mass;
-                        entity2.velocity.z += impulse*vecn.z*entity2.mass*entity2.restitution/entity2.mass;
-                        
-                    }
-                    //if(!entity1.collidedWith[entity2.tag] && !entity1.prevCollidedWith[entity2.tag]) {
-                    //}
-                    // entity1.collidedWith[entity2.tag] = entity2.tag;
-                    // entity2.collidedWith[entity1.tag] = entity1.tag;
-
-                    entity1.colliding[key2] = false;
-                    entity2.colliding[key] = false;
                 }
             }
+        },
+        resolveSphereCollisions:(entity1:Entity,entity2:Entity,dist?:number)=>{
+
+            if(dist === undefined) dist = Systems.collision.distance(entity1.position,entity2.position);
+            let vecn = Systems.collision.normalize(Systems.collision.makeVec(entity1.position,entity2.position)); // a to b
+
+            let sumMass = entity1.mass+entity2.mass;
+            let ratio = entity1.mass/sumMass; //displace proportional to mass
+            let rmin = 1-ratio;
+
+            if(entity1.fixed === false) {
+                entity1.position.x += vecn.x*rmin*1.01;
+                entity1.position.y += vecn.y*rmin*1.01;
+                entity1.position.z += vecn.z*rmin*1.001;
+            } else {
+                entity2.position.x -= vecn.x*1.01;
+                entity2.position.y -= vecn.y*1.01;
+                entity2.position.z -= vecn.z*1.01;
+            }
+            if(entity2.fixed === false) {
+                entity2.position.x += vecn.x*ratio*1.01;
+                entity2.position.y += vecn.y*ratio*1.01;
+                entity2.position.z += vecn.z*ratio*1.01;
+            } else {
+                entity1.position.x += vecn.x*1.01;
+                entity1.position.y += vecn.y*1.01;
+                entity1.position.z += vecn.z*1.01;
+            }
+
+            //get updated distance (?)
+            dist = Systems.collision.distance(entity1.position,entity2.position);
+
+            let vrel = {
+                x:entity1.velocity.x - entity2.velocity.x,
+                y:entity1.velocity.y - entity2.velocity.y,
+                z:entity1.velocity.z - entity2.velocity.z
+            };
+
+            let speed = vrel.x*vecn.x + vrel.y*vecn.y + vrel.z*vecn.z;
+
+            if(speed > 0) {
+                let impulse = 2*speed/sumMass;
+
+                if(entity1.fixed === false) {
+                    entity1.velocity.x -= impulse*vecn.x*entity2.mass*entity1.restitution///entity1.mass;
+                    entity1.velocity.y -= impulse*vecn.y*entity2.mass*entity1.restitution///entity1.mass;
+                    entity1.velocity.z -= impulse*vecn.z*entity2.mass*entity1.restitution///entity1.mass;
+                }
+                
+                if(entity2.fixed === false) {
+                    entity2.velocity.x += impulse*vecn.x*entity2.mass*entity2.restitution/entity2.mass;
+                    entity2.velocity.y += impulse*vecn.y*entity2.mass*entity2.restitution/entity2.mass;
+                    entity2.velocity.z += impulse*vecn.z*entity2.mass*entity2.restitution/entity2.mass;
+                }
+
+            }
+            //if(!entity1.collidedWith[entity2.tag] && !entity1.prevCollidedWith[entity2.tag]) {
+            //}
+            // entity1.collidedWith[entity2.tag] = entity2.tag;
+            // entity2.collidedWith[entity1.tag] = entity1.tag;
+
+            delete entity1.colliding[entity2.tag];
+            delete entity2.colliding[entity1.tag];
         }
     } as SystemProps,
     movement:{
@@ -725,6 +747,7 @@ export const Systems = {
                 if(entity.components) if(!entity.components[self.tag]) continue;
 
                 if(!('mass' in entity)) entity.mass = 1;
+                if(!('fixed' in entity)) entity.fixed = false;
                 if(!entity.force) entity.force = {x:0,y:0,z:0};
                 if(!('mass' in entity)) entity.mass = 1;
                 if(!('gravity' in entity)) entity.gravity = -9.81; //m/s^2 on earth
@@ -740,6 +763,7 @@ export const Systems = {
             for(const key in entities) {
                 const entity = entities[key];
                 if(entity.components) if(!entity.components[self.tag]) continue;
+                if(entity.fixed) continue;
                 
                 if(typeof entity.force === 'object' && entity.mass) { //F = ma, F in Newtons, m in kg, a in m/s^2
                     if(entity.force.x) {
