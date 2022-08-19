@@ -282,5 +282,5 @@ export const Systems = {
                 }
             }
         }
-    }
-}
+    } as SystemProps
+} as {[key:string]:SystemProps}
