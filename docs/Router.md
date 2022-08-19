@@ -46,7 +46,7 @@ router.run(
         // keypath:'key.pem',
         // passphrase:'encryption',
         //errpage:undefined,
-        pageOptions:{
+        pages:{
             'config':{
                 template:'tinybuild.config.js'
             },
@@ -208,6 +208,86 @@ let router = new UserRouter([
     loadDefaultRoutes:true
 });
 
+
+router.run(
+    'http.setupServer',
+    {
+        protocol:'http',
+        host:'localhost',
+        port:8080,
+        startpage:'index.html',
+        // certpath:'cert.pem', 
+        // keypath:'key.pem',
+        // passphrase:'encryption',
+        //errpage:undefined,
+        pages:{
+            'home':{
+                redirect:'/'
+            },
+            'redir':{
+                redirect:'https://google.com'
+                onrequest:(self,node,req,res) => {
+                    console.log('redirected to google')
+                }
+            },
+            'test':'<div>TEST</div>',
+            _all:{
+                inject:{
+                    hotreload:'ws://localhost:8080/hotreload'
+                }
+            }
+        }
+    } as ServerProps
+).then((served:ServerInfo) => { //this function returns a promise so we can use .then, only explicitly async or promise-returning functions can be awaited or .then'd for good performance!
+    
+    const socketserver = router.run(
+        'wss.setupWSS',
+        {
+            server:served.server,
+            host:served.host,
+            port:8081,
+            path:'wss',
+            onconnection:(ws,req,serverinfo,id)=>{
+                ws.send('Hello from WSS!');
+            }
+        } as SocketServerProps
+    );
+    
+    const hotreload = router.run(
+        'wss.setupWSS',
+        {
+            server:served.server,
+            host:served.host,
+            port:7000,
+            path:'hotreload',
+            onconnection:(ws)=>{
+                ws.send('Hot reload port opened!');
+            }
+        } as SocketServerProps
+    );
+
+    const sseinfo = router.run(
+        'sse.setupSSE',
+        {
+            server:served.server,
+            path:'sse',
+            channels:['test'],
+            onconnection:(session,sseinfo,id,req,res)=>{
+                console.log('pushing sse!')
+                session.push('Hello from SSE!');
+                sseinfo.channels.forEach(
+                    (c:string) => sseinfo.channel.broadcast(
+                        'SSE connection at '+req.headers.host+'/'+req.url, c 
+                    )
+                );
+            },
+        } as SSEProps
+    )
+
+    //console.log(socketserver);
+    //console.log(sseinfo)
+}); //make a default server
+
 router.addUser({ //e.g. we can have an admin user to build controls for ourselves
     _id:'admin'
 } as UserProps);
@@ -261,11 +341,11 @@ router.run(
     'http/listen'
 );
 
-// const hotreloadinfo = router.run('wss/openWS',{
-//     host:'localhost',
-//     port:8080,
-//     path:'hotreload'
-// } as WebSocketProps) as WebSocketInfo;
+const hotreloadinfo = router.run('wss/openWS',{
+    host:'localhost',
+    port:8080,
+    path:'hotreload'
+} as WebSocketProps) as WebSocketInfo;
 
 const socketinfo = router.run('wss/openWS',{
     host:'localhost',
