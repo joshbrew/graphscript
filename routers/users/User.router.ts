@@ -1196,6 +1196,8 @@ export class UserRouter extends Router {
         transmitSessionUpdates:this.transmitSessionUpdates,
         receiveSessionUpdates:this.receiveSessionUpdates,
         swapHost:this.swapHost,
+        getupdateUserData:this.getUpdatedUserData,
+        userUpdateCheck:this.userUpdateCheck,
         userUpdateLoop:{ //this node loop will run separately from the one below it
             operator:this.userUpdateCheck, 
             loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
