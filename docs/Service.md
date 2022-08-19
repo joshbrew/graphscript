@@ -118,11 +118,12 @@ For all services with remote message passing support (http, wss, sse, webrtc, et
 - WebRTC - Browser supported peer 2 peer streaming. We can easily use the sessions framework internal to Routers/UserRouters to share room information over a server persistently. 
     - - [WebRTCfrontend](./services/webrtc/webrtc.browser.md)
 
+- CMD - Command child processes, load processes that run their own CMD services to listen for cross-process service messages. This is the entry point for containerized applications with independent memory pools e.g. for rapid testing or for server multiplexing. (server only)
+    - - [CMDService](./services/cmd/cmd.service.md)
+
+- Struct - Comprehensive data structure system for users. This includes basic access permissions, persistent notifications e.g. for chatroom data, and options to hook into MongoDB or basic local in-memory data maps for cloud server or frontend usage. 
+
 - E2EE - End 2 End encryption made easy with the minimal Stanford Javascript Cryptography Library. It's set up to generate keys which you can copy to the desired endpoint (should do it securely) to pass encrypted service messages that automatically reroute through the encryption service. It can even encrypt the hash key table with a server side secret. 
-
-- CMD - Command child processes, load processes that run their own CMD services to listen for cross-process service messages. This is the entry point for containerized applications with independent memory pools e.g. for rapid testing or for server multiplexing.
-
-- Struct - WIP reimplementation of a comprehensive data structure system for users. This includes basic access permissions, persistent notifications e.g. for chatroom data, and options to hook into MongoDB or basic local in-memory data maps. 
 
 - GPU - This service implements an instance of gpu.js via our `gpujsutils` library, which is a stable gpu.js distribution and macro set. Kernels are created persistently on the gpu via webgl2 and i/o can be resized dynamically, so this runs as fast as Webgl2 allows. Hoping gpujs sees some upgrades for WebGPU as it lets you write shader code in plain loosely typed javascript!
 

@@ -22,7 +22,13 @@ export type CMDRoute = {
 export type CMDInfo = {
     process:ChildProcess,
     _id:string,
-    controller:AbortController
+    controller:AbortController,
+    send:(data:Serializable)=>boolean,
+    request:(message:ServiceMessage|any, origin?:string, method?:string) => Promise<any>,
+    post:(route:string, args:any, origin?:string, method?:string) => boolean,
+    run:(route:any, args?:any, origin?:string, method?:string) => Promise<any>,
+    subscribe:(route:any, callback?:((res:any)=>void)|string) => number,
+    unsubscribe:(route:any, sub:number) => Promise<boolean>
 } & CMDRoute
 
 
@@ -66,60 +72,60 @@ export class CMDService extends Service {
     }
 
     createProcess = (properties:CMDRoute) => {
-        let rt = properties;
-        if(!rt.command) rt.command = 'node' //default command
-        if(!rt.args) rt.args = [path.join(process.cwd(),'node_modules','graphscript-node','services','cmd','childprocess.js')] //default child process
-        if(rt.command) {
+        let newprocess = properties;
+        if(!newprocess.command) newprocess.command = 'node' //default command
+        if(!newprocess.args) newprocess.args = [path.join(process.cwd(),'node_modules','graphscript-node','services','cmd','childprocess.js')] //default child process
+        if(newprocess.command) {
             let p:ChildProcess;
-            if(!rt.options) {
-                rt.options = {shell:true, stdio:'inherit'}
+            if(!newprocess.options) {
+                newprocess.options = {shell:true, stdio:'inherit'}
             }
-            rt.controller = new AbortController();
-            rt.options = Object.assign({signal:(rt.controller as AbortController).signal, env:process.env, cwd:process.cwd()},rt.options)
+            newprocess.controller = new AbortController();
+            newprocess.options = Object.assign({signal:(newprocess.controller as AbortController).signal, env:process.env, cwd:process.cwd()},newprocess.options)
 
-            if(rt.tag) rt._id = rt.tag;
+            if(newprocess.tag) newprocess._id = newprocess.tag;
             else {
-                rt._id = `process${Math.floor(Math.random()*1000000000000000)}`;
-                rt.tag = rt._id;
+                newprocess._id = `process${Math.floor(Math.random()*1000000000000000)}`;
+                newprocess.tag = newprocess._id;
             }
 
-            if(typeof rt.command === 'string') {
-                if(rt.command.includes('.js')) {
-                    p = fork(rt.command,rt.args,rt.options);
-                } else p = spawn(rt.command,rt.args ? rt.args : [],rt.options);
+            if(typeof newprocess.command === 'string') {
+                if(newprocess.command.includes('.js')) {
+                    p = fork(newprocess.command,newprocess.args,newprocess.options);
+                } else p = spawn(newprocess.command,newprocess.args ? newprocess.args : [],newprocess.options);
 
                 if(p instanceof ChildProcess) {
                     if(p.stderr) {
-                        if(rt.onerror) {
-                            p.stderr.on('data', rt.onerror);
+                        if(newprocess.onerror) {
+                            p.stderr.on('data', newprocess.onerror);
                         } else p.stderr.on('data', console.error)
                     }
                     if(p.stdout) {
-                        if(rt.stdout) {
-                            p.stdout.on('data', rt.stdout)
+                        if(newprocess.stdout) {
+                            p.stdout.on('data', newprocess.stdout)
                         } else p.stdout.on('data', (data)=>{ 
                             let str = data.toString();
                             this.receive(str);
-                            this.setState({[rt._id]:str}); 
+                            this.setState({[newprocess._id]:str}); 
                         } )
                     }
 
-                    if(rt.onclose) {
-                        p.on('close',rt.onclose);
+                    if(newprocess.onclose) {
+                        p.on('close',newprocess.onclose);
                     }
 
-                    rt.process = p; //keep the process referenced locally
-                    rt.controller = new AbortController();
+                    newprocess.process = p; //keep the process referenced locally
+                    newprocess.controller = new AbortController();
 
-                    rt.send = (data:Serializable) => {
-                        p.send(data);
+                    newprocess.send = (data:Serializable) => {
+                        return p.send(data);
                     }
 
-                    rt.request = (message:ServiceMessage|any, origin?:string, method?:string) => {
-                        this.request(message,rt._id,origin,method);
+                    newprocess.request = (message:ServiceMessage|any, origin?:string, method?:string) => {
+                        return this.request(message,newprocess._id,origin,method) as Promise<any>;
                     }
 
-                    rt.post = (route:string, args:any, origin?:string, method?:string) => {
+                    newprocess.post = (route:string, args:any, origin?:string, method?:string) => {
                         //console.log('sent', message)
                         let message:any = {
                             route,
@@ -131,7 +137,7 @@ export class CMDService extends Service {
                         return p.send(JSON.stringify(message));
                     }
 
-                    rt.run = (route:any, args?:any, origin?:string, method?:string) => {
+                    newprocess.run = (route:any, args?:any, origin?:string, method?:string) => {
                         let message:any = {
                             route,
                             args
@@ -139,26 +145,26 @@ export class CMDService extends Service {
                         if(origin) message.origin = origin;
                         if(method) message.method = method;
 
-                        return this.request(message, rt._id);
+                        return this.request(message, newprocess._id);
                     }
 
                     
-                    rt.subscribe = (route:any, callback?:((res:any)=>void)|string) => {
-                        return this.subscribeToProcess(route, rt._id, callback);
+                    newprocess.subscribe = (route:any, callback?:((res:any)=>void)|string) => {
+                        return this.subscribeToProcess(route, newprocess._id, callback);
                     }
 
-                    rt.unsubscribe = (route:any, sub:number):Promise<any> => {
-                        return rt.run('unsubscribe',[route,sub]);
+                    newprocess.unsubscribe = (route:any, sub:number) => {
+                        return newprocess.run('unsubscribe',[route,sub]);
                     }
 
 
-                    this.processes[rt._id] = rt as CMDInfo;
+                    this.processes[newprocess._id] = newprocess as CMDInfo;
                 }
 
             }
         }
 
-        return rt;
+        return newprocess;
     }
 
     abort = (childprocess:ChildProcess|CMDInfo) => {
