@@ -4,52 +4,6 @@ The Graph and GraphNode classes are an implementation of the acyclic graphs and 
 
 ![ex](graphex.png)
 
-### Basic usage
-```js
-
-const tree = {
-    add:(a=0,b=0)=>{
-        return a+b;
-    },
-    square:(c)=>{
-        return c*c;
-    },
-    log:(...args)=>{
-        console.log('LOG:',...args);
-    },
-    sequence:{
-        result:undefined,
-        operator:(input1,input2)=>{
-            this.result = [input1,input2];
-            return this.result;
-        },
-        children:{
-            'add1':{ 
-            tag:'add'//you may construct graphs just by naming existing nodes you want to pipe data through. It will look for them on the graph or in the nodes if the tagged nodes are declared later
-            children:{
-                'square1':{
-                    tag:'square', //source this node definition
-                    children:{
-                        'log':true, //run a log on parent output
-                        'square2':{
-                            tag:'square', //source this node
-                            children:[ 'log', (self,origin,output)=>{ self.graph.get('sequence').result = output;  }]
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-const graph = new Graph(tree,'graph1',undefined);
-
-graph.run('sequence',21,23).then((res) => {
-    console.log(res);
-    console.log(graph.get('sequence').result);
-});
-
-```
 
 The Graph handles synchronous and asynchronous programming approaches as you need them, including flowgraph execution and inbuilt loops, animations, recursion, forward and backprop, and dynamic node generation with simple objects or straight functions with minimal specification and any properties and arguments you want.
 
@@ -300,5 +254,55 @@ let graph = new Graph(tree);
         .print(node,printChildren=true) //recursively print a reconstrucible json hierarchy of the graph nodes, including arbitrary keys/functions, if printChildren is set to false it will only print the tags and not the whole object in the .children property of this node
 
         .reconstruct(json='{}') //reconstruct a jsonified node hierarchy into a functional GraphNode tree
+
+```
+
+
+
+### Basic usage
+(need to make a less useless example)
+```js
+
+const tree = {
+    add:(a=0,b=0)=>{
+        return a+b;
+    },
+    square:(c)=>{
+        return c*c;
+    },
+    log:(...args)=>{
+        console.log('LOG:',...args);
+    },
+    sequence:{
+        result:undefined,
+        operator:(input1,input2)=>{
+            this.result = [input1,input2];
+            return this.result;
+        },
+        children:{
+            'add1':{ 
+            tag:'add'//you may construct graphs just by naming existing nodes you want to pipe data through. It will look for them on the graph or in the nodes if the tagged nodes are declared later
+            children:{
+                'square1':{
+                    tag:'square', //source this node definition
+                    children:{
+                        'log':true, //run a log on parent output
+                        'square2':{
+                            tag:'square', //source this node
+                            children:[ 'log', (self,origin,output)=>{ self.graph.get('sequence').result = output;  }]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+const graph = new Graph(tree,'graph1',undefined);
+
+graph.run('sequence',21,23).then((res) => {
+    console.log(res);
+    console.log(graph.get('sequence').result);
+});
 
 ```
