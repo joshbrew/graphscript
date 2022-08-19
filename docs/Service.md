@@ -74,7 +74,7 @@ In a Service you declare "routes" instead of a tree (the 'tree' proprerty still 
 
 Services supply additional functions for piping the outputs of one function to others, including through to other services you've loaded into your main parent service interface. A lot of this is much better explained with code.
 
-This isn't well documented yet but multiple services also support custom route formats which you can easily mirror when developing your own services with our object tree-based programmable systems. We spent a lot of time most notably on the DOM service which lets you quickly compose your web UI with HTML and heavily customizable web components. Support is expanding to include on-the-fly .md or .jsx format parsing, for example, which can include the needed scripts for you in-browser.
+Multiple services also support custom route formats which you can easily mirror when developing your own services with our object tree-based programmable systems. We spent a lot of time most notably on the DOM service which lets you quickly compose your web UI with HTML and heavily customizable web components. Support is expanding to include on-the-fly .md or .jsx format parsing, for example, which can include the needed scripts for you in-browser.
 
 ## Service Messages
 
