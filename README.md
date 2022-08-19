@@ -9,6 +9,10 @@ For node.js
 <p align="center">
 <img src="gs_logo_min.png"  width=350px height=350px><br>
 For happy code!
+![graphscript-status](https://img.shields.io/npm/v/graphscript.svg) 
+![graphscript-downloads](https://img.shields.io/npm/dt/graphscript.svg)
+![graphscript-l](https://img.shields.io/npm/l/graphscript)
+
 </p>
 
 # READMEs:
@@ -16,7 +20,7 @@ For happy code!
 ## * [Graphs and GraphNodes](./docs/Graph.md)
 ## * [Services](./docs/Service.md)
    * * [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
-## * [Router](./docs//Router.md)
+## * [Routers](./docs//Router.md)
 
 (WIP)
 
