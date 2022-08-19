@@ -229,7 +229,7 @@ export class ECSService extends Service {
 
 export const Systems = {
     movement:{
-        lastTime:Date.now(),
+        lastTime:performance.now(),
         setupEntities:(self:any,entities:any)=>{ //install needed data structures to entities
             for(const key in entities) {
                 const entity = entities[key];
@@ -245,7 +245,7 @@ export const Systems = {
             }
         },
         operator:(self, origin, entities:{[key:string]:GraphNode})=>{
-            let now = Date.now();
+            let now = performance.now();
             let timeStep = (now - self.lastTime) * 0.001;
             self.lastTime = now; 
             for(const key in entities) {
