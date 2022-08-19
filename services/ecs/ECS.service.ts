@@ -110,12 +110,12 @@ export class ECSService extends Service {
         order.forEach((k) => {
             if(this.systems[k]) {
                 if(filter) {
-                    (this.systems[k] as GraphNode).run(
+                    (this.systems[k] as GraphNode)._run(this.systems[k] as GraphNode,this,
                         this.filterObject(this.entities,(key,entity)=>{ 
                             if(entity.components[k])
                                 return true;
                         }));
-                } else (this.systems[k] as GraphNode).run(this.entities); //unfiltered, it's faster to handle this in the system with lots of entities
+                } else (this.systems[k] as GraphNode)._run(this.systems[k] as GraphNode,this,this.entities); //unfiltered, it's faster to handle this in the system with lots of entities
             }
         });
     }
