@@ -14,11 +14,10 @@ export type ECSOptions = {
             components:{ //which systems should call these entities?
                 [key:string]:any //use the system key as the key, value can be a boolean or an object with values etc. use however just helps filter entities
             },
-            [key:string]:any
-        }
+        } & RouteProp | GraphNode
     },
     systems:{
-        [key:string]: boolean|(GraphNode & { operator:(entities:{[key:string]:any})=>any })
+        [key:string]: boolean|(RouteProp & { operator:(self,origin,entities:{[key:string]:any})=>any })|GraphNode
     },
     order?:string[] //system order of execution by key
 } & ServiceOptions
