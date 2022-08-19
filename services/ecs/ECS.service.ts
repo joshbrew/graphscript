@@ -29,7 +29,7 @@ export class ECSService extends Service {
     } = {}
 
     systems:{
-        [key:string]: boolean|(RouteProp & { operator:(self,origin,entities:{[key:string]:any})=>any })|GraphNode //operators on components are used to make passes over entitites
+        [key:string]: (RouteProp & { operator:(self,origin,entities:{[key:string]:any})=>any })|GraphNode //operators on components are used to make passes over entitites
     } = {}
 
     order:string[]=[] //order of execution for component updates
@@ -44,13 +44,15 @@ export class ECSService extends Service {
             for(const key in options.entities) {
                 if(typeof options.entities[key] !== 'object') {
                     options.entities[key] = this.nodes.get(key);
-                    if(!options.entities[key]) delete options.entities[key];
+                    if(!options.entities[key]) {
+                        delete options.entities[key];
+                        continue;
+                    }
                 }
                 if(typeof options.entities[key] === 'object') {
                     if(!(options.entities[key] as any).components) {
                         (options.entities[key] as any).components = {}
                     }
-
                 }
             }
 
@@ -58,9 +60,13 @@ export class ECSService extends Service {
             for(const key in options.systems) {
                 if(typeof options.systems[key] !== 'object') {
                     options.systems[key] = this.nodes.get(key);
-                    if(!options.systems[key]) delete options.systems[key];
+                    if(!options.systems[key]) {
+                        delete options.systems[key];
+                        continue;
+                    }
                 }
                 if(typeof options.systems[key] === 'object') {
+                    
                 }
             }
 
@@ -68,12 +74,26 @@ export class ECSService extends Service {
         this.order = options.order;
 
         this.load(this.entities);
+
+        for(const key in options.entities) {
+            options.entities = this.nodes.get((options.entities[key] as any)._id);
+        }
+
         this.load(this.systems);
+
+        for(const key in options.systems) {
+            options.systems[key] = this.nodes.get((options.systems[key] as any)._id);
+        }
     }
 
     //e.g. run on requestAnimationFrame
-    update = (filter?:boolean) => {
-        this.order.forEach((k) => {
+    update = (
+        filter?:boolean, 
+        order?:string[] //can only run specific systems and in specific orders
+    ) => { //filter will only pass certain entities based on enabled components
+        if(!order) order = this.order;
+        
+        order.forEach((k) => {
             if(this.systems[k]) {
                 if(filter) {
                     (this.systems[k] as GraphNode).run(
@@ -86,11 +106,11 @@ export class ECSService extends Service {
         });
     }
 
-    animate = (filter?:boolean) => {
+    animate = (filter?:boolean,order?:string[]) => {
         requestAnimationFrame(()=>{
             if(this.animating){ 
-                this.update(filter);
-                this.animate(filter);
+                this.update(filter,order);
+                this.animate(filter,order);
             }
         });
     }
@@ -117,10 +137,11 @@ export class ECSService extends Service {
         if(entity._id && this.entities[entity._id]) {
             entity._id = `entity${Math.floor(Math.random()*1000000000000000)}`;
         }
-        this.entities[entity._id] = entity as any;
 
         this.load({[entity._id]:entity});
-    
+        this.entities[entity._id] = this.nodes.get(entity._id) as any;
+
+        return this.entities[entity._id];
     }
 
     addComponent(
@@ -129,14 +150,25 @@ export class ECSService extends Service {
     ) {
         const system = Object.assign({},prototype);
         system.operator = update;
-        if(system._id && this.entities[system._id]) {
+        if(system._id && this.systems[system._id]) {
             system._id = `component${Math.floor(Math.random()*1000000000000000)}`;
         }
 
-        this.systems[system._id] = this.add(system as any) as GraphNode;
-
         this.load({[system._id]:system});
+
+        this.systems[system._id] = this.nodes.get(system._id) as any;
+
+        return this.systems[system._id];
     }
 
+    removeEntity(id:string) {
+        delete this.entities[id];
+        return this.remove(id);
+    }
+
+    removeSystem(id:string) {
+        delete this.systems[id];
+        return this.remove(id);
+    }
 }
 
