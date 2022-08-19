@@ -147,11 +147,11 @@ router.run(
     'http/listen'
 );
 
-// const hotreloadinfo = router.run('wss/openWS',{
-//     host:'localhost',
-//     port:8080,
-//     path:'hotreload'
-// } as WebSocketProps) as WebSocketInfo;
+const hotreloadinfo = router.run('wss/openWS',{
+    host:'localhost',
+    port:8080,
+    path:'hotreload'
+} as WebSocketProps) as WebSocketInfo;
 
 const socketinfo = router.run('wss/openWS',{
     host:'localhost',
@@ -198,6 +198,60 @@ This is where the router really shines. You can create users and shared remote d
 
 ### Backend:
 ```ts
+
+type UserProps = {
+    _id?:string,                      //unique ID
+    sockets?:{[key:string]:any},      //websockets info, browser and node use different libraries but have same calls
+    wss?:{[key:string]:any},          //websocket server backend info 
+    eventsources?:{[key:string]:any}, //sse client or server info
+    servers?:{[key:string]:any},      //http servers, e.g. dedicated webpage contexts? *shrug*
+    webrtc?:{[key:string]:any},       //webrtc rooms and/or server info
+    sessions?:{[key:string]:any},     //game sessions
+    sendAll?:Protocol|string|{[key:string]:{[key:string]:any}}, //e.g. user.sendAll.wss['ws://localhost:8080/wss'] should return the connection info object (info in that service)
+    onopen?:(connection:any)=>void, 
+    onmessage?:(message:any)=>void,  //when a message comes in from an endpoint assigned to this user   
+    onclose?:(connection:any)=>void,               //when a connection belonging to this user closes
+    send?:(message:any, channel?:string)=>any,        //send function to determine how to communicate to this user's endpoint(s) from this router instance
+    request?:(message:ServiceMessage|any, connection?:any, origin?:string, method?:string) => Promise<any> //await a server response for a call 
+    latency?:number,                 //should calculate other metrics like latency
+    [key:string]:any //other user properties e.g. personally identifying information
+} & GraphNodeProperties
+
+//sessions for shared user data and game/app logic for synchronous and asynchronous sessions to stream selected properties on user objects as they are updated
+type SharedSessionProps = {
+    _id?:string,
+    settings?:{
+        name:string,
+        propnames:{[key:string]:boolean},
+        users?:{[key:string]:boolean},
+        host?:string, //if there is a host, all users only receive from the host's prop updates
+        hostprops?:{[key:string]:boolean},
+        admins?:{[key:string]:boolean},
+        moderators?:{[key:string]:boolean},
+        spectators?:{[key:string]:boolean},
+        banned?:{[key:string]:boolean},
+        password?:string,
+        ownerId?:string,
+        onopen?:(session:SharedSessionProps)=>void,
+        onmessage?:(session:SharedSessionProps)=>void,
+        onclose?:(session:SharedSessionProps)=>void,
+        [key:string]:any //arbitrary props e.g. settings, passwords
+    },
+    data?:{
+        shared:{
+            [key:string]:{
+                [key:string]:any
+            }
+        },
+        private?:{ //host driven sessions will share only what the host shares to all users, while hosts will receive hidden data
+            [key:string]:any
+        },
+        [key:string]:any
+    },
+    lastTransmit?:string|number,
+    [key:string]:any //arbitrary props e.g. settings, passwords
+}
+
 
 let router = new UserRouter([
     HTTPbackend,

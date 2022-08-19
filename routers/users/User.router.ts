@@ -31,9 +31,9 @@ export type PrivateSessionProps = {
         moderators?:{[key:string]:boolean},
         password?:string,
         ownerId?:string,
-        onopen?:(session:SharedSessionProps)=>void,
-        onmessage?:(session:SharedSessionProps)=>void,
-        onclose?:(session:SharedSessionProps)=>void,
+        onopen?:(session:PrivateSessionProps)=>void,
+        onmessage?:(session:PrivateSessionProps)=>void,
+        onclose?:(session:PrivateSessionProps)=>void,
         [key:string]:any //arbitrary props e.g. settings, passwords
     },
     data?:{
