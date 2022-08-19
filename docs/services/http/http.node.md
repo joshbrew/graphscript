@@ -79,6 +79,9 @@ http.setupServer(
             },
             'redir':{
                 redirect:'https://google.com'
+                onrequest:(self,node,req,res) => {
+                    console.log('redirected to google')
+                }
             },
             'test':'<div>TEST</div>',
             _all:{

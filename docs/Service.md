@@ -97,7 +97,7 @@ service.transmit(message); //these get customized in services representing their
 
 ```
 
-All of the remote message passing services have the following functions available on each instance of your socket, rtc peer, worker thread (including worker->worker message ports), child process, etc. connections to make it really easy to build complex message passing functions e.g. for server or multiplayer communication and remote control. 
+All of the remote message passing services with two way communication channels (excluding http/sse currently) have the following functions available on each instance of your socket, rtc peer, worker thread (including worker->worker message ports), child process, etc. connections to make it really easy to build complex message passing functions e.g. for server or multiplayer communication and remote control. 
 
 ```ts
 
@@ -111,8 +111,9 @@ type RemoteConnection = {
     ...RemoteConnectionInfo
 }
 ```
-These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need increasing control over your program. The subscribe and unsubscribe functions act like 
+These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need increasing control over your program. 
 
+The subscribe and unsubscribe functions act the same as they do locally and configure the endpoints with a state subscription on arbitrary routes for you to do what you want with on the listening port.
 
 # Included Services
 

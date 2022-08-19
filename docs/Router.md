@@ -5,15 +5,31 @@ Routers are used to quickly collect services into one unified framework in order
 Additionally, it includes ways to select the fastest available endpoints from selected services and automatically stream updates from watched objects through whatever routes or endpoints you desire e.g. for linking game and server state across many clients or simplifying frontend business logic down to a few object and function calls.
 
 
-Backend:
+## Example:
+
+### Backend:
 ```ts
 
+type RouterOptions = {
+    linkServices?:boolean, //have all services map each other's nodes?
+    includeClassName?:boolean, //reroute services with their class/variable/service name if defined (anonymous objects won't add reroutes!!)
+    loadDefaultRoutes?:boolean, //default route access
+    routeFormat?:string,
+    customRoutes?:ServiceOptions['customRoutes'],
+    customChildren?:ServiceOptions['customChildren']
+}
+
+let roptions = {
+    loadDefaultRoutes:true
+};
 
 let router = new Router([
     HTTPbackend,
     WSSbackend,
     SSEbackend
-]);
+],
+    roptions
+);
 
 //when ping is run it should pong through wss and sse now
 
@@ -31,9 +47,24 @@ router.run(
         // passphrase:'encryption',
         //errpage:undefined,
         pageOptions:{
+            'config':{
+                template:'tinybuild.config.js'
+            },
+            'home':{
+                redirect:'/'
+            },
+            'redir':{
+                redirect:'https://google.com'
+                onrequest:(self,node,req,res) => {
+                    console.log('redirected to google')
+                }
+            },
+            'test':'<div>TEST</div>',
             all:{
                 inject:{
-                    hotreload:'ws://localhost:8080/hotreload' //you can add routes that are either template strings or functions accepting arguments (like the above url) to inject into pages. You can even specify which pages are injected with which templates, or build entire pages from a mix of hand coded and prewritten components (IDK it's cool)
+                    hotreload:'ws://localhost:8080/hotreload' 
+                    //You can add routes that are either template strings or functions accepting arguments (like the above url) to inject anything into pages. 
+                    //You can even specify which pages are injected with which templates, or build entire pages from a mix of hand coded and prewritten components (IDK it's cool)
                 }
             }
         }
@@ -100,7 +131,7 @@ const sub2 = router.pipe('ping','log','sse');
 
 ```
 
-Frontend:
+### Frontend:
 ```ts
 
 
@@ -108,7 +139,9 @@ const router = new Router([
     HTTPfrontend,
     WSSfrontend,
     SSEfrontend
-]);
+], {
+    loadDefaultRoutes:true
+});
 
 router.run( 
     'http/listen'
@@ -161,14 +194,19 @@ console.log("Router:",router);
 This is where the router really shines. You can create users and shared remote data sessions in just a few lines, where every user is automatically associated with their endpoints and then persistent user sessions can be created with efficient checks are used to only update users with new data as necessary over one-on-one, or async/sync group sessions (i.e. where only one user or all users share data to other connected users).
 
 
-Backend:
+## Example:
+
+### Backend:
 ```ts
 
 let router = new UserRouter([
     HTTPbackend,
     WSSbackend,
     SSEbackend
-]);
+],
+{
+    loadDefaultRoutes:true
+});
 
 router.addUser({ //e.g. we can have an admin user to build controls for ourselves
     _id:'admin'
@@ -205,8 +243,61 @@ router.subscribe('addUser', (res) =>{ //we are going to automatically add every 
 
 ```
 
-Then frontend again:
+### Then frontend again:
 ```ts
+
+
+const router = new UserRouter([
+    HTTPfrontend,
+    WSSfrontend,
+    SSEfrontend,
+    WebRTCService
+], {
+    loadDefaultRoutes:true
+});
+
+
+router.run( 
+    'http/listen'
+);
+
+// const hotreloadinfo = router.run('wss/openWS',{
+//     host:'localhost',
+//     port:8080,
+//     path:'hotreload'
+// } as WebSocketProps) as WebSocketInfo;
+
+const socketinfo = router.run('wss/openWS',{
+    host:'localhost',
+    port:8080,
+    path:'wss'
+} as WebSocketProps) as WebSocketInfo;
+
+const sseinfo = router.run('sse/openSSE',{
+    url:'http://localhost:8080/sse',
+    events:{
+        'test':(ev)=>{console.log('test',ev.data)}
+    }
+} as EventSourceProps) as EventSourceInfo;
+
+router.run(
+    'http/GET',
+    'http://localhost:8080/ping'
+).then((res:string) => console.log("http GET", res));
+
+let button = document.createElement('button');
+button.innerHTML = 'ping!';
+button.onclick = () => {
+    router.run(
+        'http/GET',
+        'http://localhost:8080/ping'
+    ).then((res:string) => console.log("http GET", res));
+}
+
+document.body.appendChild(button);
+
+
+console.log("Router:",router);
 
 
 let p = router.addUser(
