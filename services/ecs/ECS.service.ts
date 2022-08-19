@@ -252,20 +252,17 @@ export const Systems = {
                 const entity = entities[key];
                 if(entity.components) if(!entity.components[self._id]) continue;
                 
-                if(typeof entity.force === 'object' && entity.mass) {
+                if(typeof entity.force === 'object' && entity.mass) { //F = ma, F in Newtons, m in kg, a in m/s^2
                     if(entity.force.x) {
-                        entity.accleration.x += entity.force.x*entity.mass*timeStep;
+                        entity.accleration.x += entity.force.x/entity.mass;
                         entity.force.x = 0;
                     }
                     if(entity.force.y) {
-                        entity.accleration.y += entity.force.y*entity.mass*timeStep;
+                        entity.accleration.y += entity.force.y/entity.mass;
                         entity.force.y = 0;
                     }
                     if(entity.force.z) {
-                        if(entity.gravity) {
-                            entity.force.z += entity.gravity*entity.mass*timeStep;
-                        }
-                        entity.accleration.z += entity.force.z*entity.mass*timeStep;
+                        entity.accleration.z += entity.force.z/entity.mass + entity.gravity;
                         entity.force.z = 0;
                     }
                 }
