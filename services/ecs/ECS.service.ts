@@ -296,7 +296,7 @@ export const Systems = {
             }
         }
     } as SystemProps,
-    collision:{
+    collision:{ //e.g. https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
         //lastTime:performance.now(),
         boundaries:{x:100,y:100,z:100}, //x,y,z coordinate space 
         setupEntities:(self,entities:{[key:string]:GraphNode})=>{
