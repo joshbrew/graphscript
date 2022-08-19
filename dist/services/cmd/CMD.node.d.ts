@@ -21,6 +21,12 @@ export declare type CMDInfo = {
     process: ChildProcess;
     _id: string;
     controller: AbortController;
+    send: (data: Serializable) => boolean;
+    request: (message: ServiceMessage | any, origin?: string, method?: string) => Promise<any>;
+    post: (route: string, args: any, origin?: string, method?: string) => boolean;
+    run: (route: any, args?: any, origin?: string, method?: string) => Promise<any>;
+    subscribe: (route: any, callback?: ((res: any) => void) | string) => number;
+    unsubscribe: (route: any, sub: number) => Promise<boolean>;
 } & CMDRoute;
 export declare class CMDService extends Service {
     processes: {

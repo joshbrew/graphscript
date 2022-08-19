@@ -198,6 +198,7 @@ export declare class UserRouter extends Router {
             [key: string]: any;
         };
     }) => GraphNode;
-    userUpdateLoop: (user: UserProps & GraphNode) => {};
+    getUpdatedUserData: (user: UserProps & GraphNode) => {};
+    userUpdateCheck: (user: UserProps & GraphNode) => {};
     routes: Routes;
 }

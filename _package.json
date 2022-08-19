@@ -1,6 +1,6 @@
 {
     "name": "graphscript-node",
-    "version": "0.0.140",
+    "version": "0.0.141",
     "description": "Barebones esbuild and test node server implementation. For building",
     "main": "dist/index.node.js",
     "types": "dist/index.node.d.ts",
