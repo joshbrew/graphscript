@@ -1,8 +1,16 @@
 # Services
 
-Services build on the idea of creating pluggable [microservices](https://www.akana.com/resources/microservices-why-should-businesses-care) in a unified programming interface, and seeks to simplify the amount of work required to implement increasing numbers of protocols and functionality. This can vastly speed up feature development and feature meshing. 
+See [Included Services](#Included Services)
+
+Services build on the idea of creating pluggable [microservices](https://www.akana.com/resources/microservices-why-should-businesses-care) in a unified, componentized programming interface, and simplifies the amount of work required to implement increasing numbers of protocols with more syntax and functionality than we can normally remember. Building these instead as Services and following the general formula here can vastly speed up feature development and feature meshing. 
 
 The Service class here extends the Graph class and adds additional methods for creating and linking execution graphs. 
+
+Services provide a unifying function/class loading and message passing framework to make it really easy to chain program functions across http, socket, sse, webrtc, thread, child process, frontend rendering and any of your own protocols. It has more features to help with scoping connected node services as well. 
+
+Use any functions, node/graph/service prototypes, any objects at all (e.g. the built in Math object in browsers) to gain state machine and flowgraph functionalities.
+
+
 
 ```ts
 type RouteProp = { //these are just multiple methods you can call on a route/node tag kind of like http requests but really it applies to any function you want to add to a route object if you specify that method even beyond these http themed names :D
@@ -88,6 +96,22 @@ let message:ServiceMessage = {route:'add', args:[10,20], method:'post'};
 service.transmit(message); //these get customized in services representing their specific protocols e.g. http or websockets to deal with those specific interface requirements
 
 ```
+
+All of the remote message passing services have the following functions available on each instance of your socket, rtc peer, worker thread (including worker->worker message ports), child process, etc. connections to make it really easy to build complex message passing functions e.g. for server or multiplayer communication and remote control. 
+
+```ts
+
+type RemoteConnection = {
+    send:(message:any)=>void,
+    request:(message:any, origin?:string, method?:string)=>Promise<any>,
+    post:(route:any, args?:any)=>void,
+    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
+    subscribe:(route:any, callback?:((res:any)=>void)|string)=>Promise<number>, //returns subscription number
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>, //send the subscription number you got back from the remote port
+    ...RemoteConnectionInfo
+}
+```
+These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need increasing control over your program. The subscribe and unsubscribe functions act like 
 
 
 # Included Services
