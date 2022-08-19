@@ -664,7 +664,10 @@ export const Systems = {
 
                 //This does (crappy) sphere collisions, for box collisions we need to reflect based on which cube surfaces are colliding
                 for(const key2 in entity1.colliding) { 
-                    if(entity1.colliding[key2] === false) continue;
+                    if(entity1.colliding[key2] === false) {
+                        delete entity1.colliding[key2] 
+                        continue;
+                    }
                     const entity2 = entities[key2];
                     if(!entity2.collisionEnabled) continue;
 
