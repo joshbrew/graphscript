@@ -1,5 +1,5 @@
 import { GraphNode } from '../../Graph';
-import { Service, ServiceOptions, RouteProp } from '../Service';
+import { Service, ServiceOptions, RouteProp, Routes } from '../Service';
 
 //Entity Component System Service
 
@@ -149,14 +149,14 @@ export class ECSService extends Service {
         return this.entities[entity._id];
     }
 
-    addComponent(
+    addSystem(
         prototype:{[key:string]:any}, 
         update:(entities:any)=>any
     ) {
         const system = Object.assign({},prototype);
         system.operator = update;
         if(system._id && this.systems[system._id]) {
-            system._id = `component${Math.floor(Math.random()*1000000000000000)}`;
+            system._id = `system${Math.floor(Math.random()*1000000000000000)}`;
         }
 
         this.load({[system._id]:system});
@@ -174,6 +174,18 @@ export class ECSService extends Service {
     removeSystem(id:string) {
         delete this.systems[id];
         return this.remove(id);
+    }
+
+
+    routes:Routes = {
+        update:this.update,
+        animate:this.animate,
+        start:this.start,
+        stop:this.stop,
+        addEntity:this.addEntity,
+        addSystem:this.addSystem,
+        removeEntity:this.removeEntity,
+        removeSystem:this.removeSystem
     }
 }
 
