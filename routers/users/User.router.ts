@@ -1115,51 +1115,57 @@ export class UserRouter extends Router {
 
     //you either need to run this loop on a session to 
     // pass updates up to the server from your user manually
-    userUpdateLoop = (user:UserProps & GraphNode) => {
-        if(user.sessions) {
-            const updateObj = {};
-            for(const key in user.sessions) {
-                let s = user.sessions[key];
-                if(s.settings.users[user._id as string] || s.settings.source === user._id) {
-                    if(!s.settings.spectators?.[user._id as string]) {
-                        if(s.settings.host === user._id) {
-                            for(const prop in s.settings.hostprops) {
-                                if(!updateObj[prop] && prop in user) {
-                                    if(s.data.shared?.[user._id as string] && prop in s.data.shared?.[user._id as string]) {
+
+    getUpdatedUserData = (user:UserProps & GraphNode) => {
+        const updateObj = {};
+        for(const key in user.sessions) {
+            let s = user.sessions[key];
+            if(s.settings.users[user._id as string] || s.settings.source === user._id) {
+                if(!s.settings.spectators?.[user._id as string]) {
+                    if(s.settings.host === user._id) {
+                        for(const prop in s.settings.hostprops) {
+                            if(!updateObj[prop] && prop in user) {
+                                if(s.data.shared?.[user._id as string] && prop in s.data.shared?.[user._id as string]) {
+                                    if(typeof user[prop] === 'object') {
+                                        if(stringifyFast(s.data.shared[user._id as string][prop]) !== stringifyFast(user[prop]))
+                                            updateObj[prop] = user[prop];
+                                    }
+                                    else if (s.data.shared[user._id as string][prop] !== user[prop]) updateObj[prop] = user[prop];   
+                                } else updateObj[prop] = user[prop]
+                            }
+                        }   
+                    } else {
+                        for(const prop in s.settings.propnames) {
+                            if(!updateObj[prop] && user[prop] !== undefined) {
+                                if(s.settings.source) {
+                                    if(typeof user[prop] === 'object' && prop in s.data) {
+                                        if(stringifyFast(s.data[prop]) !== stringifyFast(user[prop]))
+                                            updateObj[prop] = user[prop];
+                                    }
+                                    else if (s.data[prop] !== user[prop]) updateObj[prop] = user[prop];  
+                                }
+                                else {
+                                    if(s.data.shared?.[user._id as string] && prop in s.data.shared?.[user._id as string]) { //host only sessions have a little less efficiency in this setup
                                         if(typeof user[prop] === 'object') {
                                             if(stringifyFast(s.data.shared[user._id as string][prop]) !== stringifyFast(user[prop]))
                                                 updateObj[prop] = user[prop];
                                         }
-                                        else if (s.data.shared[user._id as string][prop] !== user[prop]) updateObj[prop] = user[prop];   
+                                        else if (s.data.shared[user._id as string][prop] !== user[prop]) updateObj[prop] = user[prop];
                                     } else updateObj[prop] = user[prop]
-                                }
-                            }   
-                        } else {
-                            for(const prop in s.settings.propnames) {
-                                if(!updateObj[prop] && user[prop] !== undefined) {
-                                    if(s.settings.source) {
-                                        if(typeof user[prop] === 'object' && prop in s.data) {
-                                            if(stringifyFast(s.data[prop]) !== stringifyFast(user[prop]))
-                                                updateObj[prop] = user[prop];
-                                        }
-                                        else if (s.data[prop] !== user[prop]) updateObj[prop] = user[prop];  
-                                    }
-                                    else {
-                                        if(s.data.shared?.[user._id as string] && prop in s.data.shared?.[user._id as string]) { //host only sessions have a little less efficiency in this setup
-                                            if(typeof user[prop] === 'object') {
-                                                if(stringifyFast(s.data.shared[user._id as string][prop]) !== stringifyFast(user[prop]))
-                                                    updateObj[prop] = user[prop];
-                                            }
-                                            else if (s.data.shared[user._id as string][prop] !== user[prop]) updateObj[prop] = user[prop];
-                                        } else updateObj[prop] = user[prop]
-                                    }
                                 }
                             }
                         }
                     }
-                    
                 }
+                
             }
+        }
+        return updateObj;
+    }
+
+    userUpdateCheck = (user:UserProps & GraphNode) => {
+        if(user.sessions) {
+            const updateObj = this.getUpdatedUserData(user);
 
             //console.log(updateObj)
 
@@ -1191,7 +1197,7 @@ export class UserRouter extends Router {
         receiveSessionUpdates:this.receiveSessionUpdates,
         swapHost:this.swapHost,
         userUpdateLoop:{ //this node loop will run separately from the one below it
-            operator:this.userUpdateLoop, 
+            operator:this.userUpdateCheck, 
             loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
         },
         sessionLoop:{

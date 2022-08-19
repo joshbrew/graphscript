@@ -3615,16 +3615,35 @@
           return user;
         }
       };
-      this.userUpdateLoop = (user) => {
-        if (user.sessions) {
-          const updateObj = {};
-          for (const key in user.sessions) {
-            let s = user.sessions[key];
-            if (s.settings.users[user._id] || s.settings.source === user._id) {
-              if (!s.settings.spectators?.[user._id]) {
-                if (s.settings.host === user._id) {
-                  for (const prop in s.settings.hostprops) {
-                    if (!updateObj[prop] && prop in user) {
+      this.getUpdatedUserData = (user) => {
+        const updateObj = {};
+        for (const key in user.sessions) {
+          let s = user.sessions[key];
+          if (s.settings.users[user._id] || s.settings.source === user._id) {
+            if (!s.settings.spectators?.[user._id]) {
+              if (s.settings.host === user._id) {
+                for (const prop in s.settings.hostprops) {
+                  if (!updateObj[prop] && prop in user) {
+                    if (s.data.shared?.[user._id] && prop in s.data.shared?.[user._id]) {
+                      if (typeof user[prop] === "object") {
+                        if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
+                          updateObj[prop] = user[prop];
+                      } else if (s.data.shared[user._id][prop] !== user[prop])
+                        updateObj[prop] = user[prop];
+                    } else
+                      updateObj[prop] = user[prop];
+                  }
+                }
+              } else {
+                for (const prop in s.settings.propnames) {
+                  if (!updateObj[prop] && user[prop] !== void 0) {
+                    if (s.settings.source) {
+                      if (typeof user[prop] === "object" && prop in s.data) {
+                        if (stringifyFast(s.data[prop]) !== stringifyFast(user[prop]))
+                          updateObj[prop] = user[prop];
+                      } else if (s.data[prop] !== user[prop])
+                        updateObj[prop] = user[prop];
+                    } else {
                       if (s.data.shared?.[user._id] && prop in s.data.shared?.[user._id]) {
                         if (typeof user[prop] === "object") {
                           if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
@@ -3635,31 +3654,16 @@
                         updateObj[prop] = user[prop];
                     }
                   }
-                } else {
-                  for (const prop in s.settings.propnames) {
-                    if (!updateObj[prop] && user[prop] !== void 0) {
-                      if (s.settings.source) {
-                        if (typeof user[prop] === "object" && prop in s.data) {
-                          if (stringifyFast(s.data[prop]) !== stringifyFast(user[prop]))
-                            updateObj[prop] = user[prop];
-                        } else if (s.data[prop] !== user[prop])
-                          updateObj[prop] = user[prop];
-                      } else {
-                        if (s.data.shared?.[user._id] && prop in s.data.shared?.[user._id]) {
-                          if (typeof user[prop] === "object") {
-                            if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
-                              updateObj[prop] = user[prop];
-                          } else if (s.data.shared[user._id][prop] !== user[prop])
-                            updateObj[prop] = user[prop];
-                        } else
-                          updateObj[prop] = user[prop];
-                      }
-                    }
-                  }
                 }
               }
             }
           }
+        }
+        return updateObj;
+      };
+      this.userUpdateCheck = (user) => {
+        if (user.sessions) {
+          const updateObj = this.getUpdatedUserData(user);
           if (Object.keys(updateObj).length > 0) {
             if (user.send)
               user.send({ route: "setUser", args: updateObj, origin: user._id });
@@ -3688,7 +3692,7 @@
         receiveSessionUpdates: this.receiveSessionUpdates,
         swapHost: this.swapHost,
         userUpdateLoop: {
-          operator: this.userUpdateLoop,
+          operator: this.userUpdateCheck,
           loop: 10
         },
         sessionLoop: {
@@ -4462,12 +4466,10 @@
               }
             };
           return await new Promise((res, rej) => {
-            console.log("desc", options.hostdescription);
             if (typeof options.hostdescription === "string") {
               options.hostdescription = JSON.parse(decodeURIComponent(options.hostdescription));
             }
             const description = new RTCSessionDescription(options.hostdescription);
-            console.log("desc2", description);
             options.hostdescription = description;
             rtc.setRemoteDescription(description).then(() => {
               if (options.hostcandidates) {
@@ -4758,19 +4760,19 @@
   ).then((user) => {
     console.log("Added user:", user);
     let info = router.getConnectionInfo(user);
-    let button = document.createElement("button");
-    button.innerHTML = "Open RTC Room";
+    let connectbutton = document.createElement("button");
+    connectbutton.innerHTML = "Open RTC Room";
     let myrooms = document.createElement("div");
     myrooms.innerHTML = "My Rooms<br>";
     myrooms.id = user._id;
     let allrooms = document.createElement("div");
     allrooms.innerHTML = "Available Rooms<br>";
-    document.body.appendChild(button);
+    document.body.appendChild(connectbutton);
     document.body.appendChild(allrooms);
     allrooms.appendChild(myrooms);
     user.rooms = {};
     user.localrtc = {};
-    button.onclick = () => {
+    connectbutton.onclick = () => {
       let newId = `rtc${Math.floor(Math.random() * 1e15)}`;
       user.rooms[newId] = {
         joined: false,
@@ -4909,7 +4911,7 @@
                               setTimeout(() => {
                                 console.log("attempting to ping");
                                 user.localrtc[roomId].run("ping").then((r) => {
-                                  console.log("returned from channel", r);
+                                  console.log("returned from remote peer:", r);
                                 }).catch(console.error);
                               }, 1e3);
                             });

@@ -6628,16 +6628,35 @@ var UserRouter = class extends Router {
         return user;
       }
     };
-    this.userUpdateLoop = (user) => {
-      if (user.sessions) {
-        const updateObj = {};
-        for (const key in user.sessions) {
-          let s = user.sessions[key];
-          if (s.settings.users[user._id] || s.settings.source === user._id) {
-            if (!s.settings.spectators?.[user._id]) {
-              if (s.settings.host === user._id) {
-                for (const prop in s.settings.hostprops) {
-                  if (!updateObj[prop] && prop in user) {
+    this.getUpdatedUserData = (user) => {
+      const updateObj = {};
+      for (const key in user.sessions) {
+        let s = user.sessions[key];
+        if (s.settings.users[user._id] || s.settings.source === user._id) {
+          if (!s.settings.spectators?.[user._id]) {
+            if (s.settings.host === user._id) {
+              for (const prop in s.settings.hostprops) {
+                if (!updateObj[prop] && prop in user) {
+                  if (s.data.shared?.[user._id] && prop in s.data.shared?.[user._id]) {
+                    if (typeof user[prop] === "object") {
+                      if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
+                        updateObj[prop] = user[prop];
+                    } else if (s.data.shared[user._id][prop] !== user[prop])
+                      updateObj[prop] = user[prop];
+                  } else
+                    updateObj[prop] = user[prop];
+                }
+              }
+            } else {
+              for (const prop in s.settings.propnames) {
+                if (!updateObj[prop] && user[prop] !== void 0) {
+                  if (s.settings.source) {
+                    if (typeof user[prop] === "object" && prop in s.data) {
+                      if (stringifyFast(s.data[prop]) !== stringifyFast(user[prop]))
+                        updateObj[prop] = user[prop];
+                    } else if (s.data[prop] !== user[prop])
+                      updateObj[prop] = user[prop];
+                  } else {
                     if (s.data.shared?.[user._id] && prop in s.data.shared?.[user._id]) {
                       if (typeof user[prop] === "object") {
                         if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
@@ -6648,31 +6667,16 @@ var UserRouter = class extends Router {
                       updateObj[prop] = user[prop];
                   }
                 }
-              } else {
-                for (const prop in s.settings.propnames) {
-                  if (!updateObj[prop] && user[prop] !== void 0) {
-                    if (s.settings.source) {
-                      if (typeof user[prop] === "object" && prop in s.data) {
-                        if (stringifyFast(s.data[prop]) !== stringifyFast(user[prop]))
-                          updateObj[prop] = user[prop];
-                      } else if (s.data[prop] !== user[prop])
-                        updateObj[prop] = user[prop];
-                    } else {
-                      if (s.data.shared?.[user._id] && prop in s.data.shared?.[user._id]) {
-                        if (typeof user[prop] === "object") {
-                          if (stringifyFast(s.data.shared[user._id][prop]) !== stringifyFast(user[prop]))
-                            updateObj[prop] = user[prop];
-                        } else if (s.data.shared[user._id][prop] !== user[prop])
-                          updateObj[prop] = user[prop];
-                      } else
-                        updateObj[prop] = user[prop];
-                    }
-                  }
-                }
               }
             }
           }
         }
+      }
+      return updateObj;
+    };
+    this.userUpdateCheck = (user) => {
+      if (user.sessions) {
+        const updateObj = this.getUpdatedUserData(user);
         if (Object.keys(updateObj).length > 0) {
           if (user.send)
             user.send({ route: "setUser", args: updateObj, origin: user._id });
@@ -6701,7 +6705,7 @@ var UserRouter = class extends Router {
       receiveSessionUpdates: this.receiveSessionUpdates,
       swapHost: this.swapHost,
       userUpdateLoop: {
-        operator: this.userUpdateLoop,
+        operator: this.userUpdateCheck,
         loop: 10
       },
       sessionLoop: {
