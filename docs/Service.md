@@ -1,6 +1,6 @@
 # Services
 
-See [Included Services](#Included Services)
+See [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
 
 Services build on the idea of creating pluggable [microservices](https://www.akana.com/resources/microservices-why-should-businesses-care) in a unified, componentized programming interface, and simplifies the amount of work required to implement increasing numbers of protocols with more syntax and functionality than we can normally remember. Building these instead as Services and following the general formula here can vastly speed up feature development and feature meshing. 
 
