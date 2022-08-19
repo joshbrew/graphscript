@@ -148,6 +148,11 @@ export class ECSService extends Service {
     ) {
         const entity = this.recursivelyAssign({},prototype);
         entity.components = components;
+        if(Object.keys(components).length === 0) {
+            Object.keys(this.systems).forEach((k)=>{ //default init all systems if none provided, can let you quickly dump empty objects to setup entities
+                components[k] = true;
+            })
+        }
         if(entity._id && this.entities[entity._id]) {
             entity._id = `entity${Math.floor(Math.random()*1000000000000000)}`;
         }
