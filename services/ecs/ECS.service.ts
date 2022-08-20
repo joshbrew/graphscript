@@ -647,6 +647,43 @@ export const Systems = {
                 y:v1.z*v2.x-v1.x*v2.z,
                 z:v1.x*v2.y-v1.y*v2.x
             };
+        },
+        nearestNeighborSearch(entities:{[key:string]:Entity}, isWithinRadius:number=10) {
+    
+            var tree = {};;
+    
+            for(const key in entities){
+                let newnode =  {
+                    position: undefined,
+                    neighbors: []
+                };
+                newnode.position = entities[key].position;
+                tree[key] = newnode;
+            }
+    
+            //Nearest neighbor search. This can be heavily optimized.
+
+
+            for(const i in tree) { //for each node
+                for(const j in tree) { //for each position left to check
+                    var dist = Systems.collision.distance(tree[i].position,tree[j].position);
+                    if(dist < isWithinRadius){
+                        var newNeighbori = {
+                            position: entities[j].position,
+                            dist
+                        };
+                        tree[i].neighbors.push(newNeighbori);
+                        var newNeighborj = {
+                            position: entities[i].position,
+                            dist
+                        };
+                        tree[j].neighbors.push(newNeighborj);
+                    }
+                }
+                tree[i].neighbors.sort(function(a,b) {return a.dist - b.dist}); //Sort by distance, nearest to farthest according to array index
+            }
+    
+            return tree;
         }
     } as SystemProps,
     collider:{ //this resolves collisions to update movement vectors
