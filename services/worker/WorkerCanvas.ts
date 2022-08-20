@@ -9,7 +9,8 @@ export const workerCanvasRoutes = {
         options:{
             canvas:HTMLCanvasElement,  
             context?:string, 
-            draw?:string|((canvas:any,context:any)=>void),
+            draw?:string|((self:any,canvas:any,context:any)=>void),
+            update?:string|((self:any,canvas:any,context:any,input:any)=>void),
             init?:string|((self,canvas:any,context:any)=>void),
             clear?:string|((self,canvas:any,context:any)=>void),
             animating?:boolean //animation will start automatically, else you can call draw conditionally
@@ -24,10 +25,15 @@ export const workerCanvasRoutes = {
             if(typeof options.draw === 'function') message.draw = options.draw.toString()
             else message.draw = options.draw;
         }
+        if(options.update) {
+            if(typeof options.update === 'function') message.update = options.update.toString()
+            else message.update = options.update;
+        }
         if(options.init) {
             if(typeof options.init === 'function') message.init = options.init.toString()
             else message.init = options.init;
-        }if(options.clear) {
+        }
+        if(options.clear) {
             if(typeof options.clear === 'function') message.clear = options.clear.toString()
             else message.clear = options.clear;
         }
@@ -44,6 +50,7 @@ export const workerCanvasRoutes = {
             context:string,
             _id?:string,
             init?:string,
+            update?:string,
             draw?:string,
             clear?:string,
             animating?:boolean
@@ -55,6 +62,7 @@ export const workerCanvasRoutes = {
             canvas:options.canvas, //offscreencanvas which renders to page when transfered from the html canvas 
             context:options.canvas.getContext(options.context), //get the rendering context based on string passed
             init:options.init,
+            update:options.update,
             clear:options.clear,
             draw:options.draw, 
             animating:('animating' in options) ? options.animating : true
@@ -64,6 +72,9 @@ export const workerCanvasRoutes = {
         
         if(typeof canvasOptions.draw === 'string') {
             canvasOptions.draw = parseFunctionFromText(canvasOptions.draw);
+        }      
+        if(typeof canvasOptions.update === 'string') {
+            canvasOptions.update = parseFunctionFromText(canvasOptions.update);
         }       
         if(typeof canvasOptions.init === 'string') {
             canvasOptions.init = parseFunctionFromText(canvasOptions.init);
@@ -93,16 +104,21 @@ export const workerCanvasRoutes = {
     setDraw:(
         self, 
         origin, 
-        _id:string, 
-        draw:string|((self,canvas:any,context:any)=>void),
-        init:string|((self,canvas:any,context:any)=>void),
-        clear:string|((self,canvas:any,context:any)=>void)
+        _id?:string, 
+        draw?:string|((self,canvas:any,context:any)=>void),
+        update?:string|((self,canvas:any,context:any,input:any)=>void),
+        init?:string|((self,canvas:any,context:any)=>void),
+        clear?:string|((self,canvas:any,context:any)=>void)
     )=>{
         let canvasopts = self.graph.CANVASES?.[_id];
         if(canvasopts) {
             if(typeof draw === 'string') draw = parseFunctionFromText(draw);
             if(typeof draw === 'function') {
                 canvasopts.draw = draw;
+            }
+            if(typeof update === 'string') update = parseFunctionFromText(update);
+            if(typeof update === 'function') {
+                canvasopts.update = update;
             }
             if(typeof init === 'string') init = parseFunctionFromText(init);
             if(typeof init === 'function') {
@@ -116,8 +132,10 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    drawFrame:(self,origin,_id:string,props?:{[key:string]:any}) => { //can update props when calling draw
-        let canvasopts = self.graph.CANVASES?.[_id];
+    drawFrame:(self,origin,_id?:string,props?:{[key:string]:any}) => { //can update props when calling draw
+        let canvasopts;
+        if(!_id) canvasopts = Object.entries(self.graph.CANVASES)[0];
+        else canvasopts = self.graph.CANVASES?.[_id];
         if(canvasopts) {
             if(props) Object.assign(canvasopts,props);
             if(canvasopts.draw) {
@@ -127,17 +145,31 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    setProps:(self,origin,_id:string,props:{[key:string]:any}) => { //update animation props, e.g. the radius or color of a circle you are drawing with a stored value
-        let canvasopts = self.graph.CANVASES?.[_id];
+    runUpdate:(self,origin,_id?:string,input?:any) => {
+        let canvasopts;
+        if(!_id) canvasopts = Object.entries(self.graph.CANVASES)[0];
+        else canvasopts = self.graph.CANVASES?.[_id];
+        if(canvasopts?.update) {
+            canvasopts.update(self,canvasopts.canvas,canvasopts.context,input);
+            return true;
+        }
+        return undefined;
+    },
+    setProps:(self,origin,_id?:string,props?:{[key:string]:any}) => { //update animation props, e.g. the radius or color of a circle you are drawing with a stored value
+        let canvasopts;
+        if(!_id) canvasopts = Object.entries(self.graph.CANVASES)[0];
+        else canvasopts = self.graph.CANVASES?.[_id];
         if(canvasopts) {
             Object.assign(canvasopts,props);
             return true;
         }
         return undefined;
     },
-    startAnim:(self, origin, _id:string, draw?:string|((canvas:any,context:any)=>void))=>{ //run the draw function applied to the animation or provide a new one
+    startAnim:(self, origin, _id?:string, draw?:string|((canvas:any,context:any)=>void))=>{ //run the draw function applied to the animation or provide a new one
 
-        let canvasopts = self.graph.CANVASES?.[_id];
+        let canvasopts;
+        if(!_id) canvasopts = Object.entries(self.graph.CANVASES)[0];
+        else canvasopts = self.graph.CANVASES?.[_id];
         canvasopts.animating = true;
         if(canvasopts && draw) {
             if(typeof draw === 'string') draw = parseFunctionFromText(draw);
@@ -164,8 +196,10 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    stopAnim:(self,origin,_id:string)=>{
-        let canvasopts = self.graph.CANVASES?.[_id];
+    stopAnim:(self,origin,_id?:string)=>{
+        let canvasopts;
+        if(!_id) canvasopts = Object.entries(self.graph.CANVASES)[0];
+        else canvasopts = self.graph.CANVASES?.[_id];
         if(canvasopts) {
             canvasopts.animating = false;
             if(typeof canvasopts.clear === 'function') canvasopts.clear(canvasopts, canvasopts.canvas, canvasopts.context);
