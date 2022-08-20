@@ -1032,31 +1032,47 @@ export const Systems = {
         resolveBoxCollision:(body1:Entity,box:Entity,negate?:boolean)=>{
             //Find which side was collided with
 
-            var directionVec = Object.values(Systems.collision.makeVec(body1.position,box.position) as number[]); //Get direction toward body2
+            let positionVec = Systems.collision.makeVec(body1.position,box.position);
+
+            var directionVec = Object.values(positionVec as number[]); //Get direction toward body2
             //var normal = Systems.collision.normalize(directionVec);
 
-            var max = Math.max(...directionVec);
-            var min = Math.min(...directionVec);
-            var side = max;;
-            if(Math.abs(min) > max) {
-                side = min;
+            let closestSide;
+            let closestDist = Infinity;
+
+            let mul = -1;
+            if(directionVec[idx] < 0) mul = 1;
+            if(negate) mul = - mul;
+
+            for(const key in body1.position) {
+                let dist = Math.abs(box.position[key] - body1.position[key]);
+                if(
+                    dist < closestDist && 
+                    Math.abs((box.position[key] - body1.position[key] + body1.velocity[key]*0.00000000000000001)) < dist  //take a super small step forward and see if it's closer in distance to determine if this is a colliding vector
+                ) {
+                    closestSide = key;
+                    closestDist = dist;
+                }
             }
-            var idx = directionVec.indexOf(side) as any;
+
+            var idx = directionVec.indexOf(closestSide) as any;
             if(idx === 0) idx = 'x';
             if(idx === 1) idx = 'y';
             if(idx === 2) idx = 'z';
             if(idx === 3) idx = 'w'; //wat
 
-            if(body1.velocity[idx] >= 0) { //move the particle away to resolve the overlap
-                if(negate) body1.position[idx] += box.collisionRadius*box.collisionBoundsScale[idx]; 
-                else body1.position[idx] -= box.collisionRadius*box.collisionBoundsScale[idx]; 
-            } else {
-                if(negate)body1.position[idx] -= box.collisionRadius*box.collisionBoundsScale[idx]; 
-                else body1.position[idx] += box.collisionRadius*box.collisionBoundsScale[idx]; 
-                
-            }
+            let boxEdgeAxisPosition = box.position[idx] + box.collisionRadius*box.collisionBoundsScale[idx]*mul;
+            if(negate) {
+                let body1Offset = boxEdgeAxisPosition - body1.collisionRadius*body1.collisionBoundsScale[idx]*mul;
+                body1.position[idx] = body1Offset; 
 
-            body1.velocity[idx] = -body1.velocity[idx]*body1.restitution; //Reverse velocity
+            } else {
+                let body1Offset = boxEdgeAxisPosition + body1.collisionRadius*body1.collisionBoundsScale[idx]*mul;
+                body1.position[idx] = body1Offset; 
+            }
+            
+
+            body1.velocity[idx] = -body1.velocity[idx]*body1.restitution; //Reverse velocity of side moving toward
             if(negate) body1.force[idx] = -body1.velocity[idx]; //e.g. to stay inside a box
 
             var body2AccelMag = Systems.collision.magnitude(box.acceleration);
@@ -1067,7 +1083,7 @@ export const Systems = {
 
             //Apply Friction  
         },
-        resolveSphereCollisions:(
+        resolveSphereCollisions:( //needs improvement
             entity1:Entity,
             entity2:Entity,
             dist?:number
