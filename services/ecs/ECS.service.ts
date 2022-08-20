@@ -651,6 +651,8 @@ export const Systems = {
     } as SystemProps,
     collider:{ //this resolves collisions to update movement vectors
         lastTime:performance.now(),
+        useBoundingBox:true,
+        collisionBounds:{bot:0,top:100,left:0,right:100,front:0,back:100},
         setupEntities:(self,entities:{[key:string]:Entity})=>{
             for(const key in entities) {
                 self.setEntity(entities[key]);
@@ -658,7 +660,9 @@ export const Systems = {
         },
         setEntity:(entity:GraphNode) => {
             Systems.collision.setEntity(entity);
-            Systems.movement.setupEntities(entity); 
+            Systems.movement.setEntity(entity); 
+
+            if(!('restitution' in entity)) entity.restitution = 1;
         },
         operator:(self, origin, entities:{[key:string]:Entity})=>{
             for(const key in entities) {
@@ -676,13 +680,96 @@ export const Systems = {
                     }
                     if(!entity2.collisionEnabled) continue;
 
-                    //if(entity1.collisionType === 'sphere' && entity2.collisionType === 'sphere')
-                    Systems.collider.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
-                    //todo: box face (orthogonal) reflections
                     
+                    if(entity2.collisionType === 'box') {
+                        self.resolveBoxCollision(entity1,entity2,entity1.colliding[key2]);
+                    }
+                    else {
+                        if(entity1.collisionType === 'box') {
+                            entity1.fixed = true; //let the box collision check handle it on next pass
+                            self.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
+                            entity1.fixed = false;
+                        }
+                        else {
+                            self.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
+                            delete entity2.colliding[entity1.tag]; //both resolved
+                        }
+                    }
+                    //}
+                    //todo: box face (orthogonal) reflections
+                    //else if(entity2.collisionType === 'box')
+                    //self.resolveBoxCollision(entity1,entity2);
+                    
+                    delete entity1.colliding[entity2.tag];
                 }
+
+                if(self.useBoundingBox) self.checkBoundingBox(self,entity1);
+
             }
             return entities;
+        },
+        checkBoundingBox:(self,entity)=>{
+                    
+            const ysize = entity.collisionRadius*entity.collisionBoundsScale.y;
+            const xsize = entity.collisionRadius*entity.collisionBoundsScale.x;
+            const zsize = entity.collisionRadius*entity.collisionBoundsScale.z;
+
+            if ((entity.position.y - ysize) <= self.collisionBounds.top) {
+                entity.velocity.y *= entity.restitution;
+                entity.position.y = self.collisionBounds.top + ysize;
+            }
+            if ((entity.position.y + ysize) >= self.collisionBounds.bot) {
+                entity.velocity.y *= entity.restitution;
+                entity.position.y = self.collisionBounds.bot - ysize;
+            }
+
+            if (entity.position.x - xsize <= self.collisionBounds.left) {
+                entity.velocity.x *= entity.restitution;
+                entity.position.x = self.collisionBounds.left + xsize;
+            }
+
+            if (entity.position.x + xsize >= self.collisionBounds.right) {
+                entity.velocity.x *= entity.restitution;
+                entity.position.x = self.collisionBounds.right - xsize;
+            }
+
+            if (entity.position.z - zsize <= self.collisionBounds.front) {
+                entity.velocity.z *= entity.restitution;
+                entity.position.z = self.collisionBounds.front + zsize;
+            }
+
+            if (entity.position.z + zsize >= self.collisionBounds.back) {
+                entity.velocity.z *= entity.restitution;
+                entity.position.z = self.collisionBounds.back - zsize;
+            }
+        },
+        //needs improvement
+        resolveBoxCollision:(body1:Entity,box:Entity)=>{
+            //Find which side was collided with
+
+            var directionVec = Object.values(Systems.collision.makeVec(body1.position,box.position) as number[]); //Get direction toward body2
+            //var normal = Systems.collision.normalize(directionVec);
+
+            var max = Math.max(...directionVec);
+            var min = Math.min(...directionVec);
+            var side = max;;
+            if(Math.abs(min) > max) {
+                side = min;
+            }
+            var idx = directionVec.indexOf(side) as any;
+            if(idx === 0) idx = 'x';
+            if(idx === 1) idx = 'y';
+            if(idx === 2) idx = 'z';
+            if(idx === 3) idx = 'w'; //wat
+
+            body1.velocity[idx] = -body1.velocity[idx]*body1.restitution; //Reverse velocity
+
+            var body2AccelMag = Systems.collision.magnitude(box.acceleration);
+            var body2AccelNormal = Systems.collision.normalize(box.acceleration);
+
+            body1.force[idx] = -body2AccelNormal[idx]*body2AccelMag*box.mass; //Add force
+
+            //Apply Friction  
         },
         resolveSphereCollisions:(entity1:Entity,entity2:Entity,dist?:number)=>{
 
@@ -711,6 +798,7 @@ export const Systems = {
                 entity1.position.y += vecn.y*1.01;
                 entity1.position.z += vecn.z*1.01;
             }
+            //slidey
 
             //get updated distance (?)
             dist = Systems.collision.distance(entity1.position,entity2.position);
@@ -743,9 +831,6 @@ export const Systems = {
             //}
             // entity1.collidedWith[entity2.tag] = entity2.tag;
             // entity2.collidedWith[entity1.tag] = entity1.tag;
-
-            delete entity1.colliding[entity2.tag];
-            delete entity2.colliding[entity1.tag];
         }
     } as SystemProps,
     nbody:{
