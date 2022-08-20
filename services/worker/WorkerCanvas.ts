@@ -110,7 +110,10 @@ export const workerCanvasRoutes = {
         init?:string|((self,canvas:any,context:any)=>void),
         clear?:string|((self,canvas:any,context:any)=>void)
     )=>{
-        let canvasopts = self.graph.CANVASES?.[_id];
+        let canvasopts
+        if(_id) canvasopts = self.graph.CANVASES?.[_id];
+        else canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
+
         if(canvasopts) {
             if(typeof draw === 'string') draw = parseFunctionFromText(draw);
             if(typeof draw === 'function') {
@@ -134,7 +137,7 @@ export const workerCanvasRoutes = {
     },
     drawFrame:(self,origin,_id?:string,props?:{[key:string]:any}) => { //can update props when calling draw
         let canvasopts;
-        if(!_id) canvasopts = Object.entries(self.graph.CANVASES)[0];
+        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
         else canvasopts = self.graph.CANVASES?.[_id];
         if(canvasopts) {
             if(props) Object.assign(canvasopts,props);
@@ -147,7 +150,7 @@ export const workerCanvasRoutes = {
     },
     runUpdate:(self,origin,_id?:string,input?:any) => {
         let canvasopts;
-        if(!_id) canvasopts = Object.entries(self.graph.CANVASES)[0];
+        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
         else canvasopts = self.graph.CANVASES?.[_id];
         if(canvasopts?.update) {
             canvasopts.update(self,canvasopts.canvas,canvasopts.context,input);
@@ -157,7 +160,7 @@ export const workerCanvasRoutes = {
     },
     setProps:(self,origin,_id?:string,props?:{[key:string]:any}) => { //update animation props, e.g. the radius or color of a circle you are drawing with a stored value
         let canvasopts;
-        if(!_id) canvasopts = Object.entries(self.graph.CANVASES)[0];
+        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
         else canvasopts = self.graph.CANVASES?.[_id];
         if(canvasopts) {
             Object.assign(canvasopts,props);
@@ -168,7 +171,7 @@ export const workerCanvasRoutes = {
     startAnim:(self, origin, _id?:string, draw?:string|((canvas:any,context:any)=>void))=>{ //run the draw function applied to the animation or provide a new one
 
         let canvasopts;
-        if(!_id) canvasopts = Object.entries(self.graph.CANVASES)[0];
+        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
         else canvasopts = self.graph.CANVASES?.[_id];
         canvasopts.animating = true;
         if(canvasopts && draw) {
@@ -198,7 +201,7 @@ export const workerCanvasRoutes = {
     },
     stopAnim:(self,origin,_id?:string)=>{
         let canvasopts;
-        if(!_id) canvasopts = Object.entries(self.graph.CANVASES)[0];
+        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
         else canvasopts = self.graph.CANVASES?.[_id];
         if(canvasopts) {
             canvasopts.animating = false;
