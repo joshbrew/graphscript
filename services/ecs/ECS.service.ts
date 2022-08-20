@@ -1029,7 +1029,7 @@ export const Systems = {
             }
         },
         //needs improvement
-        resolveBoxCollision:(body1:Entity,box:Entity)=>{
+        resolveBoxCollision:(body1:Entity,box:Entity,negate?:boolean)=>{
             //Find which side was collided with
 
             var directionVec = Object.values(Systems.collision.makeVec(body1.position,box.position) as number[]); //Get direction toward body2
@@ -1047,16 +1047,28 @@ export const Systems = {
             if(idx === 2) idx = 'z';
             if(idx === 3) idx = 'w'; //wat
 
+            if(body1.velocity[idx] >= 0) { //move the particle away to resolve the overlap
+                body1.position[idx] -= box.collisionRadius*box.collisionBoundsScale[idx]; 
+            } else {
+                body1.position[idx] += box.collisionRadius*box.collisionBoundsScale[idx]; 
+            }
+
             body1.velocity[idx] = -body1.velocity[idx]*body1.restitution; //Reverse velocity
+            if(negate) body1.force[idx] = -body1.velocity[idx]; //e.g. to stay inside a box
 
             var body2AccelMag = Systems.collision.magnitude(box.acceleration);
             var body2AccelNormal = Systems.collision.normalize(box.acceleration);
 
             body1.force[idx] = -body2AccelNormal[idx]*body2AccelMag*box.mass; //Add force
+            if(negate) body1.force[idx] = -body1.force[idx]; //e.g. to stay inside a box
 
             //Apply Friction  
         },
-        resolveSphereCollisions:(entity1:Entity,entity2:Entity,dist?:number)=>{
+        resolveSphereCollisions:(
+            entity1:Entity,
+            entity2:Entity,
+            dist?:number
+        )=>{
 
             if(dist === undefined) dist = Systems.collision.distance(entity1.position,entity2.position);
             let vecn = Systems.collision.normalize(Systems.collision.makeVec(entity1.position,entity2.position)); // a to b
