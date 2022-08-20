@@ -1,10 +1,9 @@
 {
-    "name": "graphscript",
-    "version": "0.0.143",
-    "description": "Barebones esbuild and test node server implementation. For building",
-    "main": "dist/index.js",
-    "module": "dist/index.esm.js",
-    "types": "dist/index.d.ts",
+    "name": "graphscript-node",
+    "version": "0.0.144",
+    "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
+    "main": "dist/index.node.js",
+    "types": "dist/index.node.d.ts",
     "scripts": {
         "start": "tinybuild path=tinybuild.node.config.js && tinybuild && tinybuild path=tinybuild.core.config.js",
         "build": "tinybuild build",
