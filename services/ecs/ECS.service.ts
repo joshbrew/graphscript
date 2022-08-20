@@ -1247,7 +1247,6 @@ export const Systems = {
                         useAttractor:true,
                         //useAvoidance:true,
                         //avoidance:{groups:[],mul:0.1},
-                        attraction: 0.00000000006674, //Newton's gravitational constant by default
                         useAttraction:false, //particles can attract each other on a curve
                         groupRadius:200,
                         groupSize:10,
@@ -1325,7 +1324,7 @@ export const Systems = {
                                 boidVelocities[5] = boidVelocities[5] + (p0.position.z-pr.position.z)*distInv;
                             }
     
-                            if(p0.boid.useAttraction) {
+                            if(p0.boid.useAttraction && pr.boid.useAttraction) {
                                 Systems.nbody.calcAttraction(p0,pr,disttemp);
                             }
     
