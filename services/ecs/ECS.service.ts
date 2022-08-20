@@ -240,6 +240,7 @@ export class ECSService extends Service {
 export const Systems = {
     //geometry:{} as SystemProps, //include mesh rotation functions and stuff
     collision:{ //e.g. https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
+        //Better implementation: https://wickedengine.net/2020/04/26/capsule-collision-detection/, should adapt for gpujs or something for mass physics
         //lastTime:performance.now(),
         setupEntities:(self,entities:{[key:string]:GraphNode})=>{
             for(const key in entities) {
