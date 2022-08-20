@@ -272,7 +272,7 @@ export const Systems = {
                     if(entity2.components) if(!entity2.components[self.tag]) continue;
                     if(!entity2.collisionEnabled) continue;
                  
-                    let colliding = Systems.collision.collisionCheck(entity1,entity2); //returns distance from origin if colliding (to reduce redundancy later)
+                    let colliding = Systems.collision.collisionCheck(entity1 as any,entity2 as any); //returns distance from origin if colliding (to reduce redundancy later)
                     if(colliding !== false) {
                         entity1.colliding[entity2.tag] = colliding;
                         entity2.colliding[entity1.tag] = colliding;
@@ -932,7 +932,7 @@ export const Systems = {
                 return head;
             }
         }
-    } as SystemProps,
+    },// as SystemProps,
     collider:{ //this resolves collisions to update movement vectors
         lastTime:performance.now(),
         useBoundingBox:true,
@@ -1035,7 +1035,7 @@ export const Systems = {
 
             let positionVec = Systems.collision.makeVec(body1.position,box.position);
 
-            var directionVec = Object.values(positionVec as number[]); //Get direction toward body2
+            var directionVec = Object.values(positionVec); //Get direction toward body2
             //var normal = Systems.collision.normalize(directionVec);
 
             let closestSide;
@@ -1091,7 +1091,7 @@ export const Systems = {
         )=>{
 
             if(dist === undefined) dist = Systems.collision.distance(entity1.position,entity2.position);
-            let vecn = Systems.collision.normalize(Systems.collision.makeVec(entity1.position,entity2.position)); // a to b
+            let vecn = Systems.collision.normalize(Systems.collision.makeVec(entity1.position,entity2.position)) as any; // a to b
 
             let sumMass = entity1.mass+entity2.mass;
             let ratio = entity1.mass/sumMass; //displace proportional to mass
@@ -1149,7 +1149,7 @@ export const Systems = {
             // entity1.collidedWith[entity2.tag] = entity2.tag;
             // entity2.collidedWith[entity1.tag] = entity1.tag;
         }
-    } as SystemProps,
+    },// as SystemProps,
     nbody:{ //gravitational attraction
         lastTime:performance.now(),
         G:0.00000000006674, //Newton's gravitational constant
@@ -1192,7 +1192,7 @@ export const Systems = {
         )=>{
 
             if(dist === undefined) dist = Systems.collision.distance(body1.position,body2.position) as number;
-            if(vecn === undefined) vecn = Systems.collision.normalize(Systems.collision.makeVec(body1.position,body2.position)); // a to b
+            if(vecn === undefined) vecn = Systems.collision.normalize(Systems.collision.makeVec(body1.position,body2.position)) as any; // a to b
 
             //Newton's law of gravitation
             let Fg = 0.00000000006674 * body1.mass * body2.mass / (dist*dist);
@@ -1224,7 +1224,7 @@ export const Systems = {
             //     body2.velocity.z += tstep*FgOnBody2.z*mass2Inv;
             // }
         }
-    } as SystemProps,
+    },// as SystemProps,
     boid:{ //boids, updates velocities based on a particle rule subset
         lastTime:performance.now(),
         setupEntities:(entities:any)=>{
@@ -1326,7 +1326,7 @@ export const Systems = {
                             }
     
                             if(p0.boid.useAttraction && pr.boid.useAttraction) {
-                                Systems.nbody.calcAttraction(p0,pr,disttemp);
+                                Systems.nbody.attract(p0,pr,disttemp);
                             }
     
                             if(p0.boid.useAlignment){
@@ -1432,7 +1432,7 @@ export const Systems = {
         
             return entities;
         }
-    } as SystemProps,
+    },// as SystemProps,
     movement:{ //update force/acceleration/velocity/position vectors
         lastTime:performance.now(),
         setupEntities:(self,entities:{[key:string]:Entity})=>{ //install needed data structures to entities
@@ -1495,9 +1495,9 @@ export const Systems = {
             }
             return entities;
         }
-    } as SystemProps,
+    } //as SystemProps,
     //materials:{} as SystemProps, //
-} as {[key:string]:SystemProps & {[key:string]:any}}
+} //as {[key:string]:SystemProps & {[key:string]:any}}
 
 
 //modified entity types?
