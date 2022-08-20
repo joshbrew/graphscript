@@ -112,9 +112,9 @@ export class ECSService extends Service {
     }
 
     //e.g. run on requestAnimationFrame
-    update = (
-        filter?:boolean, 
-        order?:string[] //can only run specific systems and in specific orders
+    updateEntities = (
+        order?:string[], //can only run specific systems and in specific orders
+        filter?:boolean 
     ) => { //filter will only pass certain entities based on enabled components
         if(!order) order = this.order;
         

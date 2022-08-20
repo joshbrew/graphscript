@@ -50,9 +50,9 @@ export declare type PrivateSessionProps = {
         };
         password?: string;
         ownerId?: string;
-        onopen?: (session: SharedSessionProps) => void;
-        onmessage?: (session: SharedSessionProps) => void;
-        onclose?: (session: SharedSessionProps) => void;
+        onopen?: (session: PrivateSessionProps) => void;
+        onmessage?: (session: PrivateSessionProps) => void;
+        onclose?: (session: PrivateSessionProps) => void;
         [key: string]: any;
     };
     data?: {
@@ -180,7 +180,7 @@ export declare class UserRouter extends Router {
     }): string | false;
     swapHost: (session: PrivateSessionProps | SharedSessionProps | string, newHostId?: string) => boolean;
     deleteSession: (sessionId: string, userId: string | UserProps) => boolean;
-    subscribeToSession: (session: SharedSessionProps | PrivateSessionProps | string, userId: string | UserProps | (UserProps & GraphNode), onmessage?: (session: SharedSessionProps | PrivateSessionProps, userId: string) => void, onopen?: (session: SharedSessionProps | PrivateSessionProps, userId: string) => void, onclose?: (session: SharedSessionProps | PrivateSessionProps, userId: string) => void) => SharedSessionProps | PrivateSessionProps;
+    subscribeToSession: (session: SharedSessionProps | PrivateSessionProps | string, userId: string | UserProps | (UserProps & GraphNode), onmessage?: (session: SharedSessionProps | PrivateSessionProps, userId: string) => void, onopen?: (session: SharedSessionProps | PrivateSessionProps, userId: string) => void, onclose?: (session: SharedSessionProps | PrivateSessionProps, userId: string) => void) => PrivateSessionProps | SharedSessionProps;
     sessionLoop: (sendAll?: boolean) => any;
     transmitSessionUpdates: (updates: {
         private: {

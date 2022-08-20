@@ -6,6 +6,7 @@ import { GPUService } from '../gpu/GPU.service';
 import { proxyWorkerRoutes } from './ProxyListener';
 import { workerCanvasRoutes } from './WorkerCanvas';
 import { unsafeRoutes } from '../unsafe/Unsafe.service';
+import { ECSService } from '../ecs/ECS.service';
 
 //wonder if we can have a scheme to dynamic import within the services? e.g. to bring in node-only or browser-only services without additional workers
 
@@ -18,6 +19,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
             GPUService,
             proxyWorkerRoutes,
             workerCanvasRoutes,
+            ECSService,
             unsafeRoutes //allows dynamic route loading
         ],
         includeClassName:false
