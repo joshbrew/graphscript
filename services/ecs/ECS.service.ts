@@ -655,7 +655,9 @@ export const Systems = {
         collisionBounds:{bot:0,top:100,left:0,right:100,front:0,back:100},
         setupEntities:(self,entities:{[key:string]:Entity})=>{
             for(const key in entities) {
-                self.setEntity(entities[key]);
+                const entity = entities[key];
+                if(entity.components) if(!entity.components[self.tag]) continue;
+                self.setEntity(entity);
             }
         },
         setEntity:(entity:GraphNode) => {
@@ -906,6 +908,215 @@ export const Systems = {
             //     body2.velocity.y += tstep*FgOnBody2.y*mass2Inv;
             //     body2.velocity.z += tstep*FgOnBody2.z*mass2Inv;
             // }
+        }
+    } as SystemProps,
+    boid:{
+        lastTime:performance.now(),
+        setupEntities:(entities:any)=>{
+            for(const key in entities) {
+                const entity = entities[key];
+
+                Systems.collision.setEntity(entity);
+                Systems.movement.setEntity(entity);
+
+                if(!entity.boid) { //boid rules
+                    entity.boid = {
+                        cohesion:0.00001,
+                        separation:0.0001,
+                        alignment:0.006,
+                        swirl:{x:0.5,y:0.5,z:0.5,mul:0.006},
+                        attractor:{x:0.5,y:0.5,z:0.5,mul:0.002},
+                        useCohesion:true,
+                        useSeparation:true,
+                        useAlignment:true,
+                        useSwirl:true,
+                        useAttractor:true,
+                        //useAvoidance:true,
+                        //avoidance:{groups:[],mul:0.1},
+                        attraction: 0.00000000006674, //Newton's gravitational constant by default
+                        useAttraction:false, //particles can attract each other on a curve
+                        groupRadius:200,
+                        groupSize:10,
+                        searchLimit:10
+                    }
+                }
+            }
+        },
+        operator:(self,origin,entities:{[key:string]:Entity})=>{
+            
+            let now = performance.now();
+            let timeStep = now - self.lastTime
+            self.lastTime = now;
+
+            let keys = Object.keys(entities);
+            let length = Object.keys(entities).length;
+        
+            let _timeStep = 1/timeStep;
+            outer:
+            for(const i in entities) {
+                let p0 = entities[i];
+                const inRange:any[] = []; //indices of in-range boids
+                const distances:any[] = []; //Distances of in-range boids
+                const boidVelocities = [
+                    p0.position.x,
+                    p0.position.y,
+                    p0.position.z,
+                    0,0,0,
+                    p0.velocity.x,p0.velocity.y,p0.velocity.z,
+                    0,0,0,
+                    0,0,0,
+                    0,0,0
+                ]; //Velocity mods of in-range boids, representing each type of modifier
+                /*
+                    cohesion, separation, alignment, attraction, avoidance
+                */
+                
+                let groupCount = 1;
+        
+                nested:
+                for(const j in entities) {
+                    let p = entities[j];
+                    if(distances.length > p0.boid.groupSize || j >= p0.boid.searchLimit) { break nested; }
+    
+                    let randj = keys[Math.floor(Math.random()*length)]; // Get random index
+                    if(j===i || entities[randj].tag === entities[i].tag || inRange.indexOf(randj) > -1) {  } else {
+                        let pr = entities[randj];
+                        let disttemp = Systems.collision.distance(p0.position,pr.position);
+                        
+                        if(disttemp > p0.boid.groupRadius) { } else {
+                            distances.push(disttemp);
+                            inRange.push(randj);
+    
+                            let distInv;
+                            if(p0.boid.useSeparation || p0.boid.useAlignment) {
+                                distInv = (p0.boid.groupRadius/(disttemp*disttemp));
+                                if(distInv == Infinity) distInv = p.maxSpeed;
+                                else if (distInv == -Infinity) distInv = -p.maxSpeed;
+                            }
+                    
+                            if(p0.boid.useCohesion){
+                                boidVelocities[0] += (pr.position.x - p0.position.x)*0.5*disttemp*_timeStep;
+                                boidVelocities[1] += (pr.position.y - p0.position.y)*0.5*disttemp*_timeStep;
+                                boidVelocities[2] += (pr.position.z - p0.position.z)*0.5*disttemp*_timeStep;
+                            }
+    
+                            if(isNaN(disttemp) || isNaN(boidVelocities[0]) || isNaN(pr.position.x)) {
+                                console.log(disttemp, i, randj, p0.position, pr.position, boidVelocities); p0.position.x = NaN; 
+                                return;
+                            }
+    
+                            if(p0.boid.useSeparation){
+                                boidVelocities[3] = boidVelocities[3] + (p0.position.x-pr.position.x)*distInv;
+                                boidVelocities[4] = boidVelocities[4] + (p0.position.y-pr.position.y)*distInv; 
+                                boidVelocities[5] = boidVelocities[5] + (p0.position.z-pr.position.z)*distInv;
+                            }
+    
+                            if(p0.boid.useAttraction) {
+                                Systems.nbody.calcAttraction(p0,pr,disttemp);
+                            }
+    
+                            if(p0.boid.useAlignment){
+                                //console.log(separationVec);
+                                boidVelocities[6] = boidVelocities[6] + pr.velocity.x*distInv; 
+                                boidVelocities[7] = boidVelocities[7] + pr.velocity.y*distInv;
+                                boidVelocities[8] = boidVelocities[8] + pr.velocity.z*distInv;
+                            }
+    
+                            groupCount++;
+                        }
+                    }
+                }
+                
+                // if(p0.boid.useAvoidance && p0.boid.avoidance.groups.length > 0) {
+                //     let searchidx = Math.floor(Math.random()*p0.boid.avoidanceGroups.length);
+                //     const inRange2:any[] = [];
+                //     nested2:
+                //     for(let k = 0; k < p0.boid.searchLimit; k++) {
+                //         searchidx++;
+                //         let group = p0.boid.avoidanceGroups[searchidx%p0.boid.avoidanceGroups.length];
+                //         if(inRange2 > p0.boid.groupSize) { break nested2; }
+    
+                //         let randj = keys[Math.floor(Math.random()*group.length)]; // Get random index
+                //         if( keys[k] === i || entities[randj].tag === entities[k].tag || inRange2.indexOf(randj) > -1) {  } else {
+                //             let pr = group[randj];
+                //             let disttemp = Systems.collision.distance(p0.position,pr.position);
+                            
+                //             if(disttemp > p0.boid.groupRadius) { } else {
+                //                 inRange2.push(randj);
+                //                 let distInv = (p0.boid.groupRadius/(disttemp*disttemp));
+                //                 if(distInv == Infinity) distInv = pr.maxSpeed;
+                //                 else if (distInv == -Infinity) distInv = -pr.maxSpeed;
+                //                 boidVelocities[15] = boidVelocities[15] + (p0.position.x-pr.position.x)*distInv;
+                //                 boidVelocities[16] = boidVelocities[16] + (p0.position.y-pr.position.y)*distInv; 
+                //                 boidVelocities[17] = boidVelocities[17] + (p0.position.z-pr.position.z)*distInv;
+                //             }
+                //         }
+                //     } 
+    
+                //     let _len = inRange2.length;
+                //     boidVelocities[15] = boidVelocities[15]*_len;
+                //     boidVelocities[16] = boidVelocities[16]*_len;
+                //     boidVelocities[17] = boidVelocities[17]*_len;
+    
+                // }
+    
+    
+                let _groupCount = 1/groupCount;
+        
+                if(p0.boid.useCohesion){
+                    boidVelocities[0] = p0.boid.cohesion*(boidVelocities[0]*_groupCount);
+                    boidVelocities[1] = p0.boid.cohesion*(boidVelocities[1]*_groupCount);
+                    boidVelocities[2] = p0.boid.cohesion*(boidVelocities[2]*_groupCount);
+                } else { boidVelocities[0] = 0; boidVelocities[1] = 0; boidVelocities[2] = 0; }
+    
+                if(p0.boid.useSeparation){
+                    boidVelocities[3] = p0.boid.separation*boidVelocities[3];
+                    boidVelocities[4] = p0.boid.separation*boidVelocities[4];
+                    boidVelocities[5] = p0.boid.separation*boidVelocities[5];
+                } else { boidVelocities[3] = 0; boidVelocities[4] = 0; boidVelocities[5] = 0; }
+    
+                if(p0.boid.useAlignment){
+                    boidVelocities[6] = -(p0.boid.alignment*boidVelocities[6]*_groupCount);
+                    boidVelocities[7] = p0.boid.alignment*boidVelocities[7]*_groupCount;
+                    boidVelocities[8] = p0.boid.alignment*boidVelocities[8]*_groupCount;//Use a perpendicular vector [-y,x,z]
+                } else { boidVelocities[6] = 0; boidVelocities[7] = 0; boidVelocities[8] = 0; }    
+    
+                const swirlVec = [0,0,0];
+                if(p0.boid.useSwirl == true){
+                    boidVelocities[9] = -(p0.position.y-p0.boid.swirl.y)*p0.boid.swirl.mul;
+                    boidVelocities[10] = (p0.position.z-p0.boid.swirl.z)*p0.boid.swirl.mul;
+                    boidVelocities[11] = (p0.position.x-p0.boid.swirl.x)*p0.boid.swirl.mul
+                }
+                const attractorVec = [0,0,0];
+    
+                if(p0.boid.useAttractor == true){
+                    boidVelocities[12] = (p0.boid.attractor.x-p0.position.x)*p0.boid.attractor.mul;
+                    if(p0.position.x > p0.boid.boundingBox.left || p0.position.x < p0.boid.boundingBox.right) {
+                        boidVelocities[12] *= 3; //attractor should be in the bounding box for this to work properly 
+                    }
+                    boidVelocities[13] = (p0.boid.attractor.y-p0.position.y)*p0.boid.attractor.mul;
+                    if(p0.position.y > p0.boid.boundingBox.top || p0.position.y < p0.boid.boundingBox.bottom) {
+                        boidVelocities[13] *= 3;
+                    }
+                    boidVelocities[14] = (p0.boid.attractor.z-p0.position.z)*p0.boid.attractor.mul;
+                    if(p0.position.z > p0.boid.boundingBox.front || p0.position.z < p0.boid.boundingBox.back) {
+                        boidVelocities[14] *= 3;
+                    }
+                }
+            
+                //console.log(attractorVec)
+    
+                //if(i===0) console.log(p0, p0.position, p0.velocity, cohesionVec,separationVec,alignmentVec,swirlVec,attractorVec)
+    
+                entities[i].velocity.x=p0.velocity.x*p0.drag+boidVelocities[0]+boidVelocities[3]+boidVelocities[6]+boidVelocities[9]+boidVelocities[12]+boidVelocities[15],
+                entities[i].velocity.y=p0.velocity.y*p0.drag+boidVelocities[1]+boidVelocities[4]+boidVelocities[7]+boidVelocities[10]+boidVelocities[13]+boidVelocities[16],
+                entities[i].velocity.z=p0.velocity.z*p0.drag+boidVelocities[2]+boidVelocities[5]+boidVelocities[8]+boidVelocities[11]+boidVelocities[14]+boidVelocities[17]
+                
+                //console.log(i,groupCount)
+                if(isNaN(entities[i].velocity.x)) console.error(p0, i, groupCount, p0.position, p0.velocity,swirlVec,attractorVec)
+            }
+        
+            return entities;
         }
     } as SystemProps,
     movement:{
