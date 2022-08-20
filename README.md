@@ -19,10 +19,10 @@ For happy code!
 
 # READMEs:
 
-## * [Graphs and GraphNodes](./docs/Graph.md)
-## * [Services](./docs/Service.md)
+## * [Graphs and GraphNodes](https://github.com/brainsatplay/graphscript/blob/master/docs/Graph.md)
+## * [Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md)
    * * [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
-## * [Routers](./docs//Router.md)
+## * [Routers](https://github.com/brainsatplay/graphscript/blob/master/docs/Router.md)
 
 (WIP)
 
