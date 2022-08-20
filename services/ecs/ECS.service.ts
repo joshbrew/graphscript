@@ -835,7 +835,7 @@ export const Systems = {
             // entity2.collidedWith[entity1.tag] = entity1.tag;
         }
     } as SystemProps,
-    nbody:{
+    nbody:{ //gravitational attraction
         lastTime:performance.now(),
         G:0.00000000006674, //Newton's gravitational constant
         setupEntities:(self,entities:{[key:string]:Entity})=>{
@@ -910,7 +910,7 @@ export const Systems = {
             // }
         }
     } as SystemProps,
-    boid:{
+    boid:{ //boids, updates velocities based on a particle rule subset
         lastTime:performance.now(),
         setupEntities:(entities:any)=>{
             for(const key in entities) {
@@ -1119,7 +1119,7 @@ export const Systems = {
             return entities;
         }
     } as SystemProps,
-    movement:{
+    movement:{ //update force/acceleration/velocity/position vectors
         lastTime:performance.now(),
         setupEntities:(self,entities:{[key:string]:Entity})=>{ //install needed data structures to entities
             for(const key in entities) {
