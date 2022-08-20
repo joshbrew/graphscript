@@ -241,23 +241,21 @@ export const Systems = {
     //geometry:{} as SystemProps, //include mesh rotation functions and stuff
     collision:{ //e.g. https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
         //lastTime:performance.now(),
-        boundaries:{x:100,y:100,z:100}, //x,y,z coordinate space 
         setupEntities:(self,entities:{[key:string]:GraphNode})=>{
             for(const key in entities) {
                 const entity = entities[key];
                 if(entity.components) if(!entity.components[self.tag]) continue;
 
-                if(!('collisionEnabled' in entity)) entity.collisionEnabled = true;
-                if(!entity.collisionType) entity.collisionType = 'sphere' //sphere, box, point
-                if(!entity.collisionRadius) entity.collisionRadius = 1;
-                if(!entity.collisionBoundsScale) entity.collisionBoundsScale = {x:1,y:1,z:1}; //x,y,z dimensions * collision radius, e.g. a box has +x and -x bounds based on these constraints
-                if(!entity.colliding) entity.colliding = {} //key:boolean
-                if(!entity.position) entity.position = {
-                    x:Math.random()*self.boundaries.x,
-                    y:Math.random()*self.boundaries.y,
-                    z:Math.random()*self.boundaries.z
-                };
+                Systems.collision.setEntity(entity);
             }
+        },
+        setEntity:(entity:GraphNode) => {
+            if(!('collisionEnabled' in entity)) entity.collisionEnabled = true;
+            if(!entity.collisionType) entity.collisionType = 'sphere' //sphere, box, point
+            if(!entity.collisionRadius) entity.collisionRadius = 1;
+            if(!entity.collisionBoundsScale) entity.collisionBoundsScale = {x:1,y:1,z:1}; //x,y,z dimensions * collision radius, e.g. a box has +x and -x bounds based on these constraints
+            if(!entity.colliding) entity.colliding = {} //key:boolean
+            if(!entity.position) entity.position = { x:0, y:0, z:0 };
         },
         operator:(
             self,
@@ -280,6 +278,7 @@ export const Systems = {
                     }
                 }
             }
+            return entities;
             //now resolve the collisions e.g. relative displacement + mass-force vectors to pass to the movement system
         },
         collisionCheck:(
@@ -653,8 +652,13 @@ export const Systems = {
     collider:{ //this resolves collisions to update movement vectors
         lastTime:performance.now(),
         setupEntities:(self,entities:{[key:string]:Entity})=>{
-            Systems.collision.setupEntities(Systems.collision,entities);
-            Systems.movement.setupEntities(Systems.movement,entities); 
+            for(const key in entities) {
+                self.setEntity(entities[key]);
+            }
+        },
+        setEntity:(entity:GraphNode) => {
+            Systems.collision.setEntity(entity);
+            Systems.movement.setupEntities(entity); 
         },
         operator:(self, origin, entities:{[key:string]:Entity})=>{
             for(const key in entities) {
@@ -678,6 +682,7 @@ export const Systems = {
                     
                 }
             }
+            return entities;
         },
         resolveSphereCollisions:(entity1:Entity,entity2:Entity,dist?:number)=>{
 
@@ -743,6 +748,81 @@ export const Systems = {
             delete entity2.colliding[entity1.tag];
         }
     } as SystemProps,
+    nbody:{
+        lastTime:performance.now(),
+        G:0.00000000006674, //Newton's gravitational constant
+        setupEntities:(self,entities:{[key:string]:Entity})=>{
+            for(const key in entities) {
+                const entity = entities[key];
+                if(entity.components) if(!entity.components[self.tag]) continue;
+
+                Systems.nbody.setEntity(entity);
+            }
+        },
+        setEntity:(entity:GraphNode) => {
+            Systems.collision.setEntity(entity);
+            Systems.movement.setEntity(entity);
+
+            entity.isAttractor = true;
+        },
+        operator:(self,origin,entities:{[key:string]:Entity})=>{
+            for(const key in entities) {
+                const entity = entities[key];
+                if(entity.components) if(!entity.components[self.tag]) continue;
+                if(!entity.mass) continue;
+                
+                for(const key2 in entities) {
+                    const entity2 = entities[key2];
+                    if(entity2.components) if(!entity2.components[self.tag]) continue;
+                    if(!entity2.mass || !entity2.isAttractor) continue;
+
+                    Systems.nbody.attract(entity,entity2);
+                }
+            }
+
+            return entities;
+        },
+        attract:(
+            body1,
+            body2,
+            dist?:number,
+            vecn?:{x:number,y:number,z:number}
+        )=>{
+
+            if(dist === undefined) dist = Systems.collision.distance(body1.position,body2.position) as number;
+            if(vecn === undefined) vecn = Systems.collision.normalize(Systems.collision.makeVec(body1.position,body2.position)); // a to b
+
+            //Newton's law of gravitation
+            let Fg = 0.00000000006674 * body1.mass * body2.mass / (dist*dist);
+
+            body1.force.x += (vecn as any).x*Fg;
+            body1.force.y += (vecn as any).y*Fg;
+            body1.force.z += (vecn as any).z*Fg;
+            body2.force.x -= (vecn as any).x*Fg;
+            body2.force.y -= (vecn as any).y*Fg;
+            body2.force.z -= (vecn as any).z*Fg;
+
+            //next we should pass this to the movement system to resolve the forces into the movements (like below)
+
+            // let mass1Inv = 1/body1.mass;
+            // let mass2Inv = 1/body2.mass;
+            // //Get force vectors
+            // let FgOnBody1 = {x: (vecn as any).x*Fg, y: (vecn as any).y*Fg, z: (vecn as any).z*Fg};
+            // let FgOnBody2 = {x:-(vecn as any).x*Fg, y:-(vecn as any).y*Fg, z:-(vecn as any).z*Fg};
+            
+            // if(!body1.fixed) {
+            //     body1.velocity.x += tstep*FgOnBody1.x*mass1Inv;
+            //     body1.velocity.y += tstep*FgOnBody1.y*mass1Inv;
+            //     body1.velocity.z += tstep*FgOnBody1.z*mass1Inv;
+            // }
+
+            // if(!body2.fixed) {
+            //     body2.velocity.x += tstep*FgOnBody2.x*mass2Inv;
+            //     body2.velocity.y += tstep*FgOnBody2.y*mass2Inv;
+            //     body2.velocity.z += tstep*FgOnBody2.z*mass2Inv;
+            // }
+        }
+    } as SystemProps,
     movement:{
         lastTime:performance.now(),
         setupEntities:(self,entities:{[key:string]:Entity})=>{ //install needed data structures to entities
@@ -750,15 +830,18 @@ export const Systems = {
                 const entity = entities[key];
                 if(entity.components) if(!entity.components[self.tag]) continue;
 
-                if(!('mass' in entity)) entity.mass = 1;
-                if(!('fixed' in entity)) entity.fixed = false;
-                if(!entity.force) entity.force = {x:0,y:0,z:0};
-                if(!('mass' in entity)) entity.mass = 1;
-                if(!('gravity' in entity)) entity.gravity = -9.81; //m/s^2 on earth
-                if(!entity.acceleration) entity.acceleration = {x:0,y:0,z:0};
-                if(!entity.velocity) entity.velocity = {x:0,y:0,z:0};
-                if(!entity.position) entity.position = {x:0,y:0,z:0};
+                Systems.movement.setEntity(entity);
             }
+        },
+        setEntity:(entity:GraphNode) => {
+            if(!('mass' in entity)) entity.mass = 1;
+            if(!('fixed' in entity)) entity.fixed = false;
+            if(!entity.force) entity.force = {x:0,y:0,z:0};
+            if(!('mass' in entity)) entity.mass = 1;
+            if(!('gravity' in entity)) entity.gravity = -9.81; //m/s^2 on earth
+            if(!entity.acceleration) entity.acceleration = {x:0,y:0,z:0};
+            if(!entity.velocity) entity.velocity = {x:0,y:0,z:0};
+            if(!entity.position) entity.position = {x:0,y:0,z:0};
         },
         operator:(self, origin, entities:{[key:string]:Entity})=>{
             let now = performance.now();
@@ -800,6 +883,7 @@ export const Systems = {
                     if(entity.velocity.z) entity.position.z += entity.velocity.z*timeStep;
                 }
             }
+            return entities;
         }
     } as SystemProps,
     //materials:{} as SystemProps, //
