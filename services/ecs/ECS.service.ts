@@ -648,12 +648,16 @@ export const Systems = {
                 z:v1.x*v2.y-v1.y*v2.x
             };
         },
-        nearestNeighborSearch(entities:{[key:string]:Entity}, isWithinRadius:number=10) {
+        nearestNeighborSearch(
+            entities:{[key:string]:Entity}, 
+            isWithinRadius:number=1000000000000000
+        ) {
     
             var tree = {};;
     
             for(const key in entities){
                 let newnode =  {
+                    tag:key,
                     position: undefined,
                     neighbors: []
                 };
@@ -669,11 +673,13 @@ export const Systems = {
                     var dist = Systems.collision.distance(tree[i].position,tree[j].position);
                     if(dist < isWithinRadius){
                         var newNeighbori = {
+                            tag:j,
                             position: entities[j].position,
                             dist
                         };
                         tree[i].neighbors.push(newNeighbori);
                         var newNeighborj = {
+                            tag:j,
                             position: entities[i].position,
                             dist
                         };
@@ -684,6 +690,246 @@ export const Systems = {
             }
     
             return tree;
+        },
+        //dynamic AABB trees or octrees
+        generateBoundingVolumeTree(
+            entities:{[key:string]:Entity}, 
+            mode:'octree'|'aabb'='octree', 
+            withinRadius:number=1000000000000000,
+            minEntities:number=3 //keep dividing until only this many entities are contained in the smallest bounding volume
+        ) {
+            
+            /*
+            How to make dynamic bounding volume tree:
+            1. Find the bounding volume of all of the objects combined.
+            2. Now subdivide bounding volumes by whatever magnitude until you have groups of 2-5 objects closest to each other.
+            3. Use box collision checks on the tree to find the best candidates to search for collisions
+            */
+
+            let dynamicBoundingVolumeTree = {
+                proto:{
+                    parent:undefined,
+                    children:{} as any,
+                    entities:{} as {[key:string]:Entity},
+                    collisionType:"box",
+                    collisionRadius: 1, 
+                    collisionBoundsScale: {x:1,y:1,z:1}, //radius of bounding box
+                    position:{x:0,y:0,z:0} //center of bounds
+                },
+                tree:{} //head will be a hard copy of the prototype and so on
+            };
+
+            let maxX, maxY, maxZ;
+            let minX = 0, minY = 0, minZ = 0;
+            let positions = {};
+            let minRadius = withinRadius;
+
+            for(const key in entities) {
+                const body = entities[key];
+
+                let xx = body.position.x+body.collisionRadius*body.collisionBoundsScale.x;
+                let yy = body.position.y+body.collisionRadius*body.collisionBoundsScale.y;
+                let zz = body.position.z+body.collisionRadius*body.collisionBoundsScale.z;
+
+                if(maxX < xx) maxX = xx;
+                if(minX > xx) minX = xx;
+                if(maxY < yy) maxY = yy;
+                if(minY > yy) minY = yy;
+                if(maxZ < zz) maxZ = zz;
+                if(minZ > zz) minZ = zz;
+
+                if(minRadius > body.collisionRadius) minRadius = body.collisionRadius;
+
+                positions[key] = body.position;
+
+            };
+
+            let head = JSON.parse(JSON.stringify(dynamicBoundingVolumeTree.proto));
+
+            let boxpos = {x:(maxX+minX)*0.5,y:(maxY+minY)*0.5,z:(maxZ+minZ)*0.5}
+            let boxbounds = {x:maxX-boxpos.x,y:maxY-boxpos.y,z:maxZ-boxpos.z};
+            
+            head.position = boxpos;
+            head.collisionBoundsScale = boxbounds; //radius to centers of each sides i.e. distance from center
+
+            head.entities = entities;
+            
+            dynamicBoundingVolumeTree.tree = head;
+
+            minRadius *= 2;
+
+            if(mode === 'octree') { //octrees
+                function genOct(parentPos,halfbounds) { //return center positions of child octree cubes, radius = parent half radius
+                    let oct1 = {x:parentPos.x+halfbounds.x,y:parentPos.y+halfbounds.y,z:parentPos.z+halfbounds.z}; //+x+y+z
+                    let oct2 = {x:parentPos.x-halfbounds.x,y:parentPos.y+halfbounds.y,z:parentPos.z+halfbounds.z}; //-x+y+z
+                    let oct3 = {x:parentPos.x+halfbounds.x,y:parentPos.y-halfbounds.y,z:parentPos.z+halfbounds.z}; //+x-y+z
+                    let oct4 = {x:parentPos.x+halfbounds.x,y:parentPos.y+halfbounds.y,z:parentPos.z-halfbounds.z}; //+x+y-z
+                    let oct5 = {x:parentPos.x-halfbounds.x,y:parentPos.y-halfbounds.y,z:parentPos.z+halfbounds.z}; //-x-y+z
+                    let oct6 = {x:parentPos.x-halfbounds.x,y:parentPos.y+halfbounds.y,z:parentPos.z-halfbounds.z}; //-x+y-z
+                    let oct7 = {x:parentPos.x+halfbounds.x,y:parentPos.y-halfbounds.y,z:parentPos.z-halfbounds.z}; //+x-y-z
+                    let oct8 = {x:parentPos.x-halfbounds.x,y:parentPos.y-halfbounds.y,z:parentPos.z-halfbounds.z}; //-x-y-z
+
+                    return [oct1,oct2,oct3,oct4,oct5,oct6,oct7,oct8];
+                }
+
+                function genOctTree(head) {           
+                    let halfbounds = {
+                        x:head.collisionBoundsScale.x*0.5,
+                        y:head.collisionBoundsScale.y*0.5,
+                        z:head.collisionBoundsScale.z*0.5
+                    };     
+                    let octPos = genOct(head.position,halfbounds);
+                    let check = Object.assign({},head.bodies);
+                    for(let i = 0; i < 8; i++) {
+                        let octquadrant = Object.assign(
+                            JSON.parse(JSON.stringify(dynamicBoundingVolumeTree.proto)),
+                            {position:octPos[i],collisionBoundsScale:halfbounds}
+                        );
+                        octquadrant.parent = head;
+                        //now check if any of the bodies are within these and eliminate from the check array
+                        for(const j in check) {
+                            let collided = Systems.collision.collisionCheck(check[j],octquadrant);
+                            if(collided) {
+                                octquadrant.entities[j] = check[j];
+                                delete check[j];
+                            }
+                        } //recursively check each oct for entities until only minEntities entities are contained, discount smaller volumes
+                        if(Object.keys(octquadrant.entities).length > minEntities-1) {
+                            head.children[i] = octquadrant;
+                            octquadrant.parent = head;
+                            if(Object.keys(octquadrant.entities).length > minEntities && octquadrant.collisionRadius*0.5 > minRadius) {
+                                genOctTree(octquadrant);
+                            }
+                        }
+                    }
+                }
+
+                genOctTree(head);
+                
+                return head;
+            }
+            else { //dynamic AABB trees
+
+                /**
+                 *  -------
+                 * |   o   |
+                 * |  o    |
+                 * |o   o  |
+                 * |   o   |
+                 * |      o|
+                 *  -------
+                 * 
+                 * Model: Bound all of the particles by nearest neighbors
+                 *        Now bound the bounding boxes by nearest 3 bounding boxes
+                 *        Continue until only 2 bounding boxes returned. Bound to head box containing all boxes.
+                 * 
+                */
+                let tree = Systems.collision.nearestNeighborSearch(positions, withinRadius);
+
+                let keys = Object.keys(tree);
+
+                let tag = keys[Math.floor(Math.random()*keys.length)]; //beginning with random node
+                let searching = true; 
+                let count = 0;
+
+                let genBoundingBoxLevel = (tree,volumes) => {
+                    let newVolumes = {};
+                    let foundidxs = {};
+                    let treekeys = Object.keys(tree);
+                    while(searching && (count < treekeys.length)) { 
+                        let node = tree[tag]; 
+                        let i = 0; 
+                        let j = 0;
+
+                        //starting position 
+                        let ux = positions[node.tag].x-volumes[node.tag].collisionBoundsScale.x, 
+                            uy = positions[node.tag].y-volumes[node.tag].collisionBoundsScale.y, 
+                            uz = positions[node.tag].z-volumes[node.tag].collisionBoundsScale.z, 
+                            mx = positions[node.tag].x+volumes[node.tag].collisionBoundsScale.x, 
+                            my = positions[node.tag].y+volumes[node.tag].collisionBoundsScale.y, 
+                            mz = positions[node.tag].z+volumes[node.tag].collisionBoundsScale.z;
+
+                        let newvolume = JSON.parse(JSON.stringify(dynamicBoundingVolumeTree.proto));
+                        newvolume.tag = `bound${Math.floor(Math.random()*1000000000000000)}`;
+
+                        newvolume.children[node.tag] = volumes[node.tag];
+                        newvolume.bodies[node.tag] = entities[node.tag];
+                        volumes[node.tag].parent = newvolume;
+                        foundidxs[node.tag] = true; //remove added neighbors from candidate search for bounding boxes (till none left to search = move onto next layer of boxes)
+                        i++; j++;
+
+                        let nkeys = Object.keys(node.neighbors);
+
+                        while(i < nkeys.length && j < 3) { //make a box around the first 3 unchecked nearest neighbors 
+                            if(foundidxs[node.neighbors[i].tag]) { i++; continue; }
+
+                            let uxn = positions[node.neighbors[i].tag].x-volumes[node.neighbors[i].tag].collisionBoundsScale.x, 
+                                uyn = positions[node.neighbors[i].tag].y-volumes[node.neighbors[i].tag].collisionBoundsScale.y, 
+                                uzn = positions[node.neighbors[i].tag].z-volumes[node.neighbors[i].tag].collisionBoundsScale.z, 
+                                mxn = positions[node.neighbors[i].tag].x+volumes[node.neighbors[i].tag].collisionBoundsScale.x, 
+                                myn = positions[node.neighbors[i].tag].y+volumes[node.neighbors[i].tag].collisionBoundsScale.y, 
+                                mzn = positions[node.neighbors[i].tag].z+volumes[node.neighbors[i].tag].collisionBoundsScale.z;
+
+                            if(ux > uxn) ux = uxn;
+                            if(mx < mxn) mx = mxn;
+                            if(uy > uyn) uy = uyn;
+                            if(my < myn) my = myn;
+                            if(uz > uzn) uz = uzn;
+                            if(mz < mzn) mz = mzn;
+
+                            newvolume.children[node.neighbors[i].tag] = volumes[node.neighbors[i].tag];
+                            newvolume.entities[node.neighbors[i].tag] = entities[node.neighbors[i].tag];
+                            volumes[node.neighbors[i].tag].parent = newvolume;
+                            foundidxs[node.neighbors[i].tag] = true; //remove added neighbors from candidate search for bounding boxes (till none left to search = move onto next layer of boxes)
+                            i++; j++;
+                        }
+
+                        let pos = {x:(mx+ux)*0.5,y:(my+uy)*0.5,z:(mz+uz)*0.5};
+                        let bounds = {x:mx-pos.x,y:my-pos.y,z:mz-pos.z};
+
+                        newvolume.position = pos;
+                        newvolume.collisionBoundsScale = bounds;
+                        if(newvolume.bodies.length === 1) newvolume = node; //just forego the bounding volume if not bounding more than one node
+                        
+                        newVolumes[newvolume.tag] = newvolume;
+                        
+                        //now find the next not-found neighbor
+                        while(i < node.neighbors.length) {
+                            if(!foundidxs[node.neighbors[i].tag]) break;
+                            i++;
+                        }
+
+                        // then walk to the nearest unchecked node and make a box around the next 2 or 3 nearest neighbors
+                        // then continue till you run out of nodes to check. Should be left with a bounding tree with larger to smaller boxes
+                        // smallest nodes (the bodies) should be parented to their bounding boxes and so on afterward.
+
+                        if(i < node.neighbors.length) {
+                            tag = node.neighbors[i].tag; //set the next node index to the unchecked node
+                        } else if(Object.keys(foundidxs).length < Object.keys(tree).length) { tag = keys[0]; } //else just jump back to zero and keep looking
+                        else searching = false; //no more to search
+                        
+                        count++;
+                    }
+
+                    return newVolumes;
+                }
+
+                //generate the largest bounding box level
+                let result = genBoundingBoxLevel(tree,entities);
+
+                // first result will be a list of volumes around each set of nearest 3 neighbors
+                
+                while(Object.keys(result).length > 2) { //and as long as we have enough volumes to bound, keep bounding each set of volumes into larger volumes
+                    let nextTree = Systems.collision.nearestNeighborSearch(result,withinRadius);
+                    result = genBoundingBoxLevel(nextTree,result);
+                }
+
+                head.children = result; //that should parent the final bounding boxes to the main box
+
+                head.children.forEach((n) => {n.parent = head;})
+
+                return head;
+            }
         }
     } as SystemProps,
     collider:{ //this resolves collisions to update movement vectors
