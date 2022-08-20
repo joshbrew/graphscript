@@ -1048,9 +1048,12 @@ export const Systems = {
             if(idx === 3) idx = 'w'; //wat
 
             if(body1.velocity[idx] >= 0) { //move the particle away to resolve the overlap
-                body1.position[idx] -= box.collisionRadius*box.collisionBoundsScale[idx]; 
+                if(negate) body1.position[idx] += box.collisionRadius*box.collisionBoundsScale[idx]; 
+                else body1.position[idx] -= box.collisionRadius*box.collisionBoundsScale[idx]; 
             } else {
-                body1.position[idx] += box.collisionRadius*box.collisionBoundsScale[idx]; 
+                if(negate)body1.position[idx] -= box.collisionRadius*box.collisionBoundsScale[idx]; 
+                else body1.position[idx] += box.collisionRadius*box.collisionBoundsScale[idx]; 
+                
             }
 
             body1.velocity[idx] = -body1.velocity[idx]*body1.restitution; //Reverse velocity
