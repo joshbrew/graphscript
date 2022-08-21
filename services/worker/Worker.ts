@@ -2,7 +2,7 @@
 
 //functionality
 import { WorkerService } from './Worker.service';
-import { GPUService } from '../gpu/GPU.service';
+//import { GPUService } from '../gpu/GPU.service';
 import { proxyWorkerRoutes } from './ProxyListener';
 import { workerCanvasRoutes } from './WorkerCanvas';
 import { unsafeRoutes } from '../unsafe/Unsafe.service';
@@ -16,7 +16,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
     (self as any).SERVICE = new WorkerService({
         routes:[
             (self as any).SERVICE,
-            GPUService,
+            //GPUService,
             proxyWorkerRoutes,
             workerCanvasRoutes,
             ECSService,
