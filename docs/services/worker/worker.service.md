@@ -22,7 +22,9 @@ type WorkerRoute = {
 To use the worker service:
 ```ts
 
-import {WorkerService, gsworker} from 'graphscript' //the gsworker is our default worker you can customize to handle most functionality you'd want, incl gpujs and canvases
+import {WorkerService} from 'graphscript' 
+
+import gsworker from 'graphscript/dist/Worker' //This is the default worker which is set up with a worker service to send/receive messages, plus unsafeservice to write data and functions arbitrarily to build single file pipelines
 
 type WorkerProps = {
     worker:WorkerInfo,

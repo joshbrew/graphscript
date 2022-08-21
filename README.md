@@ -19,7 +19,7 @@ For node.js
 Core only (only core classes plus unsafe and ECS services which are minimal) ~120kb dist
 `npm i graphscript-core`
 
-For additional services (currently just the gpu.js service)
+For additional services (currently gpu.js service and the compiled worker dataurl as `gsworker` (or use `graphscript/dist/Worker`))
 `npm i graphscript-services`
 
 # READMEs:
