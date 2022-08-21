@@ -11,7 +11,7 @@ export { DOMElement, addCustomElement } from './services/dom/DOMElement'
 
 export * from './services/e2ee/E2EE.service'
 
-export * from './services/gpu/GPU.service'
+//export * from './services/gpu/GPU.service'
 
 export * from './services/http/HTTP.browser'
 
