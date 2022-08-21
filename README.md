@@ -1,14 +1,6 @@
 
 # graphscript
 
-`npm i graphscript`
-
-For node.js
-`npm i graphscript-node`
-
-For additional services (currently just the gpu.js service)
-`npm i graphscript-services`
-
 ![graphscript-status](https://img.shields.io/npm/v/graphscript.svg) 
 ![graphscript-downloads](https://img.shields.io/npm/dt/graphscript.svg)
 ![graphscript-l](https://img.shields.io/npm/l/graphscript)
@@ -19,6 +11,16 @@ For happy code!
 </p>
 
 
+`npm i graphscript`
+
+For node.js
+`npm i graphscript-node`
+
+Core only (only core classes plus unsafe and ECS services which are minimal) ~120kb dist
+`npm i graphscript-core`
+
+For additional services (currently just the gpu.js service)
+`npm i graphscript-services`
 
 # READMEs:
 
