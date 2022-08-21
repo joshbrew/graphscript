@@ -11,10 +11,10 @@ For happy code!
 </p>
 
 
-`npm i graphscript`
+`npm i graphscript` ~210kb dist
 
 For node.js
-`npm i graphscript-node`
+`npm i graphscript-node` ~260kb dist
 
 Core only (only core classes plus unsafe and ECS services which are minimal) ~120kb dist
 `npm i graphscript-core`
