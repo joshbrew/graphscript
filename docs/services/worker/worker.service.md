@@ -93,7 +93,7 @@ This is an incredibly powerful feature set, use threads for any and all heavy co
 
 ## Canvas Threading Example
 
-OffscreenCanvases allow multithreaded draw calls, this easily extends to libraries like ThreeJS or BabylonJS. We even included a nifty proxy event listener for mouse events, which you can extend to support more if you see the `eventHandlers` import that lists supported key events.
+OffscreenCanvases allow multithreaded draw calls, this easily extends to libraries like ThreeJS or BabylonJS. We even included a nifty proxy event listener for mouse events, which you can extend to support more if you see the `eventHandlers` import that lists supported key events. It automaticall detects resize events as well and sends the new clientHeight/clientWidth, which you can fix or make stretch using CSS rules (shown below);
 
 Main
 ```ts
