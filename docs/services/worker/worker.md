@@ -6,22 +6,17 @@ e.g. worker.ts
 ```ts
 
 //functionality
-import { WorkerService } from './Worker.service';
-import { GPUService } from '../gpu/GPU.service';
-import { proxyWorkerRoutes } from './ProxyListener';
-import { workerCanvasRoutes } from './WorkerCanvas';
-import { unsafeRoutes } from '../unsafe/Unsafe.service';
+import { WorkerService, workerCanvasRoutes, unsafeRoutes } from 'graphscript';
+//import { GPUService } from 'graphscript-services';
 
 //wonder if we can have a scheme to dynamic import within the services? e.g. to bring in node-only or browser-only services without additional workers
 
 declare var WorkerGlobalScope;
 
 if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-    (self as any).SERVICE = new WorkerService({
+    const worker = new WorkerService({
         routes:[
-            (self as any).SERVICE,
-            GPUService,
-            proxyWorkerRoutes,
+            //GPUService,
             workerCanvasRoutes,
             unsafeRoutes //allows dynamic route loading
         ],

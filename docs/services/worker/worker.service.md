@@ -22,7 +22,7 @@ type WorkerRoute = {
 To use the worker service:
 ```ts
 
-import {WorkerService} from 'graphscript' 
+import {WorkerService, canvasWorkerRoutes} from 'graphscript' 
 
 import gsworker from 'graphscript/dist/Worker' //This is the default worker which is set up with a worker service to send/receive messages, plus unsafeservice to write data and functions arbitrarily to build single file pipelines
 
@@ -51,7 +51,7 @@ type WorkerInfo = {
 //import worker from 'graphscript' //default worker
 import worker from './worker.ts' //this will compile with tinybuild
 
-const workers = new WorkerService();
+const workers = new WorkerService({routes:[canvasWorkerRoutes]});
 
 let worker1 = workers.addWorker({url:worker});
 let worker2 = workers.addWorker({url:worker});
@@ -88,3 +88,110 @@ worker1.post('add1',3);
 You can use `workers.transferClass` to transfer class methods, but note that if it is extending another class it will error unless the extended class already exists on the receiving thread.
 
 This is an incredibly powerful feature set, use threads for any and all heavy computations, they can even run fetch and server APIs on independent scopes, but note that the memory pool is shared with the main thread unlike child processes in node.
+
+
+
+## Canvas Threading Example
+
+OffscreenCanvases allow multithreaded draw calls, this easily extends to libraries like ThreeJS or BabylonJS. We even included a nifty proxy event listener for mouse events, which you can extend to support more if you see the `eventHandlers` import that lists supported key events.
+
+Main
+```ts
+import {
+    Router,
+    WorkerService,
+    DOMService,
+    workerCanvasRoutes,
+} from '../../index'//'graphscript'
+import { ElementProps } from 'graphscript/dist/services/dom/types/element';
+
+import gsworker from './worker'
+
+const workers = new WorkerService();
+
+const router = new Router([
+    DOMService,
+    workers,
+    workerCanvasRoutes
+]);
+
+console.log(router)
+
+let ret = router.load({
+    'main':{
+        tagName:'div',
+        children:{
+            'div':{
+                tagName:'div',
+                innerText:'Multithreaded canvases!'
+            } as ElementProps,
+            'canvas':{
+                tagName:'canvas',
+                style:{width:'100%',height:'100%'},
+                onrender:(elm,info)=>{
+                    const renderer = workers.addWorker({url:gsworker});
+                    info.worker = renderer;
+
+                    //console.log(renderer);
+
+                    if(renderer)
+                        router.run(
+                            'transferCanvas', 
+                            renderer.worker, 
+                            {
+                                canvas:elm,
+                                context:'2d',
+                                _id:elm.id,
+                                init:(self,canvas,context)=>{
+                                    canvas.addEventListener('mousedown',(ev)=>{
+                                        console.log('clicked!', ev, canvas);
+                                    })
+                                },
+                                draw:(self:any,canvas:any,context:CanvasRenderingContext2D)=>{
+                                    context.clearRect(0,0,canvas.width, canvas.height);
+                                    
+                                    context.fillStyle = `rgb(0,${Math.sin(Date.now()*0.001)*255},${Math.cos(Date.now()*0.001)*255})`;
+                                    context.fillRect(0,0,canvas.width,canvas.height);
+                                }
+                            }
+                        );
+                },
+                onremove:(elm,info)=>{
+                    workers.terminate(info.worker._id);
+                }        
+            } as ElementProps      
+        } 
+    } as ElementProps
+});
+
+//console.log(ret)
+```
+
+Worker:
+```ts
+import { 
+    WorkerService, 
+    unsafeRoutes, 
+    workerCanvasRoutes,
+     //GPUService 
+} from '../../index'/////"../../GraphServiceRouter/index";//from 'graphscript'
+
+
+declare var WorkerGlobalScope;
+
+if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
+    const worker = new WorkerService({
+        routes:[
+            //GPUService as any,
+            workerCanvasRoutes,
+            unsafeRoutes //allows dynamic route loading
+        ],
+        includeClassName:false
+    });
+
+    console.log(worker)
+}
+
+export default self as any;
+
+```
