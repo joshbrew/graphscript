@@ -43,6 +43,11 @@ let ret = router.load({
                                 canvas:elm,
                                 context:'2d',
                                 _id:elm.id,
+                                init:(self,canvas,context)=>{
+                                    canvas.addEventListener('mousedown',(ev)=>{
+                                        console.log('clicked!', ev, canvas);
+                                    })
+                                },
                                 draw:(self:any,canvas:any,context:CanvasRenderingContext2D)=>{
                                     context.clearRect(0,0,canvas.width, canvas.height);
                                     

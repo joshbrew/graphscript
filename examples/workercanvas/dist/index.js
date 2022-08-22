@@ -6319,6 +6319,11 @@
                   canvas: elm,
                   context: "2d",
                   _id: elm.id,
+                  init: (self2, canvas, context) => {
+                    canvas.addEventListener("mousedown", (ev) => {
+                      console.log("clicked!", ev, canvas);
+                    });
+                  },
                   draw: (self2, canvas, context) => {
                     context.clearRect(0, 0, canvas.width, canvas.height);
                     context.fillStyle = `rgb(0,${Math.sin(Date.now() * 1e-3) * 255},${Math.cos(Date.now() * 1e-3) * 255})`;
