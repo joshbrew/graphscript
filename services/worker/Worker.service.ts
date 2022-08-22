@@ -99,6 +99,8 @@ export class WorkerService extends Service {
                     }
                 }
             }
+
+            return rt;
         }
     }
 

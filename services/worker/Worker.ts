@@ -3,7 +3,6 @@
 //functionality
 import { WorkerService } from './Worker.service';
 //import { GPUService } from '../gpu/GPU.service';
-import { proxyWorkerRoutes } from './ProxyListener';
 import { workerCanvasRoutes } from './WorkerCanvas';
 import { unsafeRoutes } from '../unsafe/Unsafe.service';
 import { ECSService } from '../ecs/ECS.service';
@@ -17,7 +16,6 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         routes:[
             (self as any).SERVICE,
             //GPUService,
-            proxyWorkerRoutes,
             workerCanvasRoutes,
             ECSService,
             unsafeRoutes //allows dynamic route loading

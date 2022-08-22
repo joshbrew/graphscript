@@ -75,39 +75,37 @@ const mouseEventHandler = makeSendPropertiesHandler([
     }
   }
 
-
+export const eventHandlers = { //you can register more event handlers in this object
+  contextmenu: preventDefaultHandler,
+  mousedown: mouseEventHandler,
+  mousemove: mouseEventHandler,
+  mouseup: mouseEventHandler,
+  pointerdown: mouseEventHandler,
+  pointermove: mouseEventHandler,
+  pointerup: mouseEventHandler,
+  touchstart: touchEventHandler,
+  touchmove: touchEventHandler,
+  touchend: touchEventHandler,
+  wheel: wheelEventHandler,
+  keydown: filteredKeydownEventHandler,
+};
 
   //do this on main thread
-export function initProxyElement(element, worker) {
+export function initProxyElement(element, worker, id) {
 
-    const eventHandlers = {
-        contextmenu: preventDefaultHandler,
-        mousedown: mouseEventHandler,
-        mousemove: mouseEventHandler,
-        mouseup: mouseEventHandler,
-        pointerdown: mouseEventHandler,
-        pointermove: mouseEventHandler,
-        pointerup: mouseEventHandler,
-        touchstart: touchEventHandler,
-        touchmove: touchEventHandler,
-        touchend: touchEventHandler,
-        wheel: wheelEventHandler,
-        keydown: filteredKeydownEventHandler,
-    };
-
-    const id = 'proxy'+Math.floor(Math.random()*10000);
+    if( !id ) id = 'proxy'+Math.floor(Math.random()*1000000000000000);
 
     const sendEvent = (data) => {
-      worker.postMessage({route:'proxyHandler',args:[data,id]}); //for use with our service syntax
+      worker.postMessage({route:'handleProxyEvent',args:[data,id]}); //for use with our service syntax
     };
 
     // register an id
-    worker.postMessage({route:'makeProxy', args:id})
+    //worker.postMessage({route:'makeProxy', args:id})
 
     let entries = Object.entries(eventHandlers);
     
     for (const [eventName, handler] of entries) {
-      element.addEventListener(eventName, function(event) {
+      element.addEventListener(eventName, function(event) { //add all of the event listeners we care about
         handler(event, sendEvent);
       });
     }
@@ -172,13 +170,15 @@ export class EventDispatcher {
 		}
 	}
 
-	dispatchEvent( event ) {
+	dispatchEvent( event, target ) {
 		if ( this._listeners === undefined ) return;
 		const listeners = this._listeners;
 		const listenerArray = listeners[ event.type ];
 		if ( listenerArray !== undefined ) {
-			event.target = this;
-			// Make a copy, in case listeners are removed while iterating.
+      if(!target)
+  			event.target = this;
+			else event.target = target;
+        // Make a copy, in case listeners are removed while iterating.
 			const array = listenerArray.slice( 0 );
 			for ( let i = 0, l = array.length; i < l; i ++ ) {
 				array[ i ].call( this, event );
@@ -188,101 +188,142 @@ export class EventDispatcher {
 	}
 }
 
+function noop() {
+};
 /////////////https://threejsfundamentals.org/threejs/lessons/threejs-offscreencanvas.html
-export class ElementProxyReceiver extends EventDispatcher {
+export class ElementProxyReceiver extends EventDispatcher  {
 
-  style:any;
+  _listeners:any = {};
+  proxied:any;
+  style:any = {};
   width:any;
   left:any;
   right:any;
   top:any;
   height:any;
 
-    constructor() {
-        super();
-        // because OrbitControls try to set style.touchAction;
-        this.style = {};
-    }
-    get clientWidth() {
-        return this.width;
-    }
-    get clientHeight() {
-        return this.height;
-    }
-    // OrbitControls call these as of r132. Maybe we should implement them
-    setPointerCapture() {}
+  constructor() {
+    super();
+    // because OrbitControls try to set style.touchAction;
+    this.style = {};
+  }
+  get clientWidth() {
+      return this.width;
+  }
+  get clientHeight() {
+      return this.height;
+  }
+  // OrbitControls call these as of r132. Maybe we should implement them
+  setPointerCapture = () => {}
 
-    releasePointerCapture() {}
+  releasePointerCapture = () => {}
 
-    getBoundingClientRect() {
-        return {
-            left: this.left,
-            top: this.top,
-            width: this.width,
-            height: this.height,
-            right: this.left + this.width,
-            bottom: this.top + this.height,
-        };
-    }
+  getBoundingClientRect = () => {
+      return {
+          left: this.left,
+          top: this.top,
+          width: this.width,
+          height: this.height,
+          right: this.left + this.width,
+          bottom: this.top + this.height,
+      };
+  }
 
-    handleEvent(data) {
-        if (data.type === 'size') {
-            this.left = data.left;
-            this.top = data.top;
-            this.width = data.width;
-            this.height = data.height;
-            return;
-        }
-        data.preventDefault = function noop() {
-        };
-        data.stopPropagation = function noop() {
-        };
-        this.dispatchEvent(data);
-    }
+  handleEvent = (data) => {
+      if (data.type === 'size') {
+          this.left = data.left;
+          this.top = data.top;
+          this.width = data.width;
+          this.height = data.height;
 
-    focus() {}
+          if(typeof this.proxied === 'object') {
+            this.proxied.width = this.width;
+            this.proxied.height = this.height;
+          }
+
+          return;
+      }
+      data.preventDefault = noop;
+      data.stopPropagation = noop;
+      this.dispatchEvent(data, this.proxied);
+  }
+
+  focus() {}
+
 }
 
 /////////////https://threejsfundamentals.org/threejs/lessons/threejs-offscreencanvas.html
 export class ProxyManager {
 
-    id:any;
-    targets:any;
+    targets:any={};
 
     constructor() {
-      this.id = 'proxy'+Math.floor(Math.random()*10000);
-      this.targets = {};
-      this.handleEvent = this.handleEvent.bind(this);
+      if(!globalThis.document) globalThis.document = {} as any; //threejs hack for workers
     }
 
-    makeProxy(id) {        
-        if(!id) id = `proxyReceiver${Math.floor(Math.random()*1000000000000)}`
-        const proxy = new ElementProxyReceiver();
-        this.targets[id] = proxy;
+    makeProxy = (id, addTo) => {    //addTo installs the desirable functions to the object you want     
+        if(!id) id = `proxyReceiver${Math.floor(Math.random()*1000000000000000)}`;
+        
+        let proxy;
+        if(this.targets[id]) proxy = this.targets[id];
+        else {
+          proxy = new ElementProxyReceiver();
+          this.targets[id] = proxy;
+        }
+        if(typeof addTo === 'object') {
+          addTo.proxy = proxy;
+          proxy.proxied = addTo;
+          addTo.addEventListener = proxy.addEventListener.bind(proxy);
+          addTo.removeEventListener = proxy.removeEventListener.bind(proxy);
+          addTo.handleEvent = proxy.handleEvent.bind(proxy);
+          addTo.dispatchEvent = proxy.dispatchEvent.bind(proxy);
+        }
     }
 
-    getProxy(id) {
+    getProxy = (id) => {
       return this.targets[id];
     }
 
-    handleEvent(data,id) {
-      this.targets[id].handleEvent(data);
+    handleEvent = (data,id) => {
+      if(this.targets[id]) {
+        this.targets[id].handleEvent(data);
+        //console.log(this.targets[id],data)
+        return true;
+      }
+      return undefined;
     }
 }
 
 
-//just load these into the worker service front and back
-export const proxyWorkerRoutes = {
+//just load these into the worker service front and back. These are integrated in the worker canvas routes as well
+export const proxyElementWorkerRoutes = {
     initProxyElement:initProxyElement,
-    makeProxy:(self,origin,id) => {
-        if(!self.graph.PROXYELEMENTS) self.graph.PROXYELEMENTS = new ProxyManager();
+    makeProxy:(self, origin, id, elm?) => {
+        if(!self.graph.ProxyManager) self.graph.ProxyManager = new ProxyManager();
 
-        self.graph.PROXYELEMENTS.makeProxy(id);
+        self.graph.ProxyManager.makeProxy(id, elm);
 
         return id;
     },
-    handleProxyEvent:(self,origin,data,id)=>{
-        self.graph.PROXYELEMENTS.handleEvent(data,id);
-        return id;
+    handleProxyEvent:(self, origin, data, id)=>{
+      if(!self.graph.ProxyManager) self.graph.ProxyManager = new ProxyManager();
+      if(self.graph.ProxyManager.handleEvent(data, id)) return data;
     }
 } 
+
+
+//how to use
+
+/*
+  Frontend:
+
+    let id = canvas.id;
+
+    service.run('initProxyElement',[HTMLElement, worker, id])
+
+  Backend worker:
+    service.run('makeProxy', [id, offscreen]) //now install addEventListener etc to the offscreen canvas and it can now proxy html mouse events
+
+    offscreen.addEventListener('mousedown',(ev)=>{ ... })
+
+*/

@@ -81,7 +81,6 @@ export class DOMService extends Service {
 
     customRoutes:ServiceOptions["customRoutes"] = {
         'dom':(r:DOMServiceRoute|any, route:string, routes:DOMRoutes|any) => {
-
             // console.log(r)
             if(r.template) { //assume its a component node
                 if(!r.tag) r.tag = route;
@@ -112,9 +111,9 @@ export class DOMService extends Service {
     }
 
     constructor(options?:ServiceOptions,parentNode?:HTMLElement,interpreters?:{[key:string]:(template:string,options:ComponentProps) => void}) {
-            super({props:options.props,name:options.name ? options.name : `dom${Math.floor(Math.random()*1000000000000000)}`});
+            super({props:options?.props,name:options?.name ? options.name : `dom${Math.floor(Math.random()*1000000000000000)}`});
             
-            if(options.parentNode) parentNode = options.parentNode;
+            if(options?.parentNode) parentNode = options.parentNode;
             if(typeof parentNode === 'string') parentNode = document.getElementById(parentNode);
             if(parentNode instanceof HTMLElement) this.parentNode = parentNode;
 

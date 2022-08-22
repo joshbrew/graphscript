@@ -61,8 +61,8 @@ export class Router { //instead of extending acyclicgraph or service again we ar
         linkServices:boolean=true,
         includeClassName:boolean=true,
         routeFormat:string='.',
-        customRoutes:ServiceOptions["customRoutes"],
-        customChildren:ServiceOptions["customChildren"]
+        customRoutes?:ServiceOptions["customRoutes"],
+        customChildren?:ServiceOptions["customChildren"]
     ) => { //load a service class instance or service prototoype class
         if(!(service instanceof Graph) && typeof service === 'function')    //class
         {   
@@ -84,13 +84,13 @@ export class Router { //instead of extending acyclicgraph or service again we ar
             } else this.services[service.constructor.name] = service; 
         }
         
-        this.service.load(service, includeClassName, routeFormat, customRoutes, customChildren);
+        let loaded = this.service.load(service, includeClassName, routeFormat, customRoutes, customChildren);
         
         if(linkServices) {
             this.syncServices();
         }
 
-        return this.services[service.name];
+        return loaded;
     }
 
     //tie node references together across service node maps so they can call each other's relative routes

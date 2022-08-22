@@ -121,6 +121,12 @@ export class Service extends Graph {
         if(!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad)) return;
         if(this.firstLoad) this.firstLoad = false;
 
+        if(customRoutes) customRoutes = Object.assign(this.customRoutes,customRoutes);
+        else customRoutes = this.customRoutes;
+        if(customChildren) customChildren = Object.assign(this.customChildren,customChildren);
+
+        //console.log(routes, customRoutes)
+
         //console.log(this.routes);
         let service;
         let allRoutes = {};
