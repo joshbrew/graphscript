@@ -153,6 +153,9 @@ let ret = router.load({
                                     context.fillStyle = `rgb(0,${Math.sin(Date.now()*0.001)*255},${Math.cos(Date.now()*0.001)*255})`;
                                     context.fillRect(0,0,canvas.width,canvas.height);
                                 }
+                                //clear
+                                //update //e.g. update props between draw calls or call drawFrame manually
+                                //animating:false //can manually start the animation later
                             }
                         );
                 },
