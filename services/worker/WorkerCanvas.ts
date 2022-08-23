@@ -31,6 +31,7 @@ export type WorkerCanvasReceiveProps = { //defined in worker thread
 
 export type WorkerCanvasControls = {
     _id:string,
+    worker:Worker|MessagePort,
     draw:(props?:any)=>void,
     update:(props:{[key:string]:any})=>void,
     clear:()=>void,
@@ -93,6 +94,7 @@ export const workerCanvasRoutes = {
         //lets add some utilities to make it easy to update the thread
         const workercontrols = {
             _id:options._id,
+            worker,
             draw:(props?:any)=>{
                 worker.postMessage({route:'drawFrame',args:[options._id,props]});
             },
