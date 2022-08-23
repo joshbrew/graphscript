@@ -19,6 +19,8 @@ export type RouteProp = { //these are just multiple methods you can call on a ro
     aliases?:string[] 
 } & GraphNodeProperties
 
+export type Class = { new(...args: any[]): any; };
+
 export type Route = 
     GraphNode |
     GraphNodeProperties |
@@ -26,7 +28,7 @@ export type Route =
     OperatorType |
     ((...args)=>any|void) |
     { aliases?:string[] } & GraphNodeProperties |
-    RouteProp
+    RouteProp | Class | any
 
 export type Routes = { //same as the tree in the base acyclic graph but adds aliases and RouteProps handling
     [key:string]: Route

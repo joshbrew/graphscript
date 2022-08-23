@@ -2,6 +2,8 @@ import {
     WorkerService, 
     unsafeRoutes, 
     workerCanvasRoutes,
+    ECSService,
+    Systems
      //GPUService 
 } from '../../index'/////"../../GraphServiceRouter/index";//from 'graphscript'
 import { WorkerCanvasReceiveProps } from '../../services/worker/WorkerCanvas';
@@ -19,7 +21,8 @@ declare var WorkerGlobalScope;
 if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
     const worker = new WorkerService({
         routes:[
-            //GPUService as any,
+            //GPUService,
+            ECSService,
             unsafeRoutes, //allows dynamic route loading
             {
                 ...workerCanvasRoutes,
@@ -44,8 +47,11 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
                     return renderId;
                 }
             }
-        ]
+        ],
+        includeClassName:false
     });
+
+    worker.run('addSystems', Systems); //register desired entity component systems
 
     console.log(worker)
 }

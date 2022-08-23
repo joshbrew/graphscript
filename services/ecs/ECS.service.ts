@@ -8,15 +8,16 @@ import { Service, ServiceOptions, RouteProp, Routes } from '../Service';
 
 //ECS faq https://github.com/SanderMertens/ecs-faq
 
-export type EntityProps = boolean|{
+export type EntityProps = {
     components:{ //which systems should call these entities?
         [key:string]:any //use the system key as the key, value can be a boolean or an object with values etc. use however just helps filter entities
     },
 } & RouteProp | GraphNode
 
-export type SystemProps = boolean|(RouteProp & { 
+export type SystemProps = (RouteProp & { 
     operator:(self,origin,entities:{[key:string]:Entity})=>any,
-    setupEntities:(self:any,entities:{[key:string]:Entity})=>void
+    setupEntities:(self:any,entities:{[key:string]:Entity})=>{[key:string]:Entity},
+    setupEntity:(self:any,entity:Entity)=>Entity
 })|GraphNode
 
 export type Entity = {
@@ -27,7 +28,8 @@ export type Entity = {
 
 export type System = {
     operator:(self,origin,entities:{[key:string]:Entity})=>any,
-    setupEntities:(self:any,entities:{[key:string]:Entity})=>void
+    setupEntities:(self:any,entities:{[key:string]:Entity})=>{[key:string]:Entity},
+    setupEntity:(self:any,entity:Entity)=>Entity
 } & GraphNode;
 
 export type ECSOptions = {
@@ -50,65 +52,27 @@ export class ECSService extends Service {
         [key:string]: System
     } = {}
 
+    map = new Map<string,{[key:string]:Entity}>(); //maps of filtered entity objects based on system tag. e.g. this.maps.get('boids')['entity3'];
+
     order:string[]=[] //order of execution for component updates
 
     animating=true;
 
-    constructor(options:ECSOptions) {
+    constructor(options?:ECSOptions) {
         super(options);
         if(this.routes) this.load(this.routes);
 
-        if(options.entities)
-            for(const key in options.entities) {
-                if(typeof options.entities[key] !== 'object') {
-                    options.entities[key] = this.nodes.get(key);
-                    if(!options.entities[key]) {
-                        delete options.entities[key];
-                        continue;
-                    }
-                }
-                if(typeof options.entities[key] === 'object') {
-                    if(!(options.entities[key] as any).components) {
-                        (options.entities[key] as any).components = {}
-                    }
-                }
-            }
-
         if(options.systems)
             for(const key in options.systems) {
-                if(typeof options.systems[key] !== 'object') {
-                    options.systems[key] = this.nodes.get(key);
-                    if(!options.systems[key]) {
-                        delete options.systems[key];
-                        continue;
-                    }
-                }
-                if(typeof options.systems[key] === 'object') {
-                    
-                }
+                this.addSystem(options.systems[key], undefined, undefined, options.order);
             }
 
-        if(!options.order) options.order = Object.keys(options.systems);
-        this.order = options.order;
-
-        this.load(this.entities);
-
-        for(const key in options.entities) {
-            options.entities = this.nodes.get((options.entities[key] as any).tag);
+        if(options.entities) {
+            for(const key in options.entities) {
+                this.addEntity(options.entities[key],options.entities[key].components)
+            }
         }
 
-        this.entities = options.entities as any;
-
-        this.load(this.systems);
-
-        this.order.forEach((key) => {
-            options.systems[key] = this.nodes.get((options.systems[key] as any).tag);
-            if((options.systems[key] as any)?.setupEntities) {
-                (options.systems[key] as any).setupEntities((options.systems[key] as any),this.entities);
-            }
-        });
-
-        this.systems = options.systems as any;
     }
 
     //e.g. run on requestAnimationFrame
@@ -122,10 +86,7 @@ export class ECSService extends Service {
             if(this.systems[k]) {
                 if(filter) {
                     (this.systems[k] as GraphNode)._run(this.systems[k] as GraphNode,this,
-                        this.filterObject(this.entities,(key,entity)=>{ 
-                            if(entity.components[k])
-                                return true;
-                        }));
+                        this.mapped.get(k));
                 } else (this.systems[k] as GraphNode)._run(this.systems[k] as GraphNode,this,this.entities); //unfiltered, it's faster to handle this in the system with lots of entities
             }
         });
@@ -150,13 +111,72 @@ export class ECSService extends Service {
     }
 
     filterObject(o:{[key:string]:any},filter:(string,any)=>boolean|undefined) {
-        return Object.fromEntries(Object.entries(o).filter(([key,value]) => {filter(key,value)}));
+        return Object.fromEntries(
+                    Object.entries(o)
+                        .filter(([key,value]) => { filter(key,value)} )
+                    );
+    }
+
+    //buffer numbers stored on entities, including iterable objects or arrays. 
+    //  It's much faster to buffer and use transfer than sending the objects, 
+    //    and even faster to store everything in typed arrays altogether and use entities to index array locations
+    bufferEntityProps = (
+        entities:{[key:string]:Entity}, 
+        property:string, //e.g. 'position'
+        keys?:string[]|{[key:string]:any}, //e,g, ['x','y','z'] or {x,y,z}, pass an array to ensure the correct order
+        buffer?:ArrayBufferLike //if you pass a premade buffer, make sure it's the right size
+    ) => {
+        if(!Array.isArray(keys) && typeof keys === 'object') 
+            keys = Object.keys(keys); 
+        if(!buffer) {
+            if(keys)
+                buffer = new Float32Array(Object.keys(entities).length*keys.length)
+            else buffer = new Float32Array(Object.keys(entities).length);
+        }
+        let i = 0;
+        for(const key in entities) {
+           if(entities[key][property]) {
+            if(keys) {
+                for(let j = 0; j < keys.length; j++) {
+                    buffer[i] = entities[key][property][keys[j]];
+                    i++;
+                }
+            }
+            else buffer[i] = entities[key][property];
+           }
+        }   
+
+        return buffer;
+    }
+
+    addEntities( //add multiple entities from the same prototype;
+        prototype:EntityProps,
+        components:{[key:string]:any}={},
+        count:number=1,
+    ) {
+        let i = 0;
+
+        let newEntities = {};
+
+        while(i < count) {
+            let entity = this.addEntity(
+                prototype,
+                components
+            );
+
+            newEntities[entity.tag] = entity;
+
+            i++;
+        }
+
+        return newEntities;
     }
 
     addEntity(
-        prototype:{[key:string]:any}={},
+        prototype:EntityProps={} as EntityProps,
         components:{[key:string]:any}={}
     ) {
+        if(!prototype) return;
         const entity = this.recursivelyAssign({},prototype);
         entity.components = components;
         if(Object.keys(components).length === 0) {
@@ -166,73 +186,97 @@ export class ECSService extends Service {
         }
         if(entity.tag && this.entities[entity.tag]) {
             entity.tag = `entity${Math.floor(Math.random()*1000000000000000)}`;
-        }
+        } else if(!entity.tag) entity.tag = `entity${Math.floor(Math.random()*1000000000000000)}`;
 
         this.load({[entity.tag]:entity});
         this.entities[entity.tag] = this.nodes.get(entity.tag) as any;
 
-        this.setupEntities({[entity.tag]:this.entities[entity.tag]});
+        this.setupEntity(this.entities[entity.tag])
 
         return this.entities[entity.tag];
     }
 
-    addSystem(
-        prototype:{[key:string]:any}={}, 
-        setup:(self:any,entities:any)=>any,
-        update:(self:any,entities:any)=>any
+    addSystems(
+        systems:{[key:string]:SystemProps}={}, 
+        order?:string[]    
     ) {
+        for(const key in systems) {
+            this.addSystem(systems[key],undefined,undefined,order)
+        }
+
+        return this.systems;
+    }
+
+    addSystem(
+        prototype:SystemProps, 
+        setup?:(self:any,entities:any)=>any,
+        update?:(self:any,entities:any)=>any,
+        order?:string[]
+    ) {
+        if(!prototype) return;
         const system = this.recursivelyAssign({},prototype);
-        system.setupEntities = setup;
-        system.operator = update;
+        if(setup) system.setupEntities = setup;
+        if(update) system.operator = update;
         if(system.tag && this.systems[system.tag]) {
             system.tag = `system${Math.floor(Math.random()*1000000000000000)}`;
-        }
+        } else if(!system.tag) system.tag = `system${Math.floor(Math.random()*1000000000000000)}`;
 
         this.load({[system.tag]:system});
 
         this.systems[system.tag] = this.nodes.get(system.tag) as any;
+        if(!this.map.get(system.tag)) this.map.set(system.tag, {}); //map to track local entities
 
-        if(system?.setupEntities) {
-            system.setupEntities(system,this.filterObject(this.entities,(key,v)=>{if(v.components[system.tag]) return true;}))
+        if(this.systems[system.tag]?.setupEntities) {
+            let filtered = this.filterObject(this.entities,(key,v)=>{if(v.components[system.tag]) return true;});
+            this.systems[system.tag].setupEntities(system,filtered);
+            Object.assign(this.map.get(system.tag),filtered);
         } 
+
+        if(!order) this.order.push(system.tag);
+        else this.order = order;
 
         return this.systems[system.tag];
     }
 
-    setupEntities(entities?:any,system?:any) {
-        if(system) {
-            if(!system?.setupEntities) return;
-            if(entities) system.setupEntities(system,this.filterObject(entities,(k,v)=>{if(v.components[system.tag]) return true;}));
-            else system.setupEntities(system,this.filterObject(this.entities,(k,v)=>{if(v.components[system.tag]) return true;}))
-        } else {
-            for(const key in this.systems) {
-                if(!(this.systems[key] as any)?.setupEntities) continue;
-                if(entities) (this.systems[key] as any).setupEntities(this.systems[key],this.filterObject(entities,(k,v)=>{if(v.components[key]) return true;}));
-                else (this.systems[key] as any).setupEntities(this.systems[key],this.filterObject(this.entities,(k,v)=>{if(v.components[key]) return true;}))
+    setupEntity(entity:Entity) {
+        if(entity?.components) {
+            for(const key in entity.components) {
+                if(this.systems[key]) {
+                    this.systems[key].setupEntity(this.systems[key], entity);
+                    this.map.get(key)[entity.tag] = entity;
+                }
             }
         }
     }
 
     removeEntity(tag:string) {
+        const entity = this.entities[tag];
+        for(const key in entity.components) {
+            if (this.map.get(key)) delete this.map.get(key)[entity.tag];
+        }
         delete this.entities[tag];
         return this.remove(tag);
     }
 
     removeSystem(tag:string) {
         delete this.systems[tag];
+        this.map.delete(tag);
+        this.order.splice(this.order.indexOf(tag),1);
         return this.remove(tag);
     }
 
 
     routes:Routes = {
-        update:this.update,
-        animate:this.animate,
-        start:this.start,
-        stop:this.stop,
+        animateEntities:this.animate,
+        startEntityAnimation:this.start,
+        stopEntityAnimation:this.stop,
         addEntity:this.addEntity,
         addSystem:this.addSystem,
         removeEntity:this.removeEntity,
-        removeSystem:this.removeSystem
+        removeSystem:this.removeSystem,
+        setupEntity:this.setupEntity,
+        addEntities:this.addEntities,
+        filterObject:this.filterObject
     }
 }
 

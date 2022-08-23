@@ -11,16 +11,20 @@ export const Systems = {
                 const entity = entities[key];
                 if(entity.components) if(!entity.components[self.tag]) continue;
 
-                Systems.collision.setEntity(entity);
+                Systems.collision.setupEntity(self, entity);
             }
+
+            return entities;
         },
-        setEntity:(entity:Entity) => {
+        setupEntity:(self, entity:Entity) => {
             if(!('collisionEnabled' in entity)) entity.collisionEnabled = true;
             if(!entity.collisionType) entity.collisionType = 'sphere' //sphere, box, point
             if(!entity.collisionRadius) entity.collisionRadius = 1;
             if(!entity.collisionBoundsScale) entity.collisionBoundsScale = {x:1,y:1,z:1}; //x,y,z dimensions * collision radius, e.g. a box has +x and -x bounds based on these constraints
             if(!entity.colliding) entity.colliding = {} //key:boolean
             if(!entity.position) entity.position = { x:0, y:0, z:0 };
+
+            return entity;
         },
         operator:(
             self,
@@ -699,25 +703,39 @@ export const Systems = {
     },// as SystemProps,
     collider:{ //this resolves collisions to update movement vectors
         lastTime:performance.now(),
-        useBoundingBox:true,
-        collisionBounds:{bot:0,top:100,left:0,right:100,front:0,back:100},
         setupEntities:(self,entities:{[key:string]:Entity})=>{
             for(const key in entities) {
                 const entity = entities[key];
                 if(entity.components) if(!entity.components[self.tag]) continue;
-                self.setEntity(entity);
+                self.setupEntity(self,entity);
             }
-        },
-        setEntity:(entity:Entity) => {
-            Systems.collision.setEntity(entity);
-            Systems.movement.setEntity(entity); 
 
+            return entities;
+        },
+        setupEntity:(self,entity:Entity) => {
+            if(!('collisionEnabled' in entity)) Systems.collision.setupEntity(Systems.collision,entity);
+            if(!('position' in entity)) Systems.movement.setupEntity(Systems.movement,entity); 
             if(!('restitution' in entity)) entity.restitution = 1;
+            if(!('useBoundingBox' in entity)) entity.useBoundingBox = true;
+            if(!('boundingBox' in entity)) 
+                entity.boundingBox = {
+                    bot:0,
+                    top:100,
+                    left:0,
+                    right:100,
+                    front:0,
+                    back:100
+                };
+        
+            return entity;
         },
         operator:(self, origin, entities:{[key:string]:Entity})=>{
             for(const key in entities) {
                 const entity1 = entities[key];
                 if(entity1.components) if(!entity1.components[self.tag] || !entity1.collisionEnabled) continue;
+                
+                if(entity1.useBoundingBox) self.checkBoundingBox(self,entity1); 
+                
                 if(!entity1.collisionEnabled) continue;
 
                 //This does (crappy) sphere collisions, for box collisions we need to reflect based on which cube surfaces are colliding
@@ -753,7 +771,6 @@ export const Systems = {
                     delete entity1.colliding[entity2.tag];
                 }
 
-                if(self.useBoundingBox) self.checkBoundingBox(self,entity1);
 
             }
             return entities;
@@ -764,33 +781,33 @@ export const Systems = {
             const xsize = entity.collisionRadius*entity.collisionBoundsScale.x;
             const zsize = entity.collisionRadius*entity.collisionBoundsScale.z;
 
-            if ((entity.position.y - ysize) <= self.collisionBounds.top) {
+            if ((entity.position.y - ysize) <= entity.boundingBox.top) {
                 entity.velocity.y *= entity.restitution;
-                entity.position.y = self.collisionBounds.top + ysize;
+                entity.position.y = entity.boundingBox.top + ysize;
             }
-            if ((entity.position.y + ysize) >= self.collisionBounds.bot) {
+            if ((entity.position.y + ysize) >= entity.boundingBox.bot) {
                 entity.velocity.y *= entity.restitution;
-                entity.position.y = self.collisionBounds.bot - ysize;
+                entity.position.y = entity.boundingBox.bot - ysize;
             }
 
-            if (entity.position.x - xsize <= self.collisionBounds.left) {
+            if (entity.position.x - xsize <= entity.boundingBox.left) {
                 entity.velocity.x *= entity.restitution;
-                entity.position.x = self.collisionBounds.left + xsize;
+                entity.position.x = entity.boundingBox.left + xsize;
             }
 
-            if (entity.position.x + xsize >= self.collisionBounds.right) {
+            if (entity.position.x + xsize >= entity.boundingBox.right) {
                 entity.velocity.x *= entity.restitution;
-                entity.position.x = self.collisionBounds.right - xsize;
+                entity.position.x = entity.boundingBox.right - xsize;
             }
 
-            if (entity.position.z - zsize <= self.collisionBounds.front) {
+            if (entity.position.z - zsize <= entity.boundingBox.front) {
                 entity.velocity.z *= entity.restitution;
-                entity.position.z = self.collisionBounds.front + zsize;
+                entity.position.z = entity.boundingBox.front + zsize;
             }
 
-            if (entity.position.z + zsize >= self.collisionBounds.back) {
+            if (entity.position.z + zsize >= entity.boundingBox.back) {
                 entity.velocity.z *= entity.restitution;
-                entity.position.z = self.collisionBounds.back - zsize;
+                entity.position.z = entity.boundingBox.back - zsize;
             }
         },
         //needs improvement
@@ -922,14 +939,17 @@ export const Systems = {
                 const entity = entities[key];
                 if(entity.components) if(!entity.components[self.tag]) continue;
 
-                Systems.nbody.setEntity(entity);
+                self.setupEntity(self,entity);
             }
+
+            return entities;
         },
-        setEntity:(entity:Entity) => {
-            Systems.collision.setEntity(entity);
-            Systems.movement.setEntity(entity);
+        setupEntity:(self, entity:Entity) => {
+            Systems.collider.setupEntity(Systems.collider,entity);
 
             entity.isAttractor = true;
+        
+            return entity;
         },
         operator:(self,origin,entities:{[key:string]:Entity})=>{
             for(const key in entities) {
@@ -991,36 +1011,52 @@ export const Systems = {
     },// as SystemProps,
     boid:{ //boids, updates velocities based on a particle rule subset
         lastTime:performance.now(),
-        setupEntities:(entities:any)=>{
+        setupEntities:(self:typeof Systems['boid'],entities:any)=>{
             for(const key in entities) {
                 const entity = entities[key];
 
-                Systems.collision.setEntity(entity);
-                Systems.movement.setEntity(entity);
-
-                if(!entity.boid) { //boid rules
-                    entity.boid = {
-                        cohesion:0.00001,
-                        separation:0.0001,
-                        alignment:0.006,
-                        swirl:{x:0.5,y:0.5,z:0.5,mul:0.006},
-                        attractor:{x:0.5,y:0.5,z:0.5,mul:0.002},
-                        useCohesion:true,
-                        useSeparation:true,
-                        useAlignment:true,
-                        useSwirl:true,
-                        useAttractor:true,
-                        //useAvoidance:true,
-                        //avoidance:{groups:[],mul:0.1},
-                        useAttraction:false, //particles can attract each other on a curve
-                        groupRadius:200,
-                        groupSize:10,
-                        searchLimit:10
-                    }
-                }
+                self.setupEntity(self,entity);
             }
+
+            return entities;
         },
-        operator:(self,origin,entities:{[key:string]:Entity})=>{
+        setupEntity:(self:typeof Systems['boid'],entity:Entity) => {
+            if(!entity.position) {
+                Systems.collider.setupEntity(Systems.collider, entity);
+            }
+            entity.collisionEnabled = false; //use the bounding box but not the collisions by default (faster)
+
+            if(!entity.position.x && !entity.position.y && !entity.position.z) { //randomize starting positions
+                entity.position.x = Math.random()*entity.boundingBox.right;
+                entity.position.y = Math.random()*entity.boundingBox.back;
+                entity.position.z = Math.random()*entity.boundingBox.top;
+            }
+
+            if(!entity.boid) { //boid rules
+                entity.boid = {
+                    cohesion:0.00001,
+                    separation:0.0001,
+                    alignment:0.006,
+                    swirl:{x:0.5,y:0.5,z:0.5,mul:0.006},
+                    attractor:{x:0.5,y:0.5,z:0.5,mul:0.002},
+                    useCohesion:true,
+                    useSeparation:true,
+                    useAlignment:true,
+                    useSwirl:true,
+                    useAttractor:true,
+                    //useAvoidance:true,
+                    //avoidance:{groups:[],mul:0.1},
+                    useAttraction:false, //particles can attract each other on a curve
+                    //group:0 //search groups to split boids groups (todo)
+                    groupRadius:200,
+                    groupSize:5, //number of boids checked per frame to update velocities
+                    searchLimit:10
+                };
+            }  
+
+            return entity;
+        },
+        operator:(self:typeof Systems['boid'],origin,entities:{[key:string]:Entity})=>{
             
             let now = performance.now();
             let timeStep = now - self.lastTime
@@ -1199,15 +1235,15 @@ export const Systems = {
     },// as SystemProps,
     movement:{ //update force/acceleration/velocity/position vectors
         lastTime:performance.now(),
-        setupEntities:(self,entities:{[key:string]:Entity})=>{ //install needed data structures to entities
+        setupEntities:(self:typeof Systems['movement'],entities:{[key:string]:Entity})=>{ //install needed data structures to entities
             for(const key in entities) {
                 const entity = entities[key];
                 if(entity.components) if(!entity.components[self.tag]) continue;
 
-                Systems.movement.setEntity(entity);
+                self.setupEntity(self,entity);
             }
         },
-        setEntity:(entity:Entity) => {
+        setupEntity:(self:typeof Systems['movement'], entity:Entity) => {
             if(!('mass' in entity)) entity.mass = 1;
             if(!('fixed' in entity)) entity.fixed = false;
             if(!entity.force) entity.force = {x:0,y:0,z:0};
@@ -1216,8 +1252,10 @@ export const Systems = {
             if(!entity.acceleration) entity.acceleration = {x:0,y:0,z:0};
             if(!entity.velocity) entity.velocity = {x:0,y:0,z:0};
             if(!entity.position) entity.position = {x:0,y:0,z:0};
+
+            return entity;
         },
-        operator:(self, origin, entities:{[key:string]:Entity})=>{
+        operator:(self:typeof Systems['movement'], origin, entities:{[key:string]:Entity})=>{
             let now = performance.now();
             let timeStep = (now - self.lastTime) * 0.001;
             self.lastTime = now; 
