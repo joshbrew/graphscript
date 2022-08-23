@@ -6,6 +6,7 @@ export const Systems = {
     collision:{ //e.g. https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
         //Better implementation: https://wickedengine.net/2020/04/26/capsule-collision-detection/, should adapt for gpujs or something for mass physics
         //lastTime:performance.now(),
+        tag:'collision',
         setupEntities:(self,entities:{[key:string]:Entity})=>{
             for(const key in entities) {
                 const entity = entities[key];
@@ -702,6 +703,7 @@ export const Systems = {
         }
     },// as SystemProps,
     collider:{ //this resolves collisions to update movement vectors
+        tag:'collider',
         lastTime:performance.now(),
         setupEntities:(self,entities:{[key:string]:Entity})=>{
             for(const key in entities) {
@@ -932,6 +934,7 @@ export const Systems = {
         }
     },// as SystemProps,
     nbody:{ //gravitational attraction
+        tag:'nbody',
         lastTime:performance.now(),
         G:0.00000000006674, //Newton's gravitational constant
         setupEntities:(self,entities:{[key:string]:Entity})=>{
@@ -1010,6 +1013,7 @@ export const Systems = {
         }
     },// as SystemProps,
     boid:{ //boids, updates velocities based on a particle rule subset
+        tag:'boid',
         lastTime:performance.now(),
         setupEntities:(self:typeof Systems['boid'],entities:any)=>{
             for(const key in entities) {
@@ -1234,6 +1238,7 @@ export const Systems = {
         }
     },// as SystemProps,
     movement:{ //update force/acceleration/velocity/position vectors
+        tag:'movement',
         lastTime:performance.now(),
         setupEntities:(self:typeof Systems['movement'],entities:{[key:string]:Entity})=>{ //install needed data structures to entities
             for(const key in entities) {

@@ -48,7 +48,8 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
                 }
             }
         ],
-        includeClassName:false
+        includeClassName:false,
+        loadDefaultRoutes:true //to get subscribe and subscribeNode routes
     });
 
     worker.run('addSystems', Systems); //register desired entity component systems

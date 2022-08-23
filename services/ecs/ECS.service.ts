@@ -8,6 +8,17 @@ import { Service, ServiceOptions, RouteProp, Routes } from '../Service';
 
 //ECS faq https://github.com/SanderMertens/ecs-faq
 
+export type TypedArray =
+| Int8Array
+| Uint8Array
+| Uint8ClampedArray
+| Int16Array
+| Uint16Array
+| Int32Array
+| Uint32Array
+| Float32Array
+| Float64Array;
+
 export type EntityProps = {
     components:{ //which systems should call these entities?
         [key:string]:any //use the system key as the key, value can be a boolean or an object with values etc. use however just helps filter entities
@@ -118,9 +129,9 @@ export class ECSService extends Service {
     }
 
     //buffer numbers stored on entities, including iterable objects or arrays. 
-    //  It's much faster to buffer and use transfer than sending the objects, 
+    //  It's much faster to buffer and use transfer than sending the objects raw over threads as things are jsonified inbetween otherwise, 
     //    and even faster to store everything in typed arrays altogether and use entities to index array locations
-    bufferEntityProps = (
+    bufferValues = (
         entities:{[key:string]:Entity}, 
         property:string, //e.g. 'position'
         keys?:string[]|{[key:string]:any}, //e,g, ['x','y','z'] or {x,y,z}, pass an array to ensure the correct order
@@ -129,9 +140,16 @@ export class ECSService extends Service {
         if(!Array.isArray(keys) && typeof keys === 'object') 
             keys = Object.keys(keys); 
         if(!buffer) {
+            let entkeys = Object.keys(entities);
             if(keys)
-                buffer = new Float32Array(Object.keys(entities).length*keys.length)
-            else buffer = new Float32Array(Object.keys(entities).length);
+                buffer = new Float32Array(entkeys.length*keys.length)
+            else {
+                if(typeof entities[entkeys[0]][property] === 'object') {
+                    keys = Object.keys(entities[entkeys[0]][property]);
+                    buffer = new Float32Array(entkeys.length*keys.length);
+                }
+                else buffer = new Float32Array(entkeys.length);
+            }
         }
         let i = 0;
         for(const key in entities) {
@@ -142,11 +160,31 @@ export class ECSService extends Service {
                     i++;
                 }
             }
-            else buffer[i] = entities[key][property];
+            else {
+                buffer[i] = entities[key][property];
+                i++
+            }
            }
         }   
 
         return buffer;
+    }
+
+    //splice out a section of a typed array. If end is undefined we'll splice all values from the starting position to the end
+    //if you want to replace values, just use .set, this is for quickly removing values to trim arrays e.g. if an entity is popped
+    spliceTypedArray(arr:TypedArray,start:number,end?:number) {
+        let s = arr.subarray(0,start)
+        let e;
+        if(end) {
+            e = arr.subarray(end+1);
+        }
+
+        let n:TypedArray;
+        if(s.length > 0 || e?.length > 0) n = new (arr as any).constructor(s.length+e.length); //use the same constructor
+        if(s.length > 0) n.set(s);
+        if(e && e.length > 0) n.set(e,s.length);
+
+        return n;
     }
 
     addEntities( //add multiple entities from the same prototype;
@@ -185,7 +223,12 @@ export class ECSService extends Service {
             })
         }
         if(entity.tag && this.entities[entity.tag]) {
-            entity.tag = `entity${Math.floor(Math.random()*1000000000000000)}`;
+            let tag = entity.tag;
+            let i = 2;
+            while(this.systems[entity.tag]) {
+                entity.tag = `${tag}${i}`;
+                i++;
+            }
         } else if(!entity.tag) entity.tag = `entity${Math.floor(Math.random()*1000000000000000)}`;
 
         this.load({[entity.tag]:entity});
@@ -201,6 +244,7 @@ export class ECSService extends Service {
         order?:string[]    
     ) {
         for(const key in systems) {
+            systems[key].tag = key;
             this.addSystem(systems[key],undefined,undefined,order)
         }
 
@@ -218,7 +262,12 @@ export class ECSService extends Service {
         if(setup) system.setupEntities = setup;
         if(update) system.operator = update;
         if(system.tag && this.systems[system.tag]) {
-            system.tag = `system${Math.floor(Math.random()*1000000000000000)}`;
+            let tag = system.tag;
+            let i = 2;
+            while(this.systems[system.tag]) {
+                system.tag = `${tag}${i}`;
+                i++;
+            }
         } else if(!system.tag) system.tag = `system${Math.floor(Math.random()*1000000000000000)}`;
 
         this.load({[system.tag]:system});
@@ -276,7 +325,8 @@ export class ECSService extends Service {
         removeSystem:this.removeSystem,
         setupEntity:this.setupEntity,
         addEntities:this.addEntities,
-        filterObject:this.filterObject
+        filterObject:this.filterObject,
+        bufferValues:this.bufferValues
     }
 }
 

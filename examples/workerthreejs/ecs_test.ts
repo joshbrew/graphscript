@@ -35,6 +35,9 @@ let ret = router.load({
                 onrender:(elm,info)=>{
                     const renderer = workers.addWorker({url:gsworker}) as WorkerInfo;
                     const entities = workers.addWorker({url:gsworker}) as WorkerInfo;
+
+                    const portId = workers.establishMessageChannel(renderer.worker,entities.worker);
+
                     info.renderer = renderer;
                     info.entities = entities;
 
@@ -50,6 +53,9 @@ let ret = router.load({
                                 _id:elm.id,
                                 init:(self:WorkerCanvas,canvas,context)=>{
 
+                                },
+                                update:(self:WorkerCanvas,canvas,context,positions:Float32Array, start?:number)=>{
+                                    //update positions of particles based on input buffer, begin at start index if specified
                                 },
                                 draw:(self:WorkerCanvas,canvas:any,context:any)=>{
                                     
@@ -68,29 +74,51 @@ let ret = router.load({
                             },
                             'receiveThreeCanvas'
                         );
-                    }
 
-                    entities.post('addEntities',[
-                        {
-                            boundingBox:{
-                                bot:0,
-                                top:300,
-                                left:0,
-                                right:300,
-                                front:0,
-                                back:300  
+                        entities.post('addEntities',[
+                            {
+                                tag:'particle',
+                                boundingBox:{
+                                    bot:0,
+                                    top:300,
+                                    left:0,
+                                    right:300,
+                                    front:0,
+                                    back:300  
+                                }
+                            },
+                            {
+                                boid:true, //boid computation, disables collisions other than bounding box by default
+                                collision:false, //detect overlaps with sphere or box (todo: capsules)
+                                collider:true, //bounding box and collision system resolving,
+                                nbody:false, //gravitational math
+                                movement:true, //force -> accel -> velocity -> position updates
+                            },
+                            1000
+                        ]);
+
+                        workers.transferFunction(
+                            entities, 
+                            function bufferPositions(self,origin,entities) {
+                                return self.graph.run(
+                                    'bufferValues',
+                                    entities,
+                                    'position',
+                                    ['x','y','z'] //or for arrays could be the array values
+                                );
+                            } 
+                        )
+
+                        workers.transferFunction(
+                            renderer,
+                            function processForRender(self,origin,positions:Float32Array) {
+                                return positions;
                             }
-                        },
-                        {
-                            boid:true, //boid computation, disables collisions other than bounding box by default
-                            collision:false, //detect overlaps with sphere or box (todo: capsules)
-                            collider:true, //bounding box and collision system resolving,
-                            nbody:false, //gravitational math
-                            movement:true, //force -> accel -> velocity -> position updates
-                        },
-                        1000
-                
-                    ]);
+                        )
+
+                        entities.post('subscribe',['movement','bufferPositions']); //i/o subscription
+                        renderer.post('subscribeToWorker',['bufferPositions',portId,'processForRender']);
+                    }
                 },
                 onremove:(elm,info)=>{
                     workers.terminate(info.renderer._id);

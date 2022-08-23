@@ -1107,9 +1107,10 @@ export class GraphNode {
 
     
     //subscribe a node (that isn't a forward-passed child of this node) to run after this node 
-    subscribeNode = (node:GraphNode) => {
+    subscribeNode = (node:GraphNode|string) => {
+        if(typeof node === 'string') node = this.nodes.get(node) as GraphNode;
         if(node.tag) this.nodes.set(node.tag,node); //register the node on this node
-        return this.state.subscribeTrigger(this.tag,(res)=>{node._run(node, this, res);})
+        return this.state.subscribeTrigger(this.tag,(res)=>{(node as GraphNode)._run((node as GraphNode), this, res);})
     }
     
     //recursively print a snapshot reconstructible json hierarchy of the node and the children. 
@@ -1414,11 +1415,16 @@ export class Graph {
         }
     }
 
-    subscribe = (node:string|GraphNode,callback:(res:any)=>void) => {
+    subscribe = (
+        node:string|GraphNode,
+        callback:GraphNode|string|((res:any)=>void) //subscribe a callback or another node (pass a node or string in this case)
+    ) => {
         if(!callback) return;
-        if(node instanceof GraphNode) {
+        if(node instanceof GraphNode && typeof callback === 'function') {
             return node.subscribe(callback);
         }
+        else if(callback instanceof GraphNode || typeof callback === 'string')
+            return this.subscribeNode(node,callback)
         else if(typeof node == 'string') return this.state.subscribeTrigger(node,callback);
     }
 
