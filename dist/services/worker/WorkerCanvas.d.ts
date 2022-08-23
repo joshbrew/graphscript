@@ -24,6 +24,7 @@ export declare type WorkerCanvasReceiveProps = {
 };
 export declare type WorkerCanvasControls = {
     _id: string;
+    worker: Worker | MessagePort;
     draw: (props?: any) => void;
     update: (props: {
         [key: string]: any;
