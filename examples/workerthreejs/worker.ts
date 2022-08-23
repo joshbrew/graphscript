@@ -4,7 +4,7 @@ import {
     workerCanvasRoutes,
      //GPUService 
 } from '../../index'/////"../../GraphServiceRouter/index";//from 'graphscript'
-import { WorkerCanvas, WorkerCanvasReceiveProps } from '../../services/worker/WorkerCanvas';
+import { WorkerCanvasReceiveProps } from '../../services/worker/WorkerCanvas';
 
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
@@ -34,7 +34,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
                         PickHelper
                     }
 
-                    Object.assign(options, ThreeProps);
+                    Object.assign(options, ThreeProps); //install desired props to our canvas's 'self' reference
 
                     let renderId = self.graph.run('receiveCanvas', options); //the the base canvas tools do the rest, all ThreeJS tools are on self, for self contained ThreeJS renders
                     //you can use the canvas render loop by default, or don't provide a draw function and just use the init and the Three animate() callback
