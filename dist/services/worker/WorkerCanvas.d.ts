@@ -22,6 +22,18 @@ export declare type WorkerCanvasReceiveProps = {
     animating?: boolean;
     [key: string]: any;
 };
+export declare type WorkerCanvasControls = {
+    _id: string;
+    draw: (props?: any) => void;
+    update: (props: {
+        [key: string]: any;
+    }) => void;
+    clear: () => void;
+    init: () => void;
+    stop: () => void;
+    start: () => void;
+    set: (newDrawProps: WorkerCanvasReceiveProps) => void;
+};
 export declare type WorkerCanvas = {
     canvas: any;
     context?: CanvasRenderingContext2D | WebGL2RenderingContext | WebGLRenderingContext;
@@ -34,14 +46,15 @@ export declare type WorkerCanvas = {
     [key: string]: any;
 };
 export declare const workerCanvasRoutes: {
-    transferCanvas: (self: any, origin: any, worker: Worker | MessagePort, options: WorkerCanvasTransferProps, route?: string) => string;
+    transferCanvas: (self: any, origin: any, worker: Worker | MessagePort, options: WorkerCanvasTransferProps, route?: string) => WorkerCanvasControls;
     receiveCanvas: (self: any, origin: any, options: WorkerCanvasReceiveProps) => string;
-    setDraw: (self: any, origin: any, settings: WorkerCanvasReceiveProps) => string;
+    setDraw: (self: any, origin: any, settings: WorkerCanvasReceiveProps, _id?: string) => string;
     drawFrame: (self: any, origin: any, _id?: string, props?: {
         [key: string]: any;
     }) => string;
-    clearFrame: (self: any, origin: any, _id?: string, input?: any) => string;
-    runUpdate: (self: any, origin: any, _id?: string, input?: any) => string;
+    clearCanvas: (self: any, origin: any, _id?: string) => string;
+    initCanvas: (self: any, origin: any, _id?: string) => string;
+    updateCanvas: (self: any, origin: any, _id?: string, input?: any) => string;
     setProps: (self: any, origin: any, _id?: string, props?: {
         [key: string]: any;
     }) => string;

@@ -4,6 +4,7 @@ import {
     DOMService,
     workerCanvasRoutes,
     WorkerCanvas,
+    WorkerCanvasControls,
 } from '../../index'//'graphscript'
 import { ElementProps } from 'graphscript/dist/services/dom/types/element';
 
@@ -36,20 +37,20 @@ let ret = router.load({
 
                     //console.log(renderer);
 
-                    if(renderer)
-                        router.run(
+                    if(renderer) {
+                        const controls:WorkerCanvasControls = router.run(
                             'transferCanvas', 
                             renderer.worker, 
                             {
                                 canvas:elm,
                                 context:'2d',
                                 _id:elm.id,
-                                init:(self:WorkerCanvas,canvas,context)=>{
+                                init:(self:WorkerCanvas,canvas,context)=>{ //init called automatically before first draw
                                     canvas.addEventListener('mousedown',(ev)=>{
                                         console.log('clicked!', ev, canvas);
                                     })
                                 },
-                                draw:(self:WorkerCanvas,canvas:any,context:CanvasRenderingContext2D)=>{
+                                draw:(self:WorkerCanvas,canvas:any,context:CanvasRenderingContext2D)=>{ //render loop starts automatically
                                     context.clearRect(0,0,canvas.width, canvas.height);
                                     
                                     context.fillStyle = `rgb(0,${Math.sin(Date.now()*0.001)*255},${Math.cos(Date.now()*0.001)*255})`;
@@ -57,6 +58,7 @@ let ret = router.load({
                                 }
                             }
                         );
+                    }
                 },
                 onremove:(elm,info)=>{
                     workers.terminate(info.worker._id);

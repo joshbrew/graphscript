@@ -29,6 +29,16 @@ export type WorkerCanvasReceiveProps = { //defined in worker thread
     [key:string]:any
 }
 
+export type WorkerCanvasControls = {
+    _id:string,
+    draw:(props?:any)=>void,
+    update:(props:{[key:string]:any})=>void,
+    clear:()=>void,
+    init:()=>void,
+    stop:()=>void,
+    start:()=>void,
+    set:(newDrawProps:WorkerCanvasReceiveProps)=>void
+}
 export type WorkerCanvas = { //this is the object stored on the worker to track this canvas context 
     canvas:any, //OffscreenCanvas
     context?:CanvasRenderingContext2D|WebGL2RenderingContext|WebGLRenderingContext,
@@ -79,8 +89,34 @@ export const workerCanvasRoutes = {
         }
 
         worker.postMessage(message,[offscreen]);
+
+        //lets add some utilities to make it easy to update the thread
+        const workercontrols = {
+            _id:options._id,
+            draw:(props?:any)=>{
+                worker.postMessage({route:'drawFrame',args:[options._id,props]});
+            },
+            update:(props:{[key:string]:any})=>{
+                worker.postMessage({route:'updateCanvas',args:[options._id, props]})
+            },
+            clear:()=>{
+                worker.postMessage({route:'clearCanvas',args:options._id})
+            },
+            init:()=>{
+                worker.postMessage({route:'initCanvas',args:options._id});
+            },
+            stop:()=>{
+                worker.postMessage({route:'stopAnim',args:options._id})
+            },
+            start:()=>{
+                worker.postMessage({route:'startAnim',args:options._id})
+            },
+            set:(newDrawProps:WorkerCanvasReceiveProps)=>{
+                worker.postMessage({route:'setDraw',args:[newDrawProps,options._id]});
+            }
+        }
     
-        return options._id;
+        return workercontrols as WorkerCanvasControls;
     },
     receiveCanvas:(
         self,
@@ -139,16 +175,17 @@ export const workerCanvasRoutes = {
             }
         }
    
-
         return canvasOptions._id;
     },
     setDraw:(
         self, 
         origin, 
-        settings:WorkerCanvasReceiveProps
+        settings:WorkerCanvasReceiveProps,
+        _id?:string
     )=>{
         let canvasopts;
-        if(settings._id) canvasopts = self.graph.CANVASES?.[settings._id];
+        if(_id) canvasopts = self.graph.CANVASES?.[settings._id];
+        else if(settings._id) canvasopts = self.graph.CANVASES?.[settings._id];
         else canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
 
         if(canvasopts) {
@@ -197,18 +234,29 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    clearFrame:(self,origin,_id?:string,input?:any) => {
+    clearCanvas:(self,origin,_id?:string) => {
         let canvasopts;
         if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
         else canvasopts = self.graph.CANVASES?.[_id];
         
         if(canvasopts?.clear) {
-            canvasopts.clear(canvasopts,canvasopts.canvas,canvasopts.context,input);
+            canvasopts.clear(canvasopts,canvasopts.canvas,canvasopts.context);
             return _id;
         }
         return undefined;
     },
-    runUpdate:(self,origin,_id?:string,input?:any) => {
+    initCanvas:(self,origin,_id?:string) => {
+        let canvasopts;
+        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
+        else canvasopts = self.graph.CANVASES?.[_id];
+        
+        if(canvasopts?.init) {
+            canvasopts.init(canvasopts,canvasopts.canvas,canvasopts.context);
+            return _id;
+        }
+        return undefined;
+    },
+    updateCanvas:(self,origin,_id?:string,input?:any) => {
         let canvasopts;
         if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
         else canvasopts = self.graph.CANVASES?.[_id];

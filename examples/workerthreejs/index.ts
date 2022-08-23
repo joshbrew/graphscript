@@ -3,7 +3,8 @@ import {
     WorkerService,
     DOMService,
     workerCanvasRoutes,
-    WorkerCanvas
+    WorkerCanvas,
+    WorkerCanvasControls
 } from '../../index'//'graphscript'
 import { ElementProps } from 'graphscript/dist/services/dom/types/element';
 
@@ -36,8 +37,8 @@ let ret = router.load({
 
                     //console.log(renderer);
 
-                    if(renderer)
-                        router.run(
+                    if(renderer) {
+                        const controls:WorkerCanvasControls = router.run(
                             'transferCanvas', 
                             renderer.worker, 
                             {
@@ -199,6 +200,7 @@ let ret = router.load({
                             },
                             'receiveThreeCanvas'
                         );
+                    }
                 },
                 onremove:(elm,info)=>{
                     workers.terminate(info.worker._id);
