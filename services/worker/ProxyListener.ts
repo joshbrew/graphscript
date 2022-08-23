@@ -114,7 +114,7 @@ export function initProxyElement(element, worker, id) {
       
         const rect = element.getBoundingClientRect();
         sendEvent({
-          type: 'size',
+          type: 'resize',
           left: rect.left,
           top: rect.top,
           width: element.clientWidth,
@@ -171,6 +171,7 @@ export class EventDispatcher {
 	}
 
 	dispatchEvent( event, target ) {
+    //console.log(event,this._listeners);
 		if ( this._listeners === undefined ) return;
 		const listeners = this._listeners;
 		const listenerArray = listeners[ event.type ];
@@ -230,22 +231,22 @@ export class ElementProxyReceiver extends EventDispatcher  {
   }
 
   handleEvent = (data) => {
-      if (data.type === 'size') {
-          this.left = data.left;
-          this.top = data.top;
-          this.width = data.width;
-          this.height = data.height;
+    if (data.type === 'resize') {
+        this.left = data.left;
+        this.top = data.top;
+        this.width = data.width;
+        this.height = data.height;
 
-          if(typeof this.proxied === 'object') {
-            this.proxied.width = this.width;
-            this.proxied.height = this.height;
-          }
-
-          return;
-      }
-      data.preventDefault = noop;
-      data.stopPropagation = noop;
-      this.dispatchEvent(data, this.proxied);
+        if(typeof this.proxied === 'object') { //auto resize
+          this.proxied.width = this.width;
+          this.proxied.height = this.height;
+          this.proxied.clientWidth = this.width;
+          this.proxied.clientHeight = this.height;
+        }
+    }
+    data.preventDefault = noop;
+    data.stopPropagation = noop;
+    this.dispatchEvent(data, this.proxied);
   }
 
   focus() {}
@@ -261,7 +262,7 @@ export class ProxyManager {
       if(!globalThis.document) globalThis.document = {} as any; //threejs hack for workers
     }
 
-    makeProxy = (id, addTo) => {    //addTo installs the desirable functions to the object you want     
+    makeProxy = (id, addTo=undefined) => {    //addTo installs the desirable functions to the object you want     
         if(!id) id = `proxyReceiver${Math.floor(Math.random()*1000000000000000)}`;
         
         let proxy;
@@ -273,10 +274,26 @@ export class ProxyManager {
         if(typeof addTo === 'object') {
           addTo.proxy = proxy;
           proxy.proxied = addTo;
+
+          console.log(proxy, addTo);
+
+          addTo.style = proxy.style;
+          if(proxy.width) {
+            addTo.width = proxy.width;
+            addTo.clientWidth = proxy.width;
+          }
+          if(proxy.height) {
+            addTo.height = proxy.height;
+            addTo.clientHeight = proxy.height;
+          }
+          addTo.setPointerCapture = proxy.setPointerCapture.bind(proxy);
+          addTo.releasePointerCapture = proxy.releasePointerCapture.bind(proxy);
+          addTo.getBoundingClientRect = proxy.getBoundingClientRect.bind(proxy);
           addTo.addEventListener = proxy.addEventListener.bind(proxy);
           addTo.removeEventListener = proxy.removeEventListener.bind(proxy);
           addTo.handleEvent = proxy.handleEvent.bind(proxy);
           addTo.dispatchEvent = proxy.dispatchEvent.bind(proxy);
+          addTo.focus = proxy.focus.bind(proxy);
         }
     }
 
@@ -285,6 +302,7 @@ export class ProxyManager {
     }
 
     handleEvent = (data,id) => {
+      if(!this.targets[id]) this.makeProxy(id);
       if(this.targets[id]) {
         this.targets[id].handleEvent(data);
         //console.log(this.targets[id],data)

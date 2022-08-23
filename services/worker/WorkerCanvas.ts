@@ -3,6 +3,45 @@
 import { parseFunctionFromText } from "../../Graph";
 import { proxyElementWorkerRoutes } from "./ProxyListener";
 
+export type WorkerCanvasTransferProps = { //defined in main thread to send to worker
+    canvas:HTMLCanvasElement,  
+    context?:string, 
+    _id?:string,
+    draw?:string|((self:any,canvas:any,context:any)=>void),
+    update?:string|((self:any,canvas:any,context:any,input:any)=>void),
+    init?:string|((self,canvas:any,context:any)=>void),
+    clear?:string|((self,canvas:any,context:any)=>void),
+    animating?:boolean, //animation will start automatically, else you can call draw conditionally
+    [key:string]:any //any transferrable props you want to use in your animation
+}
+
+export type WorkerCanvasReceiveProps = { //defined in worker thread
+    canvas:any, //offscreen canvas
+    context:string|CanvasRenderingContext2D|WebGL2RenderingContext|WebGLRenderingContext,
+    _id?:string,
+    width?:number,
+    height?:number,
+    init?:string,
+    update?:string,
+    draw?:string,
+    clear?:string,
+    animating?:boolean,
+    [key:string]:any
+}
+
+export type WorkerCanvas = { //this is the object stored on the worker to track this canvas context 
+    canvas:any, //OffscreenCanvas
+    context?:CanvasRenderingContext2D|WebGL2RenderingContext|WebGLRenderingContext,
+    _id:string,
+    draw?:((self:WorkerCanvas,canvas:WorkerCanvas['canvas'],context:WorkerCanvas['context'])=>void), //runs in animation loop or on drawFrame calls
+    update?:((self:WorkerCanvas,canvas:WorkerCanvas['canvas'],context:WorkerCanvas['context'],input:any)=>void),
+    init?:((self:WorkerCanvas,canvas:WorkerCanvas['canvas'],context:WorkerCanvas['context'])=>void),
+    clear?:((self:WorkerCanvas,canvas:WorkerCanvas['canvas'],context:WorkerCanvas['context'])=>void),
+    animating:boolean, //animation will start automatically, else you can call draw conditionally
+    [key:string]:any //any transferrable props you want to use in your animation
+}
+
+
 //load on front and backend
 export const workerCanvasRoutes = {
     ...proxyElementWorkerRoutes,
@@ -10,23 +49,15 @@ export const workerCanvasRoutes = {
         self,
         origin,
         worker:Worker|MessagePort,
-        options:{
-            canvas:HTMLCanvasElement,  
-            context?:string, 
-            _id?:string,
-            draw?:string|((self:any,canvas:any,context:any)=>void),
-            update?:string|((self:any,canvas:any,context:any,input:any)=>void),
-            init?:string|((self,canvas:any,context:any)=>void),
-            clear?:string|((self,canvas:any,context:any)=>void),
-            animating?:boolean //animation will start automatically, else you can call draw conditionally
-        }
+        options:WorkerCanvasTransferProps,
+        route?:string //we can reroute from the default 'receiveCanvas' e.g. for other rendering init processes like in threejs
     ) => {
         if(!options) return undefined;
         if(!options._id) options._id = `canvas${Math.floor(Math.random()*1000000000000000)}`;
 
         let offscreen = (options.canvas as any).transferControlToOffscreen();
 
-        let message:any = {route:'receiveCanvas',args:{canvas:offscreen, context: options.context, _id:options._id}};
+        let message:any = {route:route ? route : 'receiveCanvas',args:{canvas:offscreen, context: options.context, _id:options._id}};
 
         self.graph.run('initProxyElement', options.canvas, worker, options._id); //initiate an element proxy
 
@@ -54,30 +85,15 @@ export const workerCanvasRoutes = {
     receiveCanvas:(
         self,
         origin, 
-        options:{
-            canvas:any,
-            context:string,
-            _id?:string,
-            width?:number,
-            height?:number,
-            init?:string,
-            update?:string,
-            draw?:string,
-            clear?:string,
-            animating?:boolean
-        }) => {
-        if(!self.graph.CANVASES) self.graph.CANVASES = {};
+        options:WorkerCanvasReceiveProps
+    ) => {
+        if(!self.graph.CANVASES) self.graph.CANVASES = {} as {[key:string]:WorkerCanvas};
 
-        let canvasOptions = {
-            _id:options._id ? options._id : `canvas${Math.floor(Math.random()*1000000000000000)}`, 
-            canvas:options.canvas, //offscreencanvas which renders to page when transfered from the html canvas 
-            context:options.context ? options.canvas.getContext(options.context) : undefined, //get the rendering context based on string passed
-            init:options.init,
-            update:options.update,
-            clear:options.clear,
-            draw:options.draw, 
-            animating:('animating' in options) ? options.animating : true
-        };
+        let canvasOptions = options;
+
+        options._id ? canvasOptions._id = options._id : canvasOptions._id = `canvas${Math.floor(Math.random()*1000000000000000)}`;
+        typeof options.context === 'string' ? canvasOptions.context = options.canvas.getContext(options.context) : canvasOptions.context = options.context; //get the rendering context based on string passed
+        ('animating' in options) ? canvasOptions.animating = options.animating : canvasOptions.animating = true;
 
         if(self.graph.CANVASES[canvasOptions._id]) {
             self.graph.run('setDraw',canvasOptions);
@@ -104,7 +120,11 @@ export const workerCanvasRoutes = {
             if(typeof canvasOptions.clear === 'string') {
                 canvasOptions.clear = parseFunctionFromText(canvasOptions.clear);
             }
-            if(typeof canvasOptions.draw === 'function') {
+
+            if(typeof canvasOptions.init === 'function') 
+                    (canvasOptions.init as any)(canvasOptions, canvasOptions.canvas,canvasOptions.context);
+
+            if(typeof canvasOptions.draw === 'function' && canvasOptions.animating) {
                 let draw = (s,canvas,context) => {            
                     if(s.animating) {
                         s.draw(s,canvas,context);
@@ -113,9 +133,6 @@ export const workerCanvasRoutes = {
                         });
                     }
                 }
-
-                if(typeof canvasOptions.init === 'function') 
-                    (canvasOptions.init as any)(canvasOptions, canvasOptions.canvas,canvasOptions.context);
                 
                 draw(canvasOptions, canvasOptions.canvas,canvasOptions.context);
             
@@ -128,17 +145,7 @@ export const workerCanvasRoutes = {
     setDraw:(
         self, 
         origin, 
-        settings:{
-            _id?:string, 
-            canvas?:any,
-            context?:string,
-            width?:number,
-            height?:number,
-            draw?:string|((self,canvas:any,context:any)=>void),
-            update?:string|((self,canvas:any,context:any,input:any)=>void),
-            init?:string|((self,canvas:any,context:any)=>void),
-            clear?:string|((self,canvas:any,context:any)=>void)
-        }
+        settings:WorkerCanvasReceiveProps
     )=>{
         let canvasopts;
         if(settings._id) canvasopts = self.graph.CANVASES?.[settings._id];
@@ -152,7 +159,9 @@ export const workerCanvasRoutes = {
                 self.graph.run('makeProxy', canvasopts._id, canvasopts.canvas);
                 //now the canvas can handle mouse and resize events, more can be implemented
             }
-            if(settings.context) canvasopts.context = canvasopts.canvas.getContext(settings.context);
+            if(typeof settings.context === 'string') canvasopts.context = canvasopts.canvas.getContext(settings.context);
+            else if(settings.context) canvasopts.context = settings.context;
+            
             if(settings.width) canvasopts.canvas.width = settings.width;
             if(settings.height) canvasopts.canvas.height = settings.height;
             if(typeof settings.draw === 'string') settings.draw = parseFunctionFromText(settings.draw);
@@ -221,7 +230,7 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    startAnim:(self, origin, _id?:string, draw?:string|((canvas:any,context:any)=>void))=>{ //run the draw function applied to the animation or provide a new one
+    startAnim:(self, origin, _id?:string, draw?:string|((self:any,canvas:any,context:any)=>void))=>{ //run the draw function applied to the animation or provide a new one
 
         let canvasopts;
         if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];

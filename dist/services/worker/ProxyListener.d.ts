@@ -52,7 +52,7 @@ export declare class ElementProxyReceiver extends EventDispatcher {
 export declare class ProxyManager {
     targets: any;
     constructor();
-    makeProxy: (id: any, addTo: any) => void;
+    makeProxy: (id: any, addTo?: any) => void;
     getProxy: (id: any) => any;
     handleEvent: (data: any, id: any) => boolean;
 }
