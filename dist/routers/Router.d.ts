@@ -15,7 +15,7 @@ export declare class Router {
     service: Service;
     nodes: Map<any, any>;
     run: (n: string | GraphNode, ...args: any[]) => any;
-    _run: (n: string | GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
+    _run: any;
     add: (n?: GraphNode | import("../Graph").GraphNodeProperties | import("../Graph").OperatorType | ((...args: any[]) => any)) => GraphNode | import("../Graph").GraphNodeProperties;
     remove: (n: string | GraphNode) => string | GraphNode;
     stopNode: (n: string | GraphNode) => void;

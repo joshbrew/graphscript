@@ -1,57 +1,3 @@
-// Fixed for bundled functions that may not have parentheses
-var ARGUMENT_NAMES = /([^,]*)/g;
-
-export function getFnParamInfo(fn):Map<string, any>{
-    var fstr = fn.toString();
-    const openPar = fstr.indexOf("(");
-    const closePar = fstr.indexOf(")");
-    const getFirstBracket = (str, offset = 0) => {
-      const fb = offset + str.indexOf("{");
-      if (fb < closePar && fb > openPar) {
-        return getFirstBracket(str.slice(fb), offset + fb);
-      } else
-        return fb;
-    };
-    const firstBracket = getFirstBracket(fstr);
-    let innerMatch;
-    if (firstBracket === -1 || closePar < firstBracket)
-      innerMatch = fstr.slice(fstr.indexOf("(") + 1, fstr.indexOf(")"));
-    else
-      innerMatch = fstr.match(/([a-zA-Z]\w*|\([a-zA-Z]\w*(,\s*[a-zA-Z]\w*)*\)) =>/)?.[1];
-
-    if(!innerMatch) 
-        return undefined;
-
-    const matches = innerMatch.match(ARGUMENT_NAMES).filter((e) => !!e);
-
-    const info = new Map()
-    matches.forEach(v => {
-        let [name, value] = v.split('=')
-        name = name.trim()
-        name = name.replace(/\d+$/, ""); // Account for bundling. RULE: No trailing numbers in argument names
-        const spread = name.includes('...')
-        name = name.replace("...", ""); // Remove spread operator
-
-        try {
-            if (name) info.set(name,  {
-              state: (0, eval)(`(${value})`),
-              spread
-            })
-        } catch (e) {
-            info.set(name,  {})
-            //console.warn(`Argument ${name} could be parsed for`, fn.toString());
-        }
-    })
-
-    return info
-}
-
-
-export function getFnParamNames(fn):string[]{ //https://stackoverflow.com/questions/9091838/get-function-parameter-names-for-interface-purposes
-    var fstr = fn.toString();
-    return fstr.match(/\(.*?\)/)[0].replace(/[()]/gi,'').replace(/\s/gi,'').split(',');
-}
-
 export function parseFunctionFromText(method='') {
     //Get the text inside of a function (regular or arrow);
     let getFunctionBody = (methodString) => {
@@ -100,8 +46,6 @@ export function parseFunctionFromText(method='') {
 //Joshua Brewster and Garrett Flynn AGPLv3.0
 
 export type OperatorType = ( //can be async
-    self:GraphNode,  //'this' node
-    origin:string|GraphNode|Graph, //origin node
     ...args:any //input arguments, e.g. output from another node
 )=>any|void
 
@@ -202,7 +146,7 @@ export const state = {
    * The methods of this class can be referenced in the operator after setup for more complex functionality
    * 
    * ```typescript
-   * const graph = new GraphNode({custom: 1, operator: (self, origin, input) => console.log(input, self.custom)});
+   * const graph = new GraphNode({custom: 1, operator: (input) => console.log(input, self.custom)});
    * ```
    */
 
@@ -400,28 +344,26 @@ export class GraphNode {
     }
     
     // I/O scheme for this node in the graph
-    operator:OperatorType = (self:GraphNode=this, origin:string|GraphNode|Graph, ...args:any[]) => {
+    operator:OperatorType = (...args:any[]) => {
         return args as any;
     }
     
     //run the operator
     runOp = (
-        node:GraphNode=this,
-        origin:string|GraphNode|Graph=this, // Options: this, this.parent, this.children[n], or an arbitrary node that is subscribed to.
         ...args:any[]
     ) => {
-        if(node.DEBUGNODE) console.time(node.tag);
-        let result = node.operator(node,origin,...args);
+        if(this.DEBUGNODE) console.time(this.tag);
+        let result = this.operator(...args);
         if(result instanceof Promise) {
             result.then((res) => {
-                if(res !== undefined) this.setState({[node.tag]:res}) //return null at minimum to setState
-                if(node.DEBUGNODE) {console.timeEnd(node.tag); if(result !== undefined) console.log(`${node.tag} result:`, result)};
+                if(res !== undefined) this.setState({[this.tag]:res}) //return null at minimum to setState
+                if(this.DEBUGNODE) {console.timeEnd(this.tag); if(result !== undefined) console.log(`${this.tag} result:`, result)};
                 return res;
             })
         }
         else {
-            if(result !== undefined) this.setState({[node.tag]:result}); //return null at minimum to setState
-            if(node.DEBUGNODE) {console.timeEnd(node.tag); if(result !== undefined) console.log(`${node.tag} result:`, result)};
+            if(result !== undefined) this.setState({[this.tag]:result}); //return null at minimum to setState
+            if(this.DEBUGNODE) {console.timeEnd(this.tag); if(result !== undefined) console.log(`${this.tag} result:`, result)};
         }
         
         return result;
@@ -429,33 +371,8 @@ export class GraphNode {
 
     //set an operator using our operator types or any arbitrary function :D    //this is the i/o handler, or the 'main' function for this node to propagate results. The origin is the node the data was propagated from 
     setOperator = (operator:OperatorType) => {
-
         if(typeof operator !== 'function') return operator;
-        
-        let params = getFnParamInfo(operator);
-
-        let pass = false;
-        if(params) pass = params.keys().next().value === 'origin'
-
-        // Remove Origin
-        let fn = operator.bind(this);
-        if (!pass){
-
-            //wrap the simplified operator to fit our format
-            operator = (self: GraphNode, origin:string|GraphNode|Graph,...args) => {
-                return (fn as any)(...args);
-            }
-        } 
-        
-        // Include Origin (but not self anymore...)
-        else {
-            let fn = operator.bind(this);
-            operator = (self: GraphNode, ...args) => {
-                return (fn as any)(...args);
-            }
-        }
-
-        this.operator = operator;
+        this.operator = operator.bind(this); // operator is always bound to this class instance
         return operator;
     }
 
@@ -466,77 +383,57 @@ export class GraphNode {
      * const res = await node.run(arg1, arg2, arg3);
      * ```
      */   
-
-    run = (...args:any[]) => {
-        return this._run(this,undefined,...args); //will be a promise
-    }
     
     runAsync = (...args:any[]) => {
-        return new Promise((res,rej) => {res(this._run(this,undefined,...args))}); //will be a promise
+        return new Promise((res,rej) => {res(this.run(...args))}); //will be a promise
     }
 
     transformArgs: (args:any[], self?:GraphNode) => any[] = (args=[]) => args
 
-    _run = (
-        node:GraphNode=this, 
-        origin?:string|GraphNode|Graph, 
-        ...args:any[]
-    ) => {
+    run = (...args:any[]) => {
 
-        if (typeof this.transformArgs === 'function') args = this.transformArgs(args, node)
-
-        // NOTE: Should create a sync version with no promises (will block but be faster)
-        if(!(typeof node === 'object')) {
-            if(typeof node === 'string') { //can pass the node tag instead
-                let fnd:any = undefined;
-                if(this.graph) fnd = this.graph.nodes.get(node);
-                if(!fnd) fnd = this.nodes.get(node);
-                node = fnd;
-            }
-            if(!node) return undefined;
-        }
+        if (typeof this.transformArgs === 'function') args = this.transformArgs(args, this)
         
         //console.log('running node ', node.tag, 'children: ', node.children);
             
         //can add an animationFrame coroutine, one per node //because why not
-        if(node.firstRun) {
-            node.firstRun = false;
+        if(this.firstRun) {
+            this.firstRun = false;
             if(
                 !( 
-                   (node.children && node.forward) || 
-                   (node.parent && node.backward) || 
-                   node.repeat || node.delay || 
-                    node.frame || node.recursive ||
-                    node.branch
+                   (this.children && this.forward) || 
+                   (this.parent && this.backward) || 
+                   this.repeat || this.delay || 
+                   this.frame || this.recursive ||
+                   this.branch
                 )
-            ) node.runSync = true;
+            ) this.runSync = true;
 
-            if(node.animate && !node.isAnimating) {
-                node.runAnimation(node.animation,args,node,origin);
+            if(this.animate && !this.isAnimating) {
+                this.runAnimation(this.animation,args);
             }
 
             //can add an infinite loop coroutine, one per node, e.g. an internal subroutine
-            if(node.loop && typeof node.loop === 'number' && !node.isLooping) {
-                node.runLoop(node.looper,args,node,origin);
+            if(this.loop && typeof this.loop === 'number' && !this.isLooping) {
+                this.runLoop(this.looper,args);
             }
 
-            if(node.loop || node.animate) 
-                return;
+            if(this.loop || this.animate) return;
 
         }
     
         //no async/flow logic so just run and return the operator result (which could still be a promise if the operator is async)
-        if(node.runSync){
-            let res = node.runOp(node, origin, ...args); //repeat/recurse before moving on to the parent/child
+        if(this.runSync){
+            let res = this.runOp(...args); //repeat/recurse before moving on to the parent/child
             return res;
         }
 
         return new Promise(async (resolve) => {
-            if(node) {
+            if(this) {
                 let run = (node, tick=0, ...input):Promise<any> => {
                     return new Promise (async (r) => {
                         tick++;
-                        let res = await node.runOp(node, origin, ...input); //executes the operator on the node in the flow logic
+                        let res = await node.runOp(...input); //executes the operator on the node in the flow logic
                         if(node.repeat) {
                             while(tick < node.repeat) {
                                 if(node.delay) {
@@ -550,7 +447,7 @@ export class GraphNode {
                                     });
                                     break;
                                 }
-                                else res = await node.runOp(node, origin, ...input);
+                                else res = await node.runOp(...input);
                                 tick++;
                             }
                             if(tick === node.repeat) {
@@ -571,7 +468,7 @@ export class GraphNode {
                                     });
                                     break;
                                 }
-                                else res = await node.runOp(node, origin, ...res);
+                                else res = await node.runOp(...res);
                                 tick++;
                             }
                             if(tick === node.recursive) {
@@ -587,30 +484,30 @@ export class GraphNode {
     
                 let runnode = async () => {
     
-                    let res = await run(node, undefined, ...args); //repeat/recurse before moving on to the parent/child
+                    let res = await run(this, undefined, ...args); //repeat/recurse before moving on to the parent/child
     
                     if(res !== undefined) { //if returning void let's not run the additional flow logic
-                        if(node.backward && node.parent instanceof GraphNode) {
-                            if(Array.isArray(res)) await this.runParent(node,...res);
-                            else await this.runParent(node,res);
+                        if(this.backward && this.parent instanceof GraphNode) {
+                            if(Array.isArray(res)) await this.runParent(this,...res);
+                            else await this.runParent(this,res);
                         }
-                        if(node.children && node.forward) {
-                            if(Array.isArray(res)) await this.runChildren(node,...res);
-                            else await this.runChildren(node,res);
+                        if(this.children && this.forward) {
+                            if(Array.isArray(res)) await this.runChildren(this,...res);
+                            else await this.runChildren(this,res);
                         }
-                        if(node.branch) {
-                            this.runBranch(node,res);
+                        if(this.branch) {
+                            this.runBranch(this,res);
                         }
                     }
     
                     return res;
                 }
     
-                if(node.delay) {
+                if(this.delay) {
                     setTimeout(async ()=>{
                         resolve(await runnode());
-                    },node.delay);
-                } else if (node.frame && window?.requestAnimationFrame as any) {
+                    },this.delay);
+                } else if (this.frame && window?.requestAnimationFrame as any) {
                     requestAnimationFrame(async ()=>{
                         resolve(await runnode());
                     });
@@ -633,7 +530,7 @@ export class GraphNode {
                 else n.parent = this.nodes.get(n.parent);
             }
             
-            if(n.parent instanceof GraphNode) await n.parent._run(n.parent, this, ...args);
+            if(n.parent instanceof GraphNode) await n.parent.run(...args);
         }
     }
 
@@ -654,7 +551,7 @@ export class GraphNode {
                     if(!n.children[key] && n.nodes.get(key)) n.children[key] = n.nodes.get(key); //try local scope
                 }
                 if(n.children[key]?.runOp)
-                    await n.children[key]._run(n.children[key], n, ...args);
+                    await n.children[key].run( ...args);
             }
         }
     }
@@ -674,8 +571,8 @@ export class GraphNode {
                     }
                     if(pass) {
                         if(n.branch[k].then instanceof GraphNode) {
-                            if(Array.isArray(output))  await n.branch[k].then._run(n.branch[k].then,n,...output);
-                            else await n.branch[k].then._run(n.branch[k].then,n,...output);
+                            if(Array.isArray(output))  await n.branch[k].then.run(...output);
+                            else await n.branch[k].then.run(...output);
                         }
                         else if (typeof n.branch[k].then === 'function') {
                             if(Array.isArray(output)) await n.branch[k].then(...output)
@@ -686,8 +583,8 @@ export class GraphNode {
                             else n.branch[k].then = n.nodes.get(n.branch[k].then);
 
                             if(n.branch[k].then instanceof GraphNode) {
-                                if(Array.isArray(output))  await n.branch[k].then._run(n.branch[k].then,n,...output);
-                                else await n.branch[k].then._run(n.branch[k].then,n,...output);
+                                if(Array.isArray(output))  await n.branch[k].then.run(...output);
+                                else await n.branch[k].then.run(...output);
                             } 
                         }
                     }
@@ -699,41 +596,37 @@ export class GraphNode {
     runAnimation = (
         animation:OperatorType=this.animation as any, 
         args:any[]=[], 
-        node:GraphNode&GraphNodeProperties|any=this, 
-        origin?:string|GraphNode|Graph
     ) => {
         //can add an animationFrame coroutine, one per node //because why not
         this.animation = animation as any;
         if(!animation) this.animation = this.operator as any;
-        if(node.animate && !node.isAnimating && 'requestAnimationFrame' in window) {
-            node.isAnimating = true;
+        if(this.animate && !this.isAnimating && 'requestAnimationFrame' in window) {
+            this.isAnimating = true;
             let anim = async () => {
                 //console.log('anim')
-                if(node.isAnimating) {
-                    if(node.DEBUGNODE) console.time(node.tag);
+                if(this.isAnimating) {
+                    if(this.DEBUGNODE) console.time(this.tag);
                     let result = (this.animation  as any)( 
-                        node,
-                        origin,
                         ...args
                     );
                     if(result instanceof Promise) {
                         result = await result;
                     }
-                    if(node.DEBUGNODE) {console.timeEnd(node.tag); if(result !== undefined) console.log(`${node.tag} result:`, result)};
+                    if(this.DEBUGNODE) {console.timeEnd(this.tag); if(result !== undefined) console.log(`${this.tag} result:`, result)};
                     if(result !== undefined) {
                         if(this.tag) this.setState({[this.tag]:result}); //if the anim returns it can trigger state
-                        if(node.backward && node.parent?._run) {
-                            if(Array.isArray(result)) await this.runParent(node,...result);
-                            else await this.runParent(node,result);
+                        if(this.backward && this.parent?.run) {
+                            if(Array.isArray(result)) await this.runParent(this,...result);
+                            else await this.runParent(this,result);
                         }
-                        if(node.children && node.forward) {
-                            if(Array.isArray(result)) await this.runChildren(node,...result);
-                            else await this.runChildren(node,result);
+                        if(this.children && this.forward) {
+                            if(Array.isArray(result)) await this.runChildren(this,...result);
+                            else await this.runChildren(this,result);
                         }
-                        if(node.branch) {
-                            this.runBranch(node,result);
+                        if(this.branch) {
+                            this.runBranch(this,result);
                         }
-                        this.setState({[node.tag]:result});
+                        this.setState({[this.tag]:result});
                     }
                     requestAnimationFrame(anim);
                 }
@@ -745,41 +638,37 @@ export class GraphNode {
     runLoop = (
         loop:OperatorType=this.looper as any, 
         args:any[]=[], 
-        node:GraphNode&GraphNodeProperties|any=this, 
-        origin?:string|GraphNode|Graph,
-        timeout:number=node.loop
+        timeout:number=this.loop
     ) => {
         //can add an infinite loop coroutine, one per node, e.g. an internal subroutine
-        node.looper = loop;
-        if(!loop) node.looper = node.operator;
-        if(typeof timeout === 'number' && !node.isLooping) {
-            node.isLooping = true;
+        this.looper = loop;
+        if(!loop) this.looper = this.operator;
+        if(typeof timeout === 'number' && !this.isLooping) {
+            this.isLooping = true;
             let looping = async () => {
-                if(node.isLooping)  {
-                    if(node.DEBUGNODE) console.time(node.tag);
-                    let result = node.looper(
-                        node, 
-                        origin, 
+                if(this.isLooping)  {
+                    if(this.DEBUGNODE) console.time(this.tag);
+                    let result = this.looper(
                         ...args
                     );
                     if(result instanceof Promise) {
                         result = await result;
                     }
-                    if(node.DEBUGNODE) {console.timeEnd(node.tag); if(result !== undefined) console.log(`${node.tag} result:`, result)};
+                    if(this.DEBUGNODE) {console.timeEnd(this.tag); if(result !== undefined) console.log(`${this.tag} result:`, result)};
                     if(result !== undefined) {
-                        if(node.tag) node.setState({[node.tag]:result}); //if the loop returns it can trigger state
-                        if(node.backward && node.parent?._run) {
-                            if(Array.isArray(result)) await this.runParent(node,...result);
-                            else await this.runParent(node,result);
+                        if(this.tag) this.setState({[this.tag]:result}); //if the loop returns it can trigger state
+                        if(this.backward && this.parent?.run) {
+                            if(Array.isArray(result)) await this.runParent(this,...result);
+                            else await this.runParent(this,result);
                         }
-                        if(node.children && node.forward) {
-                            if(Array.isArray(result)) await this.runChildren(node,...result);
-                            else await this.runChildren(node,result);
+                        if(this.children && this.forward) {
+                            if(Array.isArray(result)) await this.runChildren(this,...result);
+                            else await this.runChildren(this,result);
                         }
-                        if(node.branch) {
-                            this.runBranch(node,result);
+                        if(this.branch) {
+                            this.runBranch(this,result);
                         }
-                        node.setState({[node.tag]:result});
+                        this.setState({[this.tag]:result});
                     }
                     setTimeout(async ()=>{ await looping(); }, timeout);
                 }
@@ -871,7 +760,6 @@ export class GraphNode {
     
     //Call parent node operator directly (.run calls the flow logic)
     callParent = (...args) => {
-        const origin = this // NOTE: This node must be the origin
         if(typeof this.parent === 'string') {
             if(this.graph && this.graph?.get(this.parent)) {
                 this.parent = this.graph;
@@ -879,16 +767,15 @@ export class GraphNode {
             }
             else this.parent = this.nodes.get(this.parent);
         }
-        if(typeof this.parent?.operator === 'function') return this.parent.runOp(this.parent, origin, ...args);
+        if(typeof this.parent?.operator === 'function') return this.parent.runOp(...args);
     }
     
     //call children operators directly (.run calls the flow logic)
-    callChildren = (idx?:number, ...args) => {
-        const origin = this // NOTE: This node must be the origin
+    callChildren = (...args) => {
         let result;
         if(typeof this.children === 'object') {
             for(const key in this.children) {
-                if(this.children[key]?.runOp) this.children[key].runOp(this.children[key], origin, ...args);
+                if(this.children[key]?.runOp) this.children[key].runOp(...args);
             }
         }
         return result;
@@ -1097,8 +984,8 @@ export class GraphNode {
         if(n.tag) this.nodes.set(n.tag,n); //register the node on this node
         if(n) return this.state.subscribeTrigger(this.tag,
             (res)=>{
-                if(Array.isArray(res)) (n as GraphNode)._run((n as GraphNode), this, ...res);
-                else (n as GraphNode)._run((n as GraphNode), this, res);
+                if(Array.isArray(res)) (n as GraphNode).run(...res);
+                else (n as GraphNode).run(res);
             })
     }
     
@@ -1226,7 +1113,7 @@ export class Graph {
                     }
                 } else {
                     //we are trying to load something like a number or array in this case so lets make it a node that just returns the value
-                    this.add({tag:node,operator:(self,origin,...args) => {return tree[node];}});
+                    this.add({tag:node,operator:(...args) => {return tree[node];}});
                 }
             } else {
                 let n = this.nodes.get(node);
@@ -1306,22 +1193,15 @@ export class Graph {
     run = (n:string|GraphNode,...args) => {
         if(typeof n === 'string') n = this.nodes.get(n);
         if(n instanceof GraphNode)
-            return n._run(n,this,...args)
+            return n.run(...args)
         else return undefined;
     }
     
     runAsync = (n:string|GraphNode,...args) => {
         if(typeof n === 'string') n = this.nodes.get(n);
         if(n instanceof GraphNode)
-            return new Promise((res,rej) => {res((n as GraphNode)._run((n as GraphNode),this,...args))})
+            return new Promise((res,rej) => {res((n as GraphNode).run(...args))})
         else return new Promise((res,rej) => {res(undefined)});
-    }
-
-    _run = (n:string|GraphNode,origin:string|GraphNode|Graph=this,...args) => {
-        if(typeof n === 'string') n = this.nodes.get(n);
-        if(n instanceof GraphNode)
-            return n._run(n,origin,...args)
-        else return undefined;
     }
 
     removeTree = (n:string|GraphNode, checked?:any) => {
@@ -1392,15 +1272,15 @@ export class Graph {
         parentNode.addChildren(n);
     }
 
-    callParent = async (n:GraphNode, origin:string|GraphNode|Graph=n, ...args ) => {
+    callParent = async (n:GraphNode, ...args ) => {
         if(n?.parent) {
-            return await n.callParent(n,origin,...args);
+            return await n.callParent(...args);
         }
     }
 
-    callChildren = async (n:GraphNode, idx?:number, ...args) => {
+    callChildren = async (n:GraphNode, ...args) => {
         if(n?.children) {
-            return await n.callChildren(idx,...args);
+            return await n.callChildren(...args);
         }
     }
 

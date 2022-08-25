@@ -121,8 +121,6 @@ let node = new GraphNode(props, parentNode, graph);
 
 node
     .run(...args) //<--- this is the base sequencing function.  If any async or flow logic is being used by the node, it returns a promise which can be awaited to get the final result of the tree. Else it returns a synchronous operation for speed. Subscriptions to async nodes will fire after the promise resolves otherwise
-   
-    ._run(node=this, origin, ...args) //<--- runs the node sequence starting from the given node. If any async or flow logic is being used by the node, it returns a promise which can be awaited to get the final result of the tree. Else it returns a synchronous operation for speed.
 
     .runAsync(...args) //force the operation to run as a promise for cleaner chaining
 
@@ -232,8 +230,6 @@ let graph = new Graph(tree);
         .run(node,...args) //<--- runs the node sequence starting from the given node, returns a promise that will spit out the final result from the tree if any
 
         .runAsync(node,...args) //force the operation to return as a promise for cleaner chaining
-
-        ._run(node,origin,...args) //the syntax-correct run call we use internally, it's pretty useful sometimes 
 
         .removeTree(node) // remove a node tree by head node
 

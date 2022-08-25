@@ -86,7 +86,7 @@ export class ECSService extends Service {
             if(this.systems[k]) {
                 if(filter) {
                     if(debug) debug = performance.now();
-                    (this.systems[k] as GraphNode)._run(
+                    (this.systems[k] as GraphNode).run(
                         this.systems[k] as GraphNode,
                         this,
                         this.map.get(k)
@@ -95,7 +95,7 @@ export class ECSService extends Service {
                         console.log( 'system', k, 'took', performance.now()-debug,'ms for', Object.keys(this.map.get(k)).length, 'entities');
                 } else {
                     if(debug) debug = performance.now();
-                    (this.systems[k] as GraphNode)._run(
+                    (this.systems[k] as GraphNode).run(
                         this.systems[k] as GraphNode,
                         this,
                         this.entities

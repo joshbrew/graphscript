@@ -49,21 +49,21 @@ export declare type WorkerCanvas = {
     [key: string]: any;
 };
 export declare const workerCanvasRoutes: {
-    transferCanvas: (self: any, origin: any, worker: Worker | MessagePort, options: WorkerCanvasTransferProps, route?: string) => WorkerCanvasControls;
-    receiveCanvas: (self: any, origin: any, options: WorkerCanvasReceiveProps) => string;
-    setDraw: (self: any, origin: any, settings: WorkerCanvasReceiveProps, _id?: string) => string;
-    drawFrame: (self: any, origin: any, props?: {
+    transferCanvas: (worker: Worker | MessagePort, options: WorkerCanvasTransferProps, route?: string) => WorkerCanvasControls;
+    receiveCanvas: (options: WorkerCanvasReceiveProps) => string;
+    setDraw: (settings: WorkerCanvasReceiveProps, _id?: string) => string;
+    drawFrame: (props?: {
         [key: string]: any;
     }, _id?: string) => string;
-    clearCanvas: (self: any, origin: any, _id?: string) => string;
-    initCanvas: (self: any, origin: any, _id?: string) => string;
-    updateCanvas: (self: any, origin: any, input?: any, _id?: string) => string;
-    setProps: (self: any, origin: any, props?: {
+    clearCanvas: (_id?: string) => string;
+    initCanvas: (_id?: string) => string;
+    updateCanvas: (input?: any, _id?: string) => string;
+    setProps: (props?: {
         [key: string]: any;
     }, _id?: string) => string;
-    startAnim: (self: any, origin: any, _id?: string, draw?: string | ((self: any, canvas: any, context: any) => void)) => string;
-    stopAnim: (self: any, origin: any, _id?: string) => string;
+    startAnim: (_id?: string, draw?: string | ((this: any, canvas: any, context: any) => void)) => string;
+    stopAnim: (_id?: string) => string;
     initProxyElement: typeof import("./ProxyListener").initProxyElement;
-    makeProxy: (self: any, origin: any, id: any, elm?: any) => any;
-    handleProxyEvent: (self: any, origin: any, data: any, id: any) => any;
+    makeProxy: (id: any, elm?: any) => any;
+    handleProxyEvent: (data: any, id: any) => any;
 };

@@ -105,7 +105,7 @@ export class UserRouter extends Router {
         ...args:any[]
     ) => {
         if(typeof userId === 'object') userId = (userId as UserProps)._id;
-        return this._run(node,userId as string,...args);
+        return this.run(node,userId as string,...args);
     }
 
     pipeAs = ( //just an alias of service.pipe with clear usage for user Id as origin, you'll need to wire up how responses are handled at the destination based on user id

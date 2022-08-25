@@ -1,26 +1,25 @@
-import { GraphNode } from "../../Graph";
 export declare const unsafeRoutes: {
-    setRoute: (self: GraphNode, origin: any, fn: string | (() => any), fnName?: string) => boolean;
-    setNode: (self: GraphNode, origin: any, fn: string | (() => any), fnName?: string) => boolean;
-    setMethod: (self: GraphNode, origin: any, route: string, fn: string | (() => any), fnName?: string) => boolean;
-    assignRoute: (self: GraphNode, origin: any, route: string, source: {
+    setRoute: (fn: string | (() => any), fnName?: string) => boolean;
+    setNode: (fn: string | (() => any), fnName?: string) => boolean;
+    setMethod: (route: string, fn: string | (() => any), fnName?: string) => boolean;
+    assignRoute: (route: string, source: {
         [key: string]: any;
     }) => void;
     transferClass: (classObj: any, className?: string) => false | {
         route: string;
         args: any[];
     };
-    receiveClass: (self: GraphNode, origin: any, stringified: string, className?: string) => boolean;
-    setGlobal: (self: GraphNode, origin: any, key: string, value: any) => boolean;
-    assignGlobalObject: (self: GraphNode, origin: any, target: string, source: {
+    receiveClass: (stringified: string, className?: string) => boolean;
+    setGlobal: (key: string, value: any) => boolean;
+    assignGlobalObject: (target: string, source: {
         [key: string]: any;
     }) => boolean;
-    setValue: (self: GraphNode, origin: any, key: string, value: any) => boolean;
-    assignObject: (self: GraphNode, origin: any, target: string, source: {
+    setValue: (key: string, value: any) => boolean;
+    assignObject: (target: string, source: {
         [key: string]: any;
     }) => boolean;
-    setGlobalFunction: (self: GraphNode, origin: any, fn: any, fnName?: string) => boolean;
-    assignFunctionToGlobalObject: (self: GraphNode, origin: any, globalObjectName: string, fn: any, fnName: any) => boolean;
-    setFunction: (self: GraphNode, origin: any, fn: any, fnName?: string) => boolean;
-    assignFunctionToObject: (self: GraphNode, origin: any, objectName: string, fn: any, fnName: any) => boolean;
+    setGlobalFunction: (fn: any, fnName?: string) => boolean;
+    assignFunctionToGlobalObject: (globalObjectName: string, fn: any, fnName: any) => boolean;
+    setFunction: (fn: any, fnName?: string) => boolean;
+    assignFunctionToObject: (objectName: string, fn: any, fnName: any) => boolean;
 };

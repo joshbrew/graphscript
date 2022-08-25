@@ -1,9 +1,5 @@
-export declare function getFnParamInfo(fn: any): Map<string, any>;
-export declare function getFnParamNames(fn: any): string[];
 export declare function parseFunctionFromText(method?: string): any;
 export declare type OperatorType = (//can be async
-self: GraphNode, //'this' node
-origin: string | GraphNode | Graph, //origin node
 ...args: any) => any | void;
 export declare type Tree = {
     [key: string]: //the key becomes the node tag on the graph
@@ -57,7 +53,7 @@ export declare const state: {
  * The methods of this class can be referenced in the operator after setup for more complex functionality
  *
  * ```typescript
- * const graph = new GraphNode({custom: 1, operator: (self, origin, input) => console.log(input, self.custom)});
+ * const graph = new GraphNode({custom: 1, operator: (input) => console.log(input, self.custom)});
  * ```
  */
 export declare class GraphNode {
@@ -94,7 +90,7 @@ export declare class GraphNode {
     [key: string]: any;
     constructor(properties?: GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void), parentNode?: GraphNode | Graph, graph?: Graph);
     operator: OperatorType;
-    runOp: (node?: GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
+    runOp: (...args: any[]) => any;
     setOperator: (operator: OperatorType) => OperatorType;
     /**
      * Runs the graph node and passes output to connected nodes
@@ -103,15 +99,14 @@ export declare class GraphNode {
      * const res = await node.run(arg1, arg2, arg3);
      * ```
      */
-    run: (...args: any[]) => any;
     runAsync: (...args: any[]) => Promise<unknown>;
     transformArgs: (args: any[], self?: GraphNode) => any[];
-    _run: (node?: GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
+    run: (...args: any[]) => any;
     runParent: (n: GraphNode, ...args: any[]) => Promise<void>;
     runChildren: (n: GraphNode, ...args: any[]) => Promise<void>;
     runBranch: (n: GraphNode, output: any) => Promise<void>;
-    runAnimation: (animation?: OperatorType, args?: any[], node?: (GraphNode & GraphNodeProperties) | any, origin?: string | GraphNode | Graph) => void;
-    runLoop: (loop?: OperatorType, args?: any[], node?: (GraphNode & GraphNodeProperties) | any, origin?: string | GraphNode | Graph, timeout?: number) => void;
+    runAnimation: (animation?: OperatorType, args?: any[]) => void;
+    runLoop: (loop?: OperatorType, args?: any[], timeout?: number) => void;
     setParent: (parent: GraphNode) => void;
     setChildren: (children: GraphNode | GraphNode[]) => void;
     add: (n?: GraphNodeProperties | OperatorType | ((...args: any[]) => any | void)) => GraphNode | GraphNodeProperties;
@@ -123,7 +118,7 @@ export declare class GraphNode {
         [key: string]: string | boolean | GraphNode | Graph | GraphNodeProperties;
     }) => void;
     callParent: (...args: any[]) => any;
-    callChildren: (idx?: number, ...args: any[]) => any;
+    callChildren: (...args: any[]) => any;
     getProps: (n?: this) => {
         tag: string;
         operator: OperatorType;
@@ -186,12 +181,11 @@ export declare class Graph {
     set: (n: GraphNode) => Map<any, any>;
     run: (n: string | GraphNode, ...args: any[]) => any;
     runAsync: (n: string | GraphNode, ...args: any[]) => Promise<unknown>;
-    _run: (n: string | GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
     removeTree: (n: string | GraphNode, checked?: any) => string | GraphNode;
     remove: (n: string | GraphNode) => string | GraphNode;
     append: (n: GraphNode, parentNode: GraphNode) => void;
-    callParent: (n: GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => Promise<any>;
-    callChildren: (n: GraphNode, idx?: number, ...args: any[]) => Promise<any>;
+    callParent: (n: GraphNode, ...args: any[]) => Promise<any>;
+    callChildren: (n: GraphNode, ...args: any[]) => Promise<any>;
     subscribe: (n: string | GraphNode, callback: string | GraphNode | ((res: any) => void)) => number;
     unsubscribe: (tag: string, sub: number) => void;
     subscribeNode: (inputNode: string | GraphNode, outputNode: GraphNode | string) => number;

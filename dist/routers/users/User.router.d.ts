@@ -190,7 +190,7 @@ export declare class UserRouter extends Router {
             [key: string]: any;
         };
     }) => {};
-    receiveSessionUpdates: (self: this, origin: any, update: string | {
+    receiveSessionUpdates: (origin: any, update: string | {
         private: {
             [key: string]: any;
         };

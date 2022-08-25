@@ -6,7 +6,7 @@ export declare type EntityProps = ({
     };
 } & RouteProp) | GraphNode;
 export declare type SystemProps = (RouteProp & {
-    operator: (self: any, origin: any, entities: {
+    operator: (entities: {
         [key: string]: Entity;
     }) => any;
     setupEntities: (self: any, entities: {
@@ -22,7 +22,7 @@ export declare type Entity = {
     };
 } & GraphNode;
 export declare type System = {
-    operator: (self: any, origin: any, entities: {
+    operator: (entities: {
         [key: string]: Entity;
     }) => any;
     setupEntities: (self: any, entities: {

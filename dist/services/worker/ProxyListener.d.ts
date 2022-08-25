@@ -58,7 +58,7 @@ export declare class ProxyManager {
 }
 export declare const proxyElementWorkerRoutes: {
     initProxyElement: typeof initProxyElement;
-    makeProxy: (self: any, origin: any, id: any, elm?: any) => any;
-    handleProxyEvent: (self: any, origin: any, data: any, id: any) => any;
+    makeProxy: (id: any, elm?: any) => any;
+    handleProxyEvent: (data: any, id: any) => any;
 };
 export {};
