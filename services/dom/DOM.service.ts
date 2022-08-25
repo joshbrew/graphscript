@@ -137,6 +137,26 @@ export class DOMService extends Service {
         [key:string]:ComponentProps|CanvasElementProps
     } = {}
 
+    resolveNode = (element, options) => {
+
+        let node: GraphNode
+        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
+            node = this.nodes.get(options.id);
+            node.element = element;
+        } else {
+            node = new GraphNode(
+                options,
+                options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
+                this
+            );
+        }
+
+        // -------- Bind Functions to GraphNode --------
+        for (let key in options) if (typeof options[key] === 'function') options[key].bind(node)
+
+        return node
+    }
+
     addElement=(
         options: ElementProps,
         generateChildElementNodes=false      
@@ -166,18 +186,7 @@ export class DOMService extends Service {
         }
 
 
-        let node:GraphNode;
-        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
-            node = this.nodes.get(options.id);
-            node.element = elm;
-        } else {
-            node = new GraphNode(
-                options,
-                options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
-                this
-            );
-        }
-
+        let node = this.resolveNode(elm, options);
         (elm as any).node = node; //self.node references the graphnode on the div now
         
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
@@ -345,17 +354,7 @@ export class DOMService extends Service {
         }
 
         
-        let node:GraphNode;
-        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
-            node = this.nodes.get(options.id);
-            node.element = elm;
-        } else {
-            node = new GraphNode(
-                options,
-                options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
-                this
-            );
-        }
+        let node = this.resolveNode(elm, options);
 
         if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }
 
@@ -468,18 +467,7 @@ export class DOMService extends Service {
             return props;
         }
 
-        let node:GraphNode;
-        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
-            node = this.nodes.get(options.id);
-            node.element = elm;
-        } else {
-            node = new GraphNode(
-                options,
-                options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
-                this
-            );
-        }
-
+        let node = this.resolveNode(elm, options);
         (elm as any).node = node; //self.node references the graphnode on the div now
 
         if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }

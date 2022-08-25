@@ -455,8 +455,8 @@ export class Service extends Graph {
         }
         if(call) {
             if(message.origin) { //origin will be second argument in this case
-                if(Array.isArray(message.args)) return this._run(call,message.origin,...message.args);
-                else return this._run(call,message.origin,message.args);
+                if(Array.isArray(message.args)) return this.run(call,message.origin,...message.args);
+                else return this.run(call,message.origin,message.args);
             } else {
                 //console.log('call',call,'message',message, 'nodes:', this.nodes.keys(),this)
                 if(Array.isArray(message.args)) return this.run(call,...message.args);
@@ -471,8 +471,8 @@ export class Service extends Graph {
             this.handleServiceMessage(args);
         }
         else if(origin) {
-            if(Array.isArray(args)) return this._run(route, origin, ...args);
-            else return this._run(route, origin, args);
+            if(Array.isArray(args)) return this.run(route, origin, ...args);
+            else return this.run(route, origin, args);
         }
         else if(Array.isArray(args)) return this.run(route,...args);
         else return this.run(route, args);

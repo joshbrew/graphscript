@@ -1,13 +1,14 @@
 //from 'fragelement' on npm by Joshua Brewster (AGPL v3.0)
 export class DOMElement extends HTMLElement { 
 
-    template = (self=this, props) => { //return a string or html node
+    template = function(self=this, props){ //return a string or html node
         return `<div> Custom Fragment Props: ${JSON.stringify(props)} </div>`
     }; //override the default template string by extending the class, or use options.template if calling the base class
     props = {};
     useShadow = false; //can set to attach a shadow DOM instead (local styles)
     styles; //can set a style sheet which will toggle the shadow dom by default
   
+    // NOTE: Referencing this inside one of these events will give you the GraphNode
     oncreate; //(self,props) => {}  fires on element creation (e.g. to set up logic)
     onresize; //(self,props) => {} fires on window resize
     ondelete; //(self,props) => {} fires after element is deleted
