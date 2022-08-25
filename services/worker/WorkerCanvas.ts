@@ -1,6 +1,6 @@
 //provide routes for applying canvases to workers
 
-import { parseFunctionFromText } from "../../Graph";
+import { Graph, parseFunctionFromText } from "../../Graph";
 import { proxyElementWorkerRoutes } from "./ProxyListener";
 
 export type WorkerCanvasTransferProps = { //defined in main thread to send to worker
@@ -40,7 +40,8 @@ export type WorkerCanvasControls = {
     start:()=>void,
     set:(newDrawProps:WorkerCanvasReceiveProps)=>void
 }
-export type WorkerCanvas = { //this is the object stored on the worker to track this canvas context 
+export type WorkerCanvas = { //this is the object stored on the worker to track this canvas context
+    graph:Graph, 
     canvas:any, //OffscreenCanvas
     context?:CanvasRenderingContext2D|WebGL2RenderingContext|WebGLRenderingContext,
     _id:string,
@@ -137,6 +138,8 @@ export const workerCanvasRoutes = {
             self.graph.run('setDraw',canvasOptions);
         }
         else {
+
+            canvasOptions.graph = self.graph;
             self.graph.CANVASES[canvasOptions._id] = canvasOptions;
 
             //create an element proxy to add event listener functionality
@@ -223,7 +226,7 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    drawFrame:(self,origin,_id?:string,props?:{[key:string]:any}) => { //can update props when calling draw
+    drawFrame:(self,origin,props?:{[key:string]:any},_id?:string) => { //can update props when calling draw
         let canvasopts;
         if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
         else canvasopts = self.graph.CANVASES?.[_id];
@@ -258,7 +261,7 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    updateCanvas:(self,origin,_id?:string,input?:any) => {
+    updateCanvas:(self,origin,input?:any,_id?:string) => {
         let canvasopts;
         if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
         else canvasopts = self.graph.CANVASES?.[_id];
@@ -268,7 +271,7 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    setProps:(self,origin,_id?:string,props?:{[key:string]:any}) => { //update animation props, e.g. the radius or color of a circle you are drawing with a stored value
+    setProps:(self,origin,props?:{[key:string]:any},_id?:string,) => { //update animation props, e.g. the radius or color of a circle you are drawing with a stored value
         let canvasopts;
         if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
         else canvasopts = self.graph.CANVASES?.[_id];

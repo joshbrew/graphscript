@@ -638,71 +638,71 @@ export class GraphNode {
         });
     }
 
-    runParent = async (node:GraphNode, ...args) => {
-        if(node.backward && node.parent) {
-            if(typeof node.parent === 'string') {
-                if(node.graph && node.graph?.get(node.parent)) {
-                    node.parent = node.graph;
-                    if(node.parent) this.nodes.set(node.parent.tag, node.parent);
+    runParent = async (n:GraphNode, ...args) => {
+        if(n.backward && n.parent) {
+            if(typeof n.parent === 'string') {
+                if(n.graph && n.graph?.get(n.parent)) {
+                    n.parent = n.graph;
+                    if(n.parent) this.nodes.set(n.parent.tag, n.parent);
                 }
-                else node.parent = this.nodes.get(node.parent);
+                else n.parent = this.nodes.get(n.parent);
             }
             
-            if(node.parent instanceof GraphNode) await node.parent._run(node.parent, this, ...args);
+            if(n.parent instanceof GraphNode) await n.parent._run(n.parent, this, ...args);
         }
     }
 
-    runChildren = async (node:GraphNode, ...args) => {
-        if(typeof node.children === 'object') {
-            for(const key in node.children) {
-                if (typeof node.children[key] === 'string') {
-                    if(node.graph && node.graph?.get(node.children[key])) {
-                        node.children[key] = node.graph.get(node.children[key]); //try graph scope
-                        if(!node.nodes.get(node.children[key].tag)) node.nodes.set(node.children[key].tag,node.children[key]);
+    runChildren = async (n:GraphNode, ...args) => {
+        if(typeof n.children === 'object') {
+            for(const key in n.children) {
+                if (typeof n.children[key] === 'string') {
+                    if(n.graph && n.graph?.get(n.children[key])) {
+                        n.children[key] = n.graph.get(n.children[key]); //try graph scope
+                        if(!n.nodes.get(n.children[key].tag)) n.nodes.set(n.children[key].tag,n.children[key]);
                     }
-                    if(!node.children[key] && node.nodes.get(node.children[key])) node.children[key] = node.nodes.get(node.children[key]); //try local scope
-                } else if (typeof node.children[key] === 'undefined' || node.children[key] === true) {
-                    if(node.graph && node.graph?.get(key)) {
-                        node.children[key] = node.graph.get(key); //try graph scope
-                        if(!node.nodes.get(node.children[key].tag)) node.nodes.set(node.children[key].tag,node.children[key]);
+                    if(!n.children[key] && n.nodes.get(n.children[key])) n.children[key] = n.nodes.get(n.children[key]); //try local scope
+                } else if (typeof n.children[key] === 'undefined' || n.children[key] === true) {
+                    if(n.graph && n.graph?.get(key)) {
+                        n.children[key] = n.graph.get(key); //try graph scope
+                        if(!n.nodes.get(n.children[key].tag)) n.nodes.set(n.children[key].tag,n.children[key]);
                     }
-                    if(!node.children[key] && node.nodes.get(key)) node.children[key] = node.nodes.get(key); //try local scope
+                    if(!n.children[key] && n.nodes.get(key)) n.children[key] = n.nodes.get(key); //try local scope
                 }
-                if(node.children[key]?.runOp)
-                    await node.children[key]._run(node.children[key], node, ...args);
+                if(n.children[key]?.runOp)
+                    await n.children[key]._run(n.children[key], n, ...args);
             }
         }
     }
 
-    runBranch = async (node:GraphNode, output:any) => {
-        if(node.branch) {
-            let keys = Object.keys(node.branch);
+    runBranch = async (n:GraphNode, output:any) => {
+        if(n.branch) {
+            let keys = Object.keys(n.branch);
             await Promise.all(keys.map(async (k) => {
-                    if(typeof node.branch[k].if === 'object') node.branch[k].if = stringifyFast(node.branch[k].if); //stringify object outputs, stringifyFast saves a TON of overhead
+                    if(typeof n.branch[k].if === 'object') n.branch[k].if = stringifyFast(n.branch[k].if); //stringify object outputs, stringifyFast saves a TON of overhead
                     let pass = false;
-                    if(typeof node.branch[k].if === 'function') {
-                        pass = node.branch[k].if(output); //don't use async here, it's not a promise
+                    if(typeof n.branch[k].if === 'function') {
+                        pass = n.branch[k].if(output); //don't use async here, it's not a promise
                     }
                     else {
-                        if(typeof output === 'object') {if(stringifyFast(output) === node.branch[k].if) pass = true;}
-                        else if (output === node.branch[k].if) pass = true;
+                        if(typeof output === 'object') {if(stringifyFast(output) === n.branch[k].if) pass = true;}
+                        else if (output === n.branch[k].if) pass = true;
                     }
                     if(pass) {
-                        if(node.branch[k].then instanceof GraphNode) {
-                            if(Array.isArray(output))  await node.branch[k].then._run(node.branch[k].then,node,...output);
-                            else await node.branch[k].then._run(node.branch[k].then,node,...output);
+                        if(n.branch[k].then instanceof GraphNode) {
+                            if(Array.isArray(output))  await n.branch[k].then._run(n.branch[k].then,n,...output);
+                            else await n.branch[k].then._run(n.branch[k].then,n,...output);
                         }
-                        else if (typeof node.branch[k].then === 'function') {
-                            if(Array.isArray(output)) await node.branch[k].then(...output)
-                            else await node.branch[k].then(output);
+                        else if (typeof n.branch[k].then === 'function') {
+                            if(Array.isArray(output)) await n.branch[k].then(...output)
+                            else await n.branch[k].then(output);
                         } 
-                        else if (typeof node.branch[k].then === 'string') {
-                            if(node.graph) node.branch[k].then = node.graph.nodes.get(node.branch[k].then);
-                            else node.branch[k].then = node.nodes.get(node.branch[k].then);
+                        else if (typeof n.branch[k].then === 'string') {
+                            if(n.graph) n.branch[k].then = n.graph.nodes.get(n.branch[k].then);
+                            else n.branch[k].then = n.nodes.get(n.branch[k].then);
 
-                            if(node.branch[k].then instanceof GraphNode) {
-                                if(Array.isArray(output))  await node.branch[k].then._run(node.branch[k].then,node,...output);
-                                else await node.branch[k].then._run(node.branch[k].then,node,...output);
+                            if(n.branch[k].then instanceof GraphNode) {
+                                if(Array.isArray(output))  await n.branch[k].then._run(n.branch[k].then,n,...output);
+                                else await n.branch[k].then._run(n.branch[k].then,n,...output);
                             } 
                         }
                     }
@@ -818,44 +818,44 @@ export class GraphNode {
     }
     
     //converts all children nodes and tag references to GraphNodes also
-    add = (node:GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
-        if(typeof node === 'function') node = { operator:node as any};
-        if(!(node instanceof GraphNode)) node = new GraphNode(node,this,this.graph); 
-        this.nodes.set(node.tag,node);
+    add = (n:GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
+        if(typeof n === 'function') n = { operator:n as any};
+        if(!(n instanceof GraphNode)) n = new GraphNode(n,this,this.graph); 
+        this.nodes.set(n.tag,n);
         if(this.graph) {
-            this.graph.nodes.set(node.tag,node);
+            this.graph.nodes.set(n.tag,n);
             this.graph.nNodes = this.graph.nodes.size;
         }
-        return node;
+        return n;
     }
     
-    remove = (node:string|GraphNode) => {
-        if(typeof node === 'string') node = this.nodes.get(node);
-        if(node instanceof GraphNode) {
-            this.nodes.delete(node.tag);
-            if(this.children[node.tag]) delete this.children[node.tag];
+    remove = (n:string|GraphNode) => {
+        if(typeof n === 'string') n = this.nodes.get(n);
+        if(n instanceof GraphNode) {
+            this.nodes.delete(n.tag);
+            if(this.children[n.tag]) delete this.children[n.tag];
             if(this.graph) {
-                this.graph.nodes.delete(node.tag);
+                this.graph.nodes.delete(n.tag);
                 this.graph.nNodes = this.graph.nodes.size;
             }
             this.nodes.forEach((n:GraphNode) => {
-                if(n.nodes.get((node as GraphNode).tag)) {
-                    n.nodes.delete((node as GraphNode).tag);
-                    if(n.children[(node as GraphNode).tag]) delete n.children[(node as GraphNode).tag];
-                    if(n.parent?.tag === (node as GraphNode).tag) delete n.parent;
+                if(n.nodes.get((n as GraphNode).tag)) {
+                    n.nodes.delete((n as GraphNode).tag);
+                    if(n.children[(n as GraphNode).tag]) delete n.children[(n as GraphNode).tag];
+                    if(n.parent?.tag === (n as GraphNode).tag) delete n.parent;
                 }
             }); 
             
-            if(node.ondelete) node.ondelete(node);
+            if(n.ondelete) n.ondelete(n);
         }
     }
     
     //append a node as a child to a parent node (this by default)
-    append = (node:string|GraphNode, parentNode=this) => {
-        if(typeof node === 'string') node = this.nodes.get(node);
-        if(node instanceof GraphNode)  {
-            parentNode.addChildren(node);
-            if(node.forward) node.runSync = false;
+    append = (n:string|GraphNode, parentNode=this) => {
+        if(typeof n === 'string') n = this.nodes.get(n);
+        if(n instanceof GraphNode)  {
+            parentNode.addChildren(n);
+            if(n.forward) n.runSync = false;
         }
     }      
             
@@ -909,24 +909,24 @@ export class GraphNode {
         return result;
     }
 
-    getProps = (node=this) => {
+    getProps = (n=this) => {
        return {
-         tag:node.tag,
-         operator:node.operator,
-         graph:node.graph,
-         children:node.children, //will return the original prototypes kept in this._initial if they exist
-         parent:node.parent,
-         forward:node.forward,
-         backward:node.bacward,
-         loop:node.loop,
-         animate:node.animate,
-         frame:node.frame,
-         delay:node.delay,
-         recursive:node.recursive,
-         repeat:node.repeat,
-         branch:node.branch,
-         oncreate:node.oncreate,
-         DEBUGNODE:node.DEBUGNODE,
+         tag:n.tag,
+         operator:n.operator,
+         graph:n.graph,
+         children:n.children, //will return the original prototypes kept in this._initial if they exist
+         parent:n.parent,
+         forward:n.forward,
+         backward:n.bacward,
+         loop:n.loop,
+         animate:n.animate,
+         frame:n.frame,
+         delay:n.delay,
+         recursive:n.recursive,
+         repeat:n.repeat,
+         branch:n.branch,
+         oncreate:n.oncreate,
+         DEBUGNODE:n.DEBUGNODE,
          ...this._initial
        };
     }
@@ -954,9 +954,9 @@ export class GraphNode {
 
     }
 
-    removeTree = (node:GraphNode|string) => { //stop and dereference nodes to garbage collect them
-        if(node)if(typeof node === 'string') node = this.nodes.get(node);
-        if(node instanceof GraphNode) {
+    removeTree = (n:GraphNode|string) => { //stop and dereference nodes to garbage collect them
+        if(n)if(typeof n === 'string') n = this.nodes.get(n);
+        if(n instanceof GraphNode) {
             let checked = {};
             const recursivelyRemove = (node) => {
                 if(typeof node.children === 'object' && !checked[node.tag]) {
@@ -979,63 +979,63 @@ export class GraphNode {
                     }
                 }
             }
-            if(node.stopNode) 
-                node.stopNode();
-            if(node.tag) {
-                this.nodes.delete(node.tag);
-                if(this.children[node.tag]) 
-                    delete this.children[node.tag];
-                if(this.parent?.tag === node.tag) 
+            if(n.stopNode) 
+                n.stopNode();
+            if(n.tag) {
+                this.nodes.delete(n.tag);
+                if(this.children[n.tag]) 
+                    delete this.children[n.tag];
+                if(this.parent?.tag === n.tag) 
                     delete this.parent;
-                if(this[node.tag] instanceof GraphNode) 
-                    delete this[node.tag];
+                if(this[n.tag] instanceof GraphNode) 
+                    delete this[n.tag];
                 this.nodes.forEach((n) => {
-                    if((node as GraphNode)?.tag) {
-                        if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
-                        if(n.children[(node as GraphNode).tag] instanceof GraphNode) 
-                            delete n.children[(node as GraphNode).tag];
+                    if((n as GraphNode)?.tag) {
+                        if(n.nodes.get((n as GraphNode).tag)) n.nodes.delete((n as GraphNode).tag);
+                        if(n.children[(n as GraphNode).tag] instanceof GraphNode) 
+                            delete n.children[(n as GraphNode).tag];
                     }
                 });
-                recursivelyRemove(node);
+                recursivelyRemove(n);
                 if(this.graph) 
-                    this.graph.removeTree(node, checked); //remove from parent graph too 
-                else if(node.ondelete) 
-                    node.ondelete(node);
+                    this.graph.removeTree(n, checked); //remove from parent graph too 
+                else if(n.ondelete) 
+                    n.ondelete(n);
             }
         }
     }
 
-    checkNodesHaveChildMapped = (node:GraphNode|Graph, child:GraphNode, checked={}) => { //crawling around node/graph maps 
-        let tag = node.tag;
-        if(!tag) tag = node.name;
+    checkNodesHaveChildMapped = (n:GraphNode|Graph, child:GraphNode, checked={}) => { //crawling around node/graph maps 
+        let tag = n.tag;
+        if(!tag) tag = n.name;
 
         if(!checked[tag]) {
             checked[tag] = true;
-            if(node.children) {
-                if(child.tag in node.children) {
-                    if((node.children[child.tag] instanceof GraphNode)) {
-                        if(!node.nodes.get(child.tag)) node.nodes.set(child.tag,child);
-                        node.children[child.tag] = child;
-                        if(!node.firstRun) node.firstRun = true; 
+            if(n.children) {
+                if(child.tag in n.children) {
+                    if((n.children[child.tag] instanceof GraphNode)) {
+                        if(!n.nodes.get(child.tag)) n.nodes.set(child.tag,child);
+                        n.children[child.tag] = child;
+                        if(!n.firstRun) n.firstRun = true; 
                     }
                 }
             }
-            if(node.parent instanceof GraphNode) {
-                if(node.nodes.get(child.tag) && !node.parent.nodes.get(child.tag)) 
-                    node.parent.nodes.set(child.tag,child);
-                if(node.parent.children) {
-                    this.checkNodesHaveChildMapped(node.parent,child,checked);
-                } else if(node.nodes) {
-                    node.nodes.forEach((n) => {
+            if(n.parent instanceof GraphNode) {
+                if(n.nodes.get(child.tag) && !n.parent.nodes.get(child.tag)) 
+                    n.parent.nodes.set(child.tag,child);
+                if(n.parent.children) {
+                    this.checkNodesHaveChildMapped(n.parent,child,checked);
+                } else if(n.nodes) {
+                    n.nodes.forEach((n) => {
                         if(!checked[n.tag]) {
                             this.checkNodesHaveChildMapped(n,child,checked);
                         }
                     });
                 }
             } 
-            if(node.graph) {
-                if(node.parent && (node.parent.name !== node.graph.name)) {
-                    node.graph.nodes.forEach((n) => {
+            if(n.graph) {
+                if(n.parent && (n.parent.name !== n.graph.name)) {
+                    n.graph.nodes.forEach((n) => {
                         if(!checked[n.tag]) {
                             this.checkNodesHaveChildMapped(n,child,checked);
                         }
@@ -1092,66 +1092,70 @@ export class GraphNode {
     }
     
     //stop any loops
-    stopLooping = (node:GraphNode=this) => {
-        node.isLooping = false;
+    stopLooping = (n:GraphNode=this) => {
+        n.isLooping = false;
     }
     
-    stopAnimating = (node:GraphNode=this) => {
-        node.isAnimating = false;
+    stopAnimating = (n:GraphNode=this) => {
+        n.isAnimating = false;
     }
     
-    stopNode = (node:GraphNode=this) => {
-        node.stopAnimating(node);
-        node.stopLooping(node);
+    stopNode = (n:GraphNode=this) => {
+        n.stopAnimating(n);
+        n.stopLooping(n);
     }
 
     
     //subscribe a node (that isn't a forward-passed child of this node) to run after this node 
-    subscribeNode = (node:GraphNode|string) => {
-        if(typeof node === 'string') node = this.nodes.get(node) as GraphNode;
-        if(node.tag) this.nodes.set(node.tag,node); //register the node on this node
-        return this.state.subscribeTrigger(this.tag,(res)=>{(node as GraphNode)._run((node as GraphNode), this, res);})
+    subscribeNode = (n:GraphNode|string) => {
+        if(typeof n === 'string') n = this.nodes.get(n) as GraphNode;
+        if(n.tag) this.nodes.set(n.tag,n); //register the node on this node
+        if(n) return this.state.subscribeTrigger(this.tag,
+            (res)=>{
+                if(Array.isArray(res)) (n as GraphNode)._run((n as GraphNode), this, ...res);
+                else (n as GraphNode)._run((n as GraphNode), this, res);
+            })
     }
     
     //recursively print a snapshot reconstructible json hierarchy of the node and the children. 
     // Start at the top/_initially called nodes to print the whole hierarchy in one go
-    print = (node:string|GraphNode=this,printChildren=true,nodesPrinted:any[]=[]) => {
+    print = (n:string|GraphNode=this,printChildren=true,nodesPrinted:any[]=[]) => {
     
         let dummyNode = new GraphNode(); //test against this for adding props
     
-        if(typeof node === 'string') node = this.nodes.get(node);
-        if(node instanceof GraphNode) {
+        if(typeof n === 'string') n = this.nodes.get(n);
+        if(n instanceof GraphNode) {
             
-            nodesPrinted.push(node.tag);
+            nodesPrinted.push(n.tag);
         
             let jsonToPrint:any = {
-                tag:node.tag,
-                operator:node.operator.toString()
+                tag:n.tag,
+                operator:n.operator.toString()
             };
         
-            if(node.parent) jsonToPrint.parent = node.parent.tag;
+            if(n.parent) jsonToPrint.parent = n.parent.tag;
             //step through the children
-            if(typeof node.children === 'object') {
-                for(const key in node.children) {
-                    if(typeof node.children[key] === 'string') return node.children[key];
-                    if(nodesPrinted.includes(node.children[key].tag)) return node.children[key].tag;   
+            if(typeof n.children === 'object') {
+                for(const key in n.children) {
+                    if(typeof n.children[key] === 'string') return n.children[key];
+                    if(nodesPrinted.includes(n.children[key].tag)) return n.children[key].tag;   
                     else if(!printChildren) {
-                        return node.children[key].tag;
+                        return n.children[key].tag;
                     }
-                    else return node.children[key].print(node.children[key],printChildren,nodesPrinted);
+                    else return n.children[key].print(n.children[key],printChildren,nodesPrinted);
                 }
             }
         
-            for(const prop in node) {
+            for(const prop in n) {
                 if(prop === 'parent' || prop === 'children') continue; //skip these as they are dealt with as special cases
                 if(typeof (dummyNode as any)[prop] === 'undefined') {
-                    if(typeof node[prop] === 'function') {
-                        jsonToPrint[prop] = node[prop].toString()
-                    } else if (typeof node[prop] === 'object') {
-                        jsonToPrint[prop] = (JSON as any).stringifyWithCircularRefs(node[prop]); //circular references won't work, nested nodes already printed elsewhere in the tree will be kept as their tags
+                    if(typeof n[prop] === 'function') {
+                        jsonToPrint[prop] = n[prop].toString()
+                    } else if (typeof n[prop] === 'object') {
+                        jsonToPrint[prop] = (JSON as any).stringifyWithCircularRefs(n[prop]); //circular references won't work, nested nodes already printed elsewhere in the tree will be kept as their tags
                     } 
                     else {
-                        jsonToPrint[prop] = node[prop];
+                        jsonToPrint[prop] = n[prop];
                     }
                 }
             }
@@ -1206,17 +1210,17 @@ export class Graph {
     }
 
     //converts all children nodes and tag references to GraphNodes also
-    add = (node:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
-        let props = node;
-        if(!(node instanceof GraphNode)) node = new GraphNode(props,this,this); 
+    add = (n:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
+        let props = n;
+        if(!(n instanceof GraphNode)) n = new GraphNode(props,this,this); 
         else {
             this.nNodes = this.nodes.size;
-            if(node.tag) {
-                this.tree[node.tag] = props; //set the head node prototype in the tree object
-                this.nodes.set(node.tag,node);
+            if(n.tag) {
+                this.tree[n.tag] = props; //set the head node prototype in the tree object
+                this.nodes.set(n.tag,n);
             }
         }
-        return node;
+        return n;
     }
 
     setTree = (tree:Tree = this.tree) => {
@@ -1309,35 +1313,35 @@ export class Graph {
         return this.nodes.get(tag);
     }
 
-    set = (node:GraphNode) => {
-        return this.nodes.set(node.tag,node);
+    set = (n:GraphNode) => {
+        return this.nodes.set(n.tag,n);
     }
 
     //Should create a sync version with no promises (will block but be faster)
-    run = (node:string|GraphNode,...args) => {
-        if(typeof node === 'string') node = this.nodes.get(node);
-        if(node instanceof GraphNode)
-            return node._run(node,this,...args)
+    run = (n:string|GraphNode,...args) => {
+        if(typeof n === 'string') n = this.nodes.get(n);
+        if(n instanceof GraphNode)
+            return n._run(n,this,...args)
         else return undefined;
     }
     
-    runAsync = (node:string|GraphNode,...args) => {
-        if(typeof node === 'string') node = this.nodes.get(node);
-        if(node instanceof GraphNode)
-            return new Promise((res,rej) => {res((node as GraphNode)._run((node as GraphNode),this,...args))})
+    runAsync = (n:string|GraphNode,...args) => {
+        if(typeof n === 'string') n = this.nodes.get(n);
+        if(n instanceof GraphNode)
+            return new Promise((res,rej) => {res((n as GraphNode)._run((n as GraphNode),this,...args))})
         else return new Promise((res,rej) => {res(undefined)});
     }
 
-    _run = (node:string|GraphNode,origin:string|GraphNode|Graph=this,...args) => {
-        if(typeof node === 'string') node = this.nodes.get(node);
-        if(node instanceof GraphNode)
-            return node._run(node,origin,...args)
+    _run = (n:string|GraphNode,origin:string|GraphNode|Graph=this,...args) => {
+        if(typeof n === 'string') n = this.nodes.get(n);
+        if(n instanceof GraphNode)
+            return n._run(n,origin,...args)
         else return undefined;
     }
 
-    removeTree = (node:string|GraphNode, checked?:any) => {
-        if(typeof node === 'string') node = this.nodes.get(node);
-        if(node instanceof GraphNode) {
+    removeTree = (n:string|GraphNode, checked?:any) => {
+        if(typeof n === 'string') n = this.nodes.get(n);
+        if(n instanceof GraphNode) {
             if(!checked) checked = {};
             const recursivelyRemove = (node:GraphNode) => {
                 if(node.children && !checked[node.tag]) {
@@ -1366,66 +1370,68 @@ export class Graph {
                     }
                 }
             }
-            if((node as GraphNode).stopNode) (node as GraphNode).stopNode();
-            if((node as GraphNode).tag) {
-                this.nodes.delete((node as GraphNode).tag);
+            if((n as GraphNode).stopNode) (n as GraphNode).stopNode();
+            if((n as GraphNode).tag) {
+                this.nodes.delete((n as GraphNode).tag);
                 this.nodes.forEach((n) => {
-                    if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
+                    if(n.nodes.get((n as GraphNode).tag)) n.nodes.delete((n as GraphNode).tag);
                 });
                 this.nNodes = this.nodes.size;
-                recursivelyRemove(node as GraphNode);
+                recursivelyRemove(n as GraphNode);
             }
-            if(node.ondelete) node.ondelete(node);
+            if(n.ondelete) n.ondelete(n);
         }
-        return node;
+        return n;
     }
 
-    remove = (node:string|GraphNode) => {
-        if(typeof node === 'string') node = this.nodes.get(node);
-        if(node instanceof GraphNode) {
-            (node as GraphNode).stopNode();
-            if((node as GraphNode)?.tag) {
-                if(this.nodes.get((node as GraphNode).tag)) 
+    remove = (n:string|GraphNode) => {
+        if(typeof n === 'string') n = this.nodes.get(n);
+        if(n instanceof GraphNode) {
+            (n as GraphNode).stopNode();
+            if((n as GraphNode)?.tag) {
+                if(this.nodes.get((n as GraphNode).tag)) 
                 {
-                    this.nodes.delete((node as GraphNode).tag);
+                    this.nodes.delete((n as GraphNode).tag);
                     //if(this.graph) this.graph.nodes.delete(node.tag);
                     this.nodes.forEach((n) => {
-                        if(n.nodes.get((node as GraphNode).tag)) n.nodes.delete((node as GraphNode).tag);
+                        if(n.nodes.get((n as GraphNode).tag)) n.nodes.delete((n as GraphNode).tag);
                     });
                 }
             }
-            if(node.ondelete) node.ondelete(node);
+            if(n.ondelete) n.ondelete(n);
         }
-        return node;
+        return n;
     }
 
-    append = (node:GraphNode, parentNode:GraphNode) => {
-        parentNode.addChildren(node);
+    append = (n:GraphNode, parentNode:GraphNode) => {
+        parentNode.addChildren(n);
     }
 
-    callParent = async (node:GraphNode, origin:string|GraphNode|Graph=node, ...args ) => {
-        if(node?.parent) {
-            return await node.callParent(node,origin,...args);
+    callParent = async (n:GraphNode, origin:string|GraphNode|Graph=n, ...args ) => {
+        if(n?.parent) {
+            return await n.callParent(n,origin,...args);
         }
     }
 
-    callChildren = async (node:GraphNode, idx?:number, ...args) => {
-        if(node?.children) {
-            return await node.callChildren(idx,...args);
+    callChildren = async (n:GraphNode, idx?:number, ...args) => {
+        if(n?.children) {
+            return await n.callChildren(idx,...args);
         }
     }
 
     subscribe = (
-        node:string|GraphNode,
+        n:string|GraphNode,
         callback:GraphNode|string|((res:any)=>void) //subscribe a callback or another node (pass a node or string in this case)
     ) => {
         if(!callback) return;
-        if(node instanceof GraphNode && typeof callback === 'function') {
-            return node.subscribe(callback);
+        if(n instanceof GraphNode && typeof callback === 'function') {
+            return n.subscribe(callback);
         }
         else if(callback instanceof GraphNode || typeof callback === 'string')
-            return this.subscribeNode(node,callback)
-        else if(typeof node == 'string') return this.state.subscribeTrigger(node,callback);
+            return this.subscribeNode(n,callback)
+        else if(typeof n == 'string') {
+            return this.state.subscribeTrigger(n,callback);
+        }
     }
 
     unsubscribe = (tag:string,sub:number) => {
@@ -1437,20 +1443,29 @@ export class Graph {
         let tag;
         if((inputNode as GraphNode)?.tag) tag = (inputNode as GraphNode).tag;
         else if (typeof inputNode === 'string') tag = inputNode;
-        return this.state.subscribeTrigger(tag,(res)=>{this.run(outputNode,inputNode, ...res);}) // TODO: Check if correct node
+        if(typeof outputNode === 'string') outputNode = this.nodes.get(outputNode);
+        //console.log(outputNode, inputNode);
+        if(inputNode && outputNode) {
+            let sub = this.state.subscribeTrigger(tag,(res)=>{ 
+                if(Array.isArray(res)) (outputNode as GraphNode).run(...res);
+                else (outputNode as GraphNode).run(res);
+            }); // TODO: Check if correct node
+            //console.log(this.state,tag);
+            return sub;
+        } 
     }
 
-    stopNode = (node:string|GraphNode) => {
-        if(typeof node === 'string') {
-            node = this.nodes.get(node);
+    stopNode = (n:string|GraphNode) => {
+        if(typeof n === 'string') {
+            n = this.nodes.get(n);
         }
-        if(node instanceof GraphNode) {
-            node.stopNode(); //just sets node.isAnimating and node.isLooping to false
+        if(n instanceof GraphNode) {
+            n.stopNode(); //just sets node.isAnimating and node.isLooping to false
         }
     }
 
-    print = (node:GraphNode|undefined=undefined,printChildren=true) => {
-        if(node instanceof GraphNode) return node.print(node,printChildren);
+    print = (n:GraphNode|undefined=undefined,printChildren=true) => {
+        if(n instanceof GraphNode) return n.print(n,printChildren);
         else {
             let printed = `{`;
             this.nodes.forEach((n) => { //print all nodes if none specified

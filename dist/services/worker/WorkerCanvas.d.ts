@@ -1,3 +1,4 @@
+import { Graph } from "../../Graph";
 export declare type WorkerCanvasTransferProps = {
     canvas: HTMLCanvasElement;
     context?: string;
@@ -36,6 +37,7 @@ export declare type WorkerCanvasControls = {
     set: (newDrawProps: WorkerCanvasReceiveProps) => void;
 };
 export declare type WorkerCanvas = {
+    graph: Graph;
     canvas: any;
     context?: CanvasRenderingContext2D | WebGL2RenderingContext | WebGLRenderingContext;
     _id: string;
@@ -50,15 +52,15 @@ export declare const workerCanvasRoutes: {
     transferCanvas: (self: any, origin: any, worker: Worker | MessagePort, options: WorkerCanvasTransferProps, route?: string) => WorkerCanvasControls;
     receiveCanvas: (self: any, origin: any, options: WorkerCanvasReceiveProps) => string;
     setDraw: (self: any, origin: any, settings: WorkerCanvasReceiveProps, _id?: string) => string;
-    drawFrame: (self: any, origin: any, _id?: string, props?: {
+    drawFrame: (self: any, origin: any, props?: {
         [key: string]: any;
-    }) => string;
+    }, _id?: string) => string;
     clearCanvas: (self: any, origin: any, _id?: string) => string;
     initCanvas: (self: any, origin: any, _id?: string) => string;
-    updateCanvas: (self: any, origin: any, _id?: string, input?: any) => string;
-    setProps: (self: any, origin: any, _id?: string, props?: {
+    updateCanvas: (self: any, origin: any, input?: any, _id?: string) => string;
+    setProps: (self: any, origin: any, props?: {
         [key: string]: any;
-    }) => string;
+    }, _id?: string) => string;
     startAnim: (self: any, origin: any, _id?: string, draw?: string | ((self: any, canvas: any, context: any) => void)) => string;
     stopAnim: (self: any, origin: any, _id?: string) => string;
     initProxyElement: typeof import("./ProxyListener").initProxyElement;

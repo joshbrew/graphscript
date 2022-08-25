@@ -152,8 +152,9 @@ export class DOMElement extends HTMLElement {
             //console.log(name,this.getAttribute(name),this[name])
             //get/set/observe arbitrary attributes
             let parsed = att.value;
-            if(name.includes('eval_')) { // e.g. <custom-  eval_loginput="(input)=>{console.log(input);}"></custom-> //now elm.loginput(input) should work
-                name = name.split('_')
+            if(name.includes('eval_') || name.includes('()')) { // e.g. <custom-  loginput()="(input)=>{console.log(input);}"></custom-> //now elm.loginput(input) should work
+                if(name.includes('eval_')) name = name.split('_');
+                else if (name.includes('()')) name = name.substring(0,name.indexOf('('));
                 name.shift()
                 name = name.join();
                 parsed = parseFunctionFromText(att.value);  

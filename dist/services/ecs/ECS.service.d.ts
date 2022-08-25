@@ -1,17 +1,20 @@
 import { GraphNode } from '../../Graph';
 import { Service, ServiceOptions, RouteProp, Routes } from '../Service';
-export declare type EntityProps = boolean | ({
+export declare type EntityProps = ({
     components: {
         [key: string]: any;
     };
 } & RouteProp) | GraphNode;
-export declare type SystemProps = boolean | (RouteProp & {
+export declare type SystemProps = (RouteProp & {
     operator: (self: any, origin: any, entities: {
         [key: string]: Entity;
     }) => any;
     setupEntities: (self: any, entities: {
         [key: string]: Entity;
-    }) => void;
+    }) => {
+        [key: string]: Entity;
+    };
+    setupEntity: (self: any, entity: Entity) => Entity;
 }) | GraphNode;
 export declare type Entity = {
     components: {
@@ -24,7 +27,10 @@ export declare type System = {
     }) => any;
     setupEntities: (self: any, entities: {
         [key: string]: Entity;
-    }) => void;
+    }) => {
+        [key: string]: Entity;
+    };
+    setupEntity: (self: any, entity: Entity) => Entity;
 } & GraphNode;
 export declare type ECSOptions = {
     entities: {
@@ -42,28 +48,40 @@ export declare class ECSService extends Service {
     systems: {
         [key: string]: System;
     };
+    map: Map<string, {
+        [key: string]: Entity;
+    }>;
     order: string[];
     animating: boolean;
-    constructor(options: ECSOptions);
+    constructor(options?: ECSOptions);
     updateEntities: (order?: string[], filter?: boolean) => void;
     animate: (filter?: boolean, order?: string[]) => void;
     stop: () => void;
     start: (filter?: boolean) => void;
+    addEntities: (prototype: EntityProps, components?: {
+        [key: string]: any;
+    }, count?: number) => string[];
+    addEntity: (prototype?: EntityProps, components?: {
+        [key: string]: any;
+    }) => Entity;
+    addSystems: (systems?: {
+        [key: string]: SystemProps;
+    }, order?: string[]) => {
+        [key: string]: System;
+    };
+    addSystem: (prototype: SystemProps, setup?: (self: any, entities: any) => any, update?: (self: any, entities: any) => any, order?: string[]) => System;
+    setupEntity: (entity: Entity) => void;
+    removeEntity: (tag: string) => string | GraphNode;
+    removeSystem: (tag: string) => string | GraphNode;
     filterObject(o: {
         [key: string]: any;
     }, filter: (string: any, any: any) => boolean | undefined): {
         [k: string]: any;
     };
-    addEntity(prototype?: {
+    bufferValues: (entities: {
+        [key: string]: Entity;
+    }, property: string, keys?: string[] | {
         [key: string]: any;
-    }, components?: {
-        [key: string]: any;
-    }): Entity;
-    addSystem(prototype: {
-        [key: string]: any;
-    }, setup: (self: any, entities: any) => any, update: (self: any, entities: any) => any): System;
-    setupEntities(entities?: any, system?: any): void;
-    removeEntity(tag: string): string | GraphNode;
-    removeSystem(tag: string): string | GraphNode;
+    }, buffer?: ArrayBufferLike) => ArrayBufferLike;
     routes: Routes;
 }

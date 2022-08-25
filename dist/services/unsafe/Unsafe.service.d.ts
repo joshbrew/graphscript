@@ -11,10 +11,16 @@ export declare const unsafeRoutes: {
         args: any[];
     };
     receiveClass: (self: GraphNode, origin: any, stringified: string, className?: string) => boolean;
+    setGlobal: (self: GraphNode, origin: any, key: string, value: any) => boolean;
+    assignGlobalObject: (self: GraphNode, origin: any, target: string, source: {
+        [key: string]: any;
+    }) => boolean;
     setValue: (self: GraphNode, origin: any, key: string, value: any) => boolean;
     assignObject: (self: GraphNode, origin: any, target: string, source: {
         [key: string]: any;
     }) => boolean;
+    setGlobalFunction: (self: GraphNode, origin: any, fn: any, fnName?: string) => boolean;
+    assignFunctionToGlobalObject: (self: GraphNode, origin: any, globalObjectName: string, fn: any, fnName: any) => boolean;
     setFunction: (self: GraphNode, origin: any, fn: any, fnName?: string) => boolean;
-    assignFunctionToObject: (self: GraphNode, origin: any, globalObjectName: string, fn: any, fnName: any) => boolean;
+    assignFunctionToObject: (self: GraphNode, origin: any, objectName: string, fn: any, fnName: any) => boolean;
 };

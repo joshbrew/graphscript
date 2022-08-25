@@ -17,9 +17,12 @@ export declare type RouteProp = {
     trace?: (...args: any) => any | void;
     aliases?: string[];
 } & GraphNodeProperties;
+export declare type Class = {
+    new (...args: any[]): any;
+};
 export declare type Route = GraphNode | GraphNodeProperties | Graph | Service | OperatorType | ((...args: any[]) => any | void) | ({
     aliases?: string[];
-} & GraphNodeProperties) | RouteProp;
+} & GraphNodeProperties) | RouteProp | Class | any;
 export declare type Routes = {
     [key: string]: Route;
 };
@@ -48,6 +51,7 @@ export declare type ServiceOptions = {
     };
     [key: string]: any;
 };
+export declare type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
 export declare class Service extends Graph {
     routes: Routes;
     loadDefaultRoutes: boolean;
@@ -67,5 +71,6 @@ export declare class Service extends Graph {
     terminate: (...args: any) => void;
     isTypedArray(x: any): boolean;
     recursivelyAssign: (target: any, obj: any) => any;
+    spliceTypedArray(arr: TypedArray, start: number, end?: number): TypedArray;
     defaultRoutes: Routes;
 }

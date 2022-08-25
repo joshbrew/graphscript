@@ -14,12 +14,12 @@ export declare class Router {
     id: string;
     service: Service;
     nodes: Map<any, any>;
-    run: (node: string | GraphNode, ...args: any[]) => any;
-    _run: (node: string | GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
-    add: (node?: GraphNode | import("../Graph").GraphNodeProperties | import("../Graph").OperatorType | ((...args: any[]) => any)) => GraphNode | import("../Graph").GraphNodeProperties;
-    remove: (node: string | GraphNode) => string | GraphNode;
-    stopNode: (node: string | GraphNode) => void;
-    subscribe: (node: string | GraphNode, callback: (res: any) => void) => number;
+    run: (n: string | GraphNode, ...args: any[]) => any;
+    _run: (n: string | GraphNode, origin?: string | GraphNode | Graph, ...args: any[]) => any;
+    add: (n?: GraphNode | import("../Graph").GraphNodeProperties | import("../Graph").OperatorType | ((...args: any[]) => any)) => GraphNode | import("../Graph").GraphNodeProperties;
+    remove: (n: string | GraphNode) => string | GraphNode;
+    stopNode: (n: string | GraphNode) => void;
+    subscribe: (n: string | GraphNode, callback: string | GraphNode | ((res: any) => void)) => number;
     unsubscribe: (tag: string, sub: number) => void;
     get: (tag: string) => any;
     reconstruct: (json: string | {

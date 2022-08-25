@@ -277,7 +277,85 @@ export class WorkerService extends Service {
         return URL.createObjectURL(blob);
     }
 
+    getTransferable(message:any) {
+        //automatic dataview/typedarray/arraybuffer transferring. 
+        // There are more transferable types but we start to slow things 
+        //   down if we check too many cases so make transfer explicit in general! This is mainly for automating subscriptions
+        let transfer;
+        if(typeof message === 'object') {
+            if(message.args) {
+                if (message.args.constructor?.name === 'Object') {
+                    for(const key in message.args) {
+                        if(ArrayBuffer.isView(message.args[key])) {
+                            if(!transfer) 
+                                transfer = [message.args[key].buffer]  as StructuredSerializeOptions;
+                            else 
+                                (transfer as any[]).push(message.args[key].buffer);
+                        } else if (message.args[key]?.constructor?.name === 'ArrayBuffer') {
+                            if(!transfer) 
+                                transfer = [message.args[key]]  as StructuredSerializeOptions;
+                            else 
+                                (transfer as any[]).push(message.args[key]);
+                        }
+                    }
+                }
+                else if(Array.isArray(message.args) && message.args.length < 11) { //lets check any argument less size 10 or less for typed array inputs
+                    message.args.forEach((arg) => {
+                        if(ArrayBuffer.isView(arg)) { 
+                            transfer = [arg.buffer] as StructuredSerializeOptions;
+                        } else if (arg.constructor?.name === 'ArrayBuffer') 
+                            transfer = [arg] as StructuredSerializeOptions;
+                    });
+                } 
+                else if(ArrayBuffer.isView(message.args)) { 
+                    transfer = [message.args.buffer] as StructuredSerializeOptions;
+                } 
+                else if (message.args.constructor?.name === 'ArrayBuffer') {
+                    transfer = [message] as StructuredSerializeOptions;
+                } 
+            }
+            else if (message.constructor?.name === 'Object') { 
+                for(const key in message) {
+                    if(ArrayBuffer.isView(message[key])) {
+                        if(!transfer) 
+                            transfer = [message[key].buffer]  as StructuredSerializeOptions;
+                        else 
+                            (transfer as any[]).push(message[key].buffer);
+                    } else if (message[key]?.constructor?.name === 'ArrayBuffer') {
+                        if(!transfer) 
+                            transfer = [message[key]]  as StructuredSerializeOptions;
+                        else 
+                            (transfer as any[]).push(message[key]);
+                    }
+                }
+            }
+            else if(Array.isArray(message) && message.length < 11) { //lets check any argument size 10 or less for typed array inputs
+                message.forEach((arg) => {
+                    if(ArrayBuffer.isView(arg)) { 
+                        transfer = [arg.buffer] as StructuredSerializeOptions;
+                    } else if (arg.constructor?.name === 'ArrayBuffer') 
+                        transfer = [arg] as StructuredSerializeOptions;
+                });
+            } 
+            else if(ArrayBuffer.isView(message)) { 
+                transfer = [message.buffer] as StructuredSerializeOptions;
+            }  
+            else if (message.constructor?.name === 'ArrayBuffer') {
+                transfer = [message] as StructuredSerializeOptions;
+            } 
+        }
+
+        return transfer;
+    }
+
     transmit = (message:ServiceMessage|any, worker?:Worker|MessagePort|string, transfer?:StructuredSerializeOptions ) => {
+        
+        if(!transfer) {
+            transfer = this.getTransferable(message); //automatically transfer arraybuffers
+        }
+
+        //console.log(message)
+
         if(worker instanceof Worker || worker instanceof MessagePort) {
             worker.postMessage(message,transfer);
         } else if(typeof worker === 'string') {
@@ -404,13 +482,13 @@ export class WorkerService extends Service {
             if(res instanceof Promise) {
                 res.then((r) => {
                     if((worker as any)?.postMessage) 
-                        (worker as any).postMessage({args:r,route})
+                        (worker as any).postMessage({args:r,callbackId:route})
                     else if(globalThis.postMessage)
                         globalThis.postMessage({args:r,callbackId:route});
                 });
             } else {
                 if((worker as any)?.postMessage) 
-                    (worker as any).postMessage({args:res,route})
+                    (worker as any).postMessage({args:res,callbackId:route})
                 else if(globalThis.postMessage)
                     globalThis.postMessage({args:res,callbackId:route});
             }

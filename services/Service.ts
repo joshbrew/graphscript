@@ -59,6 +59,17 @@ export type ServiceOptions = {
     [key:string]:any
 };
 
+export type TypedArray =
+| Int8Array
+| Uint8Array
+| Uint8ClampedArray
+| Int16Array
+| Uint16Array
+| Int32Array
+| Uint32Array
+| Float32Array
+| Float64Array;
+
 
 export class Service extends Graph {
 
@@ -585,6 +596,23 @@ export class Service extends Graph {
         return target;
     }
     
+    //splice out a section of a typed array. If end is undefined we'll splice all values from the starting position to the end
+    //if you want to replace values, just use .set, this is for quickly removing values to trim arrays e.g. if an entity is popped
+    spliceTypedArray(arr:TypedArray,start:number,end?:number) {
+        let s = arr.subarray(0,start)
+        let e;
+        if(end) {
+            e = arr.subarray(end+1);
+        }
+
+        let n:TypedArray;
+        if(s.length > 0 || e?.length > 0) n = new (arr as any).constructor(s.length+e.length); //use the same constructor
+        if(s.length > 0) n.set(s);
+        if(e && e.length > 0) n.set(e,s.length);
+
+        return n;
+    }
+    
     defaultRoutes:Routes = { //declared at the end so everything on this class is defined to pass through as node props
         '/':{ //if no start page provided to HTTPbackend this will print instead on GET
             get:()=>{ //if only a get or post are defined the will become the operator for making graph calls
@@ -633,6 +661,7 @@ export class Service extends Graph {
             } else return stringifyWithCircularRefs(this.state.data);
         },
         //bunch of methods generically available on routes for each service e.g. 'http/run' :-O
+        spliceTypedArray:this.spliceTypedArray,
         transmit:this.transmit,
         receive:this.receive,
         load:this.load,

@@ -1053,8 +1053,8 @@ export const Systems = {
                     useAttraction:false, //particles can attract each other on a curve
                     //group:0 //search groups to split boids groups (todo)
                     groupRadius:200,
-                    groupSize:5, //number of boids checked per frame to update velocities
-                    searchLimit:10
+                    groupSize:1, //number of boids checked per frame to update velocities
+                    searchLimit:3
                 };
             }  
 
@@ -1209,15 +1209,15 @@ export const Systems = {
     
                 if(p0.boid.useAttractor == true){
                     boidVelocities[12] = (p0.boid.attractor.x-p0.position.x)*p0.boid.attractor.mul;
-                    if(p0.position.x > p0.boid.boundingBox.left || p0.position.x < p0.boid.boundingBox.right) {
+                    if(p0.position.x > p0.boundingBox.left || p0.position.x < p0.boundingBox.right) {
                         boidVelocities[12] *= 3; //attractor should be in the bounding box for this to work properly 
                     }
                     boidVelocities[13] = (p0.boid.attractor.y-p0.position.y)*p0.boid.attractor.mul;
-                    if(p0.position.y > p0.boid.boundingBox.top || p0.position.y < p0.boid.boundingBox.bottom) {
+                    if(p0.position.y > p0.boundingBox.top || p0.position.y < p0.boundingBox.bottom) {
                         boidVelocities[13] *= 3;
                     }
                     boidVelocities[14] = (p0.boid.attractor.z-p0.position.z)*p0.boid.attractor.mul;
-                    if(p0.position.z > p0.boid.boundingBox.front || p0.position.z < p0.boid.boundingBox.back) {
+                    if(p0.position.z > p0.boundingBox.front || p0.position.z < p0.boundingBox.back) {
                         boidVelocities[14] *= 3;
                     }
                 }
@@ -1226,9 +1226,9 @@ export const Systems = {
     
                 //if(i===0) console.log(p0, p0.position, p0.velocity, cohesionVec,separationVec,alignmentVec,swirlVec,attractorVec)
     
-                entities[i].velocity.x=p0.velocity.x*p0.drag+boidVelocities[0]+boidVelocities[3]+boidVelocities[6]+boidVelocities[9]+boidVelocities[12]+boidVelocities[15],
-                entities[i].velocity.y=p0.velocity.y*p0.drag+boidVelocities[1]+boidVelocities[4]+boidVelocities[7]+boidVelocities[10]+boidVelocities[13]+boidVelocities[16],
-                entities[i].velocity.z=p0.velocity.z*p0.drag+boidVelocities[2]+boidVelocities[5]+boidVelocities[8]+boidVelocities[11]+boidVelocities[14]+boidVelocities[17]
+                entities[i].velocity.x=p0.velocity.x+boidVelocities[0]+boidVelocities[3]+boidVelocities[6]+boidVelocities[9]+boidVelocities[12]+boidVelocities[15],
+                entities[i].velocity.y=p0.velocity.y+boidVelocities[1]+boidVelocities[4]+boidVelocities[7]+boidVelocities[10]+boidVelocities[13]+boidVelocities[16],
+                entities[i].velocity.z=p0.velocity.z+boidVelocities[2]+boidVelocities[5]+boidVelocities[8]+boidVelocities[11]+boidVelocities[14]+boidVelocities[17]
                 
                 //console.log(i,groupCount)
                 if(isNaN(entities[i].velocity.x)) console.error(p0, i, groupCount, p0.position, p0.velocity,swirlVec,attractorVec)
@@ -1256,6 +1256,7 @@ export const Systems = {
             if(!('gravity' in entity)) entity.gravity = -9.81; //m/s^2 on earth
             if(!entity.acceleration) entity.acceleration = {x:0,y:0,z:0};
             if(!entity.velocity) entity.velocity = {x:0,y:0,z:0};
+            if(!('maxSpeed' in entity)) entity.maxSpeed = 3;
             if(!entity.position) entity.position = {x:0,y:0,z:0};
 
             return entity;
@@ -1271,27 +1272,37 @@ export const Systems = {
                 
                 if(typeof entity.force === 'object' && entity.mass) { //F = ma, F in Newtons, m in kg, a in m/s^2
                     if(entity.force.x) {
-                        entity.accleration.x += entity.force.x/entity.mass;
+                        entity.acceleration.x += entity.force.x/entity.mass;
                         entity.force.x = 0;
                     }
                     if(entity.force.y) {
-                        entity.accleration.y += entity.force.y/entity.mass;
+                        entity.acceleration.y += entity.force.y/entity.mass;
                         entity.force.y = 0;
                     }
                     if(entity.force.z) {
-                        entity.accleration.z += entity.force.z/entity.mass + entity.gravity;
+                        entity.acceleration.z += entity.force.z/entity.mass + entity.gravity;
                         entity.force.z = 0;
                     }
                 }
                 if(typeof entity.acceleration === 'object') {
                     if(entity.drag) { //e.g.
-                        if(entity.accleration.x) entity.acceleration.x -= entity.acceleration.x*entity.drag*timeStep;
-                        if(entity.accleration.y) entity.acceleration.y -= entity.acceleration.y*entity.drag*timeStep;
-                        if(entity.accleration.z) entity.acceleration.z -= entity.acceleration.z*entity.drag*timeStep;
+                        if(entity.acceleration.x) entity.acceleration.x -= entity.acceleration.x*entity.drag*timeStep;
+                        if(entity.acceleration.y) entity.acceleration.y -= entity.acceleration.y*entity.drag*timeStep;
+                        if(entity.acceleration.z) entity.acceleration.z -= entity.acceleration.z*entity.drag*timeStep;
                     }
-                    if(entity.accleration.x) entity.velocity.x += entity.accleration.x*timeStep;
-                    if(entity.accleration.y) entity.velocity.y += entity.accleration.y*timeStep;
-                    if(entity.accleration.z) entity.velocity.z += entity.accleration.z*timeStep;
+                    if(entity.acceleration.x) entity.velocity.x += entity.acceleration.x*timeStep;
+                    if(entity.acceleration.y) entity.velocity.y += entity.acceleration.y*timeStep;
+                    if(entity.acceleration.z) entity.velocity.z += entity.acceleration.z*timeStep;
+
+                    if(entity.maxSpeed > 0) {
+                        let magnitude = Systems.collision.magnitude(entity.velocity);
+                        if(magnitude > entity.maxSpeed) {
+                            let scalar = entity.maxSpeed / magnitude;
+                            entity.velocity.x *= scalar;
+                            entity.velocity.y *= scalar;
+                            entity.velocity.z *= scalar;
+                        }
+                    }
 
                 }
                 if(typeof entity.velocity === 'object') {
@@ -1300,6 +1311,7 @@ export const Systems = {
                     if(entity.velocity.z) entity.position.z += entity.velocity.z*timeStep;
                 }
             }
+
             return entities;
         }
     } //as SystemProps,

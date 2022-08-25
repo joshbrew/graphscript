@@ -1,6 +1,6 @@
 {
     "name": "graphscript-services",
-    "version": "0.0.163",
+    "version": "0.0.164",
     "description": "Extra services for graphscript.",
     "main": "dist/index.services.js",
     "module": "dist/index.services.esm.js",

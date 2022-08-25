@@ -49,6 +49,7 @@ export declare class WorkerService extends Service {
         onerror?: (ev: any) => void;
     }) => WorkerInfo;
     toObjectURL: (scriptTemplate: string) => string;
+    getTransferable(message: any): any;
     transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: StructuredSerializeOptions) => any;
     terminate: (worker: Worker | MessagePort | string) => boolean;
     establishMessageChannel: (worker: Worker | string | MessagePort, worker2?: Worker | string | MessagePort) => string | false;

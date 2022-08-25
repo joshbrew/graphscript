@@ -81,16 +81,25 @@ export const unsafeRoutes = {
         }
         return false;
     },
-    setValue:(self:GraphNode,origin:any, key:string, value:any) => { //set a value on the globalThis scope
+    setGlobal:(self:GraphNode,origin:any, key:string, value:any) => { //set a value on the globalThis scope
         globalThis[key] = value;
         return true;
     },
-    assignObject:(self:GraphNode,origin:any, target:string, source:{[key:string]:any}) => { //assign a value on an object on the globalThis scope
+    assignGlobalObject:(self:GraphNode,origin:any, target:string, source:{[key:string]:any}) => { //assign a value on an object on the globalThis scope
         if(!globalThis[target]) return false;
         if(typeof source === 'object') Object.assign(globalThis[target],source);
         return true;
     },
-    setFunction:(self:GraphNode,origin:any, fn:any, fnName?:string) => { //set a value on the globalThis scope
+    setValue:(self:GraphNode,origin:any, key:string, value:any) => { //set a value on the globalThis scope
+        self.graph[key] = value;
+        return true;
+    },
+    assignObject:(self:GraphNode,origin:any, target:string, source:{[key:string]:any}) => { //assign a value on an object on the globalThis scope
+        if(!self.graph[target]) return false;
+        if(typeof source === 'object') Object.assign( self.graph[target],source);
+        return true;
+    },
+    setGlobalFunction:(self:GraphNode,origin:any, fn:any, fnName?:string) => { //set a value on the globalThis scope
         if(typeof fn === 'string') fn = parseFunctionFromText(fn);
         //console.log(fn);
         if(typeof fn === 'function') {
@@ -101,13 +110,36 @@ export const unsafeRoutes = {
         }
         return false;
     },
-    assignFunctionToObject:(self:GraphNode,origin:any, globalObjectName:string, fn:any, fnName:any) => { //assign a value on an object on the globalThis scope
-        if(!globalThis[globalObjectName]) return false;
+    assignFunctionToGlobalObject:(self:GraphNode,origin:any, globalObjectName:string, fn:any, fnName:any) => { //assign a value on an object on the globalThis scope
+        if(! globalThis[globalObjectName]) return false;
         if(typeof fn === 'string') fn = parseFunctionFromText(fn);
         //console.log(fn);
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
-            globalThis[globalObjectName][fnName] = fn;
+            self.graph[globalObjectName][fnName] = fn;
+            //console.log(self)
+            return true;
+        }
+        return false;
+    },
+    setFunction:(self:GraphNode,origin:any, fn:any, fnName?:string) => { //set a value on the globalThis scope
+        if(typeof fn === 'string') fn = parseFunctionFromText(fn);
+        //console.log(fn);
+        if(typeof fn === 'function') {
+            if(!fnName) fnName = fn.name;
+            self.graph[fnName] = fn;
+            //console.log(self)
+            return true;
+        }
+        return false;
+    },
+    assignFunctionToObject:(self:GraphNode,origin:any, objectName:string, fn:any, fnName:any) => { //assign a value on an object on the globalThis scope
+        if(! self.graph[objectName]) return false;
+        if(typeof fn === 'string') fn = parseFunctionFromText(fn);
+        //console.log(fn);
+        if(typeof fn === 'function') {
+            if(!fnName) fnName = fn.name;
+            self.graph[objectName][fnName] = fn;
             //console.log(self)
             return true;
         }

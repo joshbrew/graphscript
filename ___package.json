@@ -1,6 +1,6 @@
 {
     "name": "graphscript-core",
-    "version": "0.0.163",
+    "version": "0.0.164",
     "description": "Comprehensive acyclic-graph based application architecture with microservices and networking.",
     "main": "dist/index.core.js",
     "types": "dist/index.core.d.ts",
