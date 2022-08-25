@@ -88,9 +88,124 @@ let ret = router.load({
                                     }
                                     
                                     self.positions = new Float32Array(entityCt*3); //x,y,z buffer, idx*3 = entity[idx]
+
+                                    //----------- basic threejs scene setup ------------
+                                    const THREE = self.THREE;
+                                    const OrbitControls = self.OrbitControls;
+
+                                    const renderer = new THREE.WebGLRenderer({canvas});
+                                    renderer.setPixelRatio(Math.min(canvas.clientWidth/canvas.clientHeight,2));
+
+                                    const fov = 75;
+                                    const aspect = 2;
+                                    const near = 0.01;
+                                    const far = 1000;
+
+                                    let time = 0;
+                                    let lastFrame = Date.now();
+                                    
+                                    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+                                    camera.position.z = 10;
+
+                                    camera.lookAt(0,0,1000);
+
+                                    const controls = new OrbitControls(camera, canvas);
+                                    controls.enablePan = true;
+                                    controls.enableDamping = true;
+                                    controls.update();
+
+                                    const scene = new THREE.Scene();
+
+                                    
+                                    canvas.addEventListener('resize', (ev) => {
+                                        renderer.setSize(canvas.width, canvas.height, false);
+                                        if(camera) {
+                                            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                                            camera.updateProjectionMatrix();
+                                        }
+                                    });
+
+                                    
+                                    let nBoids = entityCt;
+
+                                    let colors:any = [];
+                                    let color = new THREE.Color();
+                                    let i = 0;
+
+                                    for(const key in self.graph.entitySettings) {
+                                        for(let j = 0; j < self.graph.entitySettings[key].ct; j++) {
+                                            let roll = Math.random();
+                                            if(i==0){
+                                                if(roll <= 0.3){
+                                                    color.set('lightseagreen');
+                                                } else if (roll <= 0.85){
+                                                    color.set('blue');
+                                                } else {
+                                                    color.set('turquoise');
+                                                }
+                                                colors.push(color.r,color.g,color.b);
+                                            }
+                                            else if (i==1) {
+                                                if(roll <= 0.3){
+                                                    color.set('pink');
+                                                } else if (roll <= 0.85){
+                                                    color.set('red');
+                                                } else {
+                                                    color.set('orange');
+                                                }
+                                                colors.push(color.r,color.g,color.b);
+                                            }
+                                            else {
+                                                color.setRGB(Math.random(),Math.random(),Math.random());
+                                                colors.push(color.r,color.g,color.b);
+                                            }
+                                        }
+                                        i++;
+                                    }
+
+                                    const boids = new Array(nBoids);
+
+                                    let geometry = new THREE.BufferGeometry();
+                                    geometry.setAttribute('position', new THREE.Float32BufferAttribute(self.positions, 3) )
+                                    geometry.setAttribute('color', new THREE.Float32BufferAttribute( colors, 3 ));
+
+                                    let pointmat = new THREE.PointsMaterial(
+                                        {
+                                            vertexColors: true,
+                                            opacity:0.99
+                                        }
+                                    )
+
+                                    const points = new THREE.Points(geometry, pointmat);
+                                    points.frustumCulled = false;
+
+                                    points.position.x -= 150;
+                                    points.position.y -= 150;
+                                    points.position.z -= 150;
+
+                                    scene.add(points);
+
+                                    console.log(points);
+
+                                    Object.assign(self, {
+                                        renderer,
+                                        time,
+                                        lastFrame,
+                                        camera,
+                                        controls,
+                                        scene,
+                                        boids,
+                                        points
+                                    }); //assign these to self for the draw function
+                            
                                 },
                                 draw:(self:WorkerCanvas,canvas:any,context:any)=>{
-                                    
+                                    let now = Date.now();
+                                    self.time += (now - self.lastFrame) * 0.001;
+                                    self.lastFrame = now;
+
+                                    self.controls.update();
+                                    self.renderer.render(self.scene, self.camera);
                                 },
                                 update:(self:WorkerCanvas,canvas,context,data:{
                                     entityId:number,
@@ -108,8 +223,11 @@ let ret = router.load({
                                         }
 
                                         (self.positions as Float32Array).set(data.positions, offset);
+                                    
+                                        self.points.geometry.attributes.position.array.set(self.positions);
+                                        self.points.geometry.attributes.position.needsUpdate = true;
 
-                                        //console.log(self.positions);
+                                        //console.log(self.points.geometry.attributes.position.array);
                                     }
 
                                 },
