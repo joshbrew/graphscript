@@ -52,7 +52,8 @@ let ret = router.load({
                                         right:300,
                                         front:0,
                                         back:300  
-                                    }
+                                    },
+                                    maxSpeed:30
                                 },
                                 components:{ //set which active systems to use for each entity
                                     boid:true, //boid computation, disables collisions other than bounding box by default

@@ -408,6 +408,12 @@ export const Systems = {
             return vn;
 
         },
+        distance3D(
+            v1:{x:number,y:number,z:number},
+            v2:{x:number,y:number,z:number}
+        ){
+            return Math.sqrt((v1.x-v2.x)*(v1.x-v2.x) + (v1.y-v2.y)*(v1.y-v2.y) + (v1.z-v2.z)*(v1.z-v2.z))
+        },
         cross3D(
             v1:{x:number,y:number,z:number},
             v2:{x:number,y:number,z:number}
@@ -440,7 +446,7 @@ export const Systems = {
 
             for(const i in tree) { //for each node
                 for(const j in tree) { //for each position left to check
-                    var dist = Systems.collision.distance(tree[i].position,tree[j].position);
+                    var dist = Systems.collision.distance3D(tree[i].position,tree[j].position);
                     if(dist < isWithinRadius){
                         var newNeighbori = {
                             tag:j,
@@ -978,7 +984,7 @@ export const Systems = {
             vecn?:{x:number,y:number,z:number}
         )=>{
 
-            if(dist === undefined) dist = Systems.collision.distance(body1.position,body2.position) as number;
+            if(dist === undefined) dist = Systems.collision.distance3D(body1.position,body2.position) as number;
             if(vecn === undefined) vecn = Systems.collision.normalize(Systems.collision.makeVec(body1.position,body2.position)) as any; // a to b
 
             //Newton's law of gravitation
@@ -1070,8 +1076,13 @@ export const Systems = {
             let length = Object.keys(entities).length;
         
             let _timeStep = 1/timeStep;
+
+            //console.time('boidloop')
+            //let nloops = 0;
+            let w = -1;
             outer:
             for(const i in entities) {
+                w++
                 let p0 = entities[i];
                 const inRange:any[] = []; //indices of in-range boids
                 const distances:any[] = []; //Distances of in-range boids
@@ -1091,16 +1102,20 @@ export const Systems = {
                 
                 let groupCount = 1;
         
+                let k = -1;
                 nested:
                 for(const j in entities) {
                     let p = entities[j];
-                    if(distances.length > p0.boid.groupSize || j >= p0.boid.searchLimit) { break nested; }
-    
+                    k++;
+                    //nloops++;
+                    if(distances.length > p0.boid.groupSize || k >= p0.boid.searchLimit) { break nested; }
                     let randj = keys[Math.floor(Math.random()*length)]; // Get random index
-                    if(j===i || entities[randj].tag === entities[i].tag || inRange.indexOf(randj) > -1) {  } else {
+                    if(k===w || entities[randj].tag === entities[i].tag || inRange.indexOf(randj) > -1) {  } else {
                         let pr = entities[randj];
-                        let disttemp = Systems.collision.distance(p0.position,pr.position);
-                        
+                        //console.time('distance');
+                        let disttemp = Systems.collision.distance3D(p0.position,pr.position);
+                        //console.timeEnd('distance');
+
                         if(disttemp > p0.boid.groupRadius) { } else {
                             distances.push(disttemp);
                             inRange.push(randj);
@@ -1108,8 +1123,8 @@ export const Systems = {
                             let distInv;
                             if(p0.boid.useSeparation || p0.boid.useAlignment) {
                                 distInv = (p0.boid.groupRadius/(disttemp*disttemp));
-                                if(distInv == Infinity) distInv = p.maxSpeed;
-                                else if (distInv == -Infinity) distInv = -p.maxSpeed;
+                                if(distInv > p.maxSpeed) distInv = p.maxSpeed;
+                                else if (distInv < -p.maxSpeed) distInv = -p.maxSpeed;
                             }
                     
                             if(p0.boid.useCohesion){
@@ -1234,6 +1249,8 @@ export const Systems = {
                 if(isNaN(entities[i].velocity.x)) console.error(p0, i, groupCount, p0.position, p0.velocity,swirlVec,attractorVec)
             }
         
+            //console.timeEnd('boidloop')
+            //console.log('nloops', nloops, timeStep)
             return entities;
         }
     },// as SystemProps,

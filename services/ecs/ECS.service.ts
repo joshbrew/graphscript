@@ -78,23 +78,31 @@ export class ECSService extends Service {
     //e.g. run on requestAnimationFrame
     updateEntities = (
         order:string[] = this.order, //can only run specific systems and in specific orders
-        filter?:boolean 
+        filter?:boolean,
+        debug=false as any
     ) => { //filter will only pass certain entities based on enabled components
         
         order.forEach((k) => {
             if(this.systems[k]) {
                 if(filter) {
+                    if(debug) debug = performance.now();
                     (this.systems[k] as GraphNode)._run(
                         this.systems[k] as GraphNode,
                         this,
                         this.map.get(k)
                     );
-                } else 
+                    if(debug) 
+                        console.log( 'system', k, 'took', performance.now()-debug,'ms for', Object.keys(this.map.get(k)).length, 'entities');
+                } else {
+                    if(debug) debug = performance.now();
                     (this.systems[k] as GraphNode)._run(
                         this.systems[k] as GraphNode,
                         this,
                         this.entities
                     ); //unfiltered, it's faster to handle this in the system with lots of entities
+                    if(debug) 
+                        console.log( 'system', k, 'took', performance.now()-debug,'ms for', Object.keys(this.entities).length, 'entities');
+                }
             }
         });
 
