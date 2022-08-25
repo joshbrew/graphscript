@@ -57,13 +57,13 @@ export type WorkerCanvas = { //this is the object stored on the worker to track 
 //load on front and backend
 export const workerCanvasRoutes = {
     ...proxyElementWorkerRoutes,
-    transferCanvas:(
-        self,
-        origin,
+    transferCanvas:function(
         worker:Worker|MessagePort,
         options:WorkerCanvasTransferProps,
         route?:string //we can reroute from the default 'receiveCanvas' e.g. for other rendering init processes like in threejs
-    ) => {
+    ){
+
+
         if(!options) return undefined;
         if(!options._id) options._id = `canvas${Math.floor(Math.random()*1000000000000000)}`;
 
@@ -71,7 +71,7 @@ export const workerCanvasRoutes = {
 
         let message:any = {route:route ? route : 'receiveCanvas',args:{canvas:offscreen, context: options.context, _id:options._id}};
 
-        self.graph.run('initProxyElement', options.canvas, worker, options._id); //initiate an element proxy
+        this.graph.run('initProxyElement', options.canvas, worker, options._id); //initiate an element proxy
 
         if(options.draw) {
             if(typeof options.draw === 'function') message.args.draw = options.draw.toString()
@@ -106,6 +106,7 @@ export const workerCanvasRoutes = {
                 worker.postMessage({route:'clearCanvas',args:options._id})
             },
             init:()=>{
+                console.log('Posting init')
                 worker.postMessage({route:'initCanvas',args:options._id});
             },
             stop:()=>{
@@ -121,12 +122,11 @@ export const workerCanvasRoutes = {
     
         return workercontrols as WorkerCanvasControls;
     },
-    receiveCanvas:(
-        self,
-        origin, 
+    receiveCanvas:function(
         options:WorkerCanvasReceiveProps
-    ) => {
-        if(!self.graph.CANVASES) self.graph.CANVASES = {} as {[key:string]:WorkerCanvas};
+    ){
+
+        if(!this.graph.CANVASES) this.graph.CANVASES = {} as {[key:string]:WorkerCanvas};
 
         let canvasOptions = options;
 
@@ -134,16 +134,16 @@ export const workerCanvasRoutes = {
         typeof options.context === 'string' ? canvasOptions.context = options.canvas.getContext(options.context) : canvasOptions.context = options.context; //get the rendering context based on string passed
         ('animating' in options) ? canvasOptions.animating = options.animating : canvasOptions.animating = true;
 
-        if(self.graph.CANVASES[canvasOptions._id]) {
-            self.graph.run('setDraw',canvasOptions);
+        if(this.graph.CANVASES[canvasOptions._id]) {
+            this.graph.run('setDraw',canvasOptions);
         }
         else {
 
-            canvasOptions.graph = self.graph;
-            self.graph.CANVASES[canvasOptions._id] = canvasOptions;
+            canvasOptions.graph = this.graph;
+            this.graph.CANVASES[canvasOptions._id] = canvasOptions;
 
             //create an element proxy to add event listener functionality
-            self.graph.run('makeProxy', canvasOptions._id, canvasOptions.canvas);
+            this.graph.run('makeProxy', canvasOptions._id, canvasOptions.canvas);
             //now the canvas can handle mouse and resize events, more can be implemented
             
             if(options.width) canvasOptions.canvas.width = options.width;
@@ -182,23 +182,21 @@ export const workerCanvasRoutes = {
    
         return canvasOptions._id;
     },
-    setDraw:(
-        self, 
-        origin, 
+    setDraw:function(
         settings:WorkerCanvasReceiveProps,
         _id?:string
-    )=>{
+    ){
         let canvasopts;
-        if(_id) canvasopts = self.graph.CANVASES?.[settings._id];
-        else if(settings._id) canvasopts = self.graph.CANVASES?.[settings._id];
-        else canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
+        if(_id) canvasopts = this.graph.CANVASES?.[settings._id];
+        else if(settings._id) canvasopts = this.graph.CANVASES?.[settings._id];
+        else canvasopts = this.graph.CANVASES?.[Object.keys(this.graph.CANVASES)[0]];
 
         if(canvasopts) {
             if(settings.canvas) {
                 canvasopts.canvas = settings.canvas;
 
                 //create an element proxy to add event listener functionality
-                self.graph.run('makeProxy', canvasopts._id, canvasopts.canvas);
+                this.graph.run('makeProxy', canvasopts._id, canvasopts.canvas);
                 //now the canvas can handle mouse and resize events, more can be implemented
             }
             if(typeof settings.context === 'string') canvasopts.context = canvasopts.canvas.getContext(settings.context);
@@ -226,10 +224,10 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    drawFrame:(self,origin,props?:{[key:string]:any},_id?:string) => { //can update props when calling draw
+    drawFrame: function(props?:{[key:string]:any},_id?:string) { //can update props when calling draw
         let canvasopts;
-        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
-        else canvasopts = self.graph.CANVASES?.[_id];
+        if(!_id) canvasopts = this.graph.CANVASES?.[Object.keys(this.graph.CANVASES)[0]];
+        else canvasopts = this.graph.CANVASES?.[_id];
         if(canvasopts) {
             if(props) Object.assign(canvasopts,props);
             if(canvasopts.draw) {
@@ -239,10 +237,10 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    clearCanvas:(self,origin,_id?:string) => {
+    clearCanvas: function(_id?:string) {
         let canvasopts;
-        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
-        else canvasopts = self.graph.CANVASES?.[_id];
+        if(!_id) canvasopts = this.graph.CANVASES?.[Object.keys(this.graph.CANVASES)[0]];
+        else canvasopts = this.graph.CANVASES?.[_id];
         
         if(canvasopts?.clear) {
             canvasopts.clear(canvasopts,canvasopts.canvas,canvasopts.context);
@@ -250,10 +248,10 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    initCanvas:(self,origin,_id?:string) => {
+    initCanvas:function(_id?:string){
         let canvasopts;
-        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
-        else canvasopts = self.graph.CANVASES?.[_id];
+        if(!_id) canvasopts = this.graph.CANVASES?.[Object.keys(this.graph.CANVASES)[0]];
+        else canvasopts = this.graph.CANVASES?.[_id];
         
         if(canvasopts?.init) {
             canvasopts.init(canvasopts,canvasopts.canvas,canvasopts.context);
@@ -261,20 +259,20 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    updateCanvas:(self,origin,input?:any,_id?:string) => {
+    updateCanvas:function(input?:any,_id?:string){
         let canvasopts;
-        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
-        else canvasopts = self.graph.CANVASES?.[_id];
+        if(!_id) canvasopts = this.graph.CANVASES?.[Object.keys(this.graph.CANVASES)[0]];
+        else canvasopts = this.graph.CANVASES?.[_id];
         if(canvasopts?.update) {
             canvasopts.update(canvasopts,canvasopts.canvas,canvasopts.context,input);
             return _id;
         }
         return undefined;
     },
-    setProps:(self,origin,props?:{[key:string]:any},_id?:string,) => { //update animation props, e.g. the radius or color of a circle you are drawing with a stored value
+    setProps:function(props?:{[key:string]:any},_id?:string,){ //update animation props, e.g. the radius or color of a circle you are drawing with a stored value
         let canvasopts;
-        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
-        else canvasopts = self.graph.CANVASES?.[_id];
+        if(!_id) canvasopts = this.graph.CANVASES?.[Object.keys(this.graph.CANVASES)[0]];
+        else canvasopts = this.graph.CANVASES?.[_id];
         if(canvasopts) {
             Object.assign(canvasopts,props);
             if(props.width) canvasopts.canvas.width = props.width;
@@ -283,11 +281,11 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    startAnim:(self, origin, _id?:string, draw?:string|((self:any,canvas:any,context:any)=>void))=>{ //run the draw function applied to the animation or provide a new one
+    startAnim:function(_id?:string, draw?:string|((this:any,canvas:any,context:any)=>void)){ //run the draw function applied to the animation or provide a new one
 
         let canvasopts;
-        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
-        else canvasopts = self.graph.CANVASES?.[_id];
+        if(!_id) canvasopts = this.graph.CANVASES?.[Object.keys(this.graph.CANVASES)[0]];
+        else canvasopts = this.graph.CANVASES?.[_id];
         canvasopts.animating = true;
         if(canvasopts && draw) {
             if(typeof draw === 'string') draw = parseFunctionFromText(draw);
@@ -315,10 +313,10 @@ export const workerCanvasRoutes = {
         }
         return undefined;
     },
-    stopAnim:(self,origin,_id?:string)=>{
+    stopAnim:function(_id?:string){
         let canvasopts;
-        if(!_id) canvasopts = self.graph.CANVASES?.[Object.keys(self.graph.CANVASES)[0]];
-        else canvasopts = self.graph.CANVASES?.[_id];
+        if(!_id) canvasopts = this.graph.CANVASES?.[Object.keys(this.graph.CANVASES)[0]];
+        else canvasopts = this.graph.CANVASES?.[_id];
         if(canvasopts) {
             canvasopts.animating = false;
             if(typeof canvasopts.clear === 'function') canvasopts.clear(canvasopts, canvasopts.canvas, canvasopts.context);

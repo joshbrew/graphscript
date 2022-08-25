@@ -84,7 +84,7 @@ export class StructBackend extends Service {
 
     //------------------------------------
     //routes to be loaded
-    query = async (self=this, origin:any, user:Partial<UserStruct>,collection?:any,queryObj?:any,findOne?:boolean,skip?:number) => {
+    query = async (origin:any, user:Partial<UserStruct>,collection?:any,queryObj?:any,findOne?:boolean,skip?:number) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -110,7 +110,7 @@ export class StructBackend extends Service {
         }
     }
 
-    getUser = async (self=this, origin:any, user:Partial<UserStruct>,lookupId:string) => {
+    getUser = async (origin:any, user:Partial<UserStruct>,lookupId:string) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -135,7 +135,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    setUser = async (self=this, origin:any, user:Partial<UserStruct>, struct:Partial<UserStruct>) => {
+    setUser = async (origin:any, user:Partial<UserStruct>, struct:Partial<UserStruct>) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -153,7 +153,7 @@ export class StructBackend extends Service {
             return data;
     }
 
-    getUsersByIds = async (self=this, origin:any, user:Partial<UserStruct>, userIds:string[]) => {
+    getUsersByIds = async (origin:any, user:Partial<UserStruct>, userIds:string[]) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -171,7 +171,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getUsersByRole = async (self=this, origin:any, user:Partial<UserStruct>, role:string) => {
+    getUsersByRole = async (origin:any, user:Partial<UserStruct>, role:string) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -191,7 +191,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteUser = async (self=this, origin:any, user:Partial<UserStruct>, userId:string) => {
+    deleteUser = async (origin:any, user:Partial<UserStruct>, userId:string) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -212,7 +212,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    setData = async (self=this, origin:any, user:Partial<UserStruct>, structs:any[], notify?:boolean) => {
+    setData = async (origin:any, user:Partial<UserStruct>, structs:any[], notify?:boolean) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -246,7 +246,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getData = async (self=this, origin:any, user:Partial<UserStruct>, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number) => {
+    getData = async (origin:any, user:Partial<UserStruct>, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -271,7 +271,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getDataByIds = async (self=this, origin:any, user:Partial<UserStruct>, structIds:string[], ownerId?:string, collection?:string) => {
+    getDataByIds = async (origin:any, user:Partial<UserStruct>, structIds:string[], ownerId?:string, collection?:string) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -295,7 +295,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAllData = async (self=this, origin:any, user:Partial<UserStruct>, ownerId:string, excludedCollections?:string[]) => {
+    getAllData = async (origin:any, user:Partial<UserStruct>, ownerId:string, excludedCollections?:string[]) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -326,7 +326,7 @@ export class StructBackend extends Service {
         return data;
     }   
 
-    deleteData = async (self=this, origin:any, user:Partial<UserStruct>, structIds:string[]) => {
+    deleteData = async (origin:any, user:Partial<UserStruct>, structIds:string[]) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -348,7 +348,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getUserGroups = async (self=this, origin:any, user:Partial<UserStruct>, userId?:string, groupId?:string) => {
+    getUserGroups = async (origin:any, user:Partial<UserStruct>, userId?:string, groupId?:string) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -377,7 +377,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteGroup = async (self=this, origin:any, user:Partial<UserStruct>, groupId:string) => {
+    deleteGroup = async (origin:any, user:Partial<UserStruct>, groupId:string) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -399,7 +399,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAuthorizations = async (self=this, origin:any, user:Partial<UserStruct>, ownerId?: string, authId?: string) => {
+    getAuthorizations = async (origin:any, user:Partial<UserStruct>, ownerId?: string, authId?: string) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 
@@ -418,7 +418,7 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteAuthorization = async (self=this, origin:any, user:Partial<UserStruct>, authId:string) => {
+    deleteAuthorization = async (origin:any, user:Partial<UserStruct>, authId:string) => {
         if(!user && origin) {user = this.users[origin]}
         if(!user) return false;
 

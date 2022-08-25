@@ -20,8 +20,8 @@ const deep = new Graph({}, tag, {
     arbitrary: {
         hello: 'world'
     },
-    operator: (node, arg1) => {
-        console.log('arbitrary property ( incorrect )', node.arbitrary, node.source.arbitrary)
+    operator: function(arg1){
+        console.log('arbitrary property ( incorrect )', this.arbitrary, this.source.arbitrary)
         return arg1
     }
 })
@@ -32,9 +32,9 @@ const deep2 = new Graph({
         arbitrary: {
             hello: 'world'
         },
-        operator: (node, arg1) => {
-            console.log('node', node)
-            console.log('arbitrary property ( correct )', node.arbitrary, node, node._initial)
+        operator: function (arg1) {
+            console.log('node', this)
+            console.log('arbitrary property ( correct )', this.arbitrary, this, this._initial)
             return arg1
         }
     }

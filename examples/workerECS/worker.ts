@@ -26,7 +26,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
             unsafeRoutes, //allows dynamic route loading
             {
                 ...workerCanvasRoutes,
-                receiveThreeCanvas:(self,origin,options:WorkerCanvasReceiveProps) => { //modified canvas receiver that installs desired threejs modules
+                receiveThreeCanvas:function(options:WorkerCanvasReceiveProps){ //modified canvas receiver that installs desired threejs modules
                     const ThreeProps = { //e.g. install these systems to 'self', which is the worker canvas
                         THREE,
                         OrbitControls,
@@ -39,10 +39,10 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
 
                     Object.assign(options, ThreeProps); //install desired props to our canvas's 'self' reference
 
-                    let renderId = self.graph.run('receiveCanvas', options); //the the base canvas tools do the rest, all ThreeJS tools are on self, for self contained ThreeJS renders
+                    let renderId = this.graph.run('receiveCanvas', options); //the the base canvas tools do the rest, all ThreeJS tools are on self, for self contained ThreeJS renders
                     //you can use the canvas render loop by default, or don't provide a draw function and just use the init and the Three animate() callback
 
-                    //let canvasopts = self.graph.CANVASES[renderId] as WorkerCanvas;
+                    //let canvasopts = this.graph.CANVASES[renderId] as WorkerCanvas;
 
                     return renderId;
                 }

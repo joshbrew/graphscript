@@ -54,7 +54,7 @@ export declare class ECSService extends Service {
     order: string[];
     animating: boolean;
     constructor(options?: ECSOptions);
-    updateEntities: (order?: string[], filter?: boolean) => void;
+    updateEntities: (order?: string[], filter?: boolean, debug?: any) => void;
     animate: (filter?: boolean, order?: string[]) => void;
     stop: () => void;
     start: (filter?: boolean) => void;

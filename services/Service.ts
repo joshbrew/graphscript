@@ -359,6 +359,7 @@ export class Service extends Graph {
                     if(r.connect) {}
                     if(r.trace) {}
 
+                    console.log('route', r)
                     if(r.post && !r.operator) {
                         allRoutes[route].operator = r.post;
                     } else if (!r.operator && typeof r.get == 'function') {

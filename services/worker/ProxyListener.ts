@@ -316,16 +316,16 @@ export class ProxyManager {
 //just load these into the worker service front and back. These are integrated in the worker canvas routes as well
 export const proxyElementWorkerRoutes = {
     initProxyElement:initProxyElement,
-    makeProxy:(self, origin, id, elm?) => {
-        if(!self.graph.ProxyManager) self.graph.ProxyManager = new ProxyManager();
+    makeProxy:function(id, elm?) {
+        if(!this.graph.ProxyManager) this.graph.ProxyManager = new ProxyManager();
 
-        self.graph.ProxyManager.makeProxy(id, elm);
+        this.graph.ProxyManager.makeProxy(id, elm);
 
         return id;
     },
-    handleProxyEvent:(self, origin, data, id)=>{
-      if(!self.graph.ProxyManager) self.graph.ProxyManager = new ProxyManager();
-      if(self.graph.ProxyManager.handleEvent(data, id)) return data;
+    handleProxyEvent:function( data, id){
+      if(!this.graph.ProxyManager) this.graph.ProxyManager = new ProxyManager();
+      if(this.graph.ProxyManager.handleEvent(data, id)) return data;
     }
 } 
 

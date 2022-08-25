@@ -88,6 +88,7 @@ export class WorkerService extends Service {
                 if(worker) {
                     if(!rt.operator) {
                         rt.operator = (...args) => {
+                            console.log('operator', args)
                             if(rt.callback) {
                                 if(!this.nodes.get(rt.tag)?.children) worker.post(rt.callback,args);
                                 else return worker.run(rt.callback,args);
@@ -133,6 +134,8 @@ export class WorkerService extends Service {
                 if(worker) {
                     if(!child.operator) {
                         child.operator = (...args) => {
+                            console.log('operator', args)
+
                             if(child.callback) {
                                 if(!this.nodes.get(child.tag)?.children) worker.post(child.callback,args);
                                 else return worker.run(child.callback,args);

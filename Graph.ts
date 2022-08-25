@@ -435,39 +435,24 @@ export class GraphNode {
         let params = getFnParamInfo(operator);
 
         let pass = false;
-        if(params) {
-            const keys = params.keys()
-            const paramOne = keys.next().value
-            const paramTwo = keys.next().value
+        if(params) pass = params.keys().next().value === 'origin'
 
-            // RULE: Restricted argument names
-            const restrictedOne = ['self', 'node']  
-            const restrictedTwo = ['origin', 'parent', 'graph', 'router']  
-
-            //we can pass other formatted functions in as operators and they will be wrapped to assume they don't use self/node or origin/router, but will still work in the flow graph logic calls
-
-            //console.log(params,operator.toString())
-            if(paramOne)
-                restrictedOne.forEach((a) => { //esbuild will rename variables with numbers on the end so we need to account for that
-                    if(paramOne.includes(a)) pass = true;
-                })
-
-            if(paramTwo)
-                restrictedTwo.forEach((a) => {
-                    if(paramTwo.includes(a)) pass = true;
-                })
-
-        }// else console.log(operator.toString())
+        // Remove Origin
+        let fn = operator.bind(this);
         if (!pass){
-            let fn = operator;
 
             //wrap the simplified operator to fit our format
-            operator = (self:GraphNode,origin:string|GraphNode|Graph,...args) => {
+            operator = (self: GraphNode, origin:string|GraphNode|Graph,...args) => {
                 return (fn as any)(...args);
             }
-
-            // Track Argument Names + Default Values (if no _initial value provided)
-         
+        } 
+        
+        // Include Origin (but not self anymore...)
+        else {
+            let fn = operator.bind(this);
+            operator = (self: GraphNode, ...args) => {
+                return (fn as any)(...args);
+            }
         }
 
         this.operator = operator;

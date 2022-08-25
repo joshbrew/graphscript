@@ -27,18 +27,16 @@ export const Systems = {
 
             return entity;
         },
-        operator:(
-            self,
-            origin,
+        operator:function(
             entities:{[key:string]:GraphNode}
-        )=>{
+        ){
             for(const key in entities) {
                 const entity1 = entities[key];
-                if(entity1.components) if(!entity1.components[self.tag] || !entity1.collisionEnabled) continue;
+                if(entity1.components) if(!entity1.components[this.tag] || !entity1.collisionEnabled) continue;
                 if(!entity1.collisionEnabled) continue;
                 for(const key2 in entities) {
                     const entity2 = entities[key2];
-                    if(entity2.components) if(!entity2.components[self.tag]) continue;
+                    if(entity2.components) if(!entity2.components[this.tag]) continue;
                     if(!entity2.collisionEnabled) continue;
                  
                     let colliding = Systems.collision.collisionCheck(entity1 as any,entity2 as any); //returns distance from origin if colliding (to reduce redundancy later)
@@ -737,12 +735,12 @@ export const Systems = {
         
             return entity;
         },
-        operator:(self, origin, entities:{[key:string]:Entity})=>{
+        operator: function (entities:{[key:string]:Entity}) {
             for(const key in entities) {
                 const entity1 = entities[key];
-                if(entity1.components) if(!entity1.components[self.tag] || !entity1.collisionEnabled) continue;
+                if(entity1.components) if(!entity1.components[this.tag] || !entity1.collisionEnabled) continue;
                 
-                if(entity1.useBoundingBox) self.checkBoundingBox(self,entity1); 
+                if(entity1.useBoundingBox) this.checkBoundingBox(this,entity1); 
                 
                 if(!entity1.collisionEnabled) continue;
 
@@ -758,16 +756,16 @@ export const Systems = {
 
                     
                     if(entity2.collisionType === 'box') {
-                        self.resolveBoxCollision(entity1,entity2,entity1.colliding[key2]);
+                        this.resolveBoxCollision(entity1,entity2,entity1.colliding[key2]);
                     }
                     else {
                         if(entity1.collisionType === 'box') {
                             entity1.fixed = true; //let the box collision check handle it on next pass
-                            self.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
+                            this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
                             entity1.fixed = false;
                         }
                         else {
-                            self.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
+                            this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
                             delete entity2.colliding[entity1.tag]; //both resolved
                         }
                     }
@@ -960,15 +958,15 @@ export const Systems = {
         
             return entity;
         },
-        operator:(self,origin,entities:{[key:string]:Entity})=>{
+        operator:function(entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[self.tag]) continue;
+                if(entity.components) if(!entity.components[this.tag]) continue;
                 if(!entity.mass) continue;
                 
                 for(const key2 in entities) {
                     const entity2 = entities[key2];
-                    if(entity2.components) if(!entity2.components[self.tag]) continue;
+                    if(entity2.components) if(!entity2.components[this.tag]) continue;
                     if(!entity2.mass || !entity2.isAttractor) continue;
 
                     Systems.nbody.attract(entity,entity2);
@@ -1066,11 +1064,11 @@ export const Systems = {
 
             return entity;
         },
-        operator:(self:typeof Systems['boid'],origin,entities:{[key:string]:Entity})=>{
+        operator:function (entities:{[key:string]:Entity}){
             
             let now = performance.now();
-            let timeStep = now - self.lastTime
-            self.lastTime = now;
+            let timeStep = now - this.lastTime
+            this.lastTime = now;
 
             let keys = Object.keys(entities);
             let length = Object.keys(entities).length;
@@ -1278,13 +1276,13 @@ export const Systems = {
 
             return entity;
         },
-        operator:(self:typeof Systems['movement'], origin, entities:{[key:string]:Entity})=>{
+        operator:function(entities:{[key:string]:Entity}){
             let now = performance.now();
-            let timeStep = (now - self.lastTime) * 0.001;
-            self.lastTime = now; 
+            let timeStep = (now - this.lastTime) * 0.001;
+            this.lastTime = now; 
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[self.tag]) continue;
+                if(entity.components) if(!entity.components[this.tag]) continue;
                 if(entity.fixed) continue;
                 
                 if(typeof entity.force === 'object' && entity.mass) { //F = ma, F in Newtons, m in kg, a in m/s^2

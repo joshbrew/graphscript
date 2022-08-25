@@ -1082,7 +1082,7 @@ export class UserRouter extends Router {
     }
 
     //receive updates as users
-    receiveSessionUpdates = (self=this, origin:any, update:{private:{[key:string]:any},shared:{[key:string]:any}}|string) => { //following operator format we get the origin passed
+    receiveSessionUpdates = (origin:any, update:{private:{[key:string]:any},shared:{[key:string]:any}}|string) => { //following operator format we get the origin passed
         if(update) if(typeof update === 'string') update = JSON.parse(update as string);
         if(typeof update === 'object') {
             if(typeof origin === 'object') origin = origin._id;
@@ -1181,7 +1181,7 @@ export class UserRouter extends Router {
         runAs:this.runAs,
         pipeAs:this.pipeAs,
         addUser:this.addUser,
-        setUser:(self,origin,update)=>{
+        setUser:(origin,update)=>{
             return this.setUser(origin,update);
         },
         removeUser:this.removeUser,

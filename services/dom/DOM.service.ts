@@ -147,18 +147,18 @@ export class DOMService extends Service {
         let oncreate = options.onrender;
 
         if(!options.element) options.element = elm;
-        if(!options.operator) options.operator = (node,origin,props:{[key:string]:any})=>{ 
+        if(!options.operator) options.operator = function (props:{[key:string]:any}){ 
             if(typeof props === 'object') 
                 for(const key in props) { 
-                    if(node.element) {
-                        if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
+                    if(this.element) {
+                        if(typeof this.element[key] === 'function' && typeof props[key] !== 'function')
                             { //attempt to execute a function with arguments
                                 if(Array.isArray(props[key]))
-                                    node.element[key](...props[key]);
-                                else node.element[key](props[key]);
+                                this.element[key](...props[key]);
+                                else this.element[key](props[key]);
                             } 
-                        else if (key === 'style') { Object.assign(node.element[key],props[key])}
-                        else node.element[key] = props[key]; 
+                        else if (key === 'style') { Object.assign(this.element[key],props[key])}
+                        else this.element[key] = props[key]; 
                     }
                 }
                 

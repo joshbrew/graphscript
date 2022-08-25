@@ -251,9 +251,9 @@ let ret = router.load({
 
                         workers.transferFunction(
                             entities, 
-                            function bufferPositions(self,origin,entities) {
+                            function bufferPositions(entities) { // SCOPE REFACTOR: Might actually need to pass self and origin...
 
-                                let positionBuffer = self.graph.run(
+                                let positionBuffer = this.graph.run(
                                     'bufferValues',
                                     entities,
                                     'position',
@@ -261,7 +261,7 @@ let ret = router.load({
                                 );
 
                                 return {
-                                    entityId:self.graph.entityId, 
+                                    entityId:this.graph.entityId, 
                                     positions:positionBuffer
                                 }; //typedarrays are automatically transferred
                             },

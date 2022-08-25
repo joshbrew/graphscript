@@ -38,6 +38,7 @@ let ret = router.load({
                     //console.log(renderer);
 
                     if(renderer) {
+                        console.log('renderer', renderer)
                         const controls:WorkerCanvasControls = router.run(
                             'transferCanvas', 
                             renderer.worker, 
@@ -46,6 +47,7 @@ let ret = router.load({
                                 context:'2d',
                                 _id:elm.id,
                                 init:(self:WorkerCanvas,canvas,context)=>{ //init called automatically before first draw
+                                    console.log('canvas', canvas)
                                     canvas.addEventListener('mousedown',(ev)=>{
                                         console.log('clicked!', ev, canvas);
                                     })

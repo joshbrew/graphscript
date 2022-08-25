@@ -15,7 +15,7 @@ export type EntityProps = {
 } & RouteProp | GraphNode
 
 export type SystemProps = (RouteProp & { 
-    operator:(self,origin,entities:{[key:string]:Entity})=>any,
+    operator:(entities:{[key:string]:Entity})=>any,
     setupEntities:(self:any,entities:{[key:string]:Entity})=>{[key:string]:Entity},
     setupEntity:(self:any,entity:Entity)=>Entity
 })|GraphNode
@@ -27,7 +27,7 @@ export type Entity = {
 } & GraphNode
 
 export type System = {
-    operator:(self,origin,entities:{[key:string]:Entity})=>any,
+    operator:(entities:{[key:string]:Entity})=>any,
     setupEntities:(self:any,entities:{[key:string]:Entity})=>{[key:string]:Entity},
     setupEntity:(self:any,entity:Entity)=>Entity
 } & GraphNode;
