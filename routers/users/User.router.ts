@@ -79,6 +79,7 @@ export type SharedSessionProps = {
 }
 
 //this is to aggregate server activity based on specific Ids provided as origin tags in calls
+//TODO: GENERALIZE! IT IS NOT A GENERAL USE TOOL
 export class UserRouter extends Router {
 
     users:{
@@ -133,7 +134,7 @@ export class UserRouter extends Router {
                     }
                 }
                 if(!connections.sockets[address].socket) {
-                    connections.sockets[address] = this.run('wss/openWS',connections.sockets[address]);
+                    connections.sockets[address] = this.run('wss.openWS',connections.sockets[address]);
                 }
                 if(connections.onmessage) connections.sockets[address].socket.addEventListener('message',connections.onmessage);
                 if(connections.onclose) connections.sockets[address].socket.addEventListener('close',connections.onclose);
@@ -150,7 +151,7 @@ export class UserRouter extends Router {
                     }
                 }
                 if(!connections.wss[address].wss) {
-                    connections.wss[address] = this.run('wss/openWSS', connections.wss[address]);
+                    connections.wss[address] = this.run('wss.openWSS', connections.wss[address]);
                 }
                 if(connections.onmessage) connections.wss[address].wss.addEventListener('message',connections.onmessage);
                 if(connections.onclose) connections.wss[address].wss.addEventListener('close',connections.onclose);
@@ -173,7 +174,7 @@ export class UserRouter extends Router {
                     }
                 }
                 if(!connections.eventsources[path].source && !connections.eventsources[path].sessions && !connections.eventsources[path].session) {
-                    connections.eventsources[path] = this.run('sse/openSSE',connections.eventsources[path]);
+                    connections.eventsources[path] = this.run('sse.openSSE',connections.eventsources[path]);
                 }
                 if(connections.eventsources[path].source) {
                     if(connections.onmessage) connections.eventsources[path].source.addEventListener('message',connections.onmessage);
@@ -184,7 +185,7 @@ export class UserRouter extends Router {
         if(connections.servers && this.services.http) {
             for(const address in connections.servers) {
                 if(!connections.servers[address].server) {
-                    connections.servers[address] = this.run('http/setupServer',connections.servers[address]);
+                    connections.servers[address] = this.run('http.setupServer',connections.servers[address]);
                 }
                 if(connections.onmessage) this.subscribe(address,connections.onmessage); //??? unless we want a custom request listener then thats a whole other thing
             }
@@ -431,35 +432,35 @@ export class UserRouter extends Router {
         if(user.sockets) {
             for(const address in user.sockets) {
                 if(user.sockets[address].socket) {
-                    this.run('wss/terminate',address);
+                    this.run('wss.terminate',address);
                 }
             }
         }
         if(user.wss) {
             for(const address in user.wss) {
                 if(user.wss[address].wss) {
-                    this.run('wss/terminate',address);
+                    this.run('wss.terminate',address);
                 }
             }
         }
         if(user.eventsources) {
             for(const path in user.eventsources) {
                 if(user.eventsources[path].source || user.eventsources[path].sessions) {
-                    this.run('sse/terminate',path);
+                    this.run('sse.terminate',path);
                 }
             }
         }
         if(user.servers) {
             for(const address in user.servers) {
                 if(user.servers[address].server) {
-                    this.run('http/terminate',address);
+                    this.run('http.terminate',address);
                 }
             }
         }
         if(user.webrtc) {
             for(const id in user.webrtc) {
                 if(user.webrtc[id].rtc) {
-                    this.run('webrtc/terminate',id);
+                    this.run('webrtc.terminate',id);
                 }
             }
         }
