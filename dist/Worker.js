@@ -370,9 +370,7 @@
             if (this.isAnimating) {
               if (this.DEBUGNODE)
                 console.time(this.tag);
-              let result = this.animation(
-                ...args
-              );
+              let result = this.animation.call(this, ...args);
               if (result instanceof Promise) {
                 result = await result;
               }
@@ -418,9 +416,7 @@
             if (this.isLooping) {
               if (this.DEBUGNODE)
                 console.time(this.tag);
-              let result = this.looper(
-                ...args
-              );
+              let result = this.looper.call(this, ...args);
               if (result instanceof Promise) {
                 result = await result;
               }
@@ -889,13 +885,15 @@
             hasnode = parentNode.nodes.get(properties.tag);
           }
           if (hasnode) {
-            Object.assign(this, hasnode);
+            for (let k in hasnode)
+              this[k] = hasnode[k];
             if (!this.source)
               this.source = hasnode;
             let props = hasnode.getProps();
             delete props.graph;
             delete props.parent;
-            Object.assign(properties, props);
+            for (let k in props)
+              properties[k] = props[k];
           }
         }
         if (properties?.operator) {
@@ -913,7 +911,8 @@
         }
         if (properties.children)
           this._initial.children = Object.assign({}, properties.children);
-        Object.assign(this, properties);
+        for (let k in properties)
+          this[k] = properties[k];
         if (!this.tag) {
           if (graph) {
             this.tag = `node${graph.nNodes}`;
@@ -980,7 +979,8 @@
         if (!tree)
           return;
         for (const node in tree) {
-          if (!this.nodes.get(node)) {
+          const n = this.nodes.get(node);
+          if (!n) {
             if (typeof tree[node] === "function") {
               this.add({ tag: node, operator: tree[node] });
             } else if (typeof tree[node] === "object" && !Array.isArray(tree[node])) {
@@ -998,7 +998,6 @@
               } });
             }
           } else {
-            let n = this.nodes.get(node);
             if (typeof tree[node] === "function") {
               n.setOperator(tree[node]);
             } else if (typeof tree[node] === "object") {
@@ -1252,7 +1251,8 @@
       };
       this.tag = tag ? tag : `graph${Math.floor(Math.random() * 1e11)}`;
       if (props) {
-        Object.assign(this, props);
+        for (let k in props)
+          this[k] = props[k];
         this._initial = props;
       }
       if (tree || Object.keys(this.tree).length > 0)
