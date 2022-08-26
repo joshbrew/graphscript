@@ -190,7 +190,7 @@ export class GraphNode {
             if(properties instanceof GraphNode && properties._initial) Object.assign(properties, properties._initial);
             if(properties instanceof Graph) {
                 let source = properties;
-                
+
                 properties = {
                     source,
                     operator:(input?:{[key:string]:any}) => {
@@ -254,14 +254,15 @@ export class GraphNode {
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
                 if(hasnode) {
-                    Object.assign(this,hasnode); 
+                    for (let k in hasnode)  this[k] = hasnode[k]; //set the node's props as this
+
                     if(!this.source) this.source = hasnode;
 
                     let props = hasnode.getProps();
                     delete props.graph;
                     delete props.parent;
 
-                    Object.assign(properties, props);
+                    for (let k in props)  properties[k] = props[k];
                 }
             }
 
@@ -297,7 +298,7 @@ export class GraphNode {
             }
             if(properties.children) this._initial.children = Object.assign({},properties.children); //preserve the prototypes
 
-            Object.assign(this, properties); //set the node's props as this 
+            for (let k in properties) this[k] = properties[k]; //set the node's props as this
 
 
             if(!this.tag) {
@@ -399,6 +400,7 @@ export class GraphNode {
         //can add an animationFrame coroutine, one per node //because why not
         if(this.firstRun) {
             this.firstRun = false;
+
             if(
                 !( 
                    (this.children && this.forward) || 
@@ -535,6 +537,7 @@ export class GraphNode {
     }
 
     runChildren = async (n:GraphNode, ...args) => {
+
         if(typeof n.children === 'object') {
             for(const key in n.children) {
                 if (typeof n.children[key] === 'string') {
@@ -606,9 +609,7 @@ export class GraphNode {
                 //console.log('anim')
                 if(this.isAnimating) {
                     if(this.DEBUGNODE) console.time(this.tag);
-                    let result = (this.animation  as any)( 
-                        ...args
-                    );
+                    let result = (this.animation  as any).call(this, ...args);
                     if(result instanceof Promise) {
                         result = await result;
                     }
@@ -648,9 +649,7 @@ export class GraphNode {
             let looping = async () => {
                 if(this.isLooping)  {
                     if(this.DEBUGNODE) console.time(this.tag);
-                    let result = this.looper(
-                        ...args
-                    );
+                    let result = this.looper.call(this, ...args);
                     if(result instanceof Promise) {
                         result = await result;
                     }
@@ -694,6 +693,7 @@ export class GraphNode {
     //converts all children nodes and tag references to GraphNodes also
     add = (n:GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
         if(typeof n === 'function') n = { operator:n as any};
+
         if(!(n instanceof GraphNode)) n = new GraphNode(n,this,this.graph); 
         this.nodes.set(n.tag,n);
         if(this.graph) {
@@ -1075,7 +1075,7 @@ export class Graph {
         this.tag = tag ? tag : `graph${Math.floor(Math.random()*100000000000)}`;
 
         if(props) {
-            Object.assign(this,props); //set other props like flow properties in a nested graph
+            for (let k in props) this[k] = props[k]; //set other props like flow properties in a nested graph
             this._initial = props;
         }
         if(tree || Object.keys(this.tree).length > 0) this.setTree(tree);
@@ -1092,14 +1092,18 @@ export class Graph {
                 this.nodes.set(n.tag,n);
             }
         }
+
         return n;
     }
 
     setTree = (tree:Tree = this.tree) => {
+
         if(!tree) return;
 
         for(const node in tree) { //add any nodes not added yet, assuming we aren't overwriting the same tags to the tree.
-            if(!this.nodes.get(node)) {
+            const n = this.nodes.get(node)
+            if(!n) {
+
                 if(typeof tree[node] === 'function') {
                     this.add({tag:node, operator:tree[node] as OperatorType|((...args)=>any|void)});
                 }
@@ -1116,7 +1120,6 @@ export class Graph {
                     this.add({tag:node,operator:(...args) => {return tree[node];}});
                 }
             } else {
-                let n = this.nodes.get(node);
                 if (typeof tree[node] === 'function') {
                     n.setOperator(tree[node]);
                 }
