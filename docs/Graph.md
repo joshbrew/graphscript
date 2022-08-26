@@ -20,19 +20,16 @@ Every node shares a state with a common state object that allows for quick subsc
 GraphNode properties
 ```ts
 
-//operators may be any functions with any inputs, if either of the first two default arguments are not detected it will wrap the function in a node-friendly operator like below, so you can forget about this syntax in practice or use it when you need it!
-type OperatorType = ( //can be async
-    self:GraphNode,  //'this' node
-    origin:string|GraphNode|Graph, //origin node
+
+export type OperatorType = ( //can be async
     ...args:any //input arguments, e.g. output from another node
 )=>any|void
-
 
 
 type GraphNodeProperties = {
     tag?:string, //generated if not specified, or use to get another node by tag instead of generating a new one
     
-    operator?:OperatorType|((...args)=>any|void), //Operator to handle I/O on this node. Returned inputs can propagate according to below settings
+    operator?:((...args)=>any|void), //Operator to handle I/O on this node. Returned inputs can propagate according to below settings
     
     forward?:boolean, //pass output to child nodes
     
@@ -94,8 +91,6 @@ GraphNode utilities
     //node properties you can set, create a whole tree using the children
     let props={
         operator:(
-            self,  //'this' node
-            origin, //origin node
             ...args    //e.g. 'loop' or 'animate' will be defined if the operator is running on the loop or animate routines, needed something. Can define more commands but you might as well use an object in input for that. 
         )=>{ console.log(args); return args; }, //Operator to handle I/O on this node. Returned inputs can propagate according to below settings
         forward:true, //pass output to child nodes
@@ -124,19 +119,18 @@ node
 
     .runAsync(...args) //force the operation to run as a promise for cleaner chaining
 
-    .runAnimation(animation=this.operator,node=this,args=[],origin) //run the operator loop on the animation loop with the given input conditions, the cmd will be 'animate' so you can put an if statement in to run animation logic in the operator
+    .runAnimation(animation=this.operator,node=this,args=[]) //run the operator loop on the animation loop with the given input conditions, the cmd will be 'animate' so you can put an if statement in to run animation logic in the operator
 
-    .runLoop(looper=this.operator,node=this,args=[],origin) //runs a setTimeout loop according to the node.loop setting (ms)
+    .runLoop(looper=this.operator,node=this,args=[]) //runs a setTimeout loop according to the node.loop setting (ms)
 
     .setOperator(operator) //set the operator functions
 
     .setParent(parent) //set the parent GraphNode
 
-    .operator(node=this, origin, ...args) //<--- runs the operator function
+    .operator(...args) //<--- runs the operator function
     
-    .runOp(node=this, origin, ...args) //<--- runs the operator and sets state with the result for that tag. Returns a promise if the operator is an async function.
+    .runOp(...args) //<--- runs the operator and sets state with the result for that tag. Returns a promise if the operator is an async function.
     
-
     .addChildren(children:{}) //add child GraphNodes to this node (operation results passed on forward pass)
 
     .subscribe(callback=(res)=>{},tag=this.tag) //subscribe to the tagged node output, returns an int. if you pass a graphnode as a callback it will call subscribeNode
@@ -225,8 +219,6 @@ let graph = new Graph(tree);
 
         .set(node) //set a node by node.tag
 
-        .create(operator=(self,origin,...args)=>{},parentNode,props) //create a node just using an operator, can pass props for more
-
         .run(node,...args) //<--- runs the node sequence starting from the given node, returns a promise that will spit out the final result from the tree if any
 
         .runAsync(node,...args) //force the operation to return as a promise for cleaner chaining
@@ -237,9 +229,9 @@ let graph = new Graph(tree);
 
         .append(node, parentNode) // append a node to a parent node
 
-        .callParent(node, origin, ...args) // call a parent ndoe of a given node
+        .callParent(node, ...args) // call a parent ndoe of a given node
 
-        .callChildren(node, idx?, ...args) // call the children of a given node
+        .callChildren(node, ...args) // call the children of a given node
 
         .subscribe(tag, callback=(res)=>{}) //subscribe to a node tag, callbacks contain that node's operator output, returns an int sub number
 
@@ -250,6 +242,8 @@ let graph = new Graph(tree);
         .print(node,printChildren=true) //recursively print a reconstrucible json hierarchy of the graph nodes, including arbitrary keys/functions, if printChildren is set to false it will only print the tags and not the whole object in the .children property of this node
 
         .reconstruct(json='{}') //reconstruct a jsonified node hierarchy into a functional GraphNode tree
+
+        .create(operator,parentNode,props) //create a node from this recipe
 
 ```
 
@@ -285,7 +279,7 @@ const tree = {
                         'log':true, //run a log on parent output
                         'square2':{
                             tag:'square', //source this node
-                            children:[ 'log', (self,origin,output)=>{ self.graph.get('sequence').result = output;  }]
+                            children:[ 'log', (output)=>{ this.graph.get('sequence').result = output;  }]
                         }
                     }
                 }

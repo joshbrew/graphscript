@@ -27,9 +27,9 @@ export type WorkerProps = {
 export type WorkerInfo = {
     worker:Worker,
     send:(message:any,transfer?:any)=>void,
-    request:(message:any, transfer?:any, origin?:string, method?:string)=>Promise<any>,
+    request:(message:any, transfer?:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any, transfer?:any)=>void,
-    run:(route:any, args?:any, transfer?:any, origin?:string, method?:string)=>Promise<any>
+    run:(route:any, args?:any, transfer?:any, method?:string)=>Promise<any>
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & WorkerProps & WorkerRoute
@@ -54,7 +54,7 @@ export class WorkerService extends Service {
                 let result = this.receive(ev.data); //this will handle graph logic and can run requests for the window or messsage ports etc etc.
                 //console.log(JSON.stringify(ev.data), JSON.stringify(result),JSON.stringify(Array.from((self as any).SERVICE.nodes.keys())))
                 //console.log(result);
-                if(this.keepState) this.setState({[ev.data.origin ? ev.data.origin : 'worker']:result}); //subscribe to all outputs
+                if(this.keepState) this.setState({[this.name]:result}); //subscribe to all outputs
             }
         }
     }
@@ -183,24 +183,22 @@ export class WorkerService extends Service {
             return this.transmit(message,worker,transfer);
         }
 
-        let post = (route:any,args?:any,transfer?:any, origin?:string, method?:string) => {
+        let post = (route:any,args?:any,transfer?:any,method?:string) => {
             //console.log('sent', message)
             let message:any = {
                 route,
                 args
             };
-            if(origin) message.origin = origin;
             if(method) message.method = method;
 
             return this.transmit(message,worker,transfer);
         }
 
-        let run = (route:any,args?:any, transfer?:any, origin?:string, method?:string) => {
+        let run = (route:any,args?:any, transfer?:any, method?:string) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
                 let req = {route:'runRequest', args:[{route, args}, options._id, callbackId]} as any;
                 //console.log(req)
-                if(origin) req.args[0].origin = origin;
                 if(method) req.args[0].method = method;
                 let onmessage = (ev)=>{
                     if(typeof ev.data === 'object') {
@@ -215,12 +213,11 @@ export class WorkerService extends Service {
             });
         }
         
-        let request = (message:ServiceMessage|any, transfer?:any, origin?:string, method?:string) => {
+        let request = (message:ServiceMessage|any, transfer?:any, method?:string) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
                 let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
                 //console.log(req)
-                if(origin) req.origin = origin;
                 if(method) req.method = method;
                 let onmessage = (ev)=>{
                     if(typeof ev.data === 'object') {
@@ -349,12 +346,11 @@ export class WorkerService extends Service {
         
     }
 
-    request = (message:ServiceMessage|any, workerId:string, transfer?:any, origin?:string, method?:string) => {
+    request = (message:ServiceMessage|any, workerId:string, transfer?:any, method?:string) => {
         let worker = this.workers[workerId].worker;
         return new Promise ((res,rej) => {
             let callbackId = Math.random();
             let req = {route:'runRequest', args:[message, callbackId]} as any;
-            if(origin) req.origin = origin;
             if(method) req.method = method;
             let onmessage = (ev)=>{
                 if(typeof ev.data === 'object') {

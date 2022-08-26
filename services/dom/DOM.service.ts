@@ -335,18 +335,18 @@ export class DOMService extends Service {
         }
 
         if(!options.element) options.element = elm;
-        if(!options.operator) options.operator = (node,origin,props:{[key:string]:any})=>{ 
+        if(!options.operator) options.operator = function op(props:{[key:string]:any}){ 
             if(typeof props === 'object') 
                 for(const key in props) { 
-                    if(node.element) {
-                        if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
+                    if(this.element) {
+                        if(typeof this.element[key] === 'function' && typeof props[key] !== 'function')
                             { //attempt to execute a function with arguments
                                 if(Array.isArray(props[key]))
-                                    node.element[key](...props[key]);
-                                else node.element[key](props[key]);
+                                this.element[key](...props[key]);
+                                else this.element[key](props[key]);
                             } 
-                        else if (key === 'style') { Object.assign(node.element[key],props[key])}
-                        else node.element[key] = props[key]; 
+                        else if (key === 'style') { Object.assign(this.element[key],props[key])}
+                        else this.element[key] = props[key]; 
                     }
                 }
                 
@@ -358,7 +358,7 @@ export class DOMService extends Service {
 
         if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }
 
-        (elm as any).node = node; //self.node references the graphnode on the div now
+        (elm as any).node = node; //this.node references the graphnode on the div now
 
         this.components[completeOptions.id] = {
             element:elm as any,
@@ -449,18 +449,18 @@ export class DOMService extends Service {
         this.templates[completeOptions.id] = completeOptions;
 
         if(!options.element) options.element = elm;
-        if(!options.operator) options.operator = (node,origin,props:{[key:string]:any})=>{ 
+        if(!options.operator) options.operator = function op(props:{[key:string]:any}){ 
             if(typeof props === 'object') 
                 for(const key in props) { 
-                    if(node.element) {
-                        if(typeof node.element[key] === 'function' && typeof props[key] !== 'function')
+                    if(this.element) {
+                        if(typeof this.element[key] === 'function' && typeof props[key] !== 'function')
                             { //attempt to execute a function with arguments
                                 if(Array.isArray(props[key]))
-                                    node.element[key](...props[key]);
-                                else node.element[key](props[key]);
+                                this.element[key](...props[key]);
+                                else this.element[key](props[key]);
                             } 
-                        else if (key === 'style') { Object.assign(node.element[key],props[key])}
-                        else node.element[key] = props[key]; 
+                        else if (key === 'style') { Object.assign(this.element[key],props[key])}
+                        else this.element[key] = props[key]; 
                     }
                 }
                 

@@ -2,7 +2,6 @@ import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
 
 export type WebRTCProps = {
     _id?:string,
-    origin?:string,
     channels?:{
         [key:string]:(true|RTCDataChannelInit|RTCDataChannel)
     },
@@ -27,9 +26,9 @@ export type WebRTCInfo = {
     _id:string,
     rtc:RTCPeerConnection,
     send:(message:any)=>void, //these callbacks work on the first available data channel to call to other webrtc services
-    request:(message:any, origin?:string, method?:string)=>Promise<any>,
+    request:(message:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
-    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
+    run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>Promise<number>,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & WebRTCProps
@@ -117,24 +116,22 @@ export class WebRTCfrontend extends Service {
                 return this.transmit(message,options._id,options.channels[firstChannel] as RTCDataChannel);
             }
 
-            let post = (route:any,args?:any, origin?:string, method?:string) => {
+            let post = (route:any,args?:any, method?:string) => {
                 //console.log('sent', message)
                 let message:any = {
                     route,
                     args
                 };
-                if(origin) message.origin = origin;
                 if(method) message.method = method;
 
                 return this.transmit(message,options._id,options.channels[firstChannel] as RTCDataChannel);
             }
 
-            let run = (route:any,args?:any, origin?:string, method?:string):Promise<any> => {
+            let run = (route:any,args?:any, method?:string):Promise<any> => {
                 return new Promise ((res,rej) => {
                     let callbackId = Math.random();
                     let req = {route:'runRequest', args:[{route, args}, options._id, callbackId]} as any;
                     //console.log(req)
-                    if(origin) req.args[0].origin = origin;
                     if(method) req.args[0].method = method;
                     
                     let sub;
@@ -156,12 +153,11 @@ export class WebRTCfrontend extends Service {
                 });
             }
             
-            let request = (message:ServiceMessage|any, origin?:string, method?:string):Promise<any> => {
+            let request = (message:ServiceMessage|any, method?:string):Promise<any> => {
                 return new Promise ((res,rej) => {
                     let callbackId = Math.random();
                     let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
                     //console.log(req)
-                    if(origin) req.origin = origin;
                     if(method) req.method = method;
 
                     let sub;
@@ -437,11 +433,10 @@ export class WebRTCfrontend extends Service {
         return true;
     }
 
-    request = (message:ServiceMessage|any, channel:RTCDataChannel, _id:string, origin?:string, method?:string) => { //return a promise which can resolve with a server route result through the socket
+    request = (message:ServiceMessage|any, channel:RTCDataChannel, _id:string,method?:string) => { //return a promise which can resolve with a server route result through the socket
         let callbackId = `${Math.random()}`;
         let req:any = {route:'runRequest', args:[message,_id,callbackId]};
         if(method) req.method = method;
-        if(origin) req.origin = origin;
         return new Promise((res,rej) => {
             let onmessage = (ev:any) => {
                 let data = ev.data;

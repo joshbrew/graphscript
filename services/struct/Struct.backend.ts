@@ -414,7 +414,7 @@ export class StructBackend extends Service {
                 data = this.getLocalData('authorization',{ownerId});
             }
         }
-        if(this.debug) console.log('getAuths: user:',user,'input:',ownerId,authId,'output',data)
+        if(this.debug) console.log('getAuthorizations: user:',user,'input:',ownerId,authId,'output',data)
         return data;
     }
 
@@ -435,7 +435,7 @@ export class StructBackend extends Service {
                 if(passed) data = this.deleteLocalData(struct);
             }
         } 
-        if(this.debug) console.log('deleteAuth: user:',user,'input:',authId,'output',data)
+        if(this.debug) console.log('deleteAuthorization: user:',user,'input:',authId,'output',data)
         return data;
     }
 

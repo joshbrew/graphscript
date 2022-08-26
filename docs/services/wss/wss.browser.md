@@ -28,9 +28,9 @@ type SocketInfo = {
     socket:WebSocket,
     address?:string,
     send:(message:any)=>void,
-    request:(message:any, origin?:string, method?:string)=>Promise<any>,
+    request:(message:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
-    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
+    run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & SocketProps;

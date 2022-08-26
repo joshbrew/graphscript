@@ -39,7 +39,6 @@ export type ServiceMessage = {
     args?:any, //route args or data depending on what we're handling
     method?:string, //can specify get, post, etc. on http requests or on multiplexed routes using the RouteProp format
     node?:string|GraphNode, //alt tag for routes
-    origin?:string|GraphNode|Graph|Service,
     [key:string]:any //it's an object so do whatever, any messages meant for web protocols need to be stringified or buffered
 }
 
@@ -359,7 +358,7 @@ export class Service extends Graph {
                     if(r.connect) {}
                     if(r.trace) {}
 
-                    console.log('route', r)
+                    //console.log('route', r)
                     if(r.post && !r.operator) {
                         allRoutes[route].operator = r.post;
                     } else if (!r.operator && typeof r.get == 'function') {
@@ -428,8 +427,7 @@ export class Service extends Graph {
     handleMethod = (
         route:string, 
         method:string, 
-        args?:any, 
-        origin?:string|GraphNode|Graph|Service
+        args?:any
     ) => { //For handling RouteProp or other routes with multiple methods 
         let m = method.toLowerCase(); //lower case is enforced in the route keys
         if(m === 'get' && ((this.routes[route] as RouteProp)?.get as any)?.transform instanceof Function) { //make alt formats for specific methods and execute them a certain way
@@ -440,11 +438,11 @@ export class Service extends Graph {
             if(!(this.routes[route][m] instanceof Function)) {
                 if(args) this.routes[route][m] = args; //if args were passed set the value
                 return this.routes[route][m]; //could just be a stored local variable we are returning like a string or object
-            }// else if(origin) { return this.routes[route][m](origin,data); }//put origin in first position
+            }
             else return this.routes[route][m](args); 
             
         }//these could be any function or property call
-        else return this.handleServiceMessage({route,args,method,origin}) //process normally if the method doesn't return
+        else return this.handleServiceMessage({route,args,method}) //process normally if the method doesn't return
     }
 
     handleServiceMessage(message:ServiceMessage) {
@@ -454,25 +452,16 @@ export class Service extends Graph {
             if(message.route) call = message.route; else if (message.node) call = message.node;
         }
         if(call) {
-            if(message.origin) { //origin will be second argument in this case
-                if(Array.isArray(message.args)) return this.run(call,message.origin,...message.args);
-                else return this.run(call,message.origin,message.args);
-            } else {
-                //console.log('call',call,'message',message, 'nodes:', this.nodes.keys(),this)
-                if(Array.isArray(message.args)) return this.run(call,...message.args);
-                else return this.run(call,message.args);
-            }
+            //console.log('call',call,'message',message, 'nodes:', this.nodes.keys(),this)
+            if(Array.isArray(message.args)) return this.run(call,...message.args);
+            else return this.run(call,message.args);
         } else return message;
     }
 
-    handleGraphNodeCall(route:string|GraphNode, args:any, origin?:string|GraphNode|Graph) {
+    handleGraphNodeCall(route:string|GraphNode, args:any) {
         if(!route) return args;
         if((args as ServiceMessage)?.args) {
             this.handleServiceMessage(args);
-        }
-        else if(origin) {
-            if(Array.isArray(args)) return this.run(route, origin, ...args);
-            else return this.run(route, origin, args);
         }
         else if(Array.isArray(args)) return this.run(route,...args);
         else return this.run(route, args);
@@ -488,7 +477,7 @@ export class Service extends Graph {
             } else if(args[0].route) {
                 return this.handleServiceMessage(args[0]);
             } else if (args[0].node){
-                return this.handleGraphNodeCall(args[0].node, args[0].args, args[0].origin);
+                return this.handleGraphNodeCall(args[0].node, args[0].args);
             } else if(this.keepState) {    
                 if(args[0].route)
                     this.setState({[args[0].route]:args[0].args});
@@ -519,7 +508,7 @@ export class Service extends Graph {
             } else if(args[0].route) {
                 return this.handleServiceMessage(args[0]);
             } else if (args[0].node){
-                return this.handleGraphNodeCall(args[0].node, args[0].args, args[0].origin);
+                return this.handleGraphNodeCall(args[0].node, args[0].args);
             } else if(this.keepState) {    
                 if(args[0].route)
                     this.setState({[args[0].route]:args[0].args});
@@ -535,21 +524,20 @@ export class Service extends Graph {
         source:GraphNode|string, 
         destination:string, 
         endpoint?:string|any, //the address or websocket etc. of the endpoint on the service we're using, this is different e.g. for sockets or http
-        origin?:string, 
         method?:string, 
         callback?:(res:any)=>any|void
     ) => {
         if(source instanceof GraphNode) {
             if(callback) return source.subscribe((res)=>{
                 let mod = callback(res); //either a modifier or a void function to do a thing before transmitting the data
-                if(mod !== undefined) this.transmit({route:destination, args:mod, origin, method});
-                else this.transmit({route:destination, args:res, origin, method}, endpoint);
+                if(mod !== undefined) this.transmit({route:destination, args:mod, method});
+                else this.transmit({route:destination, args:res, method}, endpoint);
             })
-            else return this.subscribe(source,(res)=>{ this.transmit({route:destination, args:res, origin, method}, endpoint); });
+            else return this.subscribe(source,(res)=>{ this.transmit({route:destination, args:res, method}, endpoint); });
         }
         else if(typeof source === 'string') 
             return this.subscribe(source,(res)=>{ 
-                this.transmit({route:destination, args:res, origin, method}, endpoint); 
+                this.transmit({route:destination, args:res, method}, endpoint); 
             });
     }
 
@@ -558,21 +546,21 @@ export class Service extends Graph {
         source:GraphNode|string, 
         destination:string, 
         endpoint?:string|any, //the address or websocket etc. of the endpoint on the service we're using, this is different e.g. for sockets or http
-        origin?:string, 
         method?:string, 
         callback?:(res:any)=>any|void
     ) => {
         if(source instanceof GraphNode) {
             if(callback) return source.state.subscribeTriggerOnce(source.tag,(res)=>{
                 let mod = callback(res); //either a modifier or a void function to do a thing before transmitting the data
-                if(mod !== undefined) this.transmit({route:destination, args:mod, origin, method});
-                else this.transmit({route:destination, args:res, origin, method},endpoint);
+                if(mod !== undefined) this.transmit({route:destination, args:mod, method});
+                else this.transmit({route:destination, args:res, method},endpoint);
             })
-            else return this.state.subscribeTriggerOnce(source.tag,(res)=>{ this.transmit({route:destination, args:res, origin, method},endpoint); });
+            else return this.state.subscribeTriggerOnce(source.tag,(res)=>{ 
+                this.transmit({route:destination, args:res, method},endpoint); });
         }
         else if(typeof source === 'string') 
             return this.state.subscribeTriggerOnce(source,(res)=>{ 
-                this.transmit({route:destination, args:res, origin, method},endpoint); 
+                this.transmit({route:destination, args:res, method},endpoint); 
             });
     }
 

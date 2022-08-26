@@ -1,7 +1,6 @@
 import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
 export declare type WebRTCProps = {
     _id?: string;
-    origin?: string;
     channels?: {
         [key: string]: (true | RTCDataChannelInit | RTCDataChannel);
     };
@@ -29,9 +28,9 @@ export declare type WebRTCInfo = {
     _id: string;
     rtc: RTCPeerConnection;
     send: (message: any) => void;
-    request: (message: any, origin?: string, method?: string) => Promise<any>;
+    request: (message: any, method?: string) => Promise<any>;
     post: (route: any, args?: any) => void;
-    run: (route: any, args?: any, origin?: string, method?: string) => Promise<any>;
+    run: (route: any, args?: any, method?: string) => Promise<any>;
     subscribe: (route: any, callback?: ((res: any) => void) | string) => Promise<number>;
     unsubscribe: (route: any, sub: number) => Promise<boolean>;
 } & WebRTCProps;
@@ -63,7 +62,7 @@ export declare class WebRTCfrontend extends Service {
     addDataChannel: (rtc: RTCPeerConnection, name: string, options?: RTCDataChannelInit) => RTCDataChannel;
     transmit: (data: ServiceMessage | any, id?: string, channel?: string | RTCDataChannel) => boolean;
     terminate: (rtc: RTCPeerConnection | WebRTCInfo | string) => boolean;
-    request: (message: ServiceMessage | any, channel: RTCDataChannel, _id: string, origin?: string, method?: string) => Promise<unknown>;
+    request: (message: ServiceMessage | any, channel: RTCDataChannel, _id: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, channel: RTCDataChannel | string, callbackId: string | number) => any;
     subscribeRTC: (route: string, rtcId: string, channel: string | RTCDataChannel) => number;
     subscribeToRTC: (route: string, rtcId: string, channelId: string, callback?: string | ((res: any) => void)) => Promise<any>;

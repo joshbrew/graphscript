@@ -39,9 +39,9 @@ type WorkerProps = {
 type WorkerInfo = {
     worker:Worker,
     send:(message:any,transfer?:any)=>void,
-    request:(message:any, transfer?:any, origin?:string, method?:string)=>Promise<any>,
+    request:(message:any, transfer?:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any, transfer?:any)=>void,
-    run:(route:any, args?:any, transfer?:any, origin?:string, method?:string)=>Promise<any>
+    run:(route:any, args?:any, transfer?:any, method?:string)=>Promise<any>
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & WorkerProps & WorkerRoute

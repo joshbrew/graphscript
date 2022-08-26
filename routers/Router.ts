@@ -111,7 +111,6 @@ export class Router { //instead of extending acyclicgraph or service again we ar
         source:string|GraphNode, 
         destination:string, 
         transmitter?:Protocol|string, 
-        origin?:string, 
         method?:string, 
         callback?:(res:any)=>any|void
     ) => {
@@ -133,18 +132,18 @@ export class Router { //instead of extending acyclicgraph or service again we ar
                         let mod = callback(res);
                         if(mod) res = mod;
                         radio.transmit(
-                            {route:destination,args:res,origin,method}
+                            {route:destination,args:res,method}
                         );
                     });
 
                 }
                 else return this.subscribe(source,(res) => {
-                    radio.transmit({route:destination,args:res,origin,method});
+                    radio.transmit({route:destination,args:res,method});
                 });
             } else { //search every service connection for a matching path
                 let endpoint = this.getEndpointInfo(transmitter);
                 if(endpoint) { 
-                    return this.services[endpoint.service].pipe(source,destination,transmitter,origin,method,callback);
+                    return this.services[endpoint.service].pipe(source,destination,transmitter,method,callback);
                 }
             }
         }
@@ -156,7 +155,6 @@ export class Router { //instead of extending acyclicgraph or service again we ar
         source:string|GraphNode, 
         destination:string, 
         transmitter?:Protocol|string, 
-        origin?:string, 
         method?:string, 
         callback?:(res:any)=>any|void
     ) => {
@@ -178,18 +176,18 @@ export class Router { //instead of extending acyclicgraph or service again we ar
                         let mod = callback(res);
                         if(mod) res = mod;
                         radio.transmit(
-                            {route:destination,args:res,origin,method}
+                            {route:destination,args:res,method}
                         );
                     });
 
                 }
                 else return this.state.subscribeTriggerOnce(source as string,(res) => {
-                    radio.transmit({route:destination,args:res,origin,method});
+                    radio.transmit({route:destination,args:res,method});
                 });
             } else { //search every service connection for a matching path
                 let endpoint = this.getEndpointInfo(transmitter);
                 if(endpoint) { 
-                    return this.services[endpoint.service].pipeOnce(source,destination,transmitter,origin,method,callback);
+                    return this.services[endpoint.service].pipeOnce(source,destination,transmitter,method,callback);
                 }
             }
         }
@@ -313,30 +311,29 @@ export class Router { //instead of extending acyclicgraph or service again we ar
     //    to a single endpoint where we want the fastest possible  
     pipeFastest = (
         source:string|GraphNode, 
-        destination:string, 
-        origin?:string, 
+        destination:string,  
         method?:string, 
         callback?:(res:any)=>any|void,
         services=this.services //can choose from selected services
     ) => {
         for(const service in services) {          
             if(services[service].rtc) {
-               return this.pipe(source,destination,'webrtc',origin,method,callback);
+               return this.pipe(source,destination,'webrtc',method,callback);
             }
             if(services[service].eventsources) {
                 let keys = Object.keys(services[service].eventsources);
                 if(keys[0])
                     if(this.services[service].eventsources[keys[0]].sessions)
-                        return this.pipe(source,destination,'sse',origin,method,callback);
+                        return this.pipe(source,destination,'sse',method,callback);
             }
             if(services[service].sockets) {
-                return this.pipe(source,destination,'wss',origin,method,callback);
+                return this.pipe(source,destination,'wss',method,callback);
             }
             if(services[service].servers) {
-                return this.pipe(source,destination,'http',origin,method,callback);
+                return this.pipe(source,destination,'http',method,callback);
             }
             if(services[service].workers) { //workers aren't remote but whatever it's in here 
-                return this.pipe(source,destination,'worker',origin,method,callback);
+                return this.pipe(source,destination,'worker',method,callback);
             }
         }
         return false;

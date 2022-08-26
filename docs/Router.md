@@ -212,7 +212,7 @@ type UserProps = {
     onmessage?:(message:any)=>void,  //when a message comes in from an endpoint assigned to this user   
     onclose?:(connection:any)=>void,               //when a connection belonging to this user closes
     send?:(message:any, channel?:string)=>any,        //send function to determine how to communicate to this user's endpoint(s) from this router instance
-    request?:(message:ServiceMessage|any, connection?:any, origin?:string, method?:string) => Promise<any> //await a server response for a call 
+    request?:(message:ServiceMessage|any, connection?:any, method?:string) => Promise<any> //await a server response for a call 
     latency?:number,                 //should calculate other metrics like latency
     [key:string]:any //other user properties e.g. personally identifying information
 } & GraphNodeProperties

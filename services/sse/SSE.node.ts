@@ -134,17 +134,10 @@ export class SSEbackend extends Service {
                                 path = evs.path;
                                 channel = data.route;
                             }
-                            else if (evs.channels?.includes((data as any).origin)) {
-                                path = evs.path;
-                                channel = data.origin as string;
-                            }
                         }
                     if(!path && data.route) 
                         if(this.servers[data.route]) 
                             path = data.route;
-                    if(!path && typeof data.origin === 'string') 
-                        if(this.servers[data.origin]) 
-                            path = data.origin;
                 }
                 
             }

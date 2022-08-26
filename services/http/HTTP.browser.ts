@@ -162,11 +162,11 @@ export class HTTPfrontend extends Service {
                     }
             
                     if(typeof body?.method === 'string') { //run a route method directly, results not linked to graph
-                        return resolve(this.handleMethod(body.route,body.method,body.args,body.origin));
+                        return resolve(this.handleMethod(body.route,body.method,body.args));
                     } else if(typeof body?.route === 'string') {
                         return resolve(this.handleServiceMessage(body));
                     } else if ((typeof body?.node === 'string' || body.node instanceof GraphNode)) {
-                        return resolve(this.handleGraphNodeCall(body.node,body.args,body.origin));
+                        return resolve(this.handleGraphNodeCall(body.node,body.args));
                     } else return resolve(body);
                 },
                 onabort:(er)=>{ reject(er); }
