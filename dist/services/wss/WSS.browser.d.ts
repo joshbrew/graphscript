@@ -17,9 +17,9 @@ export declare type WebSocketInfo = {
     socket: WebSocket;
     address: string;
     send: (message: any) => void;
-    request: (message: any, origin?: string, method?: string) => Promise<any>;
+    request: (message: any, method?: string) => Promise<any>;
     post: (route: any, args?: any) => void;
-    run: (route: any, args?: any, origin?: string, method?: string) => Promise<any>;
+    run: (route: any, args?: any, method?: string) => Promise<any>;
     subscribe: (route: any, callback?: ((res: any) => void) | string) => any;
     unsubscribe: (route: any, sub: number) => Promise<boolean>;
 } & WebSocketProps;
@@ -32,7 +32,7 @@ export declare class WSSfrontend extends Service {
     openWS: (options?: WebSocketProps) => WebSocketInfo;
     transmit: (data: string | ArrayBufferLike | Blob | ArrayBufferView | ServiceMessage, ws: WebSocket) => boolean;
     terminate: (ws: WebSocket | string) => boolean;
-    request: (message: ServiceMessage | any, ws: WebSocket, _id: string, origin?: string, method?: string) => Promise<unknown>;
+    request: (message: ServiceMessage | any, ws: WebSocket, _id: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, ws: WebSocket | string, callbackId: string | number) => any;
     subscribeSocket(route: string, socket: WebSocket | string): number;
     subscribeToSocket(route: string, socketId: string, callback?: ((res: any) => void) | string): Promise<any>;

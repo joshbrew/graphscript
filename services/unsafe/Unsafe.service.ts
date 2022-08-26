@@ -6,7 +6,7 @@ export const unsafeRoutes = {
     
     //add a route and parse it from text
     setRoute:function(fn:string|((...args:[])=>any),fnName?:string){
-        //console.log(origin, fn, fnName)
+        //console.log(fn, fnName)
         //if(fnName === 'setupChart') console.log(fn);
         if(typeof fn === 'string') fn = parseFunctionFromText(fn);
         //if(fnName === 'setupChart') console.log(fn);
@@ -21,7 +21,7 @@ export const unsafeRoutes = {
         return false;
     },
     setNode:function(fn:string|((...args:[])=>any),fnName?:string){
-        //console.log(origin, fn, fnName)
+        //console.log(fn, fnName)
         if(typeof fn === 'string') fn = parseFunctionFromText(fn);
         //console.log(fn);
         if(typeof fn === 'function') {
@@ -36,7 +36,7 @@ export const unsafeRoutes = {
         return false;
     },
     setMethod:function(route:string,fn:string|((...args:[])=>any),fnName?:string){ //set a method on a route
-        //console.log(origin, fn, fnName)
+        //console.log(fn, fnName)
         if(typeof fn === 'string') fn = parseFunctionFromText(fn);
         //console.log(fn);
         if(typeof fn === 'function') {
@@ -51,7 +51,7 @@ export const unsafeRoutes = {
         return false;
     },
     assignRoute:function(route:string,source:{[key:string]:any}) { //set values on a route
-        //console.log(origin, fn, fnName)
+        //console.log(fn, fnName)
         if(this.graph.get(route) && typeof source === 'object') {
             Object.assign(this.graph.get(route),source);
         }

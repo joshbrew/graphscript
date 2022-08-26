@@ -288,32 +288,11 @@ export class StructFrontend extends Service {
 
         return newStruct;
     }
-    
-    //simple response test
-    ping = async (callback=(res)=>{console.log(res);}) => {
-        if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'ping'}))?.[0]
-            callback(res);
-            return res;
-        }
-    }
-
-    //send a direct message to somebody
-    sendMessage = async (userId:string='',message:any='',data:any=undefined,callback=(res)=>{console.log(res);}) => {
-        if(this.currentUser?.request) {
-            let args = [userId,message];
-            if(data) args[2] = data;
-
-            let res = (await this.currentUser.request({route:'sendMessage', args}))?.[0]
-            callback(res);
-            return res;
-        }
-    }
 
     //info can be email, id, username, or name. Returns their profile and authorizations
     getUser = async (info:string|number='',callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'structs/getUser', args:info}))?.[0];
+            let res = (await this.currentUser.request({route:'getUser', args:[this.currentUser._id, info]}))?.[0];
             callback(res);
             return (res as {user:ProfileStruct, groups:[], authorizations:[]} | undefined);
         }
@@ -322,7 +301,7 @@ export class StructFrontend extends Service {
     //get user basic info by id
     getUsers = async (ids:(string|number)[]=[],callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'structs/getUsersByIds', args:[ids]})) // Pass Array
+            let res = (await this.currentUser.request({route:'getUsersByIds', args:[this.currentUser._id, ids]})) // Pass Array
             callback(res)
             return res
         }
@@ -331,7 +310,7 @@ export class StructFrontend extends Service {
     //info can be email, id, username, or name. Returns their profile and authorizations
     getUsersByRole = async (userRole:string,callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'structs/getUsersByRoles', args:userRole}));
+            let res = (await this.currentUser.request({route:'getUsersByRole', args:[this.currentUser._id, userRole]}));
             callback(res)
             return res
         }
@@ -340,7 +319,7 @@ export class StructFrontend extends Service {
     //pull all of the collections (except excluded collection names e.g. 'groups') for a user from the server
     getAllUserData = async (ownerId:string|number, excluded:any[]=[], callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'structs/getAllData', args:[ownerId, excluded]} ));
+            let res = (await this.currentUser.request({route:'getAllData', args:[ownerId, excluded]} ));
             callback(res)
             return res
         }
@@ -349,7 +328,7 @@ export class StructFrontend extends Service {
     query = async (collection:string, queryObj={}, findOne=false, skip=0, callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
             if(!collection || !queryObj) return undefined;
-            let res = (await this.currentUser.request({route:'structs/query',args:[collection,queryObj,findOne,skip]} ));
+            let res = (await this.currentUser.request({route:'query',args:[this.currentUser._id, collection,queryObj,findOne,skip]} ));
             if(typeof callback === 'function') callback(res);
             return res;
         }
@@ -358,7 +337,7 @@ export class StructFrontend extends Service {
     //get data by specified details from the server. You can provide only one of the first 3 elements. The searchDict is for mongoDB search keys
     getData = async (collection:string,ownerId?:string|number|undefined,searchDict?,limit:number=0,skip:number=0,callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'structs/getData', args:[collection, ownerId, searchDict, limit, skip]}));//?.[0]
+            let res = (await this.currentUser.request({route:'getData', args:[this.currentUser._id, collection, ownerId, searchDict, limit, skip]}));//?.[0]
             //console.log('GET DATA RES', res, JSON.stringify(collection), JSON.stringify(ownerId));
             if(typeof callback === 'function') callback(res);
             return res;
@@ -368,7 +347,7 @@ export class StructFrontend extends Service {
     //get data by specified details from the server. You can provide only one of the first 3 elements. The searchDict is for mongoDB search keys
     getDataByIds = async (structIds:any[]=[],ownerId?:string|number|undefined,collection?:string|undefined,callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'structs/getDataByIds', args:[structIds, ownerId, collection]}));
+            let res = (await this.currentUser.request({route:'getDataByIds', args:[this.currentUser._id, structIds, ownerId, collection]}));
             if(typeof callback === 'function') callback(res);
             return res
         }
@@ -378,9 +357,9 @@ export class StructFrontend extends Service {
     getStructParentData = async (struct:any,callback=this.baseServerCallback) => {
         if(!struct.parent) return;
         if(this.currentUser?.request) {
-            let args = [struct.parent?.structType,'_id',struct.parent?._id];
+            let args = [this.currentUser._id, struct.parent?.structType,'_id',struct.parent?._id];
 
-            let res = (await this.currentUser.request({route:'structs/getData', args}))?.[0]
+            let res = (await this.currentUser.request({route:'getData', args}))?.[0]
             if(typeof callback === 'function') callback(res);
             return res;
         }
@@ -404,7 +383,7 @@ export class StructFrontend extends Service {
     //sets the user profile data on the server
     setUser = async (userStruct={},callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'structs/setUser', args:[this.stripStruct(userStruct)]}))?.[0]
+            let res = (await this.currentUser.request({route:'setUser', args:[this.currentUser._id, this.stripStruct(userStruct)]}))?.[0]
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -457,7 +436,7 @@ export class StructFrontend extends Service {
                 copies.push(this.stripStruct(struct));
             })
 
-            let res = (await this.currentUser.request({route:'structs/setData', args:[copies,notify]}));
+            let res = (await this.currentUser.request({route:'setData', args:[this.currentUser._id, copies, notify]}));
             if(typeof callback === 'function') callback(res);
             return res;
         }
@@ -501,7 +480,7 @@ export class StructFrontend extends Service {
                 }
             });
             //console.log('deleting',toDelete);
-            let res = (await this.currentUser.request({route:'structs/deleteData', args:[toDelete]}))?.[0]
+            let res = (await this.currentUser.request({route:'deleteData', args:[this.currentUser._id, toDelete]}))?.[0]
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -512,7 +491,7 @@ export class StructFrontend extends Service {
         if(this.currentUser?.request) {
             if(!userId) return;
 
-            let res = (await this.currentUser.request({route:'structs/deleteUser', args:[userId]}))?.[0]
+            let res = (await this.currentUser.request({route:'deleteUser', args:[this.currentUser._id, userId]}))?.[0]
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -521,16 +500,16 @@ export class StructFrontend extends Service {
     //set a group struct on the server
     setGroup = async (groupStruct={},callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'structs/setGroup', args:[this.stripStruct(groupStruct)]}))?.[0]
+            let res = (await this.currentUser.request({route:'setGroup', args:[this.currentUser._id, this.stripStruct(groupStruct)]}))?.[0]
             if(typeof callback === 'function') callback(res)
             return res
         }
     }
 
     //get group structs or single one by Id
-    getGroups = async (userId=this.currentUser._id, groupId='',callback=this.baseServerCallback) => {
+    getUserGroups = async (userId=this.currentUser._id, groupId='',callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'structs/getGroups', args:[userId,groupId]}))
+            let res = (await this.currentUser.request({route:'getUserGroups', args:[this.currentUser._id, userId,groupId]}))
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -542,7 +521,7 @@ export class StructFrontend extends Service {
             if(!groupId) return;
             this.deleteLocalData(groupId);
 
-            let res = (await this.currentUser.request({route:'structs/deleteGroup', args:[groupId]}))?.[0]
+            let res = (await this.currentUser.request({route:'deleteGroup', args:[this.currentUser._id, groupId]}))?.[0]
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -551,7 +530,7 @@ export class StructFrontend extends Service {
     //set an authorization struct on the server
     setAuthorization = async (authorizationStruct={},callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'structs/setAuth', args:[this.stripStruct(authorizationStruct)]}))?.[0]
+            let res = (await this.currentUser.request({route:'setAuthorization', args:[this.currentUser._id, this.stripStruct(authorizationStruct)]}))?.[0]
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -561,7 +540,7 @@ export class StructFrontend extends Service {
     getAuthorizations = async (userId=this.currentUser?._id, authorizationId='',callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
             if(userId === undefined) return;
-            let res = (await this.currentUser.request({route:'structs/getAuths', args:[userId, authorizationId]}))
+            let res = (await this.currentUser.request({route:'getAuthorizations', args:[this.currentUser._id, userId, authorizationId]}))
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -573,7 +552,7 @@ export class StructFrontend extends Service {
             if(!authorizationId) return;
             this.deleteLocalData(authorizationId);
             
-            let res = (await this.currentUser.request({route:'structs/deleteAuth', args:[authorizationId]}))?.[0]
+            let res = (await this.currentUser.request({route:'deleteAuthorization', args:[authorizationId]}))?.[0]
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -1144,4 +1123,56 @@ export class StructFrontend extends Service {
             if(updatedComment) return updatedComment as CommentStruct;
             return res as Array<any>;
     }
+
+    routes:Routes = {
+        setupUser:this.setupUser,
+        addStruct:this.addStruct,
+        getUser:this.getUser,
+        getUsers:this.getUsers,
+        getUsersByRole:this.getUsersByRole,
+        getAllUserData:this.getAllUserData,
+        query:this.query,
+        getData:this.getData,
+        getDataByIds:this.getDataByIds,
+        getStructParentData:this.getStructParentData,
+        setUser:this.setUser,
+        checkUserToken:this.checkUserToken,
+        setData:this.setData,
+        updateServerData:this.updateServerData,
+        deleteData:this.deleteData,
+        deleteUser:this.deleteUser,
+        setGroup:this.setGroup,
+        getUserGroups:this.getUserGroups,
+        deleteGroup:this.deleteGroup,
+        setAuthorization:this.setAuthorization,
+        getAuthorizations:this.getAuthorizations,
+        deleteAuthorizations:this.deleteAuthorization,
+        checkForNotifications:this.checkForNotifications,
+        resolveNotifications:this.resolveNotifications,
+        setAuthorizationsByGroup:this.setAuthorizationsByGroup,
+        deleteRoom:this.deleteRoom,
+        deleteComment:this.deleteComment,
+        getUserDataByAuthorizations:this.getUserDataByAuthorization,
+        getUserDataByAuthorizationGroup:this.getUserDataByAuthorizationGroup,
+        overwriteLocalData:this.overwriteLocalData,
+        setLocalData:this.setLocalData,
+        getLocalData:this.getLocalData,
+        getLocalUserPeerIds:this.getLocalUserPeerIds,
+        getLocalReplies:this.getLocalReplies,
+        hasLocalAuthorization:this.hasLocalAuthorization,
+        deleteLocalData:this.deleteLocalData,
+        deleteStruct:this.deleteStruct,
+        stripStruct:this.stripStruct,
+        createStruct:this.createStruct,
+        userStruct:this.userStruct,
+        authorizeUser:this.authorizeUser,
+        addGroup:this.addGroup,
+        dataObject:this.dataObject,
+        addData:this.addData,
+        addEvent:this.addEvent,
+        addChatroom:this.addChatroom,
+        addComment:this.addComment,
+        
+    }
+
 }

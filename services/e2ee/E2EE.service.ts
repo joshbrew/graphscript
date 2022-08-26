@@ -101,9 +101,7 @@ export class E2EEService extends Service {
         let decryptedMessage = message;
         if(typeof message === 'object') {
             if(!keyId){
-                if(typeof message.origin === 'string') //other ways to try to match keyIds
-                    keyId = message.origin;
-                else if(typeof message.keyId === 'string') 
+                if(typeof message.keyId === 'string') 
                     keyId = message.keyId;
             }
             if(keyId) {
@@ -169,7 +167,7 @@ export class E2EEService extends Service {
             } else if(typeof message.route === 'string') {
                 return this.handleServiceMessage(message);
             } else if ((typeof message.node === 'string' || message.node instanceof GraphNode)) {
-                return this.handleGraphNodeCall(message.node, message.args, message.origin);
+                return this.handleGraphNodeCall(message.node, message.args);
             } else if(this.keepState) {    
                 if(message.route)
                     this.setState({[message.route]:message.args});

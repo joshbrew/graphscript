@@ -87,8 +87,6 @@ export class ECSService extends Service {
                 if(filter) {
                     if(debug) debug = performance.now();
                     (this.systems[k] as GraphNode).run(
-                        this.systems[k] as GraphNode,
-                        this,
                         this.map.get(k)
                     );
                     if(debug) 
@@ -96,8 +94,6 @@ export class ECSService extends Service {
                 } else {
                     if(debug) debug = performance.now();
                     (this.systems[k] as GraphNode).run(
-                        this.systems[k] as GraphNode,
-                        this,
                         this.entities
                     ); //unfiltered, it's faster to handle this in the system with lots of entities
                     if(debug) 

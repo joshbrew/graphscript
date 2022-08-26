@@ -22,9 +22,9 @@ export declare type CMDInfo = {
     _id: string;
     controller: AbortController;
     send: (data: Serializable) => boolean;
-    request: (message: ServiceMessage | any, origin?: string, method?: string) => Promise<any>;
-    post: (route: string, args: any, origin?: string, method?: string) => boolean;
-    run: (route: any, args?: any, origin?: string, method?: string) => Promise<any>;
+    request: (message: ServiceMessage | any, method?: string) => Promise<any>;
+    post: (route: string, args: any, method?: string) => boolean;
+    run: (route: any, args?: any, method?: string) => Promise<any>;
     subscribe: (route: any, callback?: ((res: any) => void) | string) => number;
     unsubscribe: (route: any, sub: number) => Promise<boolean>;
 } & CMDRoute;
@@ -41,7 +41,7 @@ export declare class CMDService extends Service {
     createProcess: (properties: CMDRoute) => CMDRoute;
     abort: (childprocess: ChildProcess | CMDInfo) => boolean;
     send: (childprocess: ChildProcess, data: Serializable) => boolean;
-    request: (message: ServiceMessage | any, processId: string, origin?: string, method?: string) => Promise<unknown>;
+    request: (message: ServiceMessage | any, processId: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, callbackId: string | number, childprocess?: ChildProcess | string) => any;
     subscribeProcess(route: string, childprocess: ChildProcess | string): number;
     subscribeToProcess(route: string, processId: string, callback?: ((res: any) => void) | string): any;

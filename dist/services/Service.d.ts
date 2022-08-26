@@ -31,7 +31,6 @@ export declare type ServiceMessage = {
     args?: any;
     method?: string;
     node?: string | GraphNode;
-    origin?: string | GraphNode | Graph | Service;
     [key: string]: any;
 };
 export declare type ServiceOptions = {
@@ -61,13 +60,13 @@ export declare class Service extends Graph {
     init: (options?: ServiceOptions) => void;
     load: (routes?: any, includeClassName?: boolean, routeFormat?: string, customRoutes?: ServiceOptions["customRoutes"], customChildren?: ServiceOptions["customChildren"]) => Routes;
     unload: (routes?: Service | Routes | any) => Routes;
-    handleMethod: (route: string, method: string, args?: any, origin?: string | GraphNode | Graph | Service) => any;
+    handleMethod: (route: string, method: string, args?: any) => any;
     handleServiceMessage(message: ServiceMessage): any;
-    handleGraphNodeCall(route: string | GraphNode, args: any, origin?: string | GraphNode | Graph): any;
+    handleGraphNodeCall(route: string | GraphNode, args: any): any;
     transmit: (...args: any[]) => any | void;
     receive: (...args: any[]) => any | void;
-    pipe: (source: GraphNode | string, destination: string, endpoint?: string | any, origin?: string, method?: string, callback?: (res: any) => any | void) => number;
-    pipeOnce: (source: GraphNode | string, destination: string, endpoint?: string | any, origin?: string, method?: string, callback?: (res: any) => any | void) => void;
+    pipe: (source: GraphNode | string, destination: string, endpoint?: string | any, method?: string, callback?: (res: any) => any | void) => number;
+    pipeOnce: (source: GraphNode | string, destination: string, endpoint?: string | any, method?: string, callback?: (res: any) => any | void) => void;
     terminate: (...args: any) => void;
     isTypedArray(x: any): boolean;
     recursivelyAssign: (target: any, obj: any) => any;

@@ -35,6 +35,7 @@ export declare class DOMService extends Service {
     templates: {
         [key: string]: ComponentProps | CanvasElementProps;
     };
+    resolveNode: (element: any, options: any) => GraphNode;
     addElement: (options: ElementProps, generateChildElementNodes?: boolean) => ElementInfo;
     createElement: (options: ElementProps) => HTMLElement;
     updateOptions: (options: any, element: any) => CompleteOptions;

@@ -24,9 +24,9 @@ export type CMDInfo = {
     _id:string,
     controller:AbortController,
     send:(data:Serializable)=>boolean,
-    request:(message:ServiceMessage|any, origin?:string, method?:string) => Promise<any>,
-    post:(route:string, args:any, origin?:string, method?:string) => boolean,
-    run:(route:any, args?:any, origin?:string, method?:string) => Promise<any>,
+    request:(message:ServiceMessage|any,method?:string) => Promise<any>,
+    post:(route:string, args:any, method?:string) => boolean,
+    run:(route:any, args?:any, method?:string) => Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string) => number,
     unsubscribe:(route:any, sub:number) => Promise<boolean>
 } & CMDRoute
@@ -121,28 +121,26 @@ export class CMDService extends Service {
                         return p.send(data);
                     }
 
-                    newprocess.request = (message:ServiceMessage|any, origin?:string, method?:string) => {
-                        return this.request(message,newprocess._id,origin,method) as Promise<any>;
+                    newprocess.request = (message:ServiceMessage|any,  method?:string) => {
+                        return this.request(message,newprocess._id,method) as Promise<any>;
                     }
 
-                    newprocess.post = (route:string, args:any, origin?:string, method?:string) => {
+                    newprocess.post = (route:string, args:any,  method?:string) => {
                         //console.log('sent', message)
                         let message:any = {
                             route,
                             args
                         };
-                        if(origin) message.origin = origin;
                         if(method) message.method = method;
 
                         return p.send(JSON.stringify(message));
                     }
 
-                    newprocess.run = (route:any, args?:any, origin?:string, method?:string) => {
+                    newprocess.run = (route:any, args?:any, method?:string) => {
                         let message:any = {
                             route,
                             args
                         };
-                        if(origin) message.origin = origin;
                         if(method) message.method = method;
 
                         return this.request(message, newprocess._id);
@@ -179,12 +177,11 @@ export class CMDService extends Service {
         return childprocess.send(data);
     }
 
-    request = (message:ServiceMessage|any, processId:string, origin?:string, method?:string) => {
+    request = (message:ServiceMessage|any, processId:string, method?:string) => {
         let childprocess = this.processes[processId].process;
         return new Promise ((res,rej) => {
             let callbackId = Math.random();
             let req = {route:'runRequest', args:[message, callbackId]} as any;
-            if(origin) req.origin = origin;
             if(method) req.method = method;
             let ondata = (data:Buffer)=>{
                 let str = data.toString();

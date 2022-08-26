@@ -19,9 +19,9 @@ export type WebSocketInfo = {
     socket:WebSocket,
     address:string,
     send:(message:any)=>void,
-    request:(message:any, origin?:string, method?:string)=>Promise<any>,
+    request:(message:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
-    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
+    run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>
 } & WebSocketProps
@@ -110,24 +110,22 @@ export class WSSfrontend extends Service {
             return this.transmit(message,socket);
         }
 
-        let post = (route:any,args?:any, origin?:string, method?:string) => {
+        let post = (route:any,args?:any, method?:string) => {
             //console.log('sent', message)
             let message:any = {
                 route,
                 args
             };
-            if(origin) message.origin = origin;
             if(method) message.method = method;
 
             return this.transmit(message,socket);
         }
 
-        let run = (route:any,args?:any, origin?:string, method?:string) => {
+        let run = (route:any,args?:any,method?:string) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
                 let req = {route:'runRequest', args:[{route, args}, options._id, callbackId]} as any;
                 //console.log(req)
-                if(origin) req.args[0].origin = origin;
                 if(method) req.args[0].method = method;
                 let onmessage = (ev)=>{
                     if(typeof ev.data === 'string' && ev.data.indexOf('{') > -1) ev.data = JSON.parse(ev.data);
@@ -143,12 +141,11 @@ export class WSSfrontend extends Service {
             });
         }
         
-        let request = (message:ServiceMessage|any, origin?:string, method?:string) => {
+        let request = (message:ServiceMessage|any, method?:string) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
                 let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
                 //console.log(req)
-                if(origin) req.origin = origin;
                 if(method) req.method = method;
                 let onmessage = (ev)=>{
                     if(typeof ev.data === 'string' && ev.data.indexOf('{') > -1) ev.data = JSON.parse(ev.data);
@@ -224,11 +221,10 @@ export class WSSfrontend extends Service {
         return true;
     }
 
-    request = (message:ServiceMessage|any, ws:WebSocket, _id:string, origin?:string, method?:string) => { //return a promise which can resolve with a server route result through the socket
+    request = (message:ServiceMessage|any, ws:WebSocket, _id:string, method?:string) => { //return a promise which can resolve with a server route result through the socket
         let callbackId = `${Math.random()}`;
         let req:any = {route:'wss/runRequest', args:[message,_id,callbackId]};
         if(method) req.method = method;
-        if(origin) req.origin = origin;
         return new Promise((res,rej) => {
             let onmessage = (ev:any) => {
                 let data = ev.data;

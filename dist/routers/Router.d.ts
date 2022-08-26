@@ -54,8 +54,8 @@ export declare class Router {
         module: any;
     } | any, linkServices?: boolean, includeClassName?: boolean, routeFormat?: string, customRoutes?: ServiceOptions["customRoutes"], customChildren?: ServiceOptions["customChildren"]) => Routes;
     syncServices: () => void;
-    pipe: (source: string | GraphNode, destination: string, transmitter?: Protocol | string, origin?: string, method?: string, callback?: (res: any) => any | void) => number | false;
-    pipeOnce: (source: string | GraphNode, destination: string, transmitter?: Protocol | string, origin?: string, method?: string, callback?: (res: any) => any | void) => false | void;
+    pipe: (source: string | GraphNode, destination: string, transmitter?: Protocol | string, method?: string, callback?: (res: any) => any | void) => number | false;
+    pipeOnce: (source: string | GraphNode, destination: string, transmitter?: Protocol | string, method?: string, callback?: (res: any) => any | void) => false | void;
     sendAll: (message: ServiceMessage | any, connections: {
         [key: string]: {
             [key: string]: any;
@@ -65,7 +65,7 @@ export declare class Router {
         endpoint: any;
         service: string;
     };
-    pipeFastest: (source: string | GraphNode, destination: string, origin?: string, method?: string, callback?: (res: any) => any | void, services?: {
+    pipeFastest: (source: string | GraphNode, destination: string, method?: string, callback?: (res: any) => any | void, services?: {
         [key: string]: Service;
     }) => number | false;
     getFirstRemoteEndpoint: (services?: {

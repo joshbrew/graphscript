@@ -15,7 +15,7 @@ export type UserProps = {
     onmessage?:(message:any)=>void,  //when a message comes in from an endpoint assigned to this user   
     onclose?:(connection:any)=>void,               //when a connection belonging to this user closes
     send?:(message:any, channel?:string)=>any,        //send function to determine how to communicate to this user's endpoint(s) from this router instance
-    request?:(message:ServiceMessage|any, connection?:any, origin?:string, method?:string) => Promise<any> //await a server response for a call 
+    request?:(message:ServiceMessage|any, connection?:any, method?:string) => Promise<any> //await a server response for a call 
     latency?:number,                 //should calculate other metrics like latency
     [key:string]:any //other user properties e.g. personally identifying information
 } & GraphNodeProperties
@@ -106,18 +106,6 @@ export class UserRouter extends Router {
     ) => {
         if(typeof userId === 'object') userId = (userId as UserProps)._id;
         return this.run(node,userId as string,...args);
-    }
-
-    pipeAs = ( //just an alias of service.pipe with clear usage for user Id as origin, you'll need to wire up how responses are handled at the destination based on user id
-        source:string | GraphNode, 
-        destination:string, 
-        transmitter:Protocol|string, 
-        userId:string|UserProps|UserProps & GraphNode|undefined,
-        method:string, 
-        callback:(res:any)=>any|void
-    ) => {
-        if(typeof userId === 'object') userId = userId._id;
-        return this.pipe(source, destination, transmitter, userId, method, callback);
     }
 
     _initConnections = (connections:UserProps) => {
@@ -247,7 +235,6 @@ export class UserRouter extends Router {
                     if(!this.users[user._id]) return;
                     //use the fastest available endpoint for the user, swap when no longer available to next possible endpoint
                     if(typeof this.users[user._id].sendAll === 'object') { //can transmit on multiple endpoints in an object
-                        if(message.route && !message.origin) message.origin = user._id;
                         if(typeof message === 'object') message = JSON.stringify(message);
                         for(const protocol in this.users[user._id].sendAll) {
                             for(const info in this.users[user._id].sendAll[protocol]) {
@@ -333,7 +320,7 @@ export class UserRouter extends Router {
             }    
 
             if(!user.request) {
-                user.request = (message:ServiceMessage|any, connection?:any, connectionId?:string, origin?:string, method?:string) => { //return a promise which can resolve with a server route result through the socket
+                user.request = (message:ServiceMessage|any, connection?:any, connectionId?:string, method?:string) => { //return a promise which can resolve with a server route result through the socket
                     if(!connection) {
                         if(this.users[user._id].sockets) for(const prop in this.users[user._id].sockets) {
                             if(this.users[user._id].sockets[prop].socket) {
@@ -359,9 +346,8 @@ export class UserRouter extends Router {
                         if(!connection) return undefined;
                     }
                     let callbackId = `${Math.random()}`;
-                    let req:any = {route:'runRequest', args:[message,connectionId,callbackId], origin:user._id};
+                    let req:any = {route:'runRequest', args:[message,connectionId,callbackId]};
                     if(method) req.method = method;
-                    if(origin) req.origin = origin;
                     return new Promise((res,rej) => {
                         let onmessage = (ev:any) => {
                             let data = ev.data;
@@ -1071,10 +1057,9 @@ export class UserRouter extends Router {
  
         //console.log(users)
 
-        let message = {route:'receiveSessionUpdates', args:null as any, origin:null as any}
+        let message = {route:'receiveSessionUpdates', args:null as any}
         for(const u in users) {
-            message.args = users[u];
-            message.origin = u;
+            message.args = [u, users[u]];
             if(this.users[u].send) this.users[u].send(JSON.stringify(message));
         }
 
@@ -1085,7 +1070,6 @@ export class UserRouter extends Router {
     receiveSessionUpdates = (origin:any, update:{private:{[key:string]:any},shared:{[key:string]:any}}|string) => { //following operator format we get the origin passed
         if(update) if(typeof update === 'string') update = JSON.parse(update as string);
         if(typeof update === 'object') {
-            if(typeof origin === 'object') origin = origin._id;
             let user = this.users[origin];
             if(!user) return undefined;
             if(!user.sessions) user.sessions = {};
@@ -1170,7 +1154,7 @@ export class UserRouter extends Router {
             //console.log(updateObj)
 
             if(Object.keys(updateObj).length > 0) {
-                if(user.send) user.send({ route:'setUser', args:updateObj, origin:user._id });
+                if(user.send) user.send({ route:'setUser', args:[user._id, updateObj] });
                 return updateObj;
             } 
         }

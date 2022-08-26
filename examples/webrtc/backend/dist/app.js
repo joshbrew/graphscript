@@ -1,45 +1,5 @@
 (() => {
   // ../../../Graph.ts
-  var ARGUMENT_NAMES = /([^,]*)/g;
-  function getFnParamInfo(fn) {
-    var fstr = fn.toString();
-    const openPar = fstr.indexOf("(");
-    const closePar = fstr.indexOf(")");
-    const getFirstBracket = (str, offset = 0) => {
-      const fb = offset + str.indexOf("{");
-      if (fb < closePar && fb > openPar) {
-        return getFirstBracket(str.slice(fb), offset + fb);
-      } else
-        return fb;
-    };
-    const firstBracket = getFirstBracket(fstr);
-    let innerMatch;
-    if (firstBracket === -1 || closePar < firstBracket)
-      innerMatch = fstr.slice(fstr.indexOf("(") + 1, fstr.indexOf(")"));
-    else
-      innerMatch = fstr.match(/([a-zA-Z]\w*|\([a-zA-Z]\w*(,\s*[a-zA-Z]\w*)*\)) =>/)?.[1];
-    if (!innerMatch)
-      return void 0;
-    const matches = innerMatch.match(ARGUMENT_NAMES).filter((e) => !!e);
-    const info = /* @__PURE__ */ new Map();
-    matches.forEach((v) => {
-      let [name, value] = v.split("=");
-      name = name.trim();
-      name = name.replace(/\d+$/, "");
-      const spread = name.includes("...");
-      name = name.replace("...", "");
-      try {
-        if (name)
-          info.set(name, {
-            state: (0, eval)(`(${value})`),
-            spread
-          });
-      } catch (e) {
-        info.set(name, {});
-      }
-    });
-    return info;
-  }
   function parseFunctionFromText(method = "") {
     let getFunctionBody = (methodString) => {
       return methodString.replace(/^\W*(function[^{]+\{([\s\S]*)\}|[^=]+=>[^{]*\{([\s\S]*)\}|[^=]+=>(.+))/i, "$2$3$4");
@@ -137,32 +97,32 @@
       this.runSync = false;
       this.firstRun = true;
       this.DEBUGNODE = false;
-      this.operator = (self = this, origin, ...args) => {
+      this.operator = (...args) => {
         return args;
       };
-      this.runOp = (node = this, origin = this, ...args) => {
-        if (node.DEBUGNODE)
-          console.time(node.tag);
-        let result = node.operator(node, origin, ...args);
+      this.runOp = (...args) => {
+        if (this.DEBUGNODE)
+          console.time(this.tag);
+        let result = this.operator(...args);
         if (result instanceof Promise) {
           result.then((res) => {
             if (res !== void 0)
-              this.setState({ [node.tag]: res });
-            if (node.DEBUGNODE) {
-              console.timeEnd(node.tag);
+              this.setState({ [this.tag]: res });
+            if (this.DEBUGNODE) {
+              console.timeEnd(this.tag);
               if (result !== void 0)
-                console.log(`${node.tag} result:`, result);
+                console.log(`${this.tag} result:`, result);
             }
             ;
             return res;
           });
         } else {
           if (result !== void 0)
-            this.setState({ [node.tag]: result });
-          if (node.DEBUGNODE) {
-            console.timeEnd(node.tag);
+            this.setState({ [this.tag]: result });
+          if (this.DEBUGNODE) {
+            console.timeEnd(this.tag);
             if (result !== void 0)
-              console.log(`${node.tag} result:`, result);
+              console.log(`${this.tag} result:`, result);
           }
           ;
         }
@@ -171,118 +131,78 @@
       this.setOperator = (operator) => {
         if (typeof operator !== "function")
           return operator;
-        let params = getFnParamInfo(operator);
-        let pass = false;
-        if (params) {
-          const keys = params.keys();
-          const paramOne = keys.next().value;
-          const paramTwo = keys.next().value;
-          const restrictedOne = ["self", "node"];
-          const restrictedTwo = ["origin", "parent", "graph", "router"];
-          if (paramOne)
-            restrictedOne.forEach((a) => {
-              if (paramOne.includes(a))
-                pass = true;
-            });
-          if (paramTwo)
-            restrictedTwo.forEach((a) => {
-              if (paramTwo.includes(a))
-                pass = true;
-            });
-        }
-        if (!pass) {
-          let fn = operator;
-          operator = (self, origin, ...args) => {
-            return fn(...args);
-          };
-        }
-        this.operator = operator;
+        this.operator = operator.bind(this);
         return operator;
-      };
-      this.run = (...args) => {
-        return this._run(this, void 0, ...args);
       };
       this.runAsync = (...args) => {
         return new Promise((res, rej) => {
-          res(this._run(this, void 0, ...args));
+          res(this.run(...args));
         });
       };
       this.transformArgs = (args = []) => args;
-      this._run = (node = this, origin, ...args) => {
+      this.run = (...args) => {
         if (typeof this.transformArgs === "function")
-          args = this.transformArgs(args, node);
-        if (!(typeof node === "object")) {
-          if (typeof node === "string") {
-            let fnd = void 0;
-            if (this.graph)
-              fnd = this.graph.nodes.get(node);
-            if (!fnd)
-              fnd = this.nodes.get(node);
-            node = fnd;
+          args = this.transformArgs(args, this);
+        if (this.firstRun) {
+          this.firstRun = false;
+          if (!(this.children && this.forward || this.parent && this.backward || this.repeat || this.delay || this.frame || this.recursive || this.branch))
+            this.runSync = true;
+          if (this.animate && !this.isAnimating) {
+            this.runAnimation(this.animation, args);
           }
-          if (!node)
-            return void 0;
-        }
-        if (node.firstRun) {
-          node.firstRun = false;
-          if (!(node.children && node.forward || node.parent && node.backward || node.repeat || node.delay || node.frame || node.recursive || node.branch))
-            node.runSync = true;
-          if (node.animate && !node.isAnimating) {
-            node.runAnimation(node.animation, args, node, origin);
+          if (this.loop && typeof this.loop === "number" && !this.isLooping) {
+            this.runLoop(this.looper, args);
           }
-          if (node.loop && typeof node.loop === "number" && !node.isLooping) {
-            node.runLoop(node.looper, args, node, origin);
-          }
-          if (node.loop || node.animate)
+          if (this.loop || this.animate)
             return;
         }
-        if (node.runSync) {
-          let res = node.runOp(node, origin, ...args);
+        if (this.runSync) {
+          let res = this.runOp(...args);
           return res;
         }
         return new Promise(async (resolve) => {
-          if (node) {
-            let run = (node2, tick = 0, ...input) => {
+          if (this) {
+            let run = (node, tick = 0, ...input) => {
               return new Promise(async (r) => {
                 tick++;
-                let res = await node2.runOp(node2, origin, ...input);
-                if (node2.repeat) {
-                  while (tick < node2.repeat) {
-                    if (node2.delay) {
+                let res = await node.runOp(...input);
+                if (node.repeat) {
+                  while (tick < node.repeat) {
+                    if (node.delay) {
                       setTimeout(async () => {
-                        r(await run(node2, tick, ...input));
-                      }, node2.delay);
+                        r(await run(node, tick, ...input));
+                      }, node.delay);
                       break;
-                    } else if (node2.frame && window?.requestAnimationFrame) {
+                    } else if (node.frame && window?.requestAnimationFrame) {
                       requestAnimationFrame(async () => {
-                        r(await run(node2, tick, ...input));
+                        r(await run(node, tick, ...input));
                       });
                       break;
                     } else
-                      res = await node2.runOp(node2, origin, ...input);
+                      res = await node.runOp(...input);
                     tick++;
                   }
-                  if (tick === node2.repeat) {
+                  if (tick === node.repeat) {
                     r(res);
                     return;
                   }
-                } else if (node2.recursive) {
-                  while (tick < node2.recursive) {
-                    if (node2.delay) {
+                } else if (node.recursive) {
+                  while (tick < node.recursive) {
+                    if (node.delay) {
                       setTimeout(async () => {
-                        r(await run(node2, tick, ...res));
-                      }, node2.delay);
+                        r(await run(node, tick, ...res));
+                      }, node.delay);
                       break;
-                    } else if (node2.frame && window?.requestAnimationFrame) {
+                    } else if (node.frame && window?.requestAnimationFrame) {
                       requestAnimationFrame(async () => {
-                        r(await run(node2, tick, ...res));
+                        r(await run(node, tick, ...res));
                       });
                       break;
                     } else
-                      res = await node2.runOp(node2, origin, ...res);
+                      res = await node.runOp(...res);
                     tick++;
                   }
-                  if (tick === node2.recursive) {
+                  if (tick === node.recursive) {
                     r(res);
                     return;
                   }
@@ -293,31 +213,31 @@
               });
             };
             let runnode = async () => {
-              let res = await run(node, void 0, ...args);
+              let res = await run(this, void 0, ...args);
               if (res !== void 0) {
-                if (node.backward && node.parent instanceof GraphNode) {
+                if (this.backward && this.parent instanceof GraphNode) {
                   if (Array.isArray(res))
-                    await this.runParent(node, ...res);
+                    await this.runParent(this, ...res);
                   else
-                    await this.runParent(node, res);
+                    await this.runParent(this, res);
                 }
-                if (node.children && node.forward) {
+                if (this.children && this.forward) {
                   if (Array.isArray(res))
-                    await this.runChildren(node, ...res);
+                    await this.runChildren(this, ...res);
                   else
-                    await this.runChildren(node, res);
+                    await this.runChildren(this, res);
                 }
-                if (node.branch) {
-                  this.runBranch(node, res);
+                if (this.branch) {
+                  this.runBranch(this, res);
                 }
               }
               return res;
             };
-            if (node.delay) {
+            if (this.delay) {
               setTimeout(async () => {
                 resolve(await runnode());
-              }, node.delay);
-            } else if (node.frame && window?.requestAnimationFrame) {
+              }, this.delay);
+            } else if (this.frame && window?.requestAnimationFrame) {
               requestAnimationFrame(async () => {
                 resolve(await runnode());
               });
@@ -328,82 +248,82 @@
             resolve(void 0);
         });
       };
-      this.runParent = async (node, ...args) => {
-        if (node.backward && node.parent) {
-          if (typeof node.parent === "string") {
-            if (node.graph && node.graph?.get(node.parent)) {
-              node.parent = node.graph;
-              if (node.parent)
-                this.nodes.set(node.parent.tag, node.parent);
+      this.runParent = async (n, ...args) => {
+        if (n.backward && n.parent) {
+          if (typeof n.parent === "string") {
+            if (n.graph && n.graph?.get(n.parent)) {
+              n.parent = n.graph;
+              if (n.parent)
+                this.nodes.set(n.parent.tag, n.parent);
             } else
-              node.parent = this.nodes.get(node.parent);
+              n.parent = this.nodes.get(n.parent);
           }
-          if (node.parent instanceof GraphNode)
-            await node.parent._run(node.parent, this, ...args);
+          if (n.parent instanceof GraphNode)
+            await n.parent.run(...args);
         }
       };
-      this.runChildren = async (node, ...args) => {
-        if (typeof node.children === "object") {
-          for (const key in node.children) {
-            if (typeof node.children[key] === "string") {
-              if (node.graph && node.graph?.get(node.children[key])) {
-                node.children[key] = node.graph.get(node.children[key]);
-                if (!node.nodes.get(node.children[key].tag))
-                  node.nodes.set(node.children[key].tag, node.children[key]);
+      this.runChildren = async (n, ...args) => {
+        if (typeof n.children === "object") {
+          for (const key in n.children) {
+            if (typeof n.children[key] === "string") {
+              if (n.graph && n.graph?.get(n.children[key])) {
+                n.children[key] = n.graph.get(n.children[key]);
+                if (!n.nodes.get(n.children[key].tag))
+                  n.nodes.set(n.children[key].tag, n.children[key]);
               }
-              if (!node.children[key] && node.nodes.get(node.children[key]))
-                node.children[key] = node.nodes.get(node.children[key]);
-            } else if (typeof node.children[key] === "undefined" || node.children[key] === true) {
-              if (node.graph && node.graph?.get(key)) {
-                node.children[key] = node.graph.get(key);
-                if (!node.nodes.get(node.children[key].tag))
-                  node.nodes.set(node.children[key].tag, node.children[key]);
+              if (!n.children[key] && n.nodes.get(n.children[key]))
+                n.children[key] = n.nodes.get(n.children[key]);
+            } else if (typeof n.children[key] === "undefined" || n.children[key] === true) {
+              if (n.graph && n.graph?.get(key)) {
+                n.children[key] = n.graph.get(key);
+                if (!n.nodes.get(n.children[key].tag))
+                  n.nodes.set(n.children[key].tag, n.children[key]);
               }
-              if (!node.children[key] && node.nodes.get(key))
-                node.children[key] = node.nodes.get(key);
+              if (!n.children[key] && n.nodes.get(key))
+                n.children[key] = n.nodes.get(key);
             }
-            if (node.children[key]?.runOp)
-              await node.children[key]._run(node.children[key], node, ...args);
+            if (n.children[key]?.runOp)
+              await n.children[key].run(...args);
           }
         }
       };
-      this.runBranch = async (node, output) => {
-        if (node.branch) {
-          let keys = Object.keys(node.branch);
+      this.runBranch = async (n, output) => {
+        if (n.branch) {
+          let keys = Object.keys(n.branch);
           await Promise.all(keys.map(async (k) => {
-            if (typeof node.branch[k].if === "object")
-              node.branch[k].if = stringifyFast(node.branch[k].if);
+            if (typeof n.branch[k].if === "object")
+              n.branch[k].if = stringifyFast(n.branch[k].if);
             let pass = false;
-            if (typeof node.branch[k].if === "function") {
-              pass = node.branch[k].if(output);
+            if (typeof n.branch[k].if === "function") {
+              pass = n.branch[k].if(output);
             } else {
               if (typeof output === "object") {
-                if (stringifyFast(output) === node.branch[k].if)
+                if (stringifyFast(output) === n.branch[k].if)
                   pass = true;
-              } else if (output === node.branch[k].if)
+              } else if (output === n.branch[k].if)
                 pass = true;
             }
             if (pass) {
-              if (node.branch[k].then instanceof GraphNode) {
+              if (n.branch[k].then instanceof GraphNode) {
                 if (Array.isArray(output))
-                  await node.branch[k].then._run(node.branch[k].then, node, ...output);
+                  await n.branch[k].then.run(...output);
                 else
-                  await node.branch[k].then._run(node.branch[k].then, node, ...output);
-              } else if (typeof node.branch[k].then === "function") {
+                  await n.branch[k].then.run(...output);
+              } else if (typeof n.branch[k].then === "function") {
                 if (Array.isArray(output))
-                  await node.branch[k].then(...output);
+                  await n.branch[k].then(...output);
                 else
-                  await node.branch[k].then(output);
-              } else if (typeof node.branch[k].then === "string") {
-                if (node.graph)
-                  node.branch[k].then = node.graph.nodes.get(node.branch[k].then);
+                  await n.branch[k].then(output);
+              } else if (typeof n.branch[k].then === "string") {
+                if (n.graph)
+                  n.branch[k].then = n.graph.nodes.get(n.branch[k].then);
                 else
-                  node.branch[k].then = node.nodes.get(node.branch[k].then);
-                if (node.branch[k].then instanceof GraphNode) {
+                  n.branch[k].then = n.nodes.get(n.branch[k].then);
+                if (n.branch[k].then instanceof GraphNode) {
                   if (Array.isArray(output))
-                    await node.branch[k].then._run(node.branch[k].then, node, ...output);
+                    await n.branch[k].then.run(...output);
                   else
-                    await node.branch[k].then._run(node.branch[k].then, node, ...output);
+                    await n.branch[k].then.run(...output);
                 }
               }
             }
@@ -411,49 +331,47 @@
           }));
         }
       };
-      this.runAnimation = (animation = this.animation, args = [], node = this, origin) => {
+      this.runAnimation = (animation = this.animation, args = []) => {
         this.animation = animation;
         if (!animation)
           this.animation = this.operator;
-        if (node.animate && !node.isAnimating && "requestAnimationFrame" in window) {
-          node.isAnimating = true;
+        if (this.animate && !this.isAnimating && "requestAnimationFrame" in window) {
+          this.isAnimating = true;
           let anim = async () => {
-            if (node.isAnimating) {
-              if (node.DEBUGNODE)
-                console.time(node.tag);
+            if (this.isAnimating) {
+              if (this.DEBUGNODE)
+                console.time(this.tag);
               let result = this.animation(
-                node,
-                origin,
                 ...args
               );
               if (result instanceof Promise) {
                 result = await result;
               }
-              if (node.DEBUGNODE) {
-                console.timeEnd(node.tag);
+              if (this.DEBUGNODE) {
+                console.timeEnd(this.tag);
                 if (result !== void 0)
-                  console.log(`${node.tag} result:`, result);
+                  console.log(`${this.tag} result:`, result);
               }
               ;
               if (result !== void 0) {
                 if (this.tag)
                   this.setState({ [this.tag]: result });
-                if (node.backward && node.parent?._run) {
+                if (this.backward && this.parent?.run) {
                   if (Array.isArray(result))
-                    await this.runParent(node, ...result);
+                    await this.runParent(this, ...result);
                   else
-                    await this.runParent(node, result);
+                    await this.runParent(this, result);
                 }
-                if (node.children && node.forward) {
+                if (this.children && this.forward) {
                   if (Array.isArray(result))
-                    await this.runChildren(node, ...result);
+                    await this.runChildren(this, ...result);
                   else
-                    await this.runChildren(node, result);
+                    await this.runChildren(this, result);
                 }
-                if (node.branch) {
-                  this.runBranch(node, result);
+                if (this.branch) {
+                  this.runBranch(this, result);
                 }
-                this.setState({ [node.tag]: result });
+                this.setState({ [this.tag]: result });
               }
               requestAnimationFrame(anim);
             }
@@ -461,49 +379,47 @@
           requestAnimationFrame(anim);
         }
       };
-      this.runLoop = (loop = this.looper, args = [], node = this, origin, timeout = node.loop) => {
-        node.looper = loop;
+      this.runLoop = (loop = this.looper, args = [], timeout = this.loop) => {
+        this.looper = loop;
         if (!loop)
-          node.looper = node.operator;
-        if (typeof timeout === "number" && !node.isLooping) {
-          node.isLooping = true;
+          this.looper = this.operator;
+        if (typeof timeout === "number" && !this.isLooping) {
+          this.isLooping = true;
           let looping = async () => {
-            if (node.isLooping) {
-              if (node.DEBUGNODE)
-                console.time(node.tag);
-              let result = node.looper(
-                node,
-                origin,
+            if (this.isLooping) {
+              if (this.DEBUGNODE)
+                console.time(this.tag);
+              let result = this.looper(
                 ...args
               );
               if (result instanceof Promise) {
                 result = await result;
               }
-              if (node.DEBUGNODE) {
-                console.timeEnd(node.tag);
+              if (this.DEBUGNODE) {
+                console.timeEnd(this.tag);
                 if (result !== void 0)
-                  console.log(`${node.tag} result:`, result);
+                  console.log(`${this.tag} result:`, result);
               }
               ;
               if (result !== void 0) {
-                if (node.tag)
-                  node.setState({ [node.tag]: result });
-                if (node.backward && node.parent?._run) {
+                if (this.tag)
+                  this.setState({ [this.tag]: result });
+                if (this.backward && this.parent?.run) {
                   if (Array.isArray(result))
-                    await this.runParent(node, ...result);
+                    await this.runParent(this, ...result);
                   else
-                    await this.runParent(node, result);
+                    await this.runParent(this, result);
                 }
-                if (node.children && node.forward) {
+                if (this.children && this.forward) {
                   if (Array.isArray(result))
-                    await this.runChildren(node, ...result);
+                    await this.runChildren(this, ...result);
                   else
-                    await this.runChildren(node, result);
+                    await this.runChildren(this, result);
                 }
-                if (node.branch) {
-                  this.runBranch(node, result);
+                if (this.branch) {
+                  this.runBranch(this, result);
                 }
-                node.setState({ [node.tag]: result });
+                this.setState({ [this.tag]: result });
               }
               setTimeout(async () => {
                 await looping();
@@ -523,49 +439,49 @@
         if (this.forward)
           this.runSync = false;
       };
-      this.add = (node = {}) => {
-        if (typeof node === "function")
-          node = { operator: node };
-        if (!(node instanceof GraphNode))
-          node = new GraphNode(node, this, this.graph);
-        this.nodes.set(node.tag, node);
+      this.add = (n = {}) => {
+        if (typeof n === "function")
+          n = { operator: n };
+        if (!(n instanceof GraphNode))
+          n = new GraphNode(n, this, this.graph);
+        this.nodes.set(n.tag, n);
         if (this.graph) {
-          this.graph.nodes.set(node.tag, node);
+          this.graph.nodes.set(n.tag, n);
           this.graph.nNodes = this.graph.nodes.size;
         }
-        return node;
+        return n;
       };
-      this.remove = (node) => {
-        if (typeof node === "string")
-          node = this.nodes.get(node);
-        if (node instanceof GraphNode) {
-          this.nodes.delete(node.tag);
-          if (this.children[node.tag])
-            delete this.children[node.tag];
+      this.remove = (n) => {
+        if (typeof n === "string")
+          n = this.nodes.get(n);
+        if (n instanceof GraphNode) {
+          this.nodes.delete(n.tag);
+          if (this.children[n.tag])
+            delete this.children[n.tag];
           if (this.graph) {
-            this.graph.nodes.delete(node.tag);
+            this.graph.nodes.delete(n.tag);
             this.graph.nNodes = this.graph.nodes.size;
           }
-          this.nodes.forEach((n) => {
-            if (n.nodes.get(node.tag)) {
-              n.nodes.delete(node.tag);
-              if (n.children[node.tag])
-                delete n.children[node.tag];
-              if (n.parent?.tag === node.tag)
-                delete n.parent;
+          this.nodes.forEach((n2) => {
+            if (n2.nodes.get(n2.tag)) {
+              n2.nodes.delete(n2.tag);
+              if (n2.children[n2.tag])
+                delete n2.children[n2.tag];
+              if (n2.parent?.tag === n2.tag)
+                delete n2.parent;
             }
           });
-          if (node.ondelete)
-            node.ondelete(node);
+          if (n.ondelete)
+            n.ondelete(n);
         }
       };
-      this.append = (node, parentNode = this) => {
-        if (typeof node === "string")
-          node = this.nodes.get(node);
-        if (node instanceof GraphNode) {
-          parentNode.addChildren(node);
-          if (node.forward)
-            node.runSync = false;
+      this.append = (n, parentNode = this) => {
+        if (typeof n === "string")
+          n = this.nodes.get(n);
+        if (n instanceof GraphNode) {
+          parentNode.addChildren(n);
+          if (n.forward)
+            n.runSync = false;
         }
       };
       this.subscribe = (callback, tag = this.tag) => {
@@ -588,7 +504,6 @@
           this.runSync = false;
       };
       this.callParent = (...args) => {
-        const origin = this;
         if (typeof this.parent === "string") {
           if (this.graph && this.graph?.get(this.parent)) {
             this.parent = this.graph;
@@ -598,37 +513,36 @@
             this.parent = this.nodes.get(this.parent);
         }
         if (typeof this.parent?.operator === "function")
-          return this.parent.runOp(this.parent, origin, ...args);
+          return this.parent.runOp(...args);
       };
-      this.callChildren = (idx, ...args) => {
-        const origin = this;
+      this.callChildren = (...args) => {
         let result;
         if (typeof this.children === "object") {
           for (const key in this.children) {
             if (this.children[key]?.runOp)
-              this.children[key].runOp(this.children[key], origin, ...args);
+              this.children[key].runOp(...args);
           }
         }
         return result;
       };
-      this.getProps = (node = this) => {
+      this.getProps = (n = this) => {
         return {
-          tag: node.tag,
-          operator: node.operator,
-          graph: node.graph,
-          children: node.children,
-          parent: node.parent,
-          forward: node.forward,
-          backward: node.bacward,
-          loop: node.loop,
-          animate: node.animate,
-          frame: node.frame,
-          delay: node.delay,
-          recursive: node.recursive,
-          repeat: node.repeat,
-          branch: node.branch,
-          oncreate: node.oncreate,
-          DEBUGNODE: node.DEBUGNODE,
+          tag: n.tag,
+          operator: n.operator,
+          graph: n.graph,
+          children: n.children,
+          parent: n.parent,
+          forward: n.forward,
+          backward: n.bacward,
+          loop: n.loop,
+          animate: n.animate,
+          frame: n.frame,
+          delay: n.delay,
+          recursive: n.recursive,
+          repeat: n.repeat,
+          branch: n.branch,
+          oncreate: n.oncreate,
+          DEBUGNODE: n.DEBUGNODE,
           ...this._initial
         };
       };
@@ -646,94 +560,94 @@
         if (!(this.children && this.forward || this.parent && this.backward || this.repeat || this.delay || this.frame || this.recursive))
           this.runSync = true;
       };
-      this.removeTree = (node) => {
-        if (node) {
-          if (typeof node === "string")
-            node = this.nodes.get(node);
+      this.removeTree = (n) => {
+        if (n) {
+          if (typeof n === "string")
+            n = this.nodes.get(n);
         }
-        if (node instanceof GraphNode) {
+        if (n instanceof GraphNode) {
           let checked = {};
-          const recursivelyRemove = (node2) => {
-            if (typeof node2.children === "object" && !checked[node2.tag]) {
-              checked[node2.tag] = true;
-              for (const key in node2.children) {
-                if (node2.children[key].stopNode)
-                  node2.children[key].stopNode();
-                if (node2.children[key].tag) {
-                  if (this.nodes.get(node2.children[key].tag))
-                    this.nodes.delete(node2.children[key].tag);
-                  this.nodes.forEach((n) => {
-                    if (n.nodes.get(node2.children[key].tag))
-                      n.nodes.delete(node2.children[key].tag);
-                    if (n.children[key] instanceof GraphNode)
-                      delete n.children[key];
+          const recursivelyRemove = (node) => {
+            if (typeof node.children === "object" && !checked[node.tag]) {
+              checked[node.tag] = true;
+              for (const key in node.children) {
+                if (node.children[key].stopNode)
+                  node.children[key].stopNode();
+                if (node.children[key].tag) {
+                  if (this.nodes.get(node.children[key].tag))
+                    this.nodes.delete(node.children[key].tag);
+                  this.nodes.forEach((n2) => {
+                    if (n2.nodes.get(node.children[key].tag))
+                      n2.nodes.delete(node.children[key].tag);
+                    if (n2.children[key] instanceof GraphNode)
+                      delete n2.children[key];
                   });
-                  recursivelyRemove(node2.children[key]);
+                  recursivelyRemove(node.children[key]);
                 }
               }
             }
           };
-          if (node.stopNode)
-            node.stopNode();
-          if (node.tag) {
-            this.nodes.delete(node.tag);
-            if (this.children[node.tag])
-              delete this.children[node.tag];
-            if (this.parent?.tag === node.tag)
+          if (n.stopNode)
+            n.stopNode();
+          if (n.tag) {
+            this.nodes.delete(n.tag);
+            if (this.children[n.tag])
+              delete this.children[n.tag];
+            if (this.parent?.tag === n.tag)
               delete this.parent;
-            if (this[node.tag] instanceof GraphNode)
-              delete this[node.tag];
-            this.nodes.forEach((n) => {
-              if (node?.tag) {
-                if (n.nodes.get(node.tag))
-                  n.nodes.delete(node.tag);
-                if (n.children[node.tag] instanceof GraphNode)
-                  delete n.children[node.tag];
+            if (this[n.tag] instanceof GraphNode)
+              delete this[n.tag];
+            this.nodes.forEach((n2) => {
+              if (n2?.tag) {
+                if (n2.nodes.get(n2.tag))
+                  n2.nodes.delete(n2.tag);
+                if (n2.children[n2.tag] instanceof GraphNode)
+                  delete n2.children[n2.tag];
               }
             });
-            recursivelyRemove(node);
+            recursivelyRemove(n);
             if (this.graph)
-              this.graph.removeTree(node, checked);
-            else if (node.ondelete)
-              node.ondelete(node);
+              this.graph.removeTree(n, checked);
+            else if (n.ondelete)
+              n.ondelete(n);
           }
         }
       };
-      this.checkNodesHaveChildMapped = (node, child, checked = {}) => {
-        let tag = node.tag;
+      this.checkNodesHaveChildMapped = (n, child, checked = {}) => {
+        let tag = n.tag;
         if (!tag)
-          tag = node.name;
+          tag = n.name;
         if (!checked[tag]) {
           checked[tag] = true;
-          if (node.children) {
-            if (child.tag in node.children) {
-              if (node.children[child.tag] instanceof GraphNode) {
-                if (!node.nodes.get(child.tag))
-                  node.nodes.set(child.tag, child);
-                node.children[child.tag] = child;
-                if (!node.firstRun)
-                  node.firstRun = true;
+          if (n.children) {
+            if (child.tag in n.children) {
+              if (n.children[child.tag] instanceof GraphNode) {
+                if (!n.nodes.get(child.tag))
+                  n.nodes.set(child.tag, child);
+                n.children[child.tag] = child;
+                if (!n.firstRun)
+                  n.firstRun = true;
               }
             }
           }
-          if (node.parent instanceof GraphNode) {
-            if (node.nodes.get(child.tag) && !node.parent.nodes.get(child.tag))
-              node.parent.nodes.set(child.tag, child);
-            if (node.parent.children) {
-              this.checkNodesHaveChildMapped(node.parent, child, checked);
-            } else if (node.nodes) {
-              node.nodes.forEach((n) => {
-                if (!checked[n.tag]) {
-                  this.checkNodesHaveChildMapped(n, child, checked);
+          if (n.parent instanceof GraphNode) {
+            if (n.nodes.get(child.tag) && !n.parent.nodes.get(child.tag))
+              n.parent.nodes.set(child.tag, child);
+            if (n.parent.children) {
+              this.checkNodesHaveChildMapped(n.parent, child, checked);
+            } else if (n.nodes) {
+              n.nodes.forEach((n2) => {
+                if (!checked[n2.tag]) {
+                  this.checkNodesHaveChildMapped(n2, child, checked);
                 }
               });
             }
           }
-          if (node.graph) {
-            if (node.parent && node.parent.name !== node.graph.name) {
-              node.graph.nodes.forEach((n) => {
-                if (!checked[n.tag]) {
-                  this.checkNodesHaveChildMapped(n, child, checked);
+          if (n.graph) {
+            if (n.parent && n.parent.name !== n.graph.name) {
+              n.graph.nodes.forEach((n2) => {
+                if (!checked[n2.tag]) {
+                  this.checkNodesHaveChildMapped(n2, child, checked);
                 }
               });
             }
@@ -784,57 +698,66 @@
         }
         return n.children;
       };
-      this.stopLooping = (node = this) => {
-        node.isLooping = false;
+      this.stopLooping = (n = this) => {
+        n.isLooping = false;
       };
-      this.stopAnimating = (node = this) => {
-        node.isAnimating = false;
+      this.stopAnimating = (n = this) => {
+        n.isAnimating = false;
       };
-      this.stopNode = (node = this) => {
-        node.stopAnimating(node);
-        node.stopLooping(node);
+      this.stopNode = (n = this) => {
+        n.stopAnimating(n);
+        n.stopLooping(n);
       };
-      this.subscribeNode = (node) => {
-        if (node.tag)
-          this.nodes.set(node.tag, node);
-        return this.state.subscribeTrigger(this.tag, (res) => {
-          node._run(node, this, res);
-        });
+      this.subscribeNode = (n) => {
+        if (typeof n === "string")
+          n = this.nodes.get(n);
+        if (n.tag)
+          this.nodes.set(n.tag, n);
+        if (n)
+          return this.state.subscribeTrigger(
+            this.tag,
+            (res) => {
+              if (Array.isArray(res))
+                n.run(...res);
+              else
+                n.run(res);
+            }
+          );
       };
-      this.print = (node = this, printChildren = true, nodesPrinted = []) => {
+      this.print = (n = this, printChildren = true, nodesPrinted = []) => {
         let dummyNode = new GraphNode();
-        if (typeof node === "string")
-          node = this.nodes.get(node);
-        if (node instanceof GraphNode) {
-          nodesPrinted.push(node.tag);
+        if (typeof n === "string")
+          n = this.nodes.get(n);
+        if (n instanceof GraphNode) {
+          nodesPrinted.push(n.tag);
           let jsonToPrint = {
-            tag: node.tag,
-            operator: node.operator.toString()
+            tag: n.tag,
+            operator: n.operator.toString()
           };
-          if (node.parent)
-            jsonToPrint.parent = node.parent.tag;
-          if (typeof node.children === "object") {
-            for (const key in node.children) {
-              if (typeof node.children[key] === "string")
-                return node.children[key];
-              if (nodesPrinted.includes(node.children[key].tag))
-                return node.children[key].tag;
+          if (n.parent)
+            jsonToPrint.parent = n.parent.tag;
+          if (typeof n.children === "object") {
+            for (const key in n.children) {
+              if (typeof n.children[key] === "string")
+                return n.children[key];
+              if (nodesPrinted.includes(n.children[key].tag))
+                return n.children[key].tag;
               else if (!printChildren) {
-                return node.children[key].tag;
+                return n.children[key].tag;
               } else
-                return node.children[key].print(node.children[key], printChildren, nodesPrinted);
+                return n.children[key].print(n.children[key], printChildren, nodesPrinted);
             }
           }
-          for (const prop in node) {
+          for (const prop in n) {
             if (prop === "parent" || prop === "children")
               continue;
             if (typeof dummyNode[prop] === "undefined") {
-              if (typeof node[prop] === "function") {
-                jsonToPrint[prop] = node[prop].toString();
-              } else if (typeof node[prop] === "object") {
-                jsonToPrint[prop] = JSON.stringifyWithCircularRefs(node[prop]);
+              if (typeof n[prop] === "function") {
+                jsonToPrint[prop] = n[prop].toString();
+              } else if (typeof n[prop] === "object") {
+                jsonToPrint[prop] = JSON.stringifyWithCircularRefs(n[prop]);
               } else {
-                jsonToPrint[prop] = node[prop];
+                jsonToPrint[prop] = n[prop];
               }
             }
           }
@@ -1011,18 +934,18 @@
       this.nodes = /* @__PURE__ */ new Map();
       this.state = state;
       this.tree = {};
-      this.add = (node = {}) => {
-        let props = node;
-        if (!(node instanceof GraphNode))
-          node = new GraphNode(props, this, this);
+      this.add = (n = {}) => {
+        let props = n;
+        if (!(n instanceof GraphNode))
+          n = new GraphNode(props, this, this);
         else {
           this.nNodes = this.nodes.size;
-          if (node.tag) {
-            this.tree[node.tag] = props;
-            this.nodes.set(node.tag, node);
+          if (n.tag) {
+            this.tree[n.tag] = props;
+            this.nodes.set(n.tag, n);
           }
         }
-        return node;
+        return n;
       };
       this.setTree = (tree = this.tree) => {
         if (!tree)
@@ -1041,7 +964,7 @@
                 });
               }
             } else {
-              this.add({ tag: node, operator: (self, origin, ...args) => {
+              this.add({ tag: node, operator: (...args) => {
                 return tree[node];
               } });
             }
@@ -1120,130 +1043,125 @@
       this.get = (tag) => {
         return this.nodes.get(tag);
       };
-      this.set = (node) => {
-        return this.nodes.set(node.tag, node);
+      this.set = (n) => {
+        return this.nodes.set(n.tag, n);
       };
-      this.run = (node, ...args) => {
-        if (typeof node === "string")
-          node = this.nodes.get(node);
-        if (node instanceof GraphNode)
-          return node._run(node, this, ...args);
+      this.run = (n, ...args) => {
+        if (typeof n === "string")
+          n = this.nodes.get(n);
+        if (n instanceof GraphNode)
+          return n.run(...args);
         else
           return void 0;
       };
-      this.runAsync = (node, ...args) => {
-        if (typeof node === "string")
-          node = this.nodes.get(node);
-        if (node instanceof GraphNode)
+      this.runAsync = (n, ...args) => {
+        if (typeof n === "string")
+          n = this.nodes.get(n);
+        if (n instanceof GraphNode)
           return new Promise((res, rej) => {
-            res(node._run(node, this, ...args));
+            res(n.run(...args));
           });
         else
           return new Promise((res, rej) => {
             res(void 0);
           });
       };
-      this._run = (node, origin = this, ...args) => {
-        if (typeof node === "string")
-          node = this.nodes.get(node);
-        if (node instanceof GraphNode)
-          return node._run(node, origin, ...args);
-        else
-          return void 0;
-      };
-      this.removeTree = (node, checked) => {
-        if (typeof node === "string")
-          node = this.nodes.get(node);
-        if (node instanceof GraphNode) {
+      this.removeTree = (n, checked) => {
+        if (typeof n === "string")
+          n = this.nodes.get(n);
+        if (n instanceof GraphNode) {
           if (!checked)
             checked = {};
-          const recursivelyRemove = (node2) => {
-            if (node2.children && !checked[node2.tag]) {
-              checked[node2.tag] = true;
-              if (Array.isArray(node2.children)) {
-                node2.children.forEach((c) => {
+          const recursivelyRemove = (node) => {
+            if (node.children && !checked[node.tag]) {
+              checked[node.tag] = true;
+              if (Array.isArray(node.children)) {
+                node.children.forEach((c) => {
                   if (c.stopNode)
                     c.stopNode();
                   if (c.tag) {
                     if (this.nodes.get(c.tag))
                       this.nodes.delete(c.tag);
                   }
-                  this.nodes.forEach((n) => {
-                    if (n.nodes.get(c.tag))
-                      n.nodes.delete(c.tag);
+                  this.nodes.forEach((n2) => {
+                    if (n2.nodes.get(c.tag))
+                      n2.nodes.delete(c.tag);
                   });
                   recursivelyRemove(c);
                 });
-              } else if (typeof node2.children === "object") {
-                if (node2.stopNode)
-                  node2.stopNode();
-                if (node2.tag) {
-                  if (this.nodes.get(node2.tag))
-                    this.nodes.delete(node2.tag);
+              } else if (typeof node.children === "object") {
+                if (node.stopNode)
+                  node.stopNode();
+                if (node.tag) {
+                  if (this.nodes.get(node.tag))
+                    this.nodes.delete(node.tag);
                 }
-                this.nodes.forEach((n) => {
-                  if (n.nodes.get(node2.tag))
-                    n.nodes.delete(node2.tag);
+                this.nodes.forEach((n2) => {
+                  if (n2.nodes.get(node.tag))
+                    n2.nodes.delete(node.tag);
                 });
-                recursivelyRemove(node2);
+                recursivelyRemove(node);
               }
             }
           };
-          if (node.stopNode)
-            node.stopNode();
-          if (node.tag) {
-            this.nodes.delete(node.tag);
-            this.nodes.forEach((n) => {
-              if (n.nodes.get(node.tag))
-                n.nodes.delete(node.tag);
+          if (n.stopNode)
+            n.stopNode();
+          if (n.tag) {
+            this.nodes.delete(n.tag);
+            this.nodes.forEach((n2) => {
+              if (n2.nodes.get(n2.tag))
+                n2.nodes.delete(n2.tag);
             });
             this.nNodes = this.nodes.size;
-            recursivelyRemove(node);
+            recursivelyRemove(n);
           }
-          if (node.ondelete)
-            node.ondelete(node);
+          if (n.ondelete)
+            n.ondelete(n);
         }
-        return node;
+        return n;
       };
-      this.remove = (node) => {
-        if (typeof node === "string")
-          node = this.nodes.get(node);
-        if (node instanceof GraphNode) {
-          node.stopNode();
-          if (node?.tag) {
-            if (this.nodes.get(node.tag)) {
-              this.nodes.delete(node.tag);
-              this.nodes.forEach((n) => {
-                if (n.nodes.get(node.tag))
-                  n.nodes.delete(node.tag);
+      this.remove = (n) => {
+        if (typeof n === "string")
+          n = this.nodes.get(n);
+        if (n instanceof GraphNode) {
+          n.stopNode();
+          if (n?.tag) {
+            if (this.nodes.get(n.tag)) {
+              this.nodes.delete(n.tag);
+              this.nodes.forEach((n2) => {
+                if (n2.nodes.get(n2.tag))
+                  n2.nodes.delete(n2.tag);
               });
             }
           }
-          if (node.ondelete)
-            node.ondelete(node);
+          if (n.ondelete)
+            n.ondelete(n);
         }
-        return node;
+        return n;
       };
-      this.append = (node, parentNode) => {
-        parentNode.addChildren(node);
+      this.append = (n, parentNode) => {
+        parentNode.addChildren(n);
       };
-      this.callParent = async (node, origin = node, ...args) => {
-        if (node?.parent) {
-          return await node.callParent(node, origin, ...args);
-        }
-      };
-      this.callChildren = async (node, idx, ...args) => {
-        if (node?.children) {
-          return await node.callChildren(idx, ...args);
+      this.callParent = async (n, ...args) => {
+        if (n?.parent) {
+          return await n.callParent(...args);
         }
       };
-      this.subscribe = (node, callback) => {
+      this.callChildren = async (n, ...args) => {
+        if (n?.children) {
+          return await n.callChildren(...args);
+        }
+      };
+      this.subscribe = (n, callback) => {
         if (!callback)
           return;
-        if (node instanceof GraphNode) {
-          return node.subscribe(callback);
-        } else if (typeof node == "string")
-          return this.state.subscribeTrigger(node, callback);
+        if (n instanceof GraphNode && typeof callback === "function") {
+          return n.subscribe(callback);
+        } else if (callback instanceof GraphNode || typeof callback === "string")
+          return this.subscribeNode(n, callback);
+        else if (typeof n == "string") {
+          return this.state.subscribeTrigger(n, callback);
+        }
       };
       this.unsubscribe = (tag, sub) => {
         this.state.unsubscribeTrigger(tag, sub);
@@ -1254,26 +1172,34 @@
           tag = inputNode.tag;
         else if (typeof inputNode === "string")
           tag = inputNode;
-        return this.state.subscribeTrigger(tag, (res) => {
-          this.run(outputNode, inputNode, ...res);
-        });
-      };
-      this.stopNode = (node) => {
-        if (typeof node === "string") {
-          node = this.nodes.get(node);
+        if (typeof outputNode === "string")
+          outputNode = this.nodes.get(outputNode);
+        if (inputNode && outputNode) {
+          let sub = this.state.subscribeTrigger(tag, (res) => {
+            if (Array.isArray(res))
+              outputNode.run(...res);
+            else
+              outputNode.run(res);
+          });
+          return sub;
         }
-        if (node instanceof GraphNode) {
-          node.stopNode();
+      };
+      this.stopNode = (n) => {
+        if (typeof n === "string") {
+          n = this.nodes.get(n);
+        }
+        if (n instanceof GraphNode) {
+          n.stopNode();
         }
       };
-      this.print = (node = void 0, printChildren = true) => {
-        if (node instanceof GraphNode)
-          return node.print(node, printChildren);
+      this.print = (n = void 0, printChildren = true) => {
+        if (n instanceof GraphNode)
+          return n.print(n, printChildren);
         else {
           let printed = `{`;
-          this.nodes.forEach((n) => {
+          this.nodes.forEach((n2) => {
             printed += `
-"${n.tag}:${n.print(n, printChildren)}"`;
+"${n2.tag}:${n2.print(n2, printChildren)}"`;
           });
           return printed;
         }
@@ -1566,6 +1492,12 @@
           return;
         if (this.firstLoad)
           this.firstLoad = false;
+        if (customRoutes)
+          customRoutes = Object.assign(this.customRoutes, customRoutes);
+        else
+          customRoutes = this.customRoutes;
+        if (customChildren)
+          customChildren = Object.assign(this.customChildren, customChildren);
         let service;
         let allRoutes = {};
         if (routes) {
@@ -1842,7 +1774,7 @@
         }
         return this.routes;
       };
-      this.handleMethod = (route, method, args, origin) => {
+      this.handleMethod = (route, method, args) => {
         let m = method.toLowerCase();
         if (m === "get" && this.routes[route]?.get?.transform instanceof Function) {
           if (Array.isArray(args))
@@ -1858,7 +1790,7 @@
           } else
             return this.routes[route][m](args);
         } else
-          return this.handleServiceMessage({ route, args, method, origin });
+          return this.handleServiceMessage({ route, args, method });
       };
       this.transmit = (...args) => {
         if (typeof args[0] === "object") {
@@ -1867,7 +1799,7 @@
           } else if (args[0].route) {
             return this.handleServiceMessage(args[0]);
           } else if (args[0].node) {
-            return this.handleGraphNodeCall(args[0].node, args[0].args, args[0].origin);
+            return this.handleGraphNodeCall(args[0].node, args[0].args);
           } else if (this.keepState) {
             if (args[0].route)
               this.setState({ [args[0].route]: args[0].args });
@@ -1899,7 +1831,7 @@
           } else if (args[0].route) {
             return this.handleServiceMessage(args[0]);
           } else if (args[0].node) {
-            return this.handleGraphNodeCall(args[0].node, args[0].args, args[0].origin);
+            return this.handleGraphNodeCall(args[0].node, args[0].args);
           } else if (this.keepState) {
             if (args[0].route)
               this.setState({ [args[0].route]: args[0].args });
@@ -1910,42 +1842,42 @@
         } else
           return args;
       };
-      this.pipe = (source, destination, endpoint, origin, method, callback) => {
+      this.pipe = (source, destination, endpoint, method, callback) => {
         if (source instanceof GraphNode) {
           if (callback)
             return source.subscribe((res) => {
               let mod = callback(res);
               if (mod !== void 0)
-                this.transmit({ route: destination, args: mod, origin, method });
+                this.transmit({ route: destination, args: mod, method });
               else
-                this.transmit({ route: destination, args: res, origin, method }, endpoint);
+                this.transmit({ route: destination, args: res, method }, endpoint);
             });
           else
             return this.subscribe(source, (res) => {
-              this.transmit({ route: destination, args: res, origin, method }, endpoint);
+              this.transmit({ route: destination, args: res, method }, endpoint);
             });
         } else if (typeof source === "string")
           return this.subscribe(source, (res) => {
-            this.transmit({ route: destination, args: res, origin, method }, endpoint);
+            this.transmit({ route: destination, args: res, method }, endpoint);
           });
       };
-      this.pipeOnce = (source, destination, endpoint, origin, method, callback) => {
+      this.pipeOnce = (source, destination, endpoint, method, callback) => {
         if (source instanceof GraphNode) {
           if (callback)
             return source.state.subscribeTriggerOnce(source.tag, (res) => {
               let mod = callback(res);
               if (mod !== void 0)
-                this.transmit({ route: destination, args: mod, origin, method });
+                this.transmit({ route: destination, args: mod, method });
               else
-                this.transmit({ route: destination, args: res, origin, method }, endpoint);
+                this.transmit({ route: destination, args: res, method }, endpoint);
             });
           else
             return this.state.subscribeTriggerOnce(source.tag, (res) => {
-              this.transmit({ route: destination, args: res, origin, method }, endpoint);
+              this.transmit({ route: destination, args: res, method }, endpoint);
             });
         } else if (typeof source === "string")
           return this.state.subscribeTriggerOnce(source, (res) => {
-            this.transmit({ route: destination, args: res, origin, method }, endpoint);
+            this.transmit({ route: destination, args: res, method }, endpoint);
           });
       };
       this.terminate = (...args) => {
@@ -2017,6 +1949,7 @@
           } else
             return stringifyWithCircularRefs(this.state.data);
         },
+        spliceTypedArray: this.spliceTypedArray,
         transmit: this.transmit,
         receive: this.receive,
         load: this.load,
@@ -2026,6 +1959,7 @@
         run: this.run,
         _run: this._run,
         subscribe: this.subscribe,
+        subscribeNode: this.subscribeNode,
         unsubscribe: this.unsubscribe,
         stopNode: this.stopNode,
         get: this.get,
@@ -2059,30 +1993,18 @@
           call = message.node;
       }
       if (call) {
-        if (message.origin) {
-          if (Array.isArray(message.args))
-            return this._run(call, message.origin, ...message.args);
-          else
-            return this._run(call, message.origin, message.args);
-        } else {
-          if (Array.isArray(message.args))
-            return this.run(call, ...message.args);
-          else
-            return this.run(call, message.args);
-        }
+        if (Array.isArray(message.args))
+          return this.run(call, ...message.args);
+        else
+          return this.run(call, message.args);
       } else
         return message;
     }
-    handleGraphNodeCall(route, args, origin) {
+    handleGraphNodeCall(route, args) {
       if (!route)
         return args;
       if (args?.args) {
         this.handleServiceMessage(args);
-      } else if (origin) {
-        if (Array.isArray(args))
-          return this._run(route, origin, ...args);
-        else
-          return this._run(route, origin, args);
       } else if (Array.isArray(args))
         return this.run(route, ...args);
       else
@@ -2090,6 +2012,21 @@
     }
     isTypedArray(x) {
       return ArrayBuffer.isView(x) && Object.prototype.toString.call(x) !== "[object DataView]";
+    }
+    spliceTypedArray(arr, start, end) {
+      let s = arr.subarray(0, start);
+      let e;
+      if (end) {
+        e = arr.subarray(end + 1);
+      }
+      let n;
+      if (s.length > 0 || e?.length > 0)
+        n = new arr.constructor(s.length + e.length);
+      if (s.length > 0)
+        n.set(s);
+      if (e && e.length > 0)
+        n.set(e, s.length);
+      return n;
     }
   };
 
@@ -2135,11 +2072,11 @@
           } else
             this.services[service.constructor.name] = service;
         }
-        this.service.load(service, includeClassName, routeFormat, customRoutes, customChildren);
+        let loaded = this.service.load(service, includeClassName, routeFormat, customRoutes, customChildren);
         if (linkServices) {
           this.syncServices();
         }
-        return this.services[service.name];
+        return loaded;
       };
       this.syncServices = () => {
         for (const name in this.services) {
@@ -2152,7 +2089,7 @@
           });
         }
       };
-      this.pipe = (source, destination, transmitter, origin, method, callback) => {
+      this.pipe = (source, destination, transmitter, method, callback) => {
         if (!transmitter && source && destination) {
           if (callback)
             return this.subscribe(source, (res) => {
@@ -2176,23 +2113,23 @@
                 if (mod)
                   res = mod;
                 radio.transmit(
-                  { route: destination, args: res, origin, method }
+                  { route: destination, args: res, method }
                 );
               });
             } else
               return this.subscribe(source, (res) => {
-                radio.transmit({ route: destination, args: res, origin, method });
+                radio.transmit({ route: destination, args: res, method });
               });
           } else {
             let endpoint = this.getEndpointInfo(transmitter);
             if (endpoint) {
-              return this.services[endpoint.service].pipe(source, destination, transmitter, origin, method, callback);
+              return this.services[endpoint.service].pipe(source, destination, transmitter, method, callback);
             }
           }
         }
         return false;
       };
-      this.pipeOnce = (source, destination, transmitter, origin, method, callback) => {
+      this.pipeOnce = (source, destination, transmitter, method, callback) => {
         if (source instanceof GraphNode)
           source = source.tag;
         if (!transmitter && typeof source === "string" && destination) {
@@ -2218,17 +2155,17 @@
                 if (mod)
                   res = mod;
                 radio.transmit(
-                  { route: destination, args: res, origin, method }
+                  { route: destination, args: res, method }
                 );
               });
             } else
               return this.state.subscribeTriggerOnce(source, (res) => {
-                radio.transmit({ route: destination, args: res, origin, method });
+                radio.transmit({ route: destination, args: res, method });
               });
           } else {
             let endpoint = this.getEndpointInfo(transmitter);
             if (endpoint) {
-              return this.services[endpoint.service].pipeOnce(source, destination, transmitter, origin, method, callback);
+              return this.services[endpoint.service].pipeOnce(source, destination, transmitter, method, callback);
             }
           }
         }
@@ -2331,26 +2268,26 @@
         }
         return void 0;
       };
-      this.pipeFastest = (source, destination, origin, method, callback, services = this.services) => {
+      this.pipeFastest = (source, destination, method, callback, services = this.services) => {
         for (const service in services) {
           if (services[service].rtc) {
-            return this.pipe(source, destination, "webrtc", origin, method, callback);
+            return this.pipe(source, destination, "webrtc", method, callback);
           }
           if (services[service].eventsources) {
             let keys = Object.keys(services[service].eventsources);
             if (keys[0]) {
               if (this.services[service].eventsources[keys[0]].sessions)
-                return this.pipe(source, destination, "sse", origin, method, callback);
+                return this.pipe(source, destination, "sse", method, callback);
             }
           }
           if (services[service].sockets) {
-            return this.pipe(source, destination, "wss", origin, method, callback);
+            return this.pipe(source, destination, "wss", method, callback);
           }
           if (services[service].servers) {
-            return this.pipe(source, destination, "http", origin, method, callback);
+            return this.pipe(source, destination, "http", method, callback);
           }
           if (services[service].workers) {
-            return this.pipe(source, destination, "worker", origin, method, callback);
+            return this.pipe(source, destination, "worker", method, callback);
           }
         }
         return false;
@@ -2605,12 +2542,7 @@
       this.runAs = (node, userId, ...args) => {
         if (typeof userId === "object")
           userId = userId._id;
-        return this._run(node, userId, ...args);
-      };
-      this.pipeAs = (source, destination, transmitter, userId, method, callback) => {
-        if (typeof userId === "object")
-          userId = userId._id;
-        return this.pipe(source, destination, transmitter, userId, method, callback);
+        return this.run(node, userId, ...args);
       };
       this._initConnections = (connections) => {
         if (connections.sockets && this.services.wss) {
@@ -2741,8 +2673,6 @@
               if (!this.users[user._id])
                 return;
               if (typeof this.users[user._id].sendAll === "object") {
-                if (message.route && !message.origin)
-                  message.origin = user._id;
                 if (typeof message === "object")
                   message = JSON.stringify(message);
                 for (const protocol in this.users[user._id].sendAll) {
@@ -2835,7 +2765,7 @@
             };
           }
           if (!user.request) {
-            user.request = (message, connection, connectionId, origin, method) => {
+            user.request = (message, connection, connectionId, method) => {
               if (!connection) {
                 if (this.users[user._id].sockets)
                   for (const prop in this.users[user._id].sockets) {
@@ -2869,11 +2799,9 @@
                   return void 0;
               }
               let callbackId = `${Math.random()}`;
-              let req = { route: "runRequest", args: [message, connectionId, callbackId], origin: user._id };
+              let req = { route: "runRequest", args: [message, connectionId, callbackId] };
               if (method)
                 req.method = method;
-              if (origin)
-                req.origin = origin;
               return new Promise((res, rej) => {
                 let onmessage = (ev) => {
                   let data = ev.data;
@@ -3565,23 +3493,20 @@
             }
           }
         }
-        let message = { route: "receiveSessionUpdates", args: null, origin: null };
+        let message = { route: "receiveSessionUpdates", args: null };
         for (const u in users) {
-          message.args = users[u];
-          message.origin = u;
+          message.args = [u, users[u]];
           if (this.users[u].send)
             this.users[u].send(JSON.stringify(message));
         }
         return users;
       };
-      this.receiveSessionUpdates = (self = this, origin, update) => {
+      this.receiveSessionUpdates = (origin, update) => {
         if (update) {
           if (typeof update === "string")
             update = JSON.parse(update);
         }
         if (typeof update === "object") {
-          if (typeof origin === "object")
-            origin = origin._id;
           let user = this.users[origin];
           if (!user)
             return void 0;
@@ -3666,7 +3591,7 @@
           const updateObj = this.getUpdatedUserData(user);
           if (Object.keys(updateObj).length > 0) {
             if (user.send)
-              user.send({ route: "setUser", args: updateObj, origin: user._id });
+              user.send({ route: "setUser", args: [user._id, updateObj] });
             return updateObj;
           }
         }
@@ -3676,7 +3601,7 @@
         runAs: this.runAs,
         pipeAs: this.pipeAs,
         addUser: this.addUser,
-        setUser: (self, origin, update) => {
+        setUser: (origin, update) => {
           return this.setUser(origin, update);
         },
         removeUser: this.removeUser,
@@ -3691,6 +3616,8 @@
         transmitSessionUpdates: this.transmitSessionUpdates,
         receiveSessionUpdates: this.receiveSessionUpdates,
         swapHost: this.swapHost,
+        getupdateUserData: this.getUpdatedUserData,
+        userUpdateCheck: this.userUpdateCheck,
         userUpdateLoop: {
           operator: this.userUpdateCheck,
           loop: 10
@@ -3843,11 +3770,11 @@
                   }
                 }
                 if (typeof body?.method === "string") {
-                  return resolve(this.handleMethod(body.route, body.method, body.args, body.origin));
+                  return resolve(this.handleMethod(body.route, body.method, body.args));
                 } else if (typeof body?.route === "string") {
                   return resolve(this.handleServiceMessage(body));
                 } else if (typeof body?.node === "string" || body.node instanceof GraphNode) {
-                  return resolve(this.handleGraphNodeCall(body.node, body.args, body.origin));
+                  return resolve(this.handleGraphNodeCall(body.node, body.args));
                 } else
                   return resolve(body);
               },
@@ -4093,23 +4020,19 @@
         let send = (message) => {
           return this.transmit(message, socket);
         };
-        let post = (route, args, origin, method) => {
+        let post = (route, args, method) => {
           let message = {
             route,
             args
           };
-          if (origin)
-            message.origin = origin;
           if (method)
             message.method = method;
           return this.transmit(message, socket);
         };
-        let run = (route, args, origin, method) => {
+        let run = (route, args, method) => {
           return new Promise((res, rej) => {
             let callbackId = Math.random();
             let req = { route: "runRequest", args: [{ route, args }, options._id, callbackId] };
-            if (origin)
-              req.args[0].origin = origin;
             if (method)
               req.args[0].method = method;
             let onmessage = (ev) => {
@@ -4126,12 +4049,10 @@
             this.transmit(req, socket);
           });
         };
-        let request = (message, origin, method) => {
+        let request = (message, method) => {
           return new Promise((res, rej) => {
             let callbackId = Math.random();
             let req = { route: "runRequest", args: [message, options._id, callbackId] };
-            if (origin)
-              req.origin = origin;
             if (method)
               req.method = method;
             let onmessage = (ev) => {
@@ -4199,13 +4120,11 @@
         }
         return true;
       };
-      this.request = (message, ws, _id, origin, method) => {
+      this.request = (message, ws, _id, method) => {
         let callbackId = `${Math.random()}`;
         let req = { route: "wss/runRequest", args: [message, _id, callbackId] };
         if (method)
           req.method = method;
-        if (origin)
-          req.origin = origin;
         return new Promise((res, rej) => {
           let onmessage = (ev) => {
             let data = ev.data;
@@ -4344,23 +4263,19 @@
           let send = (message) => {
             return this.transmit(message, options._id, options.channels[firstChannel]);
           };
-          let post = (route, args, origin, method) => {
+          let post = (route, args, method) => {
             let message = {
               route,
               args
             };
-            if (origin)
-              message.origin = origin;
             if (method)
               message.method = method;
             return this.transmit(message, options._id, options.channels[firstChannel]);
           };
-          let run = (route, args, origin, method) => {
+          let run = (route, args, method) => {
             return new Promise((res, rej) => {
               let callbackId = Math.random();
               let req = { route: "runRequest", args: [{ route, args }, options._id, callbackId] };
-              if (origin)
-                req.args[0].origin = origin;
               if (method)
                 req.args[0].method = method;
               let sub;
@@ -4378,12 +4293,10 @@
               this.transmit(req, options._id, options.channels[firstChannel]);
             });
           };
-          let request = (message, origin, method) => {
+          let request = (message, method) => {
             return new Promise((res, rej) => {
               let callbackId = Math.random();
               let req = { route: "runRequest", args: [message, options._id, callbackId] };
-              if (origin)
-                req.origin = origin;
               if (method)
                 req.method = method;
               let sub;
@@ -4580,13 +4493,11 @@
         }
         return true;
       };
-      this.request = (message, channel, _id, origin, method) => {
+      this.request = (message, channel, _id, method) => {
         let callbackId = `${Math.random()}`;
         let req = { route: "runRequest", args: [message, _id, callbackId] };
         if (method)
           req.method = method;
-        if (origin)
-          req.origin = origin;
         return new Promise((res, rej) => {
           let onmessage = (ev) => {
             let data = ev.data;

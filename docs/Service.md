@@ -32,7 +32,6 @@ type Routes = { //same as the tree in the base acyclic graph but adds aliases an
         GraphNode |
         Graph | //special nodes, the graph will live on the .source property of this node and the operator accepts objects with key:value pairs to run functions on the graph and return a results object with corresponding key:value pairs.
         GraphNodeProperties |
-        OperatorType |
         ((...args)=>any|void) |
         { aliases?:string[] } & GraphNodeProperties |
         RouteProp
@@ -80,15 +79,12 @@ Multiple services also support custom route formats which you can easily mirror 
 
 For microservices to be able to talk to each other, we use a common set of keys in an object used for message passing and transmitting/receiving between services and nodes, including those on other servers or threads. 
 
-Detached services on other threads or program instances/remote locations can use the origin as a simple id system to route commands and responses, which we've found several ways to use already to automate a lot of work between the existing services.
-
 ```ts
 type ServiceMessage = {
     route?:string,  //the function/node to execute
     args?:any, //route args or data depending on what we're handling
     method?:string, //can specify get, post, etc. on http requests or on multiplexed routes using the RouteProp format
     node?:string|GraphNode, //alt tag for routes
-    origin?:string|GraphNode|Graph|Service,
     [key:string]:any //it's an object so do whatever, any messages meant for web protocols need to be stringified or buffered
 }
 
@@ -105,9 +101,9 @@ All of the remote message passing services with two way communication channels (
 
 type RemoteConnection = {
     send:(message:any)=>void,
-    request:(message:any, origin?:string, method?:string)=>Promise<any>,
+    request:(message:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
-    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
+    run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>Promise<number>, //returns subscription number
     unsubscribe:(route:any, sub:number)=>Promise<boolean>, //send the subscription number you got back from the remote port
     ...RemoteConnectionInfo

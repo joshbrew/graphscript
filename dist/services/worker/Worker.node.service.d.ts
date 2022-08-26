@@ -26,9 +26,9 @@ export declare type WorkerProps = {
 export declare type WorkerInfo = {
     worker: Worker;
     send: (message: any, transfer?: any) => void;
-    request: (message: any, transfer?: any, origin?: string, method?: string) => Promise<any>;
+    request: (message: any, transfer?: any, method?: string) => Promise<any>;
     post: (route: any, args?: any, transfer?: any) => void;
-    run: (route: any, args?: any, transfer?: any, origin?: string, method?: string) => Promise<any>;
+    run: (route: any, args?: any, transfer?: any, method?: string) => Promise<any>;
     subscribe: (route: any, callback?: ((res: any) => void) | string) => any;
     unsubscribe: (route: any, sub: number) => Promise<boolean>;
 } & WorkerProps & WorkerRoute;
@@ -52,7 +52,7 @@ export declare class WorkerService extends Service {
     transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: StructuredSerializeOptions) => any;
     terminate: (worker: Worker | MessagePort | string) => boolean;
     establishMessageChannel: (worker: Worker | string | MessagePort, worker2?: Worker | string | MessagePort) => string | false;
-    request: (message: ServiceMessage | any, workerId: string, transfer?: any, origin?: string, method?: string) => Promise<unknown>;
+    request: (message: ServiceMessage | any, workerId: string, transfer?: any, method?: string) => Promise<unknown>;
     runRequest: (message: ServiceMessage | any, worker: undefined | string | Worker | MessagePort, callbackId: string | number) => any;
     subscribeWorker: (route: string, worker: Worker | string | MessagePort) => number;
     subscribeToWorker: (route: string, workerId: string, callback?: string | ((res: any) => void)) => Promise<any>;

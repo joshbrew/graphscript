@@ -30,7 +30,7 @@ export declare type UserProps = {
     onmessage?: (message: any) => void;
     onclose?: (connection: any) => void;
     send?: (message: any, channel?: string) => any;
-    request?: (message: ServiceMessage | any, connection?: any, origin?: string, method?: string) => Promise<any>;
+    request?: (message: ServiceMessage | any, connection?: any, method?: string) => Promise<any>;
     latency?: number;
     [key: string]: any;
 } & GraphNodeProperties;
@@ -124,7 +124,6 @@ export declare class UserRouter extends Router {
         [key: string]: Service | Graph | Routes | any;
     } | any[], options?: RouterOptions);
     runAs: (node: string | GraphNode, userId: string | UserProps | (UserProps & GraphNode) | undefined, ...args: any[]) => any;
-    pipeAs: (source: string | GraphNode, destination: string, transmitter: Protocol | string, userId: string | UserProps | (UserProps & GraphNode) | undefined, method: string, callback: (res: any) => any | void) => number | false;
     _initConnections: (connections: UserProps) => void;
     addUser: (user: UserProps | any, timeout?: number) => Promise<UserProps | any>;
     removeUser: (user: (UserProps & GraphNode) | string) => boolean;
@@ -158,7 +157,7 @@ export declare class UserRouter extends Router {
         onmessage?: (message: any) => void;
         onclose?: (connection: any) => void;
         send?: (message: any, channel?: string) => any;
-        request?: (message: any, connection?: any, origin?: string, method?: string) => Promise<any>;
+        request?: (message: any, connection?: any, method?: string) => Promise<any>;
         latency?: number;
     } & GraphNodeProperties & GraphNode);
     setUser: (user: string | (UserProps & GraphNode), props: string | {

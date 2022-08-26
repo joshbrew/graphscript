@@ -83,7 +83,6 @@ export declare class HTTPbackend extends Service {
             response: http.ServerResponse;
         };
         method?: string;
-        origin?: string;
         served?: ServerInfo;
     }) => void;
     injectPageCode: (templateString: string, url: string, served: ServerInfo) => string;
@@ -94,7 +93,6 @@ export declare class HTTPbackend extends Service {
             response: http.ServerResponse;
         };
         method?: string;
-        origin?: string;
         node?: string;
         served?: ServerInfo;
         redirect?: string;
