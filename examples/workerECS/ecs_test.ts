@@ -85,10 +85,10 @@ let ret = router.load({
                                     },
                                     attractorGroup:1,
                                     attractorGroupRules:{
-                                        1:10,
-                                        2:20,
-                                        3:100,
-                                        4:-100
+                                        1:100,
+                                        2:200,
+                                        3:1000,
+                                        4:-1000
                                     }
                                 },
                                 components:{
@@ -114,10 +114,10 @@ let ret = router.load({
                                     },
                                     attractorGroup:2,
                                     attractorGroupRules:{
-                                        1:-10,
-                                        2:20,
-                                        3:-10,
-                                        4:60
+                                        1:-100,
+                                        2:200,
+                                        3:-100,
+                                        4:600
                                     }
                                 },
                                 components:{
@@ -144,9 +144,9 @@ let ret = router.load({
                                     attractorGroup:3,
                                     attractorGroupRules:{
                                         1:0,
-                                        2:-80,
-                                        3:3,
-                                        4:100
+                                        2:-800,
+                                        3:30,
+                                        4:1000
                                     }
                                 },
                                 components:{
@@ -172,10 +172,10 @@ let ret = router.load({
                                     },
                                     attractorGroup:4,
                                     attractorGroupRules:{
-                                        1:-40,
-                                        2:-20.0,
-                                        3:-200,
-                                        4:100
+                                        1:-400,
+                                        2:-200,
+                                        3:-2000,
+                                        4:1000
                                     }
                                 },
                                 components:{
