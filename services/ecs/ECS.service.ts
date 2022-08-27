@@ -59,7 +59,7 @@ export class ECSService extends Service {
 
     order:string[]=[] //order of execution for component updates
 
-    animating=true;
+    animating=false;
 
     entityCt = 0;
     systemCt = 0;
@@ -112,12 +112,18 @@ export class ECSService extends Service {
     }
 
     animate = (filter:boolean=true,order?:string[]) => {
-        requestAnimationFrame(()=>{
-            if(this.animating){ 
-                this.updateEntities(order,filter);
-                this.animate(filter,order);
+        if(this.animating === false) {
+            this.animating = true;
+            let anim = () => {
+                requestAnimationFrame(()=>{
+                    if(this.animating){ 
+                        this.updateEntities(order,filter);
+                        anim();
+                    }
+                });
             }
-        });
+            anim();
+        }
     }
 
     stop = () => {
@@ -125,7 +131,6 @@ export class ECSService extends Service {
     }
 
     start = (filter?:boolean) => {
-        this.animating = true;
         this.animate(filter);
     }
 
@@ -191,7 +196,6 @@ export class ECSService extends Service {
             systems[key].tag = key;
             this.addSystem(systems[key],undefined,undefined,undefined,order)
         }
-
         return this.systems;
     }
 

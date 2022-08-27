@@ -52,7 +52,11 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         loadDefaultRoutes:true //to get subscribe and subscribeNode routes
     });
 
-    worker.run('addSystems', Systems); //register desired entity component systems
+    worker.run(
+        'addSystems', 
+        Systems,
+        ['boid','nbody','collision','collider','movement']
+    ); //register desired entity component systems
 
     console.log(worker)
 }
