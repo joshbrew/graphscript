@@ -164,7 +164,7 @@ export class DOMService extends Service {
             }
         }
 
-        return node
+        return node;
     }
 
     addElement=(

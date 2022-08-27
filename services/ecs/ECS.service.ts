@@ -30,7 +30,8 @@ export type System = {
     operator:(entities:{[key:string]:Entity})=>any,
     setupEntities:(entities:{[key:string]:Entity})=>{[key:string]:Entity},
     setupEntity:(entity:Entity)=>Entity,
-    entities:{[key:string]:Entity} //the entities associated with this system 
+    entities:{[key:string]:Entity}, //the entities associated with this system 
+    entityKeys:string[] //keys of entities associated with this system, reduces lookup times
 } & GraphNode;
 
 export type ECSOptions = {
@@ -53,7 +54,8 @@ export class ECSService extends Service {
         [key:string]: System
     } = {}
 
-    map = new Map<string,{[key:string]:Entity}>(); //maps of filtered entity objects based on system tag. e.g. this.maps.get('boids')['entity3'];
+    entityMap = new Map<string,{[key:string]:Entity}>(); //maps of filtered entity objects based on system tag. e.g. this.maps.get('boids')['entity3'];
+    entityKeyMap = new Map<string, string[]>(); //arrays of keys of entities belonging to each system, for lookup
 
     order:string[]=[] //order of execution for component updates
 
@@ -91,10 +93,10 @@ export class ECSService extends Service {
                 if(filter) {
                     if(debug) debug = performance.now();
                     (this.systems[k] as GraphNode).run(
-                        this.map.get(k)
+                        this.entityMap.get(k)
                     );
                     if(debug) 
-                        console.log( 'system', k, 'took', performance.now()-debug,'ms for', Object.keys(this.map.get(k)).length, 'entities');
+                        console.log( 'system', k, 'took', performance.now()-debug,'ms for', Object.keys(this.entityMap.get(k)).length, 'entities');
                 } else {
                     if(debug) debug = performance.now();
                     (this.systems[k] as GraphNode).run(
@@ -218,13 +220,14 @@ export class ECSService extends Service {
 
         this.systems[system.tag] = this.nodes.get(system.tag) as any;
 
-        if(!this.map.get(system.tag)) this.map.set(system.tag, {}); //map to track local entities
-        system.entities = this.map.get(system.tag); //shared object ref
-
+        if(!this.entityMap.get(system.tag)) this.entityMap.set(system.tag, {}); //map to track local entities
+        if(!this.entityKeyMap.get(system.tag)) this.entityKeyMap.set(system.tag, []); //map to track arrays of entity keys to remove redundancy
+        this.systems[system.tag].entities = this.entityMap.get(system.tag); //shared object ref
+        this.systems[system.tag].entityKeys = this.entityKeyMap.get(system.tag); //shared key ref
         if(this.systems[system.tag]?.setupEntities) {
             let filtered = this.filterObject(this.entities,(key,v)=>{if(v.components[system.tag]) return true;});
             this.systems[system.tag].setupEntities(filtered);
-            Object.assign(this.map.get(system.tag),filtered);
+            Object.assign(this.entityMap.get(system.tag),filtered);
         } 
 
         if(!order) this.order.push(system.tag);
@@ -238,7 +241,8 @@ export class ECSService extends Service {
             for(const key in entity.components) {
                 if(this.systems[key]) {
                     this.systems[key].setupEntity(entity);
-                    this.map.get(key)[entity.tag] = entity;
+                    this.entityMap.get(key)[entity.tag] = entity;
+                    this.entityKeyMap.get(key).push(entity.tag);
                     // entity.nodes.set(key,this.systems[key]); //this is really probably gonna slow things down when adding/subtracting so we can use the local objects in the service which are pretty straightforward
                     // this.systems[key].nodes.set(entity.tag,entity);
                 }
@@ -249,7 +253,11 @@ export class ECSService extends Service {
     removeEntity = (tag:string) => {
         const entity = this.entities[tag];
         for(const key in entity.components) {
-            if (this.map.get(key)) delete this.map.get(key)[entity.tag];
+            if (this.entityMap.get(key)) {
+                delete this.entityMap.get(key)[entity.tag];
+                this.entityKeyMap.get(key).splice(this.entityKeyMap.get(key).indexOf(entity.tag),1);
+            }
+            
         }
         delete this.entities[tag];
         return this.remove(tag);
@@ -257,7 +265,8 @@ export class ECSService extends Service {
 
     removeSystem = (tag:string) => {
         delete this.systems[tag];
-        this.map.delete(tag);
+        this.entityMap.delete(tag);
+        this.entityKeyMap.delete(tag);
         this.order.splice(this.order.indexOf(tag),1);
         return this.remove(tag);
     }

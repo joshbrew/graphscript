@@ -31,7 +31,7 @@ export const Systems = {
             entities:{[key:string]:GraphNode}
         ){
 
-            let keys = Object.keys(entities);
+            let keys = this.entityKeys;
 
             for(let i = 0; i < keys.length; i++) {
                 const entity1 = entities[keys[i]];
@@ -740,7 +740,7 @@ export const Systems = {
         },
         operator: function (entities:{[key:string]:Entity}) {
 
-            let keys = Object.keys(entities);
+            let keys = this.entityKeys;
 
             for(let i = 0; i < keys.length; i++) {
                 const entity1 = entities[keys[i]];
@@ -966,7 +966,7 @@ export const Systems = {
         },
         operator:function(entities:{[key:string]:Entity}){
 
-            let keys = Object.keys(entities);
+            let keys = this.entityKeys;
 
             for(let i = 0; i < keys.length; i++) {
                 const entity = entities[keys[i]];
@@ -1079,10 +1079,10 @@ export const Systems = {
             } else entity.boid = Object.assign(boidDefaults, entity.boid);
 
             //console.log(entity);
-            // if(Object.keys(this.entities).length > 1000) {
-            //     entity.boid.groupSize = 1;
-            //     entity.boid.searchLimit = 1;
-            // }
+            if(this.entityKeys.length > 1000) {
+                entity.boid.groupSize = 1;
+                entity.boid.searchLimit = 1;
+            }
 
             return entity;
         },
@@ -1092,7 +1092,7 @@ export const Systems = {
             let timeStep = now - this.lastTime
             this.lastTime = now;
 
-            let keys = Object.keys(entities);
+            let keys = this.entityKeys;
             let length = keys.length;
         
             let _timeStep = 1/timeStep;
