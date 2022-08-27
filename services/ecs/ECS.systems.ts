@@ -963,6 +963,7 @@ export const Systems = {
         tag:'nbody',
         lastTime:performance.now(),
         G:0.00000000006674, //Newton's gravitational constant, can set differently on different sets of components 
+        frameMax:20, //maximum number of entities to search per frame
         setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
@@ -993,8 +994,16 @@ export const Systems = {
                 if(entity.components) if(!entity.components[this.tag]) continue;
                 if(!entity.mass) continue;
                 
+                let searched = {};
+                let nSearched = 0;
+                nested:
                 for(let j = 0; j < keys.length; j++) {
-                    const entity2 = entities[keys[j]];
+                    let randKey = keys[Math.floor(Math.random()*keys.length)];
+                    if(searched[randKey]) continue; 
+                    searched[randKey] = true;
+                    const entity2 = entities[randKey];
+                    nSearched++;
+                    if(nSearched > this.frameMax) break nested;
                     if(entity2.components) if(!entity2.components[this.tag]) continue;
                     if(!entity2.mass || !entity2.isAttractor) continue;
 
