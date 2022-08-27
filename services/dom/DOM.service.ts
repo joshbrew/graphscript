@@ -298,14 +298,14 @@ export class DOMService extends Service {
         
         if(options.onrender) {
             let oncreate = options.onrender;
-            (options.onrender as any) = (self:DOMElement) => {
-                oncreate(self, options as ComponentInfo);
+            (options.onrender as any) = (element:DOMElement) => {
+                oncreate(element, options as ComponentInfo);
             }
         }
         if(options.onresize) {
             let onresize = options.onresize;
-            (options.onresize as any) = (self:DOMElement) => {
-                onresize(self, options as ComponentInfo);
+            (options.onresize as any) = (element:DOMElement) => {
+                onresize(element, options as ComponentInfo);
             }
         }
         if(options.onremove) {
@@ -316,8 +316,8 @@ export class DOMService extends Service {
         }
         if(typeof options.renderonchanged === 'function') {
             let renderonchanged = options.renderonchanged;
-            (options.renderonchanged as any) = (self:DOMElement) => {
-                renderonchanged(self, options as ComponentInfo);
+            (options.renderonchanged as any) = (element:DOMElement) => {
+                renderonchanged(element, options as ComponentInfo);
             }
         }
 
@@ -413,26 +413,26 @@ export class DOMService extends Service {
                 
         if(options.onrender) {
             let oncreate = options.onrender;
-            (options.onrender as any) = (self:DOMElement) => {
-                oncreate(self, options as any);
+            (options.onrender as any) = (element:DOMElement) => {
+                oncreate(element, options as any);
             }
         }
         if(options.onresize) {
             let onresize = options.onresize;
-            (options.onresize as any) = (self:DOMElement) => {
-                onresize(self, options as any);
+            (options.onresize as any) = (element:DOMElement) => {
+                onresize(element, options as any);
             }
         }
         if(options.ondelete) {
             let ondelete = options.onremove;
-            (options.onremove as any) = (self:DOMElement) => {
-                ondelete(self, options as any);
+            (options.onremove as any) = (element:DOMElement) => {
+                ondelete(element, options as any);
             }
         }
         if(typeof options.renderonchanged === 'function') {
             let renderonchanged = options.renderonchanged;
-            (options.renderonchanged as any) = (self:DOMElement) => {
-                renderonchanged(self, options as any);
+            (options.renderonchanged as any) = (element:DOMElement) => {
+                renderonchanged(element, options as any);
             }
         }
 
