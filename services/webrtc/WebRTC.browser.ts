@@ -30,7 +30,8 @@ export type WebRTCInfo = {
     post:(route:any, args?:any)=>void,
     run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>Promise<number>,
-    unsubscribe:(route:any, sub:number)=>Promise<boolean>
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>,
+    terminate:()=>boolean
 } & WebRTCProps
 
 //webrtc establishes secure P2P contexts between two users directly.
@@ -185,6 +186,10 @@ export class WebRTCfrontend extends Service {
                 return run('unsubscribe',[route,sub]);
             }
  
+            let terminate = () => {
+                return this.terminate(options._id);
+            }
+
             this.rtc[options._id] = {
                 rtc,
                 _id:options._id,
@@ -194,6 +199,7 @@ export class WebRTCfrontend extends Service {
                 send,
                 subscribe,
                 unsubscribe,
+                terminate,
                 ...options
             }
 
@@ -506,8 +512,7 @@ export class WebRTCfrontend extends Service {
                         else callback(res.args);
                     }
                 })
-                return c.request(JSON.stringify({route:'subscribeRTC', args:[route,channelId]}
-                ));
+                return c.request({route:'subscribeRTC', args:[route,channelId]});
             }
         }
     }

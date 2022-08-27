@@ -23,14 +23,14 @@ export class HTTPfrontend extends Service {
     name='http';
 
     fetchProxied = false;
-    listening = {}
+    listening = {};
 
     constructor(options?:ServiceOptions) {
         super(options);
         this.load(this.routes);
     }
 
-    request = (
+    static request = (
         options:RequestOptions
     ) => {
         const xhr = new XMLHttpRequest(); //only in browsers
@@ -62,7 +62,7 @@ export class HTTPfrontend extends Service {
     ) => {
         if(type === 'json') mimeType = 'application/json';
         return new Promise((resolve,reject) => {
-            let xhr = this.request({
+            let xhr = HTTPfrontend.request({
                 method:'GET',
                 url,
                 responseType:type,
@@ -86,13 +86,13 @@ export class HTTPfrontend extends Service {
         type:XMLHttpRequestResponseType='', 
         mimeType?:string|undefined
     ) => {
-        if(typeof message === 'object') {
+        if(typeof message === 'object' && (type === 'json' || type === 'text' || !type)) {
             message = JSON.stringify(message);
         }
 
         if(type === 'json') mimeType = 'application/json';
         return new Promise((resolve,reject) => {
-            let xhr = this.request({
+            let xhr = HTTPfrontend.request({
                 method:'POST',
                 url,
                 data:message,
@@ -144,7 +144,7 @@ export class HTTPfrontend extends Service {
 
         if(type === 'json') mimeType = 'application/json';
         else return new Promise((resolve,reject) => {
-            let xhr = this.request({
+            let xhr = HTTPfrontend.request({
                 method,
                 url,
                 data:message,
@@ -189,7 +189,10 @@ export class HTTPfrontend extends Service {
         }
     ) => {
 
-        this.listening[path] = true;
+        this.listening[path] = {};
+
+        let listenerId = `${path}${Math.floor(Math.random()*1000000000000000)}`;
+        this.listening[path][listenerId] = fetched; //set event listeners by path
 
         if(!this.fetchProxied) {
             window.fetch = new Proxy(window.fetch, {
@@ -201,13 +204,17 @@ export class HTTPfrontend extends Service {
                     result.then((response:Response) => {
                         if(!response.ok) return;
                         if(this.listening['0']) { //clone all
-                            const clone = response.clone();
-                            fetched(clone, args, response);
+                            for(const key in this.listeners) {
+                                const clone = response.clone();
+                                this.listening['0'][key](clone, args, response);
+                            }
                         } else {
                             for(const key in this.listening) {
                                 if(response.url.includes(key)) {
-                                    const clone = response.clone();
-                                    fetched(clone, args, response);
+                                    for(const key in this.listening[path]) {
+                                        const clone = response.clone();
+                                        this.listening[path][key](clone, args, response);
+                                    }
                                     break;
                                 }
                             }
@@ -219,13 +226,20 @@ export class HTTPfrontend extends Service {
                     return result;
                 }
             });
+            this.fetchProxied = true;
         }
+
+        return listenerId;
     }
 
-    stopListening = (path:string|0|undefined) => { //stop proxying an url path
+    stopListening = (path:string|0|undefined,listener?:string) => { //stop proxying an url path
         if(!path && path !== 0) {
             for(const key in this.listening) delete this.listening[key];
-        } else delete this.listening[path];
+        } else {
+            if(!listener)
+                delete this.listening[path];
+            else delete this.listeners[listener]    
+        }
     }
 
     routes:Routes={

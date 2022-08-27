@@ -495,7 +495,7 @@ export class Service extends Graph {
         if(args[0]) if(typeof args[0] === 'string') {
             let substr = args[0].substring(0,8);
             if(substr.includes('{') || substr.includes('[')) {    
-                if(substr.includes('\\')) args[0] = args[0].replace(/\\/g,"");
+                if(substr.includes('\\')) args[0] = args[0].replace(/\\/g,""); //double jsonified string
                 if(args[0][0] === '"') { args[0] = args[0].substring(1,args[0].length-1)};
                 //console.log(args[0])
                 args[0] = JSON.parse(args[0]); //parse stringified args

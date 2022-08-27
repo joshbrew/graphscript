@@ -31,7 +31,8 @@ export type WorkerInfo = {
     post:(route:any, args?:any, transfer?:any)=>void,
     run:(route:any, args?:any, transfer?:any, method?:string)=>Promise<any>
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
-    unsubscribe:(route:any, sub:number)=>Promise<boolean>
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>,
+    terminate:()=>boolean
 } & WorkerProps & WorkerRoute
 
 //this spawns the workers
@@ -243,6 +244,10 @@ export class WorkerService extends Service {
             return run('unsubscribe',[route,sub]);
         }
 
+        let terminate = () => {
+            return this.terminate(options._id);
+        }
+
         if(!options.onmessage) options.onmessage = (ev) => {
             this.receive(ev.data);
             this.setState({[options._id as string]:ev.data});
@@ -265,6 +270,7 @@ export class WorkerService extends Service {
             request,
             subscribe,
             unsubscribe,
+            terminate,
             ...options
         }
 

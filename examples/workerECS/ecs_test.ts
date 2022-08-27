@@ -24,6 +24,8 @@ const router = new Router([
 
 console.log(router)
 
+document.body.style.height = '100vh'
+
 let ret = router.load({
     'main':{
         tagName:'div',
@@ -62,7 +64,7 @@ let ret = router.load({
                                     nbody:false, //gravitational math
                                     movement:true, //force -> accel -> velocity -> position updates
                                 },
-                                ct: 1000
+                                ct: 5000
                             }
                         }
     
@@ -94,11 +96,11 @@ let ret = router.load({
                                     const THREE = self.THREE;
                                     const OrbitControls = self.OrbitControls;
 
-                                    const renderer = new THREE.WebGLRenderer({canvas});
+                                    const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
                                     renderer.setPixelRatio(Math.min(canvas.clientWidth/canvas.clientHeight,2));
 
                                     const fov = 75;
-                                    const aspect = 2;
+                                    const aspect = canvas.clientWidth / canvas.clientHeight;
                                     const near = 0.01;
                                     const far = 1000;
 
