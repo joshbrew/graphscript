@@ -1084,7 +1084,7 @@ export const Systems = {
             if(!entity.position) {
                 Systems.collider.setupEntity(entity);
             }
-            entity.collisionEnabled = false; //use the bounding box but not the collisions by default (faster)
+            //entity.collisionEnabled = false; //use the bounding box but not the collisions by default (faster)
 
             let adjustedAnchor = Object.assign({},this.defaultAnchor);
             adjustedAnchor.x *= entity.boundingBox.right;

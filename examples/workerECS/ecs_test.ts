@@ -88,7 +88,7 @@ let ret = router.load({
                                         1:100,
                                         2:200,
                                         3:1000,
-                                        4:-1000
+                                        4:-500
                                     }
                                 },
                                 components:{
