@@ -963,7 +963,7 @@ export const Systems = {
         tag:'nbody',
         lastTime:performance.now(),
         G:0.00000000006674, //Newton's gravitational constant, can set differently on different sets of components 
-        frameMax:20, //maximum number of entities to search per frame
+        frameMax:10, //maximum number of entities to search per frame
         setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
