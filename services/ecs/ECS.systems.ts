@@ -46,6 +46,7 @@ export const Systems = {
                     let colliding = Systems.collision.collisionCheck(entity1 as any,entity2 as any); //returns distance from origin if colliding (to reduce redundancy later)
                     if(colliding !== false) {
                         if(!entity1.colliding) entity1.colliding = {}
+                        if(!entity2.colliding) entity2.colliding = {}
                         entity1.colliding[entity2.tag] = colliding;
                         entity2.colliding[entity1.tag] = colliding;
                     }
@@ -764,36 +765,40 @@ export const Systems = {
                 if(!entity1.collisionEnabled) continue;
 
                 //This does (crappy) sphere collisions, for box collisions we need to reflect based on which cube surfaces are colliding
-                for(const key2 in entity1.colliding) { 
-                    const entity2 = entities[key2];
-                    if(entity1.colliding[key2] === false) {
-                        delete entity1.colliding[key2] 
-                        delete entity2.colliding[entity1.tag]; 
-                        continue;
-                    }
-                    if(!entity2.collisionEnabled) continue;
+                if(entity1.colliding) {
+                    for(const key2 in entity1.colliding) { 
+                        const entity2 = entities[key2];
+                        if(entity1.colliding[key2] === false) {
+                            delete entity1.colliding[key2] 
+                            delete entity2.colliding[entity1.tag]; 
+                            continue;
+                        }
+                        if(!entity2.collisionEnabled) continue;
 
-                    
-                    if(entity2.collisionType === 'box') {
-                        this.resolveBoxCollision(entity1,entity2,entity1.colliding[key2]);
-                    }
-                    else {
-                        if(entity1.collisionType === 'box') {
-                            entity1.fixed = true; //let the box collision check handle it on next pass
-                            this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
-                            entity1.fixed = false;
+                        
+                        if(entity2.collisionType === 'box') {
+                            this.resolveBoxCollision(entity1,entity2,entity1.colliding[key2]);
                         }
                         else {
-                            this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
-                            delete entity2.colliding[entity1.tag]; //both resolved
+                            if(entity1.collisionType === 'box') {
+                                entity1.fixed = true; //let the box collision check handle it on next pass
+                                this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
+                                entity1.fixed = false;
+                            }
+                            else {
+                                this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
+                                delete entity2.colliding[entity1.tag]; //both resolved
+                            }
                         }
+                        //}
+                        //todo: box face (orthogonal) reflections
+                        //else if(entity2.collisionType === 'box')
+                        //this.resolveBoxCollision(entity1,entity2);
+                        
+                        delete entity1.colliding[entity2.tag];
                     }
-                    //}
-                    //todo: box face (orthogonal) reflections
-                    //else if(entity2.collisionType === 'box')
-                    //this.resolveBoxCollision(entity1,entity2);
                     
-                    delete entity1.colliding[entity2.tag];
+                    delete entity1.colliding;
                 }
             }
             return entities;
