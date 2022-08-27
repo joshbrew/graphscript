@@ -1055,29 +1055,30 @@ export const Systems = {
                 entity.position.z = Math.random()*entity.boundingBox.top;
             }
 
+            let boidDefaults = {
+                cohesion:0.00001,
+                separation:0.0001,
+                alignment:0.006,
+                swirl:{x:0.5,y:0.5,z:0.5,mul:0.006},
+                attractor:{x:0.5,y:0.5,z:0.5,mul:0.002},
+                useCohesion:true,
+                useSeparation:true,
+                useAlignment:true,
+                useSwirl:true,
+                useAttractor:true,
+                //useAvoidance:true,
+                //avoidance:{groups:[],mul:0.1},
+                useAttraction:false, //particles can attract each other on a curve
+                //group:0 //search groups to split boids groups (todo)
+                groupRadius:200,
+                groupSize:5, //number of boids checked per frame to update velocities
+                searchLimit:5
+            };
             if(!entity.boid) { //boid rules
-                entity.boid = {
-                    cohesion:0.00001,
-                    separation:0.0001,
-                    alignment:0.006,
-                    swirl:{x:0.5,y:0.5,z:0.5,mul:0.006},
-                    attractor:{x:0.5,y:0.5,z:0.5,mul:0.002},
-                    useCohesion:true,
-                    useSeparation:true,
-                    useAlignment:true,
-                    useSwirl:true,
-                    useAttractor:true,
-                    //useAvoidance:true,
-                    //avoidance:{groups:[],mul:0.1},
-                    useAttraction:false, //particles can attract each other on a curve
-                    //group:0 //search groups to split boids groups (todo)
-                    groupRadius:200,
-                    groupSize:5, //number of boids checked per frame to update velocities
-                    searchLimit:5
-                };
-            }  
+                entity.boid = boidDefaults
+            } else entity.boid = Object.assign(boidDefaults, entity.boid);
 
-
+            //console.log(entity);
             // if(Object.keys(this.entities).length > 1000) {
             //     entity.boid.groupSize = 1;
             //     entity.boid.searchLimit = 1;

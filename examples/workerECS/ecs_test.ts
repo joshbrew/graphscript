@@ -55,6 +55,10 @@ let ret = router.load({
                                         front:0,
                                         back:300  
                                     },
+                                    boid:{
+                                        groupSize:1,
+                                        searchLimit:1
+                                    },
                                     maxSpeed:30
                                 },
                                 components:{ //set which active systems to use for each entity
