@@ -269,6 +269,24 @@ export class ECSService extends Service {
                     );
     }
 
+    setEntities = (entities:{[key:string]:Entity}|string[],props:{[key:string]:any}) => {
+        if(Array.isArray(entities)) {
+            entities.forEach((k) => {
+                if(this.entities[k]) this.recursivelyAssign(this.entities[k],props);
+            })
+        } else {
+            for(const key in this.entities) {
+                this.setEntity(this.entities[key],props);
+            }
+        }
+        return true;
+    }
+
+    setEntity = (entity:Entity,props:{[key:string]:any}) => {
+        return this.recursivelyAssign(entity,props);
+    }
+    
+
     //buffer numbers stored on entities, including iterable objects or arrays. 
     //  It's much faster to buffer and use transfer than sending the objects raw over threads as things are jsonified inbetween otherwise, 
     //    and even faster to store everything in typed arrays altogether and use entities to index array locations
@@ -324,7 +342,9 @@ export class ECSService extends Service {
         setupEntity:this.setupEntity,
         addEntities:this.addEntities,
         filterObject:this.filterObject,
-        bufferValues:this.bufferValues
+        bufferValues:this.bufferValues,
+        setEntity:this.setEntity,
+        setEntities:this.setEntities
     }
 }
 
