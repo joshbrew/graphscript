@@ -152,7 +152,17 @@ export class DOMService extends Service {
         }
 
         // -------- Bind Functions to GraphNode --------
-        for (let key in options) if (typeof options[key] === 'function') options[key].bind(node)
+        const initialOptions = options._initial ?? options
+        for (let key in initialOptions) {
+            if (typeof initialOptions[key] === 'function') initialOptions[key] = initialOptions[key].bind(node)
+            else if (key === 'attributes') {
+                for (let key2 in initialOptions.attributes) {
+                    if (typeof initialOptions.attributes[key2] === 'function') {
+                        initialOptions.attributes[key2] = initialOptions.attributes[key2].bind(node)
+                    }
+                }
+            }
+        }
 
         return node
     }
@@ -268,7 +278,14 @@ export class DOMService extends Service {
        
         element.id = options.id;
         if(options.style) Object.assign(element.style,options.style);
-        if(options.attributes) Object.assign(element,options.attributes);
+        if(options.attributes) {
+            for (let key in options.attributes) {
+                if(typeof options.attributes[key] === 'function') element[key] = (...args) => options.attributes[key](...args); // replace this scope
+                else element[key] = options.attributes[key];
+            }
+
+        }
+        
         return options;
     }
 
