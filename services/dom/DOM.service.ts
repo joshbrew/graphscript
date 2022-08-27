@@ -268,8 +268,6 @@ export class DOMService extends Service {
        
         element.id = options.id;
         if(options.style) Object.assign(element.style,options.style);
-        if(options.innerHTML && element.innerHTML !== options.innerHTML) element.innerHTML = options.innerHTML;
-        if(options.innerText && element.innerText !== options.innerText) element.innerText = options.innerText;
         if(options.attributes) Object.assign(element,options.attributes);
         return options;
     }
