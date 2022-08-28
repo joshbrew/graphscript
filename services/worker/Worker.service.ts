@@ -47,6 +47,10 @@ export class WorkerService extends Service {
 
     threadRot = 0; //thread rotation if not specifying
 
+    connections = { //higher level reference for Router
+        workers:this.workers
+    }
+
     constructor(options?:ServiceOptions) {
         super(options);
         this.load(this.routes);

@@ -53,6 +53,10 @@ export class WebRTCfrontend extends Service {
         { urls: ['stun:stun4.l.google.com:19302'] }
     ];
 
+    connections = { //higher level reference for router
+        rtc:this.rtc
+    }
+
     constructor(
         options?:ServiceOptions, 
         iceServers?:{urls:string[]}[] 

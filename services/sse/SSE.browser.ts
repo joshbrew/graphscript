@@ -36,6 +36,10 @@ export class SSEfrontend extends Service {
         [key:string]:EventSourceInfo
     }={}
 
+    connections = { //higher level reference for Router
+        eventsources:this.eventsources
+    }
+
     constructor(options?:ServiceOptions) {
         super(options);
         this.load(this.routes);

@@ -81,6 +81,10 @@ export class WSSbackend extends Service {
         [key:string]:SocketInfo
     }={};
 
+    connections = { //higher level reference for Router
+        servers:this.servers, sockets:this.sockets
+    };
+
     constructor(options?:ServiceOptions) {
         super(options)
         this.load(this.routes);

@@ -61,6 +61,10 @@ export class SSEbackend extends Service {
         [key:string]:SSEClientInfo
     }={}
 
+    connections = { //higher level reference for router
+        servers:this.servers, eventsources:this.eventsources
+    }
+
     
     constructor(options?:ServiceOptions) {
         super(options)

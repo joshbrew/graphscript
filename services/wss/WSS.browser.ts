@@ -37,6 +37,10 @@ export class WSSfrontend extends Service {
         [key:string]:WebSocketInfo
     } = { }
 
+    connections = { //higher level reference for Router
+        sockets:this.sockets
+    }
+
     
     constructor(options?:ServiceOptions) {
         super(options)

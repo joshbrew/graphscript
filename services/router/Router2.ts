@@ -1,5 +1,5 @@
-import { Graph, GraphNode } from "../Graph"
-import { Routes, Service, ServiceMessage, ServiceOptions } from "../services/Service"
+import { Graph, GraphNode } from "../../Graph"
+import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service"
 
 /*
 Goals of router:
@@ -42,10 +42,10 @@ export type ConnectionInfo = {
 export type RouterOptions = ServiceOptions & {
     connections?:{[key:string]:ConnectionProps}
     services?:{
-        [key:string]:{
+        [key:string]:Service|any|{
             service:Service,
-            connectionKeys:string|string[]
-        }
+            connections:string[]|{[key:string]:any}
+        } //can be a service constructor
     },
     syncServices?:boolean,
     order?:string[]
@@ -78,13 +78,24 @@ export class Router extends Service {
 
         if(options.services) {
             for(const key in options.services) {
-                this.addService(options.services[key].service, undefined, options.includeClassName, options.routeFormat, options.syncServices);
-                if(options.services[key].connectionKeys) {
-                    if(Array.isArray(options.services[key].connectionKeys)) {
-                        (options.services[key].connectionKeys as any).forEach((k) => {
-                            this.addConnections((options.services as any)[key].service,k);
-                        })
-                    } else this.addConnections(options.services[key].service,options.services[key].connectionKeys);
+                if(options.services[key] instanceof Service) {
+                    options.services[key].service.name = key; options.services[key].service.tag = key;
+                    this.addService(options.services[key].service, options.services[key].connections, options.includeClassName, options.routeFormat, options.syncServices);
+                } else if (typeof options.services[key] === 'function') {
+                    let service = options.services[key]({name:key}) as Service; //instantiate a class prototype
+                    service.name = key; service.tag = key;
+                    if(service) this.addService(service, service.connections, options.includeClassName, options.routeFormat, options.syncServices);
+                }
+                else if(options.services[key].service instanceof Service) {
+                    options.services[key].service.name = key; options.services[key].service.tag = key;
+                    this.addService(options.services[key].service, undefined, options.includeClassName, options.routeFormat, options.syncServices);
+                    if(options.services[key].connections) {
+                        if(Array.isArray(options.services[key].connections)) {
+                            (options.services[key].connections as any).forEach((k) => {
+                                this.addConnections((options.services as any)[key].service,k);
+                            })
+                        } else this.addConnections(options.services[key].service,options.services[key].connections);
+                    }
                 }
             }
         }
@@ -259,7 +270,7 @@ export class Router extends Service {
 
     addService = (
         service:Service,
-        connectionsKey?:any, //the object on the service we want to associate connections wtih
+        connections?:any, //the object on the service we want to associate connections wtih
         includeClassName?:boolean,
         routeFormat?:string,
         syncServices?:boolean,
@@ -267,7 +278,14 @@ export class Router extends Service {
     ) => {
         this.load(service,includeClassName,routeFormat,this.customRoutes,this.customChildren);
         this.services[service.name] = service;
-        if(connectionsKey) this.addConnections(service,connectionsKey);
+        if(connections) {
+            if(typeof connections === 'string') this.addConnections(service,connections);
+            else {
+                for(const c in connections) {
+                    this.addConnections(service,c);
+                }
+            }
+        }
         if(syncServices) this.syncServices(); //maps all uncommon nodes to each service 
         if(order) this.order = order;
         else this.order.push(service.name);
@@ -281,18 +299,22 @@ export class Router extends Service {
             let newConnections = {};
             for(const key in service[connectionsKey]) {
                 if(!this.connections[key]) 
-                    newConnections[key] = this.addConnection({connection:service[connectionsKey][key]}, service.name);
+                    newConnections[key] = this.addConnection({connection:service[connectionsKey][key]});
             }
             return newConnections;
         }
     }
 
-    openConnection = (service:string|Service, ...args:any[]) => {
+    openConnection = (
+        service:string|Service, //the service we are calling
+        options:{[key:string]:any},  //all of the creation function start with objects in our service library 
+        ...args:any[] //potentially other arguments in custom services
+    ) => {
         if(typeof service === 'string') {
             service = this.services[service];
         }
         if(service instanceof Service) {
-            let connection = service.run('open', ...args);
+            let connection = service.run('open', options, ...args);
             if(connection instanceof Promise) {
                 connection.then((info) => {
                     this.addConnection({connection:info, service});
@@ -311,7 +333,7 @@ export class Router extends Service {
     subscribeToConnection = (
         route:string, //the route on the endpoint we want to subscribe to outputs from
         router:string|ConnectionInfo, //the router we are trying to relay messages through
-        transmitter:string|ConnectionInfo, //the endpoint on the router that we want to subscribe to through the router
+        transmitter:string, //the endpoint on the router that we want to subscribe to through the router
         callback:string|((res:any)=>void),
         ...args:any[]
     ) => {
@@ -330,15 +352,12 @@ export class Router extends Service {
                 router = this.connections[router];
             } else return undefined;
         }
-        if(typeof transmitter === 'object') {
-            transmitter = transmitter._id;
-        }
 
         return new Promise((res,rej) => {
             (router as any).run('subscribeConnection',[route,transmitter,(router as any)._id,...args]).then((sub) => {
-                this.subscribe((transmitter as ConnectionInfo)._id, (res) => {
+                this.subscribe(transmitter, (res) => {
                     if(res?.callbackId === route) {
-                        if(!callback) this.setState({[(transmitter as ConnectionInfo)._id]:res.args});
+                        if(!callback) this.setState({[transmitter]:res.args});
                         else if(typeof callback === 'string') { //just set state 
                             this.setState({[callback]:res.args});
                         }
@@ -358,8 +377,10 @@ export class Router extends Service {
         ...args:any[]
     ) => {
         
+        let rxsrc;
         if(typeof receiver === 'string') {
             if(this.sources[receiver]) {
+                rxsrc = receiver;
                 if(this.order) {
                     for(let i = 0; i < this.order.length; i++) {
                         let k = this.order[i];  
@@ -368,13 +389,22 @@ export class Router extends Service {
                             break;
                         }
                     }
+                }else {
+                    Object.keys(this.sources[receiver]).forEach((k) => {
+                        if(this.sources[receiver as string][k].send) {
+                            receiver = this.sources[receiver as string][k]
+                        }
+                    });
                 }
             } else if (this.connections[receiver] && this.connections[receiver].send) {
                 receiver = this.connections[receiver];
             } else return undefined;
         }
+
+        let txsrc;
         if(typeof transmitter === 'string') {
             if(this.sources[transmitter]) {
+                txsrc = transmitter;
                 if(this.order) {
                     for(let i = 0; i < this.order.length; i++) {
                         let k = this.order[i];  
@@ -384,7 +414,11 @@ export class Router extends Service {
                         }
                     }
                 } else {
-                    transmitter = Object.keys(this.sources[transmitter])[0];
+                    Object.keys(this.sources[transmitter]).forEach((k) => {
+                        if(this.sources[transmitter as string][k].send) {
+                            transmitter = this.sources[transmitter as string][k]
+                        }
+                    });
                 }
             } else if (this.connections[transmitter]) {
                 transmitter = this.connections[transmitter];
@@ -398,7 +432,29 @@ export class Router extends Service {
                     route,
                     (transmitter as any)._id,
                     (res:any) => {
-                        (receiver as any).send({ callbackId:route, args:res });
+                        if(!this.connections[(receiver as any)._id] && rxsrc) {
+                            if(this.sources[rxsrc]) {
+                                if(this.order) {
+                                    for(let i = 0; i < this.order.length; i++) {
+                                        let k = this.order[i];  
+                                        if(this.sources[receiver as string][k]?.send) {
+                                            receiver = this.sources[receiver as string][k];
+                                            break;
+                                        }
+                                    }
+                                }
+                                else {
+                                    for(const key in this.sources[rxsrc]) {
+                                        if(this.sources[rxsrc].send) {
+                                            receiver = this.sources[rxsrc][key] as ConnectionInfo;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if(this.connections[(receiver as any)._id]) //if connection is still registered
+                            (receiver as any).send({ callbackId:route, args:res });
+                        else this.unsubscribe(route,undefined);    
                     },
                     ...args
                 ).then((sub:number) => {
@@ -423,9 +479,13 @@ export class Router extends Service {
     routes:Routes={
         addConnection:this.addConnection,
         removeConnection:this.removeConnection,
+        addService:this.addService,
+        addConnections:this.addConnections,
+        openConnection:this.openConnection,
         terminate:this.terminate,
         subscribeConnection:this.subscribeConnection,
-        subscribeToConnection:this.subscribeToConnection
+        subscribeToConnection:this.subscribeToConnection,
+        syncServices:this.syncServices
     }
 
 }

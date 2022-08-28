@@ -42,6 +42,10 @@ export class CMDService extends Service {
         } & CMDRoute
     } 
 
+    connections = { //higher level reference for Router
+        processes:this.processess
+    }
+
     customRoutes:ServiceOptions['customRoutes']={
         'process':(route: CMDRoute|Route, routeKey: string, routes: Routes) => {
             if((route as CMDRoute).command) {
