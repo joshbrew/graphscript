@@ -72,7 +72,7 @@ export class Router extends Service {
         [key:string]:Service
     } = {}
 
-    order:string[]=[]; //execute connections in preferred order
+    order:string[]; //execute connections in preferred order
 
     constructor(options:RouterOptions){
         super(options);
