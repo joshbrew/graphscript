@@ -21,11 +21,12 @@ export type WorkerProps = {
     _id?:string,
     port?:MessagePort, //message channel for this instance
     onmessage?:(ev)=>void,
-    onerror?:(ev)=>void
+    onerror?:(ev)=>void,
+    onclose?:(worker:Worker|MessagePort)=>void
 } 
 
 export type WorkerInfo = {
-    worker:Worker,
+    worker:Worker|MessagePort,
     send:(message:any,transfer?:any)=>void,
     request:(message:any, transfer?:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any, transfer?:any)=>void,
@@ -172,7 +173,7 @@ export class WorkerService extends Service {
         onmessage?:(ev)=>void,
         onerror?:(ev)=>void
     }) => { //pass file location, web url, or javascript dataurl string
-        let worker;
+        let worker:Worker|MessagePort;
 
         if(!options._id) 
             options._id = `worker${Math.floor(Math.random()*1000000000000000)}`;
@@ -265,10 +266,10 @@ export class WorkerService extends Service {
         }
 
         worker.onmessage = options.onmessage;
-        worker.onerror = options.onerror;
+        (worker as Worker).onerror = options.onerror;
 
         this.workers[options._id] = {
-            worker,
+            worker:(worker as any),
             send,
             post,
             run,
@@ -387,17 +388,21 @@ export class WorkerService extends Service {
     }
 
     terminate = (worker:Worker|MessagePort|string) => {
+        let onclose;
         if(typeof worker === 'string') {
             let obj = this.workers[worker];
             if(obj) delete this.workers[worker];
             worker = obj.worker;
+            if(obj.onclose) onclose = obj.onclose;
         }
         if(worker instanceof Worker) {
             worker.terminate();
+            if(onclose) onclose(worker);
             return true;
         }
         if(worker instanceof MessagePort) {
             worker.close();
+            if(onclose) onclose(worker);
             return true;
         }
         return false;

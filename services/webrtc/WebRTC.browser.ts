@@ -19,7 +19,8 @@ export type WebRTCProps = {
     ondatachannel?:(ev:RTCDataChannelEvent)=>void,
     ondata?:(ev:MessageEvent<any>, channel:RTCDataChannel, room)=>void,
     onconnectionstatechange?:(ev:Event)=>void,
-    oniceconnectionstatechange?:(ev:Event)=>void
+    oniceconnectionstatechange?:(ev:Event)=>void,
+    onclose?:(rtc:WebRTCInfo)=>void //custom callback
 }
 
 export type WebRTCInfo = {
@@ -250,6 +251,13 @@ export class WebRTCfrontend extends Service {
             rtc.onnegotiationneeded = options.onnegotiationneeded; 
             rtc.oniceconnectionstatechange = options.oniceconnectionstatechange; 
             rtc.onconnectionstatechange = options.onconnectionstatechange; 
+            rtc.addEventListener('connectionstatechange', (ev) => {
+                if(rtc.connectionState === 'closed' || rtc.connectionState === 'failed') {
+                    if(this.rtc[options._id].onclose) {
+                        this.rtc[options._id].onclose(this.rtc[options._id]);
+                    }
+                } 
+            })
         
         } else {
             Object.assign(this.rtc[options._id],options);

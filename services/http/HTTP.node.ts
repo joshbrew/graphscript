@@ -25,6 +25,7 @@ export type ServerProps = {
     protocol?:'http'|'https',
     type?:'httpserver'|string,
     keepState?:boolean, //setState whenever a route is run? State will be available at the address (same key of the object storing it here)
+    onclose?:(served:ServerInfo)=>void, //server close callback
     [key:string]:any
 }
 
@@ -793,11 +794,12 @@ export class HTTPbackend extends Service {
         });
     }
 
-    terminate = (served:string|{server:http.Server|https.Server}) => {
+    terminate = (served:string|ServerInfo) => {
         if(typeof served === 'string') served = this.servers[served];
 
         if(typeof served === 'object') {
             served.server.close();
+            if(served.onclose) served.onclose(served);
         }
     }
 

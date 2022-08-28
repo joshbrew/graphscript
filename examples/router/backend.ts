@@ -5,12 +5,12 @@ import { HTTPbackend, ServerProps } from "../../services/http/HTTP.node";
 
 const router = new Router({
     services:{
-        'http':HTTPbackend,
+        'http':HTTPbackend, //the keys you provide set the names/tags of the services
         'wss':WSSbackend,
         'sse':SSEbackend  
     },
-    order:['sse','wss'] //prefer certain connection types
-});
+    order:['sse','wss'] //prefer certain connection sources in a certain order, defaults to load order (if appropriate callbacks are available for subscription)
+}); //on frontend we want to prefer wss first as sse is POST-reliant from browser
 
 (router.services.http as HTTPbackend).setupHTTPserver(
     {

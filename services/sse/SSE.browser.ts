@@ -10,6 +10,11 @@ export type EventSourceProps = {
         error?:(ev:any,sseinfo?:EventSourceInfo)=>void,
         [key:string]:any
     }
+    //these callbacks are copied to events object above if not defined, just simpler
+    onmessage?:(ev:any,sseinfo?:EventSourceInfo)=>void,  //will use this.receive as default
+    onopen?:(ev:any,sseinfo?:EventSourceInfo)=>void,
+    onclose?:(ev:any,sseinfo?:EventSourceInfo)=>void,
+    onerror?:(ev:any,sseinfo?:EventSourceInfo)=>void,
     evoptions?:boolean|AddEventListenerOptions,
     type?:'eventsource'|string,
     _id?:string,
@@ -58,6 +63,12 @@ export class SSEfrontend extends Service {
 
         if(!('keepState' in options)) options.keepState = true; //default true
         if(!options.events) options.events = {};
+
+        if(options.onmessage) options.events.message = options.onmessage;
+        if(options.onclose)  options.events.close = options.onclose;
+        if(options.onopen) options.events.open = options.onopen;
+        if(options.onerror)  options.events.error = options.onerror;
+
         if(!options.events.message) {
             options.events.message = (ev, sse) => {
 

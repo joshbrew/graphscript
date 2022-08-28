@@ -21,7 +21,8 @@ export type ConnectionProps = {
     connection:GraphNode|Graph|any, //will include the service as 'graph' from our boilerplate
     service?:string|Graph|Service,
     _id?:string,   //unique id
-    source?:string //group of connections the connection belongs to, e.g. a user id or a service 
+    source?:string, //group of connections the connection belongs to, e.g. a user id or a service 
+    onclose?:(connection:ConnectionInfo,...args:any[])=>void
 }
 //valid connections: SocketInfo, SocketServerInfo, SSEChannelInfo, SSESessionInfo, EventSourceInfo, ServerInfo
 
@@ -29,14 +30,15 @@ export type ConnectionInfo = {
     connection:GraphNode|Graph|any,
     service?:string|Service|Graph,
     _id:string,
-    source?:string,
+    source:string,
     send?:(...args:any[])=>any,
     request?:(...args:any[])=>Promise<any>|Promise<any>[],
     post?:(...args:any[])=>void,
     run?:(...args:any[])=>Promise<any>|Promise<any>[],
     subscribe?:(...args:any[])=>Promise<number>|Promise<number>[]|undefined,
     unsubscribe?:(...args:any[])=>Promise<boolean>|Promise<boolean>[],
-    terminate:(...args:any[]) => boolean
+    terminate:(...args:any[]) => boolean,
+    onclose?:(connection:ConnectionInfo,...args:any[])=>void
 }
 
 export type RouterOptions = ServiceOptions & {
@@ -176,6 +178,12 @@ export class Router extends Service {
                 node.graph.remove(node);
                 return true;
             }
+            settings.onclose = options.onclose;
+            if(settings.onclose) {
+                let oldondelete;
+                if(node.ondelete) oldondelete = node.ondelete;
+                node.ondelete = (n:GraphNode) => { if(settings.onclose) settings.onclose(settings,n); if(oldondelete) oldondelete(n); }
+            }
         } else if (options.connection instanceof Graph) {
             if(options.connection.nodes.get('open'))
                 settings.service = options.connection;
@@ -233,6 +241,11 @@ export class Router extends Service {
             settings.subscribe = c.subscribe;
             settings.unsubscribe = c.unsubscribe;
             settings.terminate = c.terminate;
+            settings.onclose = options.onclose;
+            if(settings.onclose) {
+                let oldonclose = c.onclose;
+                c.onclose = (...args:any[]) => { if(settings.onclose) settings.onclose(settings, ...args); if(oldonclose) oldonclose(...args); }
+            }
             if(options.service) {            
                 settings.service = options.service;
             } else if(c.graph) settings.service = c.graph;
@@ -250,7 +263,8 @@ export class Router extends Service {
                 this.sources[settings.source][settings._id] = settings;
         }
 
-        this.connections[settings._id] = settings;
+        if(!this.connections[settings._id]) 
+            this.connections[settings._id] = settings; //we may want to assign multiple sources so we can ignore later calls on addConnection
 
         return settings;
     }
@@ -453,7 +467,7 @@ export class Router extends Service {
                         }
                         if(this.connections[(receiver as any)._id]) //if connection is still registered
                             (receiver as any).send({ callbackId:route, args:res });
-                        else this.unsubscribe(route,undefined);    
+                        //else this.unsubscribe(route,undefined);    
                     },
                     ...args
                 ).then((sub:number) => {
