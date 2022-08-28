@@ -35,7 +35,7 @@ export class StructFrontend extends Service {
     async setupUser(userinfo:Partial<UserStruct>, callback=(currentUser)=>{}) {
 
         if(!userinfo) {
-            console.error('must provide an info object! e.g. {_id:"abc123"}');
+            console.error('must provide a minimum info object! e.g. {_id:"abc123"}');
             callback(undefined);
             return undefined;
         }

@@ -84,8 +84,8 @@ export class StructBackend extends Service {
 
     //------------------------------------
     //routes to be loaded
-    query = async (origin:any, user:Partial<UserStruct>,collection?:any,queryObj?:any,findOne?:boolean,skip?:number) => {
-        if(!user && origin) {user = this.users[origin]}
+    query = async (requesterId:string,collection?:any,queryObj?:any,findOne?:boolean,skip?:number) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         if(this.mode.indexOf('mongo') > -1) {
@@ -110,8 +110,8 @@ export class StructBackend extends Service {
         }
     }
 
-    getUser = async (origin:any, user:Partial<UserStruct>,lookupId:string) => {
-        if(!user && origin) {user = this.users[origin]}
+    getUser = async (requesterId:string, lookupId:string) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data:any;
@@ -135,8 +135,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    setUser = async (origin:any, user:Partial<UserStruct>, struct:Partial<UserStruct>) => {
-        if(!user && origin) {user = this.users[origin]}
+    setUser = async (requesterId:string, struct:Partial<UserStruct>) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data:any;
@@ -153,8 +153,8 @@ export class StructBackend extends Service {
             return data;
     }
 
-    getUsersByIds = async (origin:any, user:Partial<UserStruct>, userIds:string[]) => {
-        if(!user && origin) {user = this.users[origin]}
+    getUsersByIds = async (requesterId:string, userIds:string[]) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -171,8 +171,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getUsersByRole = async (origin:any, user:Partial<UserStruct>, role:string) => {
-        if(!user && origin) {user = this.users[origin]}
+    getUsersByRole = async (requesterId:string, role:string) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -191,8 +191,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteUser = async (origin:any, user:Partial<UserStruct>, userId:string) => {
-        if(!user && origin) {user = this.users[origin]}
+    deleteUser = async (requesterId:string, userId:string) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -212,8 +212,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    setData = async (origin:any, user:Partial<UserStruct>, structs:any[], notify?:boolean) => {
-        if(!user && origin) {user = this.users[origin]}
+    setData = async (requesterId:string, structs:any[], notify?:boolean) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -246,8 +246,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getData = async (origin:any, user:Partial<UserStruct>, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number) => {
-        if(!user && origin) {user = this.users[origin]}
+    getData = async (requesterId:string, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -271,8 +271,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getDataByIds = async (origin:any, user:Partial<UserStruct>, structIds:string[], ownerId?:string, collection?:string) => {
-        if(!user && origin) {user = this.users[origin]}
+    getDataByIds = async (requesterId:string, structIds:string[], ownerId?:string, collection?:string) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -295,8 +295,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAllData = async (origin:any, user:Partial<UserStruct>, ownerId:string, excludedCollections?:string[]) => {
-        if(!user && origin) {user = this.users[origin]}
+    getAllData = async (requesterId:string, ownerId:string, excludedCollections?:string[]) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -326,8 +326,8 @@ export class StructBackend extends Service {
         return data;
     }   
 
-    deleteData = async (origin:any, user:Partial<UserStruct>, structIds:string[]) => {
-        if(!user && origin) {user = this.users[origin]}
+    deleteData = async (requesterId:string, structIds:string[]) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -348,8 +348,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getUserGroups = async (origin:any, user:Partial<UserStruct>, userId?:string, groupId?:string) => {
-        if(!user && origin) {user = this.users[origin]}
+    getUserGroups = async (requesterId:string, userId?:string, groupId?:string) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -377,8 +377,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteGroup = async (origin:any, user:Partial<UserStruct>, groupId:string) => {
-        if(!user && origin) {user = this.users[origin]}
+    deleteGroup = async (requesterId:string, groupId:string) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -399,8 +399,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAuthorizations = async (origin:any, user:Partial<UserStruct>, ownerId?: string, authId?: string) => {
-        if(!user && origin) {user = this.users[origin]}
+    getAuthorizations = async (requesterId:string, ownerId?: string, authId?: string) => {
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;
@@ -418,8 +418,9 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteAuthorization = async (origin:any, user:Partial<UserStruct>, authId:string) => {
-        if(!user && origin) {user = this.users[origin]}
+    deleteAuthorization = async (requesterId:string, authId:string) => {
+        
+        let user = this.users[requesterId];
         if(!user) return false;
 
         let data;

@@ -108,6 +108,46 @@ export class Router extends Service {
         }
     }
 
+
+    //pick the preferred connection by service name if passing a source, or pick the connection by id if not a source
+    getConnection = (sourceId:string) => {
+        let connection;
+        if(this.sources[sourceId]) {
+            if (this.order) {
+                for(let i = 0; i < this.order.length; i++) {
+                    let k = this.order[i];  
+                    for(const key in this.sources[sourceId as string]) {
+                        if(this.sources[sourceId as string][key].service) {
+                            if(typeof this.sources[sourceId as string][key].service === 'object') {
+                                if((this.sources[sourceId as string][key].service as Graph).tag === k) {
+                                    connection = this.sources[sourceId as string][key];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else Object.keys(this.sources[sourceId]).forEach((k) => {
+                if(this.sources[sourceId as string][k].send) {
+                    connection = this.sources[sourceId as string][k]
+                }
+            });
+        } else if (this.order) {
+            for(let i = 0; i < this.order.length; i++) {
+                let k = this.order[i];  
+                if(this.sources[k][sourceId as string]?.run) {
+                    connection = this.sources[k][sourceId as string];
+                    break;
+                }
+            }
+        } 
+        if(typeof sourceId === 'string' && this.connections[sourceId] && this.connections[sourceId].send) {
+            connection = this.connections[sourceId];
+        } 
+        if(typeof sourceId === 'string') return undefined;
+        return connection;
+    }
+
     addConnection = (options:ConnectionProps|string,source?:string) => {
         let settings:ConnectionInfo = {} as any;
 
@@ -119,6 +159,7 @@ export class Router extends Service {
         if(options.connection instanceof GraphNode) {
             settings.connection = options.connection;
             settings.source = 'local';
+            if(!this.order.indexOf('local')) this.order.unshift('local')
             let node = settings.connection as GraphNode;
             settings.send = async (message:ServiceMessage) => {
                 if(message.method) {
@@ -188,6 +229,7 @@ export class Router extends Service {
             if(options.connection.nodes.get('open'))
                 settings.service = options.connection;
             settings.source = 'local';
+            if(!this.order.indexOf('local')) this.order.unshift('local')
             let graph = settings.connection as Graph;
             settings.send = async (message:ServiceMessage) => {
                 if(Array.isArray(message.args))
@@ -355,18 +397,7 @@ export class Router extends Service {
         ...args:any[]
     ) => {
         if(typeof router === 'string') {
-            if(this.order) {
-                for(let i = 0; i < this.order.length; i++) {
-                    let k = this.order[i];  
-                    if(this.sources[k][router as string]?.run) {
-                        router = this.sources[k][router as string];
-                        break;
-                    }
-                }
-            }
-            else if (this.connections[router] && this.connections[router].run) {
-                router = this.connections[router];
-            } else return undefined;
+            router = this.getConnection(router);
         }
 
         return new Promise((res,rej) => {
@@ -397,48 +428,17 @@ export class Router extends Service {
         if(typeof receiver === 'string') {
             if(this.sources[receiver]) {
                 rxsrc = receiver;
-                Object.keys(this.sources[receiver]).forEach((k) => {
-                    if(this.sources[receiver as string][k].send) {
-                        receiver = this.sources[receiver as string][k]
-                    }
-                });
-            } else if (this.order) {
-                for(let i = 0; i < this.order.length; i++) {
-                    let k = this.order[i];  
-                    if(this.sources[k][receiver as string]?.run) {
-                        receiver = this.sources[k][receiver as string];
-                        break;
-                    }
-                }
-            } 
-            if (typeof receiver === 'string' && this.connections[receiver] && this.connections[receiver].send) {
-                receiver = this.connections[receiver];
-            } 
-            if(typeof receiver === 'string') return undefined;
+            }
+            receiver = this.getConnection(receiver);
+
         }
 
-        let txsrc;
+        //let txsrc;
         if(typeof transmitter === 'string') {
-            if(this.sources[transmitter]) {
-                txsrc = transmitter;
-                Object.keys(this.sources[transmitter]).forEach((k) => {
-                    if(this.sources[transmitter as string][k].send) {
-                        transmitter = this.sources[transmitter as string][k]
-                    }
-                });
-            } else if (this.order) {
-                for(let i = 0; i < this.order.length; i++) {
-                    let k = this.order[i];  
-                    if(this.sources[k][transmitter as string]?.run) {
-                        transmitter = this.sources[k][transmitter as string];
-                        break;
-                    }
-                }
-            } 
-            if (typeof transmitter === 'string' && this.connections[transmitter] && this.connections[transmitter].send) {
-                transmitter = this.connections[transmitter];
-            } 
-            if(typeof transmitter === 'string') return undefined;
+            // if(this.sources[transmitter]) {
+            //     txsrc = transmitter;
+            // }
+            transmitter = this.getConnection(transmitter);
         }
 
         if((transmitter as ConnectionInfo)?.subscribe && (receiver as ConnectionInfo)?.send) {
