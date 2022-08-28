@@ -29,7 +29,8 @@ export type SSEChannelInfo = {
     run:(route:any, args?:any, method?:string, sessionId?:string, eventName?:string)=>Promise<any>|Promise<any>[],
     subscribe:(route:any, callback?:((res:any)=>void)|string, sessionId?:string)=>Promise<number>|Promise<number>[]|undefined,
     unsubscribe:(route:any, sub:number, sessionId?:string, eventName?:string)=>Promise<boolean>|Promise<boolean>[],
-    terminate:() => boolean
+    terminate:() => boolean,
+    graph:SSEbackend
 } & SSEProps;
 
 export type SSEClientInfo = {
@@ -42,7 +43,8 @@ export type SSEClientInfo = {
     run:(route:any, args?:any, method?:string, eventName?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number, eventName?:string)=>Promise<boolean>,
-    terminate:() => boolean
+    terminate:() => boolean,
+    graph:SSEbackend
 }
 
 export class SSEbackend extends Service {
@@ -151,6 +153,7 @@ export class SSEbackend extends Service {
         sse.subscribe = subscribe;
         sse.unsubscribe = unsubscribe;
         sse.terminate = terminate;
+        sse.graph = this;
 
 
         let onRequest = (req:http.IncomingMessage,response:http.ServerResponse) => {
@@ -190,7 +193,8 @@ export class SSEbackend extends Service {
                                 delete this.eventsources[_id];
                                 delete sse.sessions[_id];
                                 return true;
-                            }
+                            },
+                            graph:this
                         } as SSEClientInfo;
     
                         session.push(JSON.stringify({route:'setId',args:_id})); //associate this user's connection with a server generated id 
@@ -493,7 +497,10 @@ export class SSEbackend extends Service {
     }
 
     routes:Routes = {
-        setupSSE:this.setupSSE,
+        setupSSE:{
+            operator:this.setupSSE,
+            aliases:['open']  
+        },
         terminate:this.terminate,
         transmit:this.transmit,
         request:this.request,

@@ -24,7 +24,8 @@ export type EventSourceInfo = {
     run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
-    terminate:() => void
+    terminate:() => void,
+    graph:SSEfrontend
 } & EventSourceProps
 
 export class SSEfrontend extends Service {
@@ -143,7 +144,8 @@ export class SSEfrontend extends Service {
         sse.subscribe = subscribe;
         sse.unsubscribe = unsubscribe;
         sse.terminate = terminate;
-        
+        sse.graph = this;
+
         this.eventsources[options.url] = sse;
         //console.log(source);
 
@@ -279,13 +281,16 @@ export class SSEfrontend extends Service {
     } 
 
     routes:Routes = {
-        openSSE:this.openSSE,
+        openSSE:{
+            operator:this.openSSE,
+            aliases:['open']
+        },
         request:this.request,
         runRequest:this.runRequest,
         transmit:this.transmit,
         POST:this.POST,
         terminate:this.terminate,
         subscribeToSSE:this.subscribeToSSE, //outgoing subscriptions
-        subscribeSSE:this.subscribeSSE //incoming subcriptions
+        subscribeSSE:this.subscribeSSE, //incoming subcriptions
     }
 }

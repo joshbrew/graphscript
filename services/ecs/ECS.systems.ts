@@ -999,18 +999,15 @@ export const Systems = {
                 if(entity.components) if(!entity.components[this.tag]) continue;
                 if(!entity.mass) continue;
                 
-                let searched = {};
                 let nSearched = 0;
                 nested:
                 for(let j = 0; j < keys.length; j++) {
                     let randKey = keys[Math.floor(Math.random()*keys.length)];
-                    if(searched[randKey]) continue; 
-                    searched[randKey] = true;
-                    const entity2 = entities[randKey];
                     nSearched++;
+                    const entity2 = entities[randKey];
                     if(nSearched > this.frameMax) break nested;
-                    if(entity2.components) if(!entity2.components[this.tag]) continue;
-                    if(!entity2.mass || !entity2.isAttractor) continue;
+                    if(entity2.components) if(!entity2.components[this.tag]) continue nested;
+                    if(!entity2.mass || !entity2.isAttractor) continue nested;
 
                     this.attract(
                         entity,

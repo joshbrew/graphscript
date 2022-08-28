@@ -31,7 +31,8 @@ export type WebRTCInfo = {
     run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>Promise<number>,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
-    terminate:()=>boolean
+    terminate:()=>boolean,
+    graph:WebRTCfrontend
 } & WebRTCProps
 
 //webrtc establishes secure P2P contexts between two users directly.
@@ -200,6 +201,7 @@ export class WebRTCfrontend extends Service {
                 subscribe,
                 unsubscribe,
                 terminate,
+                graph:this,
                 ...options
             }
 
@@ -519,7 +521,10 @@ export class WebRTCfrontend extends Service {
     
     routes:Routes = {
         //just echos webrtc info for server subscriptions to grab onto
-        openRTC:this.openRTC,
+        openRTC:{
+            operator:this.openRTC,
+            aliases:['open']
+        },
         request:this.request,
         runRequest:this.runRequest,
         createStream:this.createStream,
@@ -529,7 +534,8 @@ export class WebRTCfrontend extends Service {
         addDataChannel:this.addDataChannel,
         subscribeRTC:this.subscribeRTC,
         subscribeToRTC:this.subscribeToRTC,
-        unsubscribe:this.unsubscribe
+        unsubscribe:this.unsubscribe,
+        terminate:this.terminate
     }
 
 }

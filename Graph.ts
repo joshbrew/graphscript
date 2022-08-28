@@ -742,7 +742,7 @@ export class GraphNode {
     
     //unsub the callback
     unsubscribe = (sub:number,tag=this.tag) => {
-        this.state.unsubscribeTrigger(tag,sub);
+        return this.state.unsubscribeTrigger(tag,sub);
     }
 
     //append child
@@ -1303,7 +1303,7 @@ export class Graph {
     }
 
     unsubscribe = (tag:string,sub:number) => {
-        this.state.unsubscribeTrigger(tag,sub);
+        return this.state.unsubscribeTrigger(tag,sub);
     }
 
     //subscribe a node to this node that isn't a child of this node

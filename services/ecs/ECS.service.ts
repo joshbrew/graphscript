@@ -92,16 +92,18 @@ export class ECSService extends Service {
             if(this.systems[k]) {
                 if(filter) {
                     if(debug) debug = performance.now();
-                    (this.systems[k] as GraphNode).run(
-                        this.entityMap.get(k)
-                    );
+                    if(this.entityKeyMap.get(k).length > 0)
+                        (this.systems[k] as GraphNode).run(
+                            this.entityMap.get(k)
+                        );
                     if(debug) 
                         console.log( 'system', k, 'took', performance.now()-debug,'ms for', Object.keys(this.entityMap.get(k)).length, 'entities');
                 } else {
                     if(debug) debug = performance.now();
-                    (this.systems[k] as GraphNode).run(
-                        this.entities
-                    ); //unfiltered, it's faster to handle this in the system with lots of entities
+                    if(this.entityKeyMap.get(k).length > 0)
+                        (this.systems[k] as GraphNode).run(
+                            this.entities
+                        ); //unfiltered, it's faster to handle this in the system with lots of entities
                     if(debug) 
                         console.log( 'system', k, 'took', performance.now()-debug,'ms for', Object.keys(this.entities).length, 'entities');
                 }
@@ -114,15 +116,27 @@ export class ECSService extends Service {
     animate = (filter:boolean=true,order?:string[]) => {
         if(this.animating === false) {
             this.animating = true;
-            let anim = () => {
-                requestAnimationFrame(()=>{
-                    if(this.animating){ 
-                        this.updateEntities(order,filter);
-                        anim();
-                    }
-                });
+            if(typeof requestAnimationFrame !== 'undefined') {
+                let anim = () => {
+                    requestAnimationFrame(()=>{
+                        if(this.animating){ 
+                            this.updateEntities(order,filter);
+                            anim();
+                        }
+                    });
+                }
+                anim();
+            } else {
+                let looper = () => {
+                    setTimeout(async ()=>{
+                        if(this.animating){ 
+                            this.updateEntities(order,filter);
+                            looper();
+                        }
+                    },10);
+                }
+                looper();
             }
-            anim();
         }
     }
 

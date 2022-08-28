@@ -30,7 +30,9 @@ export type ServerProps = {
 
 export type ServerInfo = {
     server:https.Server|http.Server,
-    address:string
+    address:string,
+    terminate:()=>void,
+    graph:HTTPbackend
 } & ServerProps
 
 export type ReqOptions = {
@@ -156,7 +158,7 @@ export class HTTPbackend extends Service {
             type:'httpserver',
             address,
             ...options
-        }
+        } as ServerInfo
 
         if(!requestListener) requestListener =  (request:http.IncomingMessage,response:http.ServerResponse) => { 
             
@@ -198,6 +200,10 @@ export class HTTPbackend extends Service {
         );
 
         served.server = server;
+        served.terminate = () => {
+            this.terminate(served);
+        }
+        served.service = this;
 
         // server.on('upgrade', (request, socket, head) => {
         //     this.onUpgrade(request, socket, head);
@@ -215,7 +221,7 @@ export class HTTPbackend extends Service {
                 port,host,
                 ()=>{onStarted(); resolve(served);}
             );
-        });
+        }) as Promise<ServerInfo> ;
     }
 
     //secure server
@@ -254,7 +260,7 @@ export class HTTPbackend extends Service {
             type:'httpserver',
             address:`${host}:${port}`,
             ...options
-        }
+        } as ServerInfo;
 
         //default requestListener
         if(!requestListener) requestListener = (request:http.IncomingMessage,response:http.ServerResponse) => { 
@@ -299,6 +305,10 @@ export class HTTPbackend extends Service {
         );
 
         served.server = server;
+        served.terminate = () => {
+            this.terminate(served);
+        }
+        served.service = this;
         
         // server.on('upgrade', (request, socket, head) => {
         //     this.onUpgrade(request, socket, head);
@@ -316,7 +326,7 @@ export class HTTPbackend extends Service {
                 port,host,
                 ()=>{onStarted(); resolve(served); }
             );
-        });
+        }) as Promise<ServerInfo>;
     }
 
     transmit = ( //generalized http request. The default will try to post back to the first server in the list
@@ -896,7 +906,10 @@ export class HTTPbackend extends Service {
     }
 
     routes:Routes={
-        setupServer:this.setupServer,
+        setupServer:{
+            operator:this.setupServer,
+            aliases:['open']
+        },
         terminate:(path:string|number)=>{
             if(path) for(const address in this.servers) {
                 if(address.includes(`${path}`)) {

@@ -32,7 +32,8 @@ export type WorkerInfo = {
     run:(route:any, args?:any, transfer?:any, method?:string)=>Promise<any>
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
-    terminate:()=>boolean
+    terminate:()=>boolean,
+    graph:WorkerService
 } & WorkerProps & WorkerRoute
 
 //this spawns the workers
@@ -271,6 +272,7 @@ export class WorkerService extends Service {
             subscribe,
             unsubscribe,
             terminate,
+            graph:this,
             ...options
         }
 
@@ -541,14 +543,18 @@ export class WorkerService extends Service {
 
 
     routes:Routes={
-        addWorker:this.addWorker,
+        addWorker:{
+            operator:this.addWorker,
+            aliases:['open']
+        },
         toObjectURL:this.toObjectURL,
         request:this.request,
         runRequest:this.runRequest,
         establishMessageChannel:this.establishMessageChannel,
         subscribeWorker:this.subscribeWorker,
         subscribeToWorker:this.subscribeToWorker,
-        unsubscribe:this.unsubscribe
+        unsubscribe:this.unsubscribe,
+        terminate:this.terminate
     }
 
 }

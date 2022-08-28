@@ -24,7 +24,8 @@ export type WebSocketInfo = {
     run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
-    terminate:()=>boolean
+    terminate:()=>boolean,
+    graph:WSSfrontend
 } & WebSocketProps
 
 //browser side websockets
@@ -185,6 +186,7 @@ export class WSSfrontend extends Service {
             subscribe,
             unsubscribe,
             terminate,
+            graph:this,
             ...options
         };
 
@@ -314,7 +316,10 @@ export class WSSfrontend extends Service {
     }
 
     routes:Routes = {
-        openWS:this.openWS,
+        openWS:{
+            operator:this.openWS,
+            aliases:['open']
+        },
         request:this.request,
         runRequest:this.runRequest,
         terminate:this.terminate,

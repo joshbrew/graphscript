@@ -30,7 +30,8 @@ export type SocketServerInfo = {
     run:(route:any, args?:any, method?:string, socketId?:string)=>Promise<any>|Promise<any>[],
     subscribe:(route:any, callback?:((res:any)=>void)|string, socketId?:string)=>Promise<number>|Promise<number>[]|undefined,
     unsubscribe:(route:any, sub:number,socketId?:string)=>Promise<boolean>|Promise<boolean>[],
-    terminate:(socketId?:string)=>boolean
+    terminate:(socketId?:string)=>boolean,
+    graph:WSSbackend
 } & SocketServerProps;
 
 export type SocketProps = {
@@ -59,7 +60,8 @@ export type SocketInfo = {
     run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
-    terminate:()=>void
+    terminate:()=>void,
+    graph:WSSbackend
 } & SocketProps;
 
 //server side (node) websockets
@@ -247,6 +249,7 @@ export class WSSbackend extends Service {
         this.servers[address].subscribe = subscribe;
         this.servers[address].unsubscribe = unsubscribe;
         this.servers[address].terminate = terminate;
+        this.servers[address].graph = this;
 
         return this.servers[address];
     }
@@ -368,6 +371,7 @@ export class WSSbackend extends Service {
             subscribe,
             unsubscribe,
             terminate,
+            graph:this,
             ...options
         }
 
@@ -557,6 +561,10 @@ export class WSSbackend extends Service {
     }
 
     routes:Routes={
+        open:(options:SocketServerProps|SocketProps) => {
+            if((options as SocketServerProps).server) return this.setupWSS(options as SocketServerProps);
+            else return this.openWS(options as SocketProps);
+        },
         setupWSS:this.setupWSS,
         openWS:this.openWS,
         closeWS:this.closeWS,
