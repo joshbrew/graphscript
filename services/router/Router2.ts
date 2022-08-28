@@ -447,22 +447,12 @@ export class Router extends Service {
                     (res:any) => {
                         if(!this.connections[(receiver as any)._id] && rxsrc) {
                             if(this.sources[rxsrc]) {
-                                if(this.order) {
-                                    for(let i = 0; i < this.order.length; i++) {
-                                        let k = this.order[i];  
-                                        if(this.sources[receiver as string][k]?.send) {
-                                            receiver = this.sources[receiver as string][k];
-                                            break;
-                                        }
+                                rxsrc = receiver;
+                                Object.keys(this.sources[rxsrc]).forEach((k) => {
+                                    if(this.sources[receiver as string][k].send) {
+                                        receiver = this.sources[receiver as string][k]
                                     }
-                                }
-                                else {
-                                    for(const key in this.sources[rxsrc]) {
-                                        if(this.sources[rxsrc].send) {
-                                            receiver = this.sources[rxsrc][key] as ConnectionInfo;
-                                        }
-                                    }
-                                }
+                                });
                             }
                         }
                         if(this.connections[(receiver as any)._id]) //if connection is still registered
