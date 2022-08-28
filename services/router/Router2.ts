@@ -288,15 +288,16 @@ export class Router extends Service {
         includeClassName?:boolean,
         routeFormat?:string,
         syncServices?:boolean,
-        order?:string[]
+        source?:string,
+        order?:string[],
     ) => {
         this.load(service,includeClassName,routeFormat,this.customRoutes,this.customChildren);
         this.services[service.name] = service;
         if(connections) {
-            if(typeof connections === 'string') this.addConnections(service,connections);
+            if(typeof connections === 'string') this.addConnections(service,connections,source);
             else {
                 for(const c in connections) {
-                    this.addConnections(service,c);
+                    this.addConnections(service,c,source);
                 }
             }
         }
@@ -307,13 +308,14 @@ export class Router extends Service {
 
     addConnections = ( //sync connection objects that match our boilerplate (send/request/terminate etc) for quicker piping
         service:Service,
-        connectionsKey:any
+        connectionsKey:any,
+        source?:string
     ) => {
         if(connectionsKey && service[connectionsKey]) {
             let newConnections = {};
             for(const key in service[connectionsKey]) {
                 if(!this.connections[key]) 
-                    newConnections[key] = this.addConnection({connection:service[connectionsKey][key]});
+                    newConnections[key] = this.addConnection({connection:service[connectionsKey][key]},source);
             }
             return newConnections;
         }
