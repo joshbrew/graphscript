@@ -1,5 +1,5 @@
-import { DataTablet, DS } from 'brainsatplay-data'
-import { Data, ProfileStruct, AuthorizationStruct, GroupStruct, DataStruct, EventStruct, ChatroomStruct, CommentStruct, Struct } from 'brainsatplay-data/dist/src/types';
+import { DataTablet, DS } from './datastructures/index'
+import { Data, ProfileStruct, AuthorizationStruct, GroupStruct, DataStruct, EventStruct, ChatroomStruct, CommentStruct, Struct } from './datastructures/types';
 import { UserProps } from '../../routers/users/User.router';
 import { Routes, Service, ServiceOptions } from '../Service';
 
@@ -8,7 +8,7 @@ export const randomId = (prefix?) => ((prefix) ? `${prefix}` : '')  + Math.floor
 export const pseudoObjectId = (m = Math, d = Date, h = 16, s = s => m.floor(s).toString(h)) => //the fuck?
     s(d.now() / 1000) + ' '.repeat(h).replace(/./g, () => s(m.random() * h))
 
-export type UserStruct = UserProps & ProfileStruct;
+export type UserStruct = {request:any, send:any} & ProfileStruct;  //e.g. assign a SocketInfo object to your profile struct to use the connectivity features
 
 //intended for use with a UserRouter
 

@@ -74,36 +74,38 @@ export class Router extends Service {
 
     order:string[]; //execute connections in preferred order
 
-    constructor(options:RouterOptions){
+    constructor(options?:RouterOptions){
         super(options);
-        if(options.order) this.order = options.order;
+        if(options) {
+            if(options.order) this.order = options.order;
 
-        if(options.services) {
-            for(const key in options.services) {
-                if(options.services[key] instanceof Service) {
-                    options.services[key].service.name = key; options.services[key].service.tag = key;
-                    this.addService(options.services[key].service, options.services[key].connections, options.includeClassName, options.routeFormat, options.syncServices);
-                } else if (typeof options.services[key] === 'function') {
-                    let service = options.services[key]({name:key}) as Service; //instantiate a class prototype
-                    service.name = key; service.tag = key;
-                    if(service) this.addService(service, service.connections, options.includeClassName, options.routeFormat, options.syncServices);
-                }
-                else if(options.services[key].service instanceof Service) {
-                    options.services[key].service.name = key; options.services[key].service.tag = key;
-                    this.addService(options.services[key].service, undefined, options.includeClassName, options.routeFormat, options.syncServices);
-                    if(options.services[key].connections) {
-                        if(Array.isArray(options.services[key].connections)) {
-                            (options.services[key].connections as any).forEach((k) => {
-                                this.addConnections((options.services as any)[key].service,k);
-                            })
-                        } else this.addConnections(options.services[key].service,options.services[key].connections);
+            if(options.services) {
+                for(const key in options.services) {
+                    if(options.services[key] instanceof Service) {
+                        options.services[key].service.name = key; options.services[key].service.tag = key;
+                        this.addService(options.services[key].service, options.services[key].connections, options.includeClassName, options.routeFormat, options.syncServices);
+                    } else if (typeof options.services[key] === 'function') {
+                        let service = options.services[key]({name:key}) as Service; //instantiate a class prototype
+                        service.name = key; service.tag = key;
+                        if(service) this.addService(service, service.connections, options.includeClassName, options.routeFormat, options.syncServices);
+                    }
+                    else if(options.services[key].service instanceof Service) {
+                        options.services[key].service.name = key; options.services[key].service.tag = key;
+                        this.addService(options.services[key].service, undefined, options.includeClassName, options.routeFormat, options.syncServices);
+                        if(options.services[key].connections) {
+                            if(Array.isArray(options.services[key].connections)) {
+                                (options.services[key].connections as any).forEach((k) => {
+                                    this.addConnections((options.services as any)[key].service,k);
+                                })
+                            } else this.addConnections(options.services[key].service,options.services[key].connections);
+                        }
                     }
                 }
             }
-        }
-        if(options.connections){
-            for(const key in options.connections) {
-                this.addConnection({connection:options.connections[key], service:options.connections[key].service});
+            if(options.connections){
+                for(const key in options.connections) {
+                    this.addConnection({connection:options.connections[key], service:options.connections[key].service});
+                }
             }
         }
     }

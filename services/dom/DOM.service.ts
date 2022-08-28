@@ -110,7 +110,11 @@ export class DOMService extends Service {
         }
     }
 
-    constructor(options?:ServiceOptions,parentNode?:HTMLElement,interpreters?:{[key:string]:(template:string,options:ComponentProps) => void}) {
+    constructor(
+        options?:ServiceOptions,
+        parentNode?:HTMLElement,
+        interpreters?:{[key:string]:(template:string,options:ComponentProps) => void}
+    ) {
             super({props:options?.props,name:options?.name ? options.name : `dom${Math.floor(Math.random()*1000000000000000)}`});
             
             if(options?.parentNode) parentNode = options.parentNode;
