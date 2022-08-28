@@ -158,7 +158,7 @@ export class Router extends Service {
 
         if(options.connection instanceof GraphNode) {
             settings.connection = options.connection;
-            settings.source = 'local';
+            if(!settings.source) settings.source = 'local';
             if(!this.order.indexOf('local')) this.order.unshift('local')
             let node = settings.connection as GraphNode;
             settings.send = async (message:ServiceMessage) => {
@@ -228,7 +228,7 @@ export class Router extends Service {
         } else if (options.connection instanceof Graph) {
             if(options.connection.nodes.get('open'))
                 settings.service = options.connection;
-            settings.source = 'local';
+            if(!settings.source) settings.source = 'local';
             if(!this.order.indexOf('local')) this.order.unshift('local')
             let graph = settings.connection as Graph;
             settings.send = async (message:ServiceMessage) => {
@@ -483,6 +483,7 @@ export class Router extends Service {
     }
 
     routes:Routes={
+        getConnection:this.getConnection,
         addConnection:this.addConnection,
         removeConnection:this.removeConnection,
         addService:this.addService,
