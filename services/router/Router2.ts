@@ -322,6 +322,7 @@ export class Router extends Service {
     openConnection = (
         service:string|Service, //the service we are calling
         options:{[key:string]:any},  //all of the creation function start with objects in our service library 
+        source?:string,
         ...args:any[] //potentially other arguments in custom services
     ) => {
         if(typeof service === 'string') {
@@ -331,10 +332,10 @@ export class Router extends Service {
             let connection = service.run('open', options, ...args);
             if(connection instanceof Promise) {
                 connection.then((info) => {
-                    this.addConnection({connection:info, service});
+                    this.addConnection({connection:info, service}, source);
                 })
             } else if(connection) {
-                this.addConnection({connection, service});
+                this.addConnection({connection, service}, source);
             }
         }
     }
