@@ -47,7 +47,8 @@ export type RouterOptions = ServiceOptions & {
             connectionKeys:string|string[]
         }
     },
-    syncServices?:boolean
+    syncServices?:boolean,
+    order?:string[]
 }
 
 export class Router extends Service {
@@ -71,7 +72,7 @@ export class Router extends Service {
 
     order:string[]=[]; //execute connections in preferred order
 
-    constructor(options:ServiceOptions){
+    constructor(options:RouterOptions){
         super(options);
         if(options.order) this.order = options.order;
 
@@ -80,8 +81,8 @@ export class Router extends Service {
                 this.addService(options.services[key].service, undefined, options.includeClassName, options.routeFormat, options.syncServices);
                 if(options.services[key].connectionKeys) {
                     if(Array.isArray(options.services[key].connectionKeys)) {
-                        options.services[key].connectionKeys.forEach((k) => {
-                            this.addConnections(options.services[key].service,k);
+                        (options.services[key].connectionKeys as any).forEach((k) => {
+                            this.addConnections((options.services as any)[key].service,k);
                         })
                     } else this.addConnections(options.services[key].service,options.services[key].connectionKeys);
                 }
