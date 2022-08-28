@@ -338,17 +338,16 @@ export class Router extends Service {
         ...args:any[]
     ) => {
         if(typeof router === 'string') {
-            if(this.sources[router]) {
-                if(this.order) {
-                    for(let i = 0; i < this.order.length; i++) {
-                        let k = this.order[i];  
-                        if(this.sources[router as string][k]?.run) {
-                            router = this.sources[router as string][k];
-                            break;
-                        }
+            if(this.order) {
+                for(let i = 0; i < this.order.length; i++) {
+                    let k = this.order[i];  
+                    if(this.sources[k][router as string]?.run) {
+                        router = this.sources[k][router as string];
+                        break;
                     }
                 }
-            } else if (this.connections[router] && this.connections[router].run) {
+            }
+            else if (this.connections[router] && this.connections[router].run) {
                 router = this.connections[router];
             } else return undefined;
         }
@@ -381,48 +380,48 @@ export class Router extends Service {
         if(typeof receiver === 'string') {
             if(this.sources[receiver]) {
                 rxsrc = receiver;
-                if(this.order) {
-                    for(let i = 0; i < this.order.length; i++) {
-                        let k = this.order[i];  
-                        if(this.sources[receiver as string][k]?.send) {
-                            receiver = this.sources[receiver as string][k];
-                            break;
-                        }
+                Object.keys(this.sources[receiver]).forEach((k) => {
+                    if(this.sources[receiver as string][k].send) {
+                        receiver = this.sources[receiver as string][k]
                     }
-                }else {
-                    Object.keys(this.sources[receiver]).forEach((k) => {
-                        if(this.sources[receiver as string][k].send) {
-                            receiver = this.sources[receiver as string][k]
-                        }
-                    });
+                });
+            } else if (this.order) {
+                for(let i = 0; i < this.order.length; i++) {
+                    let k = this.order[i];  
+                    if(this.sources[k][receiver as string]?.run) {
+                        receiver = this.sources[k][receiver as string];
+                        break;
+                    }
                 }
-            } else if (this.connections[receiver] && this.connections[receiver].send) {
+            } 
+            if (typeof receiver === 'string' && this.connections[receiver] && this.connections[receiver].send) {
                 receiver = this.connections[receiver];
-            } else return undefined;
+            } 
+            if(typeof receiver === 'string') return undefined;
         }
 
         let txsrc;
         if(typeof transmitter === 'string') {
             if(this.sources[transmitter]) {
                 txsrc = transmitter;
-                if(this.order) {
-                    for(let i = 0; i < this.order.length; i++) {
-                        let k = this.order[i];  
-                        if(this.sources[transmitter as string][k]?.subscribe) {
-                            transmitter = this.sources[transmitter as string][k];
-                            break;
-                        }
+                Object.keys(this.sources[transmitter]).forEach((k) => {
+                    if(this.sources[transmitter as string][k].send) {
+                        transmitter = this.sources[transmitter as string][k]
                     }
-                } else {
-                    Object.keys(this.sources[transmitter]).forEach((k) => {
-                        if(this.sources[transmitter as string][k].send) {
-                            transmitter = this.sources[transmitter as string][k]
-                        }
-                    });
+                });
+            } else if (this.order) {
+                for(let i = 0; i < this.order.length; i++) {
+                    let k = this.order[i];  
+                    if(this.sources[k][transmitter as string]?.run) {
+                        transmitter = this.sources[k][transmitter as string];
+                        break;
+                    }
                 }
-            } else if (this.connections[transmitter]) {
+            } 
+            if (typeof transmitter === 'string' && this.connections[transmitter] && this.connections[transmitter].send) {
                 transmitter = this.connections[transmitter];
-            } else return undefined;
+            } 
+            if(typeof transmitter === 'string') return undefined;
         }
 
         if((transmitter as ConnectionInfo)?.subscribe && (receiver as ConnectionInfo)?.send) {
