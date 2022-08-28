@@ -158,8 +158,6 @@ export class Router extends Service {
 
         if(options.connection instanceof GraphNode) {
             settings.connection = options.connection;
-            if(!settings.source) settings.source = 'local';
-            if(!this.order.indexOf('local')) this.order.unshift('local')
             let node = settings.connection as GraphNode;
             settings.send = async (message:ServiceMessage) => {
                 if(message.method) {
@@ -228,8 +226,6 @@ export class Router extends Service {
         } else if (options.connection instanceof Graph) {
             if(options.connection.nodes.get('open'))
                 settings.service = options.connection;
-            if(!settings.source) settings.source = 'local';
-            if(!this.order.indexOf('local')) this.order.unshift('local')
             let graph = settings.connection as Graph;
             settings.send = async (message:ServiceMessage) => {
                 if(Array.isArray(message.args))
@@ -291,9 +287,13 @@ export class Router extends Service {
             if(options.service) {            
                 settings.service = options.service;
             } else if(c.graph) settings.service = c.graph;
-            if(!settings.source && options.service) {
-                settings.source = typeof options.service === 'string' ? options.service : options.service.name;
-            }
+        }
+
+        if(!settings.source && options.service) {
+            settings.source = typeof options.service === 'string' ? options.service : options.service.name;
+        } else if (!settings.source && (settings.connection instanceof GraphNode || settings.connection instanceof Graph)) {
+            settings.source = 'local';
+            if(!this.order.indexOf('local')) this.order.unshift('local'); 
         }
 
         if(!settings._id) settings._id = options._id ? options._id : `connection${Math.floor(Math.random()*1000000000000000)}`;
