@@ -568,7 +568,7 @@ export class Router extends Service {
                 if(!this.connections[key]) 
                     {
                         newConnections[key] = this.addConnection({connection:service[connectionsKey][key], service},source);
-                        newConnections.connectionType = connectionsKey;
+                        newConnections[key].connectionType = connectionsKey;
                     }
             }
             return newConnections;
