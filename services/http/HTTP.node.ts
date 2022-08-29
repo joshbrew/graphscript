@@ -25,12 +25,18 @@ export type ServerProps = {
     protocol?:'http'|'https',
     type?:'httpserver'|string,
     keepState?:boolean, //setState whenever a route is run? State will be available at the address (same key of the object storing it here)
+    onopen?:(served:ServerInfo)=>void, //onopen callback
+    onclose?:(served:ServerInfo)=>void, //server close callback
+    _id?:string,
     [key:string]:any
 }
 
 export type ServerInfo = {
     server:https.Server|http.Server,
-    address:string
+    address:string,
+    terminate:()=>void,
+    graph:HTTPbackend,
+    _id:string
 } & ServerProps
 
 export type ReqOptions = {
@@ -156,7 +162,7 @@ export class HTTPbackend extends Service {
             type:'httpserver',
             address,
             ...options
-        }
+        } as ServerInfo
 
         if(!requestListener) requestListener =  (request:http.IncomingMessage,response:http.ServerResponse) => { 
             
@@ -198,12 +204,17 @@ export class HTTPbackend extends Service {
         );
 
         served.server = server;
+        served.terminate = () => {
+            this.terminate(served);
+        }
+        served.service = this;
 
         // server.on('upgrade', (request, socket, head) => {
         //     this.onUpgrade(request, socket, head);
         // });
 
         this.servers[address] = served;
+        served._id = options._id ? options._id : address;
 
         //SITE AVAILABLE ON PORT:
         return new Promise((resolve,reject) => {
@@ -213,9 +224,13 @@ export class HTTPbackend extends Service {
             });
             server.listen( 
                 port,host,
-                ()=>{onStarted(); resolve(served);}
+                ()=>{
+                    onStarted(); 
+                    if(served.onopen) served.onopen(served);
+                    resolve(served);
+                }
             );
-        });
+        }) as Promise<ServerInfo> ;
     }
 
     //secure server
@@ -249,12 +264,14 @@ export class HTTPbackend extends Service {
 
         if(!('keepState' in options)) options.keepState = true; //default true
 
+        const address = `${host}:${port}`;
+
         const served = {
             server:undefined as any,
             type:'httpserver',
-            address:`${host}:${port}`,
+            address,
             ...options
-        }
+        } as ServerInfo;
 
         //default requestListener
         if(!requestListener) requestListener = (request:http.IncomingMessage,response:http.ServerResponse) => { 
@@ -299,12 +316,17 @@ export class HTTPbackend extends Service {
         );
 
         served.server = server;
+        served.terminate = () => {
+            this.terminate(served);
+        }
+        served.service = this;
         
         // server.on('upgrade', (request, socket, head) => {
         //     this.onUpgrade(request, socket, head);
         // });
 
-        this.servers[`${host}:${port}`] = served;
+        this.servers[address] = served;
+        served._id = options._id ? options._id : address;
 
         //SITE AVAILABLE ON PORT:
         return new Promise((resolve,reject) => {
@@ -314,9 +336,13 @@ export class HTTPbackend extends Service {
             })
             server.listen( 
                 port,host,
-                ()=>{onStarted(); resolve(served); }
+                ()=>{
+                    onStarted(); 
+                    if(served.onopen) served.onopen(served);
+                    resolve(served); 
+                }
             );
-        });
+        }) as Promise<ServerInfo>;
     }
 
     transmit = ( //generalized http request. The default will try to post back to the first server in the list
@@ -783,11 +809,12 @@ export class HTTPbackend extends Service {
         });
     }
 
-    terminate = (served:string|{server:http.Server|https.Server}) => {
+    terminate = (served:string|ServerInfo) => {
         if(typeof served === 'string') served = this.servers[served];
 
         if(typeof served === 'object') {
             served.server.close();
+            if(served.onclose) served.onclose(served);
         }
     }
 
@@ -896,7 +923,10 @@ export class HTTPbackend extends Service {
     }
 
     routes:Routes={
-        setupServer:this.setupServer,
+        setupServer:{
+            operator:this.setupServer,
+            aliases:['open']
+        },
         terminate:(path:string|number)=>{
             if(path) for(const address in this.servers) {
                 if(address.includes(`${path}`)) {

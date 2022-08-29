@@ -24,6 +24,8 @@ const router = new Router([
 
 console.log(router)
 
+document.body.style.height = '100vh'
+
 let ret = router.load({
     'main':{
         tagName:'div',
@@ -38,13 +40,14 @@ let ret = router.load({
                 onrender:(elm,info)=>{
                     const renderer = workers.addWorker({url:gsworker}) as WorkerInfo;
                     const entities = workers.addWorker({url:gsworker}) as WorkerInfo;
+                    const entities2 = workers.addWorker({url:gsworker}) as WorkerInfo;
 
                     if(renderer) {
 
                         let entitySettings = {
                             0:{
                                 prototype:{
-                                    tag:'particle',
+                                    tag:'boid',
                                     boundingBox:{
                                         bot:0,
                                         top:300,
@@ -52,6 +55,10 @@ let ret = router.load({
                                         right:300,
                                         front:0,
                                         back:300  
+                                    },
+                                    boid:{
+                                        groupSize:1,
+                                        searchLimit:1
                                     },
                                     maxSpeed:30
                                 },
@@ -62,14 +69,132 @@ let ret = router.load({
                                     nbody:false, //gravitational math
                                     movement:true, //force -> accel -> velocity -> position updates
                                 },
-                                ct: 1000
+                                ct: 5000
+                            },
+                            1:{
+                                prototype:{
+                                    gravity:0,
+                                    drag:0.9,
+                                    boundingBox:{
+                                        bot:0,
+                                        top:300,
+                                        left:0,
+                                        right:300,
+                                        front:0,
+                                        back:300  
+                                    },
+                                    attractorGroup:1,
+                                    attractorGroupRules:{
+                                        1:100,
+                                        2:200,
+                                        3:1000,
+                                        4:-500
+                                    }
+                                },
+                                components:{
+                                    //boids:true
+                                    //collision:true,
+                                    collider:true,
+                                    nbody:true,
+                                    movement:true
+                                },
+                                ct: 100
+                            },
+                            2:{
+                                prototype:{
+                                    gravity:0,
+                                    drag:0.9,
+                                    boundingBox:{
+                                        bot:0,
+                                        top:300,
+                                        left:0,
+                                        right:300,
+                                        front:0,
+                                        back:300  
+                                    },
+                                    attractorGroup:2,
+                                    attractorGroupRules:{
+                                        1:-100,
+                                        2:200,
+                                        3:-100,
+                                        4:600
+                                    }
+                                },
+                                components:{
+                                    //boids:true
+                                    //collision:true,
+                                    collider:true,
+                                    nbody:true,
+                                    movement:true
+                                },
+                                ct: 100
+                            },
+                            3:{
+                                prototype:{
+                                    gravity:0,
+                                    drag:0.9,
+                                    boundingBox:{
+                                        bot:0,
+                                        top:300,
+                                        left:0,
+                                        right:300,
+                                        front:0,
+                                        back:300  
+                                    },
+                                    attractorGroup:3,
+                                    attractorGroupRules:{
+                                        1:0,
+                                        2:-800,
+                                        3:30,
+                                        4:1000
+                                    }
+                                },
+                                components:{
+                                    //boids:true
+                                    //collision:true,
+                                    collider:true,
+                                    nbody:true,
+                                    movement:true
+                                },
+                                ct: 100
+                            },
+                            4:{
+                                prototype:{
+                                    gravity:0,
+                                    drag:0.9,
+                                    boundingBox:{
+                                        bot:0,
+                                        top:300,
+                                        left:0,
+                                        right:300,
+                                        front:0,
+                                        back:300  
+                                    },
+                                    attractorGroup:4,
+                                    attractorGroupRules:{
+                                        1:-400,
+                                        2:-200,
+                                        3:-2000,
+                                        4:1000
+                                    }
+                                },
+                                components:{
+                                    //boids:true,
+                                    //collision:true,
+                                    collider:true,
+                                    nbody:true,
+                                    movement:true
+                                },
+                                ct: 100
                             }
                         }
     
                         const portId = workers.establishMessageChannel(renderer.worker,entities.worker);
-    
+                        const port2Id = workers.establishMessageChannel(renderer.worker,entities2.worker);
+                        
                         info.renderer = renderer;
                         info.entities = entities;
+                        info.entities2 = entities2;
     
                         //console.log(renderer);
     
@@ -88,17 +213,17 @@ let ret = router.load({
                                         entityCt += self.graph.entitySettings[key].ct;
                                     }
                                     
-                                    self.positions = new Float32Array(entityCt*3); //x,y,z buffer, idx*3 = entity[idx]
+                                    //self.positions = new Float32Array(entityCt*3); //x,y,z buffer, idx*3 = entity[idx]
 
                                     //----------- basic threejs scene setup ------------
                                     const THREE = self.THREE;
                                     const OrbitControls = self.OrbitControls;
 
-                                    const renderer = new THREE.WebGLRenderer({canvas});
+                                    const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
                                     renderer.setPixelRatio(Math.min(canvas.clientWidth/canvas.clientHeight,2));
 
                                     const fov = 75;
-                                    const aspect = 2;
+                                    const aspect = canvas.clientWidth / canvas.clientHeight;
                                     const near = 0.01;
                                     const far = 1000;
 
@@ -167,7 +292,7 @@ let ret = router.load({
                                     const boids = new Array(nBoids);
 
                                     let geometry = new THREE.BufferGeometry();
-                                    geometry.setAttribute('position', new THREE.Float32BufferAttribute(self.positions, 3) )
+                                    geometry.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(entityCt*3), 3) )
                                     geometry.setAttribute('color', new THREE.Float32BufferAttribute( colors, 3 ));
 
                                     let pointmat = new THREE.PointsMaterial(
@@ -218,14 +343,16 @@ let ret = router.load({
                                         if(data.entityId > 0) {
                                             let n = 0;
                                             while(n !== data.entityId) {
-                                                offset += globalThis.entitySettings[n].ct;
+                                                offset += self.graph.entitySettings[n].ct*3;
                                                 n++;
                                             }
                                         }
 
-                                        (self.positions as Float32Array).set(data.positions, offset);
+                                        //console.log(data);
+
+                                        //(self.positions as Float32Array).set(data.positions, offset);
                                     
-                                        self.points.geometry.attributes.position.array.set(self.positions);
+                                        self.points.geometry.attributes.position.array.set(data.positions, offset);
                                         self.points.geometry.attributes.position.needsUpdate = true;
 
                                         //console.log(self.points.geometry.attributes.position.array);
@@ -248,23 +375,30 @@ let ret = router.load({
                         );
 
 
+                        function bufferPositions(entities) { // SCOPE REFACTOR: Might actually need to pass self and origin...
+
+                            let positionBuffer = this.graph.run(
+                                'bufferValues',
+                                entities,
+                                'position',
+                                ['x','y','z'] //or for arrays could be the array values
+                            );
+
+                            return {
+                                entityId:this.graph.entityId, 
+                                positions:positionBuffer
+                            }; //typedarrays are automatically transferred
+                        };
 
                         workers.transferFunction(
                             entities, 
-                            function bufferPositions(entities) { // SCOPE REFACTOR: Might actually need to pass self and origin...
-
-                                let positionBuffer = this.graph.run(
-                                    'bufferValues',
-                                    entities,
-                                    'position',
-                                    ['x','y','z'] //or for arrays could be the array values
-                                );
-
-                                return {
-                                    entityId:this.graph.entityId, 
-                                    positions:positionBuffer
-                                }; //typedarrays are automatically transferred
-                            },
+                            bufferPositions,
+                            'bufferPositions'
+                        );
+                        
+                        workers.transferFunction(
+                            entities2, 
+                            bufferPositions,
                             'bufferPositions'
                         );
 
@@ -273,9 +407,21 @@ let ret = router.load({
                             'bufferPositions'
                         ]); //i/o subscription
 
+                        entities2.post('subscribe',[
+                            'movement',
+                            'bufferPositions'
+                        ]); //i/o subscription
+
+
                         renderer.post('subscribeToWorker',[
                             'bufferPositions',
                             portId,
+                            'updateCanvas'
+                        ]);
+
+                        renderer.post('subscribeToWorker',[
+                            'bufferPositions',
+                            port2Id,
                             'updateCanvas'
                         ]);
 
@@ -285,16 +431,49 @@ let ret = router.load({
                             entitySettings[0].components,
                             entitySettings[0].ct
                         ]).then((r) => {
-                            //e.g. for each entity group, set up a thread to handle its component updates
-                            entities.post('setValue',['entityId',0]);
-                            entities.post('animateEntities');
+                           
                         });
 
+                        entities2.run('addEntities',[
+                            entitySettings[1].prototype,
+                            entitySettings[1].components,
+                            entitySettings[1].ct
+                        ]).then((r) => {
+                            
+                        });
+                        entities2.run('addEntities',[
+                            entitySettings[2].prototype,
+                            entitySettings[2].components,
+                            entitySettings[2].ct
+                        ]).then((r) => {
+                            
+                        });
+                        entities2.run('addEntities',[
+                            entitySettings[3].prototype,
+                            entitySettings[3].components,
+                            entitySettings[3].ct
+                        ]).then((r) => {
+                            
+                        });
+                        entities2.run('addEntities',[
+                            entitySettings[4].prototype,
+                            entitySettings[4].components,
+                            entitySettings[4].ct
+                        ]).then((r) => {
+                            
+                        });
+
+                        entities.post('setValue',['entityId',0]);
+                        entities.post('animateEntities');
+
+                        entities2.post('setValue',['entityId',1]);
+                        entities2.post('animateEntities');
                     }
                 },
                 onremove:(elm,info)=>{
                     workers.terminate(info.renderer._id);
                     workers.terminate(info.entities._id);
+                    workers.terminate(info.entities2._id);
                 }        
             } as ElementProps      
         } 

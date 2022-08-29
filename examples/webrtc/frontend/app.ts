@@ -23,11 +23,11 @@ const router = new UserRouter({
 //     'http/listen'
 // );
 
-// const hotreloadinfo = router.run('wss/openWS',{
-//     host:'localhost',
-//     port:8080,
-//     path:'hotreload'
-// } as WebSocketProps) as WebSocketInfo;
+const hotreloadinfo = router.run('wss/openWS',{
+    host:'localhost',
+    port:8080,
+    path:'hotreload'
+} as WebSocketProps) as WebSocketInfo;
 
 const socketinfo = router.run('wss.openWS',{
     host:'localhost',

@@ -430,16 +430,17 @@ export class Service extends Graph {
         args?:any
     ) => { //For handling RouteProp or other routes with multiple methods 
         let m = method.toLowerCase(); //lower case is enforced in the route keys
-        if(m === 'get' && ((this.routes[route] as RouteProp)?.get as any)?.transform instanceof Function) { //make alt formats for specific methods and execute them a certain way
-            if(Array.isArray(args)) return ((this.routes[route] as RouteProp).get as any).transform(...args);
-            else return ((this.routes[route] as RouteProp).get as any).transform(args);
+        let src = this.nodes.get(route);
+        if(!src) {
+            src = this.routes[route];
+            if(!src) src = this.tree[route]; //maybe it's here?
         }
-        if(this.routes[route]?.[m]) {
-            if(!(this.routes[route][m] instanceof Function)) {
-                if(args) this.routes[route][m] = args; //if args were passed set the value
-                return this.routes[route][m]; //could just be a stored local variable we are returning like a string or object
+        if(src?.[m]) {
+            if(!(src[m] instanceof Function)) {
+                if(args) src[m] = args; //if args were passed set the value
+                return src[m]; //could just be a stored local variable we are returning like a string or object
             }
-            else return this.routes[route][m](args); 
+            else return src[m](args); 
             
         }//these could be any function or property call
         else return this.handleServiceMessage({route,args,method}) //process normally if the method doesn't return
@@ -495,13 +496,13 @@ export class Service extends Graph {
         if(args[0]) if(typeof args[0] === 'string') {
             let substr = args[0].substring(0,8);
             if(substr.includes('{') || substr.includes('[')) {    
-                if(substr.includes('\\')) args[0] = args[0].replace(/\\/g,"");
+                if(substr.includes('\\')) args[0] = args[0].replace(/\\/g,""); //double jsonified string
                 if(args[0][0] === '"') { args[0] = args[0].substring(1,args[0].length-1)};
                 //console.log(args[0])
                 args[0] = JSON.parse(args[0]); //parse stringified args
             }
         }
-
+        
         if(typeof args[0] === 'object') {
             if(args[0].method) { //run a route method directly, results not linked to graph
                 return this.handleMethod(args[0].route, args[0].method, args[0].args);

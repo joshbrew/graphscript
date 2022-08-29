@@ -20,6 +20,8 @@ const router = new Router([
 
 console.log(router)
 
+document.body.style.height = '100vh'
+
 let ret = router.load({
     'main':{
         tagName:'div',

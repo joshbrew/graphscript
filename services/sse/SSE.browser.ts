@@ -1,4 +1,5 @@
-import { Service, Routes, ServiceOptions } from "../Service";
+import { HTTPfrontend, RequestOptions } from "../http/HTTP.browser";
+import { Service, Routes, ServiceOptions, ServiceMessage } from "../Service";
 
 export type EventSourceProps = {
     url:string,
@@ -9,6 +10,11 @@ export type EventSourceProps = {
         error?:(ev:any,sseinfo?:EventSourceInfo)=>void,
         [key:string]:any
     }
+    //these callbacks are copied to events object above if not defined, just simpler
+    onmessage?:(ev:any,sseinfo?:EventSourceInfo)=>void,  //will use this.receive as default
+    onopen?:(ev:any,sseinfo?:EventSourceInfo)=>void,
+    onclose?:(ev:any,sseinfo?:EventSourceInfo)=>void,
+    onerror?:(ev:any,sseinfo?:EventSourceInfo)=>void,
     evoptions?:boolean|AddEventListenerOptions,
     type?:'eventsource'|string,
     _id?:string,
@@ -16,7 +22,15 @@ export type EventSourceProps = {
 }
 
 export type EventSourceInfo = {
-    source:EventSource
+    source:EventSource,
+    send:(message:any)=>any,
+    request:(message:any, method?:string)=>Promise<any>,
+    post:(route:any, args?:any)=>void,
+    run:(route:any, args?:any, method?:string)=>Promise<any>,
+    subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>,
+    terminate:() => void,
+    graph:SSEfrontend
 } & EventSourceProps
 
 export class SSEfrontend extends Service {
@@ -26,6 +40,10 @@ export class SSEfrontend extends Service {
     eventsources:{
         [key:string]:EventSourceInfo
     }={}
+
+    connections = { //higher level reference for Router
+        eventsources:this.eventsources
+    }
 
     constructor(options?:ServiceOptions) {
         super(options);
@@ -41,10 +59,16 @@ export class SSEfrontend extends Service {
             source,
             type:'eventsource',
             ...options
-        }
+        } as EventSourceInfo;
 
         if(!('keepState' in options)) options.keepState = true; //default true
         if(!options.events) options.events = {};
+
+        if(options.onmessage) options.events.message = (ev) => { options.onmessage(ev)} ;
+        if(options.onclose)  options.events.close = (ev) => { options.onclose(ev) };
+        if(options.onopen) options.events.open = (ev) => { options.onopen(ev) } ;
+        if(options.onerror)  options.events.error = (ev) => { options.onerror(ev) };
+
         if(!options.events.message) {
             options.events.message = (ev, sse) => {
 
@@ -60,16 +84,16 @@ export class SSEfrontend extends Service {
 
                         if(data.route === 'setId' && sse) {
                             sse._id = data.args;
-                            options.events.message = (ev, sse) => { //clear extra logic after id is set
-                                const result = this.receive(ev.data,sse);
-                                if(options.keepState) this.setState({[options.url]:result}); 
+                            options.events.message = (e, sse) => { //clear extra logic after id is set
+                                const result = this.receive(e.data,sse);
+                                if(options.keepState) this.setState({[options.url]:e.data}); 
                             }
                         }
                     }
                 } 
 
                 const result = this.receive(ev.data,sse);
-                if(options.keepState) this.setState({[options.url]:result}); 
+                if(options.keepState) this.setState({[options.url]:data}); 
             }
         }
         if(!options.events.error) options.events.error = (ev, sse) => {
@@ -92,11 +116,165 @@ export class SSEfrontend extends Service {
                 source.addEventListener(key,options.events[key],options.evoptions);
             }
         }
-        
+
+        let send = (message:ServiceMessage|any) => {
+            return this.transmit(message,options.url);
+        }
+
+        let request = (message:ServiceMessage|any, method?:string,  sessionId?:string) => {
+            return this.request(message, options.url, sessionId, method);
+        }
+
+        let post = (route:any, args?:any, method?:string) => {
+            //console.log('sent', message)
+            let message:any = {
+                route,
+                args
+            };
+            if(method) message.method = method;
+
+            return this.transmit(message,options.url);
+        }
+
+        let run = (route:any,args?:any,method?:string,sessionId?:string) => {
+            return this.request({route,args}, options.url, method, sessionId);
+        }
+
+        let subscribe = (route:any, callback?:((res:any)=>void)|string):Promise<number> => {
+            return this.subscribeToSSE(route, options.url, callback, sse._id);
+        }
+
+        let unsubscribe = (route:any, sub:number):Promise<any> => {
+            return run('unsubscribe',[route,sub]);
+        }
+
+        let terminate = () => {
+            return this.terminate(options.url);
+        }
+
+        sse.send = send;
+        sse.request = request;
+        sse.post = post;
+        sse.run = run;
+        sse.subscribe = subscribe;
+        sse.unsubscribe = unsubscribe;
+        sse.terminate = terminate;
+        sse.graph = this;
+
         this.eventsources[options.url] = sse;
         //console.log(source);
 
         return sse;
+    }
+
+    POST = (
+        message:any|ServiceMessage, 
+        url:string|URL='http://localhost:8080/echo', 
+        type:XMLHttpRequestResponseType='', 
+        mimeType?:string|undefined
+    ) => {
+        if(typeof message === 'object' && (type === 'json' || type === 'text' || !type)) {
+            message = JSON.stringify(message);
+        }
+
+        if(type === 'json') mimeType = 'application/json';
+        return new Promise((resolve,reject) => {
+            let xhr = HTTPfrontend.request({
+                method:'POST',
+                url,
+                data:message,
+                responseType:type,
+                mimeType,
+                onload:(ev)=>{ 
+                    let data;
+                    if(xhr.responseType === '' || xhr.responseType === 'text')
+                        data = xhr.responseText;
+                    else data = xhr.response;
+                    if(url instanceof URL) url = url.toString();
+                    this.setState({[url]:data});
+                    resolve(data);
+                },
+                onabort:(er)=>{ reject(er); }
+            });
+        }).catch(console.error);
+
+    }
+
+    transmit = (
+        message:any|ServiceMessage, 
+        url:string|URL
+    ) => {
+        return this.POST(message,url,'json');
+    }
+
+    request = (
+        message:ServiceMessage|any,
+        url:string,
+        method?:string,
+        sessionId?:string //indicates this unique session id for the server to identify you
+    ) => {
+        return new Promise((res,rej) => {
+            let callbackId = `${Math.random()}`;
+            let req:any = {route:'runRequest',args:[message,url,callbackId,sessionId]}
+            if(method) req.method = method;
+            let evs = this.eventsources[url].source;
+
+            let onmessage = (ev:any) => {
+                let data = ev.data;
+                if(typeof data === 'string') if(data.includes('callbackId')) data = JSON.parse(data);
+                if(typeof data === 'object') if(data.callbackId === callbackId) {
+                    evs.removeEventListener('message',onmessage);
+                    res(data.args);
+                }
+            }
+
+            evs.addEventListener('message',onmessage);
+            this.POST(message, url,'json');
+        });
+    }
+
+    runRequest = (
+        message:any,
+        url:string|any,
+        callbackId:string|number,
+        sessionId?:string
+    ) => {
+        let res = this.receive(message);
+        if(url) {
+            if(res instanceof Promise) {
+                res.then((r) => {
+                    let message = {args:r,callbackId,sessionId};
+                    this.POST(message,url,'json');
+                })
+            } else {
+                let message = {args:res,callbackId,sessionId};
+                this.POST(message,url,'json');
+            }
+        }
+        return res;
+    }
+
+    subscribeSSE = (route:string,url:string) => {
+        return this.subscribe(route,(res) => {
+            this.POST(res,url,'json');
+        })
+    }
+    
+    subscribeToSSE = (route:string, url:string, callback?:string|((res:any)=>void), sessionId?:string) => {
+        if(url) {
+            this.subscribe(url,(res) => {
+                let msg = JSON.parse(res);
+                if(msg?.callbackId === route) {
+                    if(!callback) this.setState({[url]:msg.args}); //just set state
+                    else if(typeof callback === 'string') { //run a local node
+                        this.run(callback,msg.args);
+                    }
+                    else callback(msg.args);
+                }
+            });
+
+            return this.eventsources[url].run('subscribeSSE',[route,url,sessionId])
+        } 
     }
 
     terminate = (sse:EventSourceInfo|EventSource|string) => {
@@ -118,7 +296,16 @@ export class SSEfrontend extends Service {
     } 
 
     routes:Routes = {
-        openSSE:this.openSSE,
-        terminate:this.terminate
+        openSSE:{
+            operator:this.openSSE,
+            aliases:['open']
+        },
+        request:this.request,
+        runRequest:this.runRequest,
+        transmit:this.transmit,
+        POST:this.POST,
+        terminate:this.terminate,
+        subscribeToSSE:this.subscribeToSSE, //outgoing subscriptions
+        subscribeSSE:this.subscribeSSE, //incoming subcriptions
     }
 }

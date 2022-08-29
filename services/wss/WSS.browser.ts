@@ -23,7 +23,10 @@ export type WebSocketInfo = {
     post:(route:any, args?:any)=>void,
     run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
-    unsubscribe:(route:any, sub:number)=>Promise<boolean>
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>,
+    terminate:()=>boolean,
+    _id?:string,
+    graph:WSSfrontend
 } & WebSocketProps
 
 //browser side websockets
@@ -34,6 +37,10 @@ export class WSSfrontend extends Service {
     sockets:{
         [key:string]:WebSocketInfo
     } = { }
+
+    connections = { //higher level reference for Router
+        sockets:this.sockets
+    }
 
     
     constructor(options?:ServiceOptions) {
@@ -68,8 +75,8 @@ export class WSSfrontend extends Service {
         const socket = new WebSocket(address);
 
         if(!options.onmessage) {
+            if(!options._id){
             options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { 
-            
                 if(data) if(typeof data === 'string') {
                     let substr = data.substring(0,8);
                     if(substr.includes('{') || substr.includes('[')) {    
@@ -93,6 +100,15 @@ export class WSSfrontend extends Service {
                 let res = this.receive(data); 
                 if(options.keepState) this.setState({[address]:data}); 
             } //default onmessage
+            }
+            else {
+                options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo)=> {
+                    this.receive(data,socket,this.sockets[address]); 
+                    if(options.keepState) {
+                        this.setState({[address]:data});
+                    }
+                }; //clear this extra logic after id is set
+            }
         }
 
         if((options as any).onmessage) {
@@ -105,7 +121,7 @@ export class WSSfrontend extends Service {
         if(options.onerror) socket.addEventListener('error',(ev)=>{(options as any).onerror(ev,socket, this.sockets[address]);});
 
         
-        let send = (message:any) => {
+        let send = (message:ServiceMessage|any) => {
             //console.log('sent', message)
             return this.transmit(message,socket);
         }
@@ -169,6 +185,9 @@ export class WSSfrontend extends Service {
             return run('unsubscribe',[route,sub]);
         }
 
+        let terminate = () => {
+            return this.terminate(options._id);
+        }
 
         this.sockets[address] = {
             type:'socket',
@@ -180,6 +199,8 @@ export class WSSfrontend extends Service {
             request,
             subscribe,
             unsubscribe,
+            terminate,
+            graph:this,
             ...options
         };
 
@@ -221,9 +242,14 @@ export class WSSfrontend extends Service {
         return true;
     }
 
-    request = (message:ServiceMessage|any, ws:WebSocket, _id:string, method?:string) => { //return a promise which can resolve with a server route result through the socket
+    request = (
+        message:ServiceMessage|any, 
+        ws:WebSocket, 
+        _id:string, 
+        method?:string
+    ) => { //return a promise which can resolve with a server route result through the socket
         let callbackId = `${Math.random()}`;
-        let req:any = {route:'wss/runRequest', args:[message,_id,callbackId]};
+        let req:any = {route:'runRequest', args:[message,_id,callbackId]};
         if(method) req.method = method;
         return new Promise((res,rej) => {
             let onmessage = (ev:any) => {
@@ -240,7 +266,11 @@ export class WSSfrontend extends Service {
         })
     }
 
-    runRequest = (message:any, ws:WebSocket|string, callbackId:string|number) => { //send result back
+    runRequest = (
+        message:any, 
+        ws:WebSocket|string, 
+        callbackId:string|number
+    ) => { //send result back
         let res = this.receive(message);
         if(typeof ws === 'string') {
             for(const s in this.sockets) {
@@ -263,7 +293,7 @@ export class WSSfrontend extends Service {
         return res;
     }
 
-    subscribeSocket(route:string, socket:WebSocket|string) {
+    subscribeSocket = (route:string, socket:WebSocket|string) => {
         if(typeof socket === 'string' && this.sockets[socket]) {
             socket = this.sockets[socket].socket;
         }
@@ -283,23 +313,27 @@ export class WSSfrontend extends Service {
             });
     } 
 
-    subscribeToSocket(route:string, socketId:string, callback?:((res:any)=>void)|string) {
+    subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
             this.subscribe(socketId, (res) => {
-                if(res?.callbackId === route) {
-                    if(!callback) this.setState({[socketId]:res.args}); //just set state
+                let msg = JSON.parse(res);
+                if(msg?.callbackId === route) {
+                    if(!callback) this.setState({[socketId]:msg.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node
-                        this.run(callback,res.args);
+                        this.run(callback,msg.args);
                     }
-                    else callback(res.args);
+                    else callback(msg.args);
                 }
             });
-            return this.sockets[socketId].request(JSON.stringify({route:'subscribeSocket', args:[route,socketId]}));
+            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId]});
         }
     }
 
     routes:Routes = {
-        openWS:this.openWS,
+        openWS:{
+            operator:this.openWS,
+            aliases:['open']
+        },
         request:this.request,
         runRequest:this.runRequest,
         terminate:this.terminate,

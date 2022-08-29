@@ -16,8 +16,8 @@ export type EntityProps = {
 
 export type SystemProps = (RouteProp & { 
     operator:(entities:{[key:string]:Entity})=>any,
-    setupEntities:(self:any,entities:{[key:string]:Entity})=>{[key:string]:Entity},
-    setupEntity:(self:any,entity:Entity)=>Entity
+    setupEntities:(entities:{[key:string]:Entity})=>{[key:string]:Entity},
+    setupEntity:(entity:Entity)=>Entity
 })|GraphNode
 
 export type Entity = {
@@ -28,8 +28,11 @@ export type Entity = {
 
 export type System = {
     operator:(entities:{[key:string]:Entity})=>any,
-    setupEntities:(self:any,entities:{[key:string]:Entity})=>{[key:string]:Entity},
-    setupEntity:(self:any,entity:Entity)=>Entity
+    setupEntities:(entities:{[key:string]:Entity})=>{[key:string]:Entity},
+    setupEntity:(entity:Entity)=>Entity,
+    remove?:(entity:Entity,entitities:{[key:string]:Entity})=>Entity,
+    entities:{[key:string]:Entity}, //the entities associated with this system 
+    entityKeys:string[] //keys of entities associated with this system, reduces lookup times
 } & GraphNode;
 
 export type ECSOptions = {
@@ -52,11 +55,15 @@ export class ECSService extends Service {
         [key:string]: System
     } = {}
 
-    map = new Map<string,{[key:string]:Entity}>(); //maps of filtered entity objects based on system tag. e.g. this.maps.get('boids')['entity3'];
+    entityMap = new Map<string,{[key:string]:Entity}>(); //maps of filtered entity objects based on system tag. e.g. this.maps.get('boids')['entity3'];
+    entityKeyMap = new Map<string, string[]>(); //arrays of keys of entities belonging to each system, for lookup
 
     order:string[]=[] //order of execution for component updates
 
-    animating=true;
+    animating=false;
+
+    entityCt = 0;
+    systemCt = 0;
 
     constructor(options?:ECSOptions) {
         super(options);
@@ -64,7 +71,7 @@ export class ECSService extends Service {
 
         if(options.systems)
             for(const key in options.systems) {
-                this.addSystem(options.systems[key], undefined, undefined, options.order);
+                this.addSystem(options.systems[key], undefined, undefined, undefined, undefined, options.order);
             }
 
         if(options.entities) {
@@ -86,16 +93,18 @@ export class ECSService extends Service {
             if(this.systems[k]) {
                 if(filter) {
                     if(debug) debug = performance.now();
-                    (this.systems[k] as GraphNode).run(
-                        this.map.get(k)
-                    );
+                    if(this.entityKeyMap.get(k).length > 0)
+                        (this.systems[k] as GraphNode).run(
+                            this.entityMap.get(k)
+                        );
                     if(debug) 
-                        console.log( 'system', k, 'took', performance.now()-debug,'ms for', Object.keys(this.map.get(k)).length, 'entities');
+                        console.log( 'system', k, 'took', performance.now()-debug,'ms for', Object.keys(this.entityMap.get(k)).length, 'entities');
                 } else {
                     if(debug) debug = performance.now();
-                    (this.systems[k] as GraphNode).run(
-                        this.entities
-                    ); //unfiltered, it's faster to handle this in the system with lots of entities
+                    if(this.entityKeyMap.get(k).length > 0)
+                        (this.systems[k] as GraphNode).run(
+                            this.entities
+                        ); //unfiltered, it's faster to handle this in the system with lots of entities
                     if(debug) 
                         console.log( 'system', k, 'took', performance.now()-debug,'ms for', Object.keys(this.entities).length, 'entities');
                 }
@@ -106,12 +115,30 @@ export class ECSService extends Service {
     }
 
     animate = (filter:boolean=true,order?:string[]) => {
-        requestAnimationFrame(()=>{
-            if(this.animating){ 
-                this.updateEntities(order,filter);
-                this.animate(filter,order);
+        if(this.animating === false) {
+            this.animating = true;
+            if(typeof requestAnimationFrame !== 'undefined') {
+                let anim = () => {
+                    requestAnimationFrame(()=>{
+                        if(this.animating){ 
+                            this.updateEntities(order,filter);
+                            anim();
+                        }
+                    });
+                }
+                anim();
+            } else {
+                let looper = () => {
+                    setTimeout(async ()=>{
+                        if(this.animating){ 
+                            this.updateEntities(order,filter);
+                            looper();
+                        }
+                    },10);
+                }
+                looper();
             }
-        });
+        }
     }
 
     stop = () => {
@@ -119,7 +146,6 @@ export class ECSService extends Service {
     }
 
     start = (filter?:boolean) => {
-        this.animating = true;
         this.animate(filter);
     }
 
@@ -142,7 +168,7 @@ export class ECSService extends Service {
 
             i++;
         }
-        
+
         return Object.keys(newEntities);
     }
 
@@ -159,15 +185,15 @@ export class ECSService extends Service {
             })
         }
         if(entity.tag && this.entities[entity.tag]) {
-            let tag = entity.tag;
-            let i = 2;
+            this.entityCt++;
+            let tag = entity.tag+this.entityCt;
             while(this.entities[entity.tag]) {
-                entity.tag = `${tag}${i}`;
-                i++;
+                this.entityCt++;
+                entity.tag = `${tag}${this.entityCt}`;
             }
         } else if(!entity.tag) entity.tag = `entity${Math.floor(Math.random()*1000000000000000)}`;
 
-        this.load({[entity.tag]:entity});
+        this.add(entity);
         this.entities[entity.tag] = this.nodes.get(entity.tag) as any;
 
         //console.log(entity,'added')
@@ -183,40 +209,46 @@ export class ECSService extends Service {
     ) => {
         for(const key in systems) {
             systems[key].tag = key;
-            this.addSystem(systems[key],undefined,undefined,order)
+            this.addSystem(systems[key],undefined,undefined,undefined,undefined,order)
         }
-
         return this.systems;
     }
 
     addSystem = (
         prototype:SystemProps, 
-        setup?:(self:any,entities:any)=>any,
-        update?:(self:any,entities:any)=>any,
+        setupEntities?:(entities:{[key:string]:Entity})=>any, //group rules
+        setupEntity?:(entity:Entity)=>any, //single entity rules
+        operator?:(entities:any)=>any,
+        remove?:(entities:any)=>any,
         order?:string[]
     ) => {
         if(!prototype) return;
         const system = this.recursivelyAssign({},prototype);
-        if(setup) system.setupEntities = setup;
-        if(update) system.operator = update;
+        if(setupEntities) system.setupEntities = setupEntities;
+        if(setupEntity) system.setupEntity = setupEntity;
+        if(operator) system.operator = operator;
+        if(remove) system.remove = remove;
         if(system.tag && this.systems[system.tag]) {
-            let tag = system.tag;
-            let i = 2;
+            this.systemCt++;
+            let tag = system.tag+this.systemCt;
             while(this.systems[system.tag]) {
-                system.tag = `${tag}${i}`;
-                i++;
+                this.systemCt++;
+                system.tag = `${tag}${this.systemCt}`;
             }
         } else if(!system.tag) system.tag = `system${Math.floor(Math.random()*1000000000000000)}`;
 
-        this.load({[system.tag]:system});
+        this.add(system);
 
         this.systems[system.tag] = this.nodes.get(system.tag) as any;
-        if(!this.map.get(system.tag)) this.map.set(system.tag, {}); //map to track local entities
 
+        if(!this.entityMap.get(system.tag)) this.entityMap.set(system.tag, {}); //map to track local entities
+        if(!this.entityKeyMap.get(system.tag)) this.entityKeyMap.set(system.tag, []); //map to track arrays of entity keys to remove redundancy
+        this.systems[system.tag].entities = this.entityMap.get(system.tag); //shared object ref
+        this.systems[system.tag].entityKeys = this.entityKeyMap.get(system.tag); //shared key ref
         if(this.systems[system.tag]?.setupEntities) {
             let filtered = this.filterObject(this.entities,(key,v)=>{if(v.components[system.tag]) return true;});
-            this.systems[system.tag].setupEntities(system,filtered);
-            Object.assign(this.map.get(system.tag),filtered);
+            this.systems[system.tag].setupEntities(filtered);
+            Object.assign(this.entityMap.get(system.tag),filtered);
         } 
 
         if(!order) this.order.push(system.tag);
@@ -229,9 +261,9 @@ export class ECSService extends Service {
         if(entity?.components) {
             for(const key in entity.components) {
                 if(this.systems[key]) {
-                    this.systems[key].setupEntity(this.systems[key], entity);
-                    this.map.get(key)[entity.tag] = entity;
-
+                    this.systems[key].setupEntity(entity);
+                    this.entityMap.get(key)[entity.tag] = entity;
+                    this.entityKeyMap.get(key).push(entity.tag);
                     // entity.nodes.set(key,this.systems[key]); //this is really probably gonna slow things down when adding/subtracting so we can use the local objects in the service which are pretty straightforward
                     // this.systems[key].nodes.set(entity.tag,entity);
                 }
@@ -242,15 +274,34 @@ export class ECSService extends Service {
     removeEntity = (tag:string) => {
         const entity = this.entities[tag];
         for(const key in entity.components) {
-            if (this.map.get(key)) delete this.map.get(key)[entity.tag];
+            if (this.entityMap.get(key)) {
+                delete this.entityMap.get(key)[entity.tag];
+                this.entityKeyMap.get(key).splice(this.entityKeyMap.get(key).indexOf(entity.tag),1);
+            }
+            if(this.systems[key]?.remove) {
+                this.systems[key].remove(entity,this.entityMap.get(key));
+            }   
         }
         delete this.entities[tag];
         return this.remove(tag);
     }
 
+    removeEntities(entities:string[]|{[key:string]:Entity}) {
+        if(!Array.isArray(entities)) entities = Object.keys(entities);
+        entities.forEach((t) => {
+            this.removeEntity(t);
+        })
+    }
+
     removeSystem = (tag:string) => {
+        if(this.systems[tag]?.remove) {
+            for(const e in this.entityKeyMap.get(tag)) { //run the remove routine over the system entities to run any desired cleanup
+                this.systems[tag].remove(this.entityMap.get(tag)[e],this.entityMap.get(tag));
+            }
+        }
         delete this.systems[tag];
-        this.map.delete(tag);
+        this.entityMap.delete(tag);
+        this.entityKeyMap.delete(tag);
         this.order.splice(this.order.indexOf(tag),1);
         return this.remove(tag);
     }
@@ -261,6 +312,24 @@ export class ECSService extends Service {
                         .filter(([key,value]) => { filter(key,value)} )
                     );
     }
+
+    setEntities = (entities:{[key:string]:Entity}|string[],props:{[key:string]:any}) => {
+        if(Array.isArray(entities)) {
+            entities.forEach((k) => {
+                if(this.entities[k]) this.recursivelyAssign(this.entities[k],props);
+            })
+        } else {
+            for(const key in this.entities) {
+                this.setEntity(this.entities[key],props);
+            }
+        }
+        return true;
+    }
+
+    setEntity = (entity:Entity,props:{[key:string]:any}) => {
+        return this.recursivelyAssign(entity,props);
+    }
+    
 
     //buffer numbers stored on entities, including iterable objects or arrays. 
     //  It's much faster to buffer and use transfer than sending the objects raw over threads as things are jsonified inbetween otherwise, 
@@ -313,11 +382,14 @@ export class ECSService extends Service {
         addSystem:this.addSystem,
         addSystems:this.addSystems,
         removeEntity:this.removeEntity,
+        removeEntities:this.removeEntities,
         removeSystem:this.removeSystem,
         setupEntity:this.setupEntity,
         addEntities:this.addEntities,
         filterObject:this.filterObject,
-        bufferValues:this.bufferValues
+        bufferValues:this.bufferValues,
+        setEntity:this.setEntity,
+        setEntities:this.setEntities
     }
 }
 

@@ -7,17 +7,17 @@ export const Systems = {
         //Better implementation: https://wickedengine.net/2020/04/26/capsule-collision-detection/, should adapt for gpujs or something for mass physics
         //lastTime:performance.now(),
         tag:'collision',
-        setupEntities:(self,entities:{[key:string]:Entity})=>{
+        setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[self.tag]) continue;
+                if(entity.components) if(!entity.components[this.tag]) continue;
 
-                Systems.collision.setupEntity(self, entity);
+                this.setupEntity(entity);
             }
 
             return entities;
         },
-        setupEntity:(self, entity:Entity) => {
+        setupEntity:function (entity:Entity) {
             if(!('collisionEnabled' in entity)) entity.collisionEnabled = true;
             if(!entity.collisionType) entity.collisionType = 'sphere' //sphere, box, point
             if(!entity.collisionRadius) entity.collisionRadius = 1;
@@ -30,17 +30,23 @@ export const Systems = {
         operator:function(
             entities:{[key:string]:GraphNode}
         ){
-            for(const key in entities) {
-                const entity1 = entities[key];
+
+            let keys = this.entityKeys;
+
+            for(let i = 0; i < keys.length; i++) {
+                const entity1 = entities[keys[i]];
                 if(entity1.components) if(!entity1.components[this.tag] || !entity1.collisionEnabled) continue;
                 if(!entity1.collisionEnabled) continue;
-                for(const key2 in entities) {
-                    const entity2 = entities[key2];
+                for(let j = 0; j < keys.length; j++) {
+                    if(i === j) continue;
+                    const entity2 = entities[keys[j]];
                     if(entity2.components) if(!entity2.components[this.tag]) continue;
                     if(!entity2.collisionEnabled) continue;
                  
                     let colliding = Systems.collision.collisionCheck(entity1 as any,entity2 as any); //returns distance from origin if colliding (to reduce redundancy later)
                     if(colliding !== false) {
+                        if(!entity1.colliding) entity1.colliding = {}
+                        if(!entity2.colliding) entity2.colliding = {}
                         entity1.colliding[entity2.tag] = colliding;
                         entity2.colliding[entity1.tag] = colliding;
                     }
@@ -397,8 +403,8 @@ export const Systems = {
             v:any
         ) => {
             let magnitude = Systems.collision.magnitude(v);
-            let _mag = 1/magnitude;
-            let vn = {};
+            let _mag = magnitude ? 1/magnitude : 0;
+            let vn = Object.assign({},v);
             for(const key in v) {
                 vn[key] = v[key]*_mag;
             }
@@ -709,20 +715,17 @@ export const Systems = {
     collider:{ //this resolves collisions to update movement vectors
         tag:'collider',
         lastTime:performance.now(),
-        setupEntities:(self,entities:{[key:string]:Entity})=>{
+        setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[self.tag]) continue;
-                self.setupEntity(self,entity);
+                if(entity.components) if(!entity.components[this.tag]) continue;
+                this.setupEntity(entity);
             }
 
             return entities;
         },
-        setupEntity:(self,entity:Entity) => {
-            if(!('collisionEnabled' in entity)) Systems.collision.setupEntity(Systems.collision,entity);
-            if(!('position' in entity)) Systems.movement.setupEntity(Systems.movement,entity); 
-            if(!('restitution' in entity)) entity.restitution = 1;
-            if(!('useBoundingBox' in entity)) entity.useBoundingBox = true;
+        setupEntity:function (entity:Entity) {
+            if(!('collisionEnabled' in entity)) Systems.collision.setupEntity(entity);
             if(!('boundingBox' in entity)) 
                 entity.boundingBox = {
                     bot:0,
@@ -732,89 +735,113 @@ export const Systems = {
                     front:0,
                     back:100
                 };
-        
+            if(!('position' in entity)) {
+                Systems.movement.setupEntity(entity); 
+            }
+            if(!('restitution' in entity)) entity.restitution = 1;
+            if(!('useBoundingBox' in entity)) entity.useBoundingBox = true;
+
+  
+            if(!entity.position.x && !entity.position.y && !entity.position.z) { //randomize starting positions
+                entity.position.x = Math.random()*entity.boundingBox.right;
+                entity.position.y = Math.random()*entity.boundingBox.back;
+                entity.position.z = Math.random()*entity.boundingBox.top;
+            }
+
+            //console.log(entity.position)
+
             return entity;
         },
         operator: function (entities:{[key:string]:Entity}) {
-            for(const key in entities) {
-                const entity1 = entities[key];
+
+            let keys = this.entityKeys;
+
+            for(let i = 0; i < keys.length; i++) {
+                const entity1 = entities[keys[i]];
                 if(entity1.components) if(!entity1.components[this.tag] || !entity1.collisionEnabled) continue;
                 
-                if(entity1.useBoundingBox) this.checkBoundingBox(this,entity1); 
+                if(entity1.useBoundingBox) this.checkBoundingBox(entity1); 
                 
                 if(!entity1.collisionEnabled) continue;
 
                 //This does (crappy) sphere collisions, for box collisions we need to reflect based on which cube surfaces are colliding
-                for(const key2 in entity1.colliding) { 
-                    const entity2 = entities[key2];
-                    if(entity1.colliding[key2] === false) {
-                        delete entity1.colliding[key2] 
-                        delete entity2.colliding[entity1.tag]; 
-                        continue;
-                    }
-                    if(!entity2.collisionEnabled) continue;
+                if(entity1.colliding) {
+                    for(const key2 in entity1.colliding) { 
+                        const entity2 = entities[key2];
+                        if(entity1.colliding[key2] === false) {
+                            delete entity1.colliding[key2] 
+                            delete entity2.colliding[entity1.tag]; 
+                            continue;
+                        }
+                        if(!entity2.collisionEnabled) continue;
 
-                    
-                    if(entity2.collisionType === 'box') {
-                        this.resolveBoxCollision(entity1,entity2,entity1.colliding[key2]);
-                    }
-                    else {
-                        if(entity1.collisionType === 'box') {
-                            entity1.fixed = true; //let the box collision check handle it on next pass
-                            this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
-                            entity1.fixed = false;
+                        
+                        if(entity2.collisionType === 'box') {
+                            this.resolveBoxCollision(entity1,entity2,entity1.colliding[key2]);
                         }
                         else {
-                            this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
-                            delete entity2.colliding[entity1.tag]; //both resolved
+                            if(entity1.collisionType === 'box') {
+                                entity1.fixed = true; //let the box collision check handle it on next pass
+                                this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
+                                entity1.fixed = false;
+                            }
+                            else {
+                                this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
+                                delete entity2.colliding[entity1.tag]; //both resolved
+                            }
                         }
+                        //}
+                        //todo: box face (orthogonal) reflections
+                        //else if(entity2.collisionType === 'box')
+                        //this.resolveBoxCollision(entity1,entity2);
+                        
+                        delete entity1.colliding[entity2.tag];
                     }
-                    //}
-                    //todo: box face (orthogonal) reflections
-                    //else if(entity2.collisionType === 'box')
-                    //self.resolveBoxCollision(entity1,entity2);
                     
-                    delete entity1.colliding[entity2.tag];
+                    delete entity1.colliding;
                 }
-
-
             }
             return entities;
         },
-        checkBoundingBox:(self,entity)=>{
+        checkBoundingBox:(entity)=>{
+
+            //console.log('before',entity.position);
                     
-            const ysize = entity.collisionRadius*entity.collisionBoundsScale.y;
             const xsize = entity.collisionRadius*entity.collisionBoundsScale.x;
+            const ysize = entity.collisionRadius*entity.collisionBoundsScale.y;
             const zsize = entity.collisionRadius*entity.collisionBoundsScale.z;
 
-            if ((entity.position.y - ysize) <= entity.boundingBox.top) {
-                entity.velocity.y *= entity.restitution;
-                entity.position.y = entity.boundingBox.top + ysize;
+            if ((entity.position.y - ysize) <= entity.boundingBox.front) {
+                entity.velocity.y *= -entity.restitution;
+                entity.position.y = entity.boundingBox.front + ysize;
             }
-            if ((entity.position.y + ysize) >= entity.boundingBox.bot) {
-                entity.velocity.y *= entity.restitution;
-                entity.position.y = entity.boundingBox.bot - ysize;
+            if ((entity.position.y + ysize) >= entity.boundingBox.back) {
+                entity.velocity.y *= -entity.restitution;
+                entity.position.y = entity.boundingBox.back - ysize;
             }
 
             if (entity.position.x - xsize <= entity.boundingBox.left) {
-                entity.velocity.x *= entity.restitution;
+                entity.velocity.x *= -entity.restitution;
                 entity.position.x = entity.boundingBox.left + xsize;
             }
 
             if (entity.position.x + xsize >= entity.boundingBox.right) {
-                entity.velocity.x *= entity.restitution;
+                entity.velocity.x *= -entity.restitution;
                 entity.position.x = entity.boundingBox.right - xsize;
             }
 
-            if (entity.position.z - zsize <= entity.boundingBox.front) {
-                entity.velocity.z *= entity.restitution;
-                entity.position.z = entity.boundingBox.front + zsize;
+            if (entity.position.z - zsize <= entity.boundingBox.bot) {
+                entity.velocity.z *= -entity.restitution;
+                entity.position.z = entity.boundingBox.bot + zsize;
             }
 
-            if (entity.position.z + zsize >= entity.boundingBox.back) {
-                entity.velocity.z *= entity.restitution;
-                entity.position.z = entity.boundingBox.back - zsize;
+            if (entity.position.z + zsize >= entity.boundingBox.top) {
+                entity.velocity.z *= -entity.restitution;
+                entity.position.z = entity.boundingBox.top - zsize;
             }
+
+            
+            //console.log('after',entity.position, entity.boundingBox);
         },
         //needs improvement
         resolveBoxCollision:(body1:Entity,box:Entity,negate?:boolean)=>{
@@ -940,54 +967,80 @@ export const Systems = {
     nbody:{ //gravitational attraction
         tag:'nbody',
         lastTime:performance.now(),
-        G:0.00000000006674, //Newton's gravitational constant
-        setupEntities:(self,entities:{[key:string]:Entity})=>{
+        G:0.00000000006674, //Newton's gravitational constant, can set differently on different sets of components 
+        frameMax:10, //maximum number of entities to search per frame
+        setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[self.tag]) continue;
+                if(entity.components) if(!entity.components[this.tag]) continue;
 
-                self.setupEntity(self,entity);
+                this.setupEntity(entity);
             }
 
             return entities;
         },
-        setupEntity:(self, entity:Entity) => {
-            Systems.collider.setupEntity(Systems.collider,entity);
+        setupEntity:function (entity:Entity) {
+            if(!('collisionEnabled' in entity)) Systems.collider.setupEntity(entity);
 
             entity.isAttractor = true;
+            if(!('attractorGroup' in entity)) entity.attractorGroup = 0;
+            if(!('attractorGroupRules' in entity)) entity.attractorGroupRules = { //set attractor group rules
+                0:this.G
+            }
         
             return entity;
         },
         operator:function(entities:{[key:string]:Entity}){
-            for(const key in entities) {
-                const entity = entities[key];
+
+            let keys = this.entityKeys;
+
+            for(let i = 0; i < keys.length; i++) {
+                const entity = entities[keys[i]];
                 if(entity.components) if(!entity.components[this.tag]) continue;
                 if(!entity.mass) continue;
                 
-                for(const key2 in entities) {
-                    const entity2 = entities[key2];
-                    if(entity2.components) if(!entity2.components[this.tag]) continue;
-                    if(!entity2.mass || !entity2.isAttractor) continue;
+                let nSearched = 0;
+                nested:
+                for(let j = 0; j < keys.length; j++) {
+                    let randKey = keys[Math.floor(Math.random()*keys.length)];
+                    nSearched++;
+                    const entity2 = entities[randKey];
+                    if(nSearched > this.frameMax) break nested;
+                    if(entity2.components) if(!entity2.components[this.tag]) continue nested;
+                    if(!entity2.mass || !entity2.isAttractor) continue nested;
 
-                    Systems.nbody.attract(entity,entity2);
+                    this.attract(
+                        entity,
+                        entity2,
+                        undefined,
+                        this.G
+                    );
                 }
             }
 
             return entities;
         },
-        attract:(
+        attract:function(
             body1,
             body2,
-            dist?:number,
+            dist?:number, //precalculated?
+            G=this.G, //modify G? Default is real world value (needs HUGE mass)
             vecn?:{x:number,y:number,z:number}
-        )=>{
+        ){
 
             if(dist === undefined) dist = Systems.collision.distance3D(body1.position,body2.position) as number;
-            if(vecn === undefined) vecn = Systems.collision.normalize(Systems.collision.makeVec(body1.position,body2.position)) as any; // a to b
+            if(vecn === undefined) vecn = Systems.collision.normalize(
+                Systems.collision.makeVec(body1.position,body2.position)
+            ) as any; // a to b
 
+            let Fg = 0;
+            if(dist < 0.1) dist = .1;
+            if(body1.attractorGroupRules[body2.attractorGroup]) {
+                Fg = body1.attractorGroupRules[body2.attractorGroup] * body1.mass * body2.mass / (dist*dist);
+            } else Fg = G * body1.mass * body2.mass / (dist*dist);
+            
             //Newton's law of gravitation
-            let Fg = 0.00000000006674 * body1.mass * body2.mass / (dist*dist);
-
+            
             body1.force.x += (vecn as any).x*Fg;
             body1.force.y += (vecn as any).y*Fg;
             body1.force.z += (vecn as any).z*Fg;
@@ -1019,48 +1072,55 @@ export const Systems = {
     boid:{ //boids, updates velocities based on a particle rule subset
         tag:'boid',
         lastTime:performance.now(),
-        setupEntities:(self:typeof Systems['boid'],entities:any)=>{
+        defaultAnchor:{x:Math.random(),y:Math.random(),z:Math.random(), mul:0.006},
+        setupEntities:function (entities:any){
             for(const key in entities) {
                 const entity = entities[key];
 
-                self.setupEntity(self,entity);
+                this.setupEntity(entity);
             }
 
             return entities;
         },
-        setupEntity:(self:typeof Systems['boid'],entity:Entity) => {
+        setupEntity:function (entity:Entity) {
             if(!entity.position) {
-                Systems.collider.setupEntity(Systems.collider, entity);
+                Systems.collider.setupEntity(entity);
             }
-            entity.collisionEnabled = false; //use the bounding box but not the collisions by default (faster)
+            //entity.collisionEnabled = false; //use the bounding box but not the collisions by default (faster)
 
-            if(!entity.position.x && !entity.position.y && !entity.position.z) { //randomize starting positions
-                entity.position.x = Math.random()*entity.boundingBox.right;
-                entity.position.y = Math.random()*entity.boundingBox.back;
-                entity.position.z = Math.random()*entity.boundingBox.top;
-            }
+            let adjustedAnchor = Object.assign({},this.defaultAnchor);
+            adjustedAnchor.x *= entity.boundingBox.right;
+            adjustedAnchor.y *= entity.boundingBox.back;
+            adjustedAnchor.z *= entity.boundingBox.top;
 
+            let boidDefaults = {
+                cohesion:0.00001,
+                separation:0.0001,
+                alignment:0.006,
+                swirl:adjustedAnchor,
+                attractor:Object.assign(adjustedAnchor,{mul:0.002}),
+                useCohesion:true,
+                useSeparation:true,
+                useAlignment:true,
+                useSwirl:true,
+                useAttractor:true,
+                //useAvoidance:true,
+                //avoidance:{groups:[],mul:0.1},
+                useAttraction:false, //particles can attract each other on a curve
+                //group:0 //search groups to split boids groups (todo)
+                groupRadius:200,
+                groupSize:5, //number of boids checked per frame to update velocities
+                searchLimit:5
+            };
             if(!entity.boid) { //boid rules
-                entity.boid = {
-                    cohesion:0.00001,
-                    separation:0.0001,
-                    alignment:0.006,
-                    swirl:{x:0.5,y:0.5,z:0.5,mul:0.006},
-                    attractor:{x:0.5,y:0.5,z:0.5,mul:0.002},
-                    useCohesion:true,
-                    useSeparation:true,
-                    useAlignment:true,
-                    useSwirl:true,
-                    useAttractor:true,
-                    //useAvoidance:true,
-                    //avoidance:{groups:[],mul:0.1},
-                    useAttraction:false, //particles can attract each other on a curve
-                    //group:0 //search groups to split boids groups (todo)
-                    groupRadius:200,
-                    groupSize:1, //number of boids checked per frame to update velocities
-                    searchLimit:3
-                };
-            }  
+                entity.boid = boidDefaults
+            } else entity.boid = Object.assign(boidDefaults, entity.boid);
+
+            //console.log(entity);
+            if(this.entityKeys.length > 1000) {
+                entity.boid.groupSize = 1;
+                entity.boid.searchLimit = 1;
+            }
 
             return entity;
         },
@@ -1070,8 +1130,8 @@ export const Systems = {
             let timeStep = now - this.lastTime
             this.lastTime = now;
 
-            let keys = Object.keys(entities);
-            let length = Object.keys(entities).length;
+            let keys = this.entityKeys;
+            let length = keys.length;
         
             let _timeStep = 1/timeStep;
 
@@ -1079,15 +1139,13 @@ export const Systems = {
             //let nloops = 0;
             let w = -1;
             outer:
-            for(const i in entities) {
+            for(let i = 0; i < keys.length; i++) {
                 w++
-                let p0 = entities[i];
+                let p0 = entities[keys[i]];
                 const inRange:any[] = []; //indices of in-range boids
                 const distances:any[] = []; //Distances of in-range boids
                 const boidVelocities = [
-                    p0.position.x,
-                    p0.position.y,
-                    p0.position.z,
+                    p0.position.x, p0.position.y,p0.position.z,
                     0,0,0,
                     p0.velocity.x,p0.velocity.y,p0.velocity.z,
                     0,0,0,
@@ -1101,28 +1159,36 @@ export const Systems = {
                 let groupCount = 1;
         
                 let k = -1;
+
                 nested:
-                for(const j in entities) {
-                    let p = entities[j];
+                for(let j = 0; j < keys.length; j++) {
                     k++;
                     //nloops++;
-                    if(distances.length > p0.boid.groupSize || k >= p0.boid.searchLimit) { break nested; }
+                    if(distances.length > p0.boid.groupSize || k > p0.boid.searchLimit) { break nested; }
+                    //if(w === 0) console.time('randj');
                     let randj = keys[Math.floor(Math.random()*length)]; // Get random index
-                    if(k===w || entities[randj].tag === entities[i].tag || inRange.indexOf(randj) > -1) {  } else {
+                    //if(w === 0) console.timeEnd('randj');
+                    if(k===w || randj === keys[i] || inRange.indexOf(randj) > -1) { continue nested; } else {
                         let pr = entities[randj];
-                        //console.time('distance');
-                        let disttemp = Systems.collision.distance3D(p0.position,pr.position);
-                        //console.timeEnd('distance');
+                        //if(w === 0) console.time('distance');
+                        let disttemp = Math.sqrt(
+                            (p0.position.x-pr.position.x)*(p0.position.x-pr.position.x) + 
+                            (p0.position.y-pr.position.y)*(p0.position.y-pr.position.y) + 
+                            (p0.position.z-pr.position.z)*(p0.position.z-pr.position.z)
+                        );
+                        //if(w === 0) console.timeEnd('distance');
 
-                        if(disttemp > p0.boid.groupRadius) { } else {
+
+                        if(disttemp > p0.boid.groupRadius) { continue nested; } else {
+                            //if(w === 0) console.time('boidmath');
                             distances.push(disttemp);
                             inRange.push(randj);
     
                             let distInv;
                             if(p0.boid.useSeparation || p0.boid.useAlignment) {
                                 distInv = (p0.boid.groupRadius/(disttemp*disttemp));
-                                if(distInv > p.maxSpeed) distInv = p.maxSpeed;
-                                else if (distInv < -p.maxSpeed) distInv = -p.maxSpeed;
+                                if(distInv > p0.maxSpeed) distInv = p0.maxSpeed;
+                                else if (distInv < -p0.maxSpeed) distInv = -p0.maxSpeed;
                             }
                     
                             if(p0.boid.useCohesion){
@@ -1154,10 +1220,12 @@ export const Systems = {
                             }
     
                             groupCount++;
+                            //if(w === 0) console.timeEnd('boidmath');
                         }
                     }
+                    
+                   
                 }
-                
                 // if(p0.boid.useAvoidance && p0.boid.avoidance.groups.length > 0) {
                 //     let searchidx = Math.floor(Math.random()*p0.boid.avoidanceGroups.length);
                 //     const inRange2:any[] = [];
@@ -1239,12 +1307,12 @@ export const Systems = {
     
                 //if(i===0) console.log(p0, p0.position, p0.velocity, cohesionVec,separationVec,alignmentVec,swirlVec,attractorVec)
     
-                entities[i].velocity.x=p0.velocity.x+boidVelocities[0]+boidVelocities[3]+boidVelocities[6]+boidVelocities[9]+boidVelocities[12]+boidVelocities[15],
-                entities[i].velocity.y=p0.velocity.y+boidVelocities[1]+boidVelocities[4]+boidVelocities[7]+boidVelocities[10]+boidVelocities[13]+boidVelocities[16],
-                entities[i].velocity.z=p0.velocity.z+boidVelocities[2]+boidVelocities[5]+boidVelocities[8]+boidVelocities[11]+boidVelocities[14]+boidVelocities[17]
+                p0.velocity.x=p0.velocity.x+boidVelocities[0]+boidVelocities[3]+boidVelocities[6]+boidVelocities[9]+boidVelocities[12]+boidVelocities[15],
+                p0.velocity.y=p0.velocity.y+boidVelocities[1]+boidVelocities[4]+boidVelocities[7]+boidVelocities[10]+boidVelocities[13]+boidVelocities[16],
+                p0.velocity.z=p0.velocity.z+boidVelocities[2]+boidVelocities[5]+boidVelocities[8]+boidVelocities[11]+boidVelocities[14]+boidVelocities[17]
                 
                 //console.log(i,groupCount)
-                if(isNaN(entities[i].velocity.x)) console.error(p0, i, groupCount, p0.position, p0.velocity,swirlVec,attractorVec)
+                if(isNaN(p0.velocity.x)) console.error(p0, i, groupCount, p0.position, p0.velocity,swirlVec,attractorVec)
             }
         
             //console.timeEnd('boidloop')
@@ -1255,15 +1323,15 @@ export const Systems = {
     movement:{ //update force/acceleration/velocity/position vectors
         tag:'movement',
         lastTime:performance.now(),
-        setupEntities:(self:typeof Systems['movement'],entities:{[key:string]:Entity})=>{ //install needed data structures to entities
+        setupEntities:function (entities:{[key:string]:Entity}){ //install needed data structures to entities
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[self.tag]) continue;
+                if(entity.components) if(!entity.components[this.tag]) continue;
 
-                self.setupEntity(self,entity);
+                this.setupEntity(entity);
             }
         },
-        setupEntity:(self:typeof Systems['movement'], entity:Entity) => {
+        setupEntity:function (entity:Entity) {
             if(!('mass' in entity)) entity.mass = 1;
             if(!('fixed' in entity)) entity.fixed = false;
             if(!entity.force) entity.force = {x:0,y:0,z:0};
@@ -1271,7 +1339,7 @@ export const Systems = {
             if(!('gravity' in entity)) entity.gravity = -9.81; //m/s^2 on earth
             if(!entity.acceleration) entity.acceleration = {x:0,y:0,z:0};
             if(!entity.velocity) entity.velocity = {x:0,y:0,z:0};
-            if(!('maxSpeed' in entity)) entity.maxSpeed = 3;
+            if(!('maxSpeed' in entity)) entity.maxSpeed = 10;
             if(!entity.position) entity.position = {x:0,y:0,z:0};
 
             return entity;
@@ -1280,12 +1348,15 @@ export const Systems = {
             let now = performance.now();
             let timeStep = (now - this.lastTime) * 0.001;
             this.lastTime = now; 
-            for(const key in entities) {
-                const entity = entities[key];
+
+            let keys = this.entityKeys;
+
+            for(let i = 0; i < keys.length; i++) {
+                const entity = entities[keys[i]];
                 if(entity.components) if(!entity.components[this.tag]) continue;
                 if(entity.fixed) continue;
                 
-                if(typeof entity.force === 'object' && entity.mass) { //F = ma, F in Newtons, m in kg, a in m/s^2
+                if(entity.mass) { //F = ma, F in Newtons, m in kg, a in m/s^2
                     if(entity.force.x) {
                         entity.acceleration.x += entity.force.x/entity.mass;
                         entity.force.x = 0;
@@ -1299,32 +1370,30 @@ export const Systems = {
                         entity.force.z = 0;
                     }
                 }
-                if(typeof entity.acceleration === 'object') {
-                    if(entity.drag) { //e.g.
-                        if(entity.acceleration.x) entity.acceleration.x -= entity.acceleration.x*entity.drag*timeStep;
-                        if(entity.acceleration.y) entity.acceleration.y -= entity.acceleration.y*entity.drag*timeStep;
-                        if(entity.acceleration.z) entity.acceleration.z -= entity.acceleration.z*entity.drag*timeStep;
-                    }
-                    if(entity.acceleration.x) entity.velocity.x += entity.acceleration.x*timeStep;
-                    if(entity.acceleration.y) entity.velocity.y += entity.acceleration.y*timeStep;
-                    if(entity.acceleration.z) entity.velocity.z += entity.acceleration.z*timeStep;
 
-                    if(entity.maxSpeed > 0) {
-                        let magnitude = Systems.collision.magnitude(entity.velocity);
-                        if(magnitude > entity.maxSpeed) {
-                            let scalar = entity.maxSpeed / magnitude;
-                            entity.velocity.x *= scalar;
-                            entity.velocity.y *= scalar;
-                            entity.velocity.z *= scalar;
-                        }
-                    }
+                if(entity.drag) { //e.g.
+                    if(entity.acceleration.x) entity.acceleration.x -= entity.acceleration.x*entity.drag*timeStep;
+                    if(entity.acceleration.y) entity.acceleration.y -= entity.acceleration.y*entity.drag*timeStep;
+                    if(entity.acceleration.z) entity.acceleration.z -= entity.acceleration.z*entity.drag*timeStep;
+                }
+                if(entity.acceleration.x) entity.velocity.x += entity.acceleration.x*timeStep;
+                if(entity.acceleration.y) entity.velocity.y += entity.acceleration.y*timeStep;
+                if(entity.acceleration.z) entity.velocity.z += entity.acceleration.z*timeStep;
 
+                if(entity.maxSpeed > 0) {
+                    let magnitude = Systems.collision.magnitude(entity.velocity);
+                    if(magnitude > entity.maxSpeed) {
+                        let scalar = entity.maxSpeed / magnitude;
+                        entity.velocity.x *= scalar;
+                        entity.velocity.y *= scalar;
+                        entity.velocity.z *= scalar;
+                    }
                 }
-                if(typeof entity.velocity === 'object') {
-                    if(entity.velocity.x) entity.position.x += entity.velocity.x*timeStep;
-                    if(entity.velocity.y) entity.position.y += entity.velocity.y*timeStep;
-                    if(entity.velocity.z) entity.position.z += entity.velocity.z*timeStep;
-                }
+
+                if(entity.velocity.x) entity.position.x += entity.velocity.x*timeStep;
+                if(entity.velocity.y) entity.position.y += entity.velocity.y*timeStep;
+                if(entity.velocity.z) entity.position.z += entity.velocity.z*timeStep;
+               
             }
 
             return entities;

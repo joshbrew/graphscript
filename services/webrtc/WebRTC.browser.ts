@@ -19,7 +19,8 @@ export type WebRTCProps = {
     ondatachannel?:(ev:RTCDataChannelEvent)=>void,
     ondata?:(ev:MessageEvent<any>, channel:RTCDataChannel, room)=>void,
     onconnectionstatechange?:(ev:Event)=>void,
-    oniceconnectionstatechange?:(ev:Event)=>void
+    oniceconnectionstatechange?:(ev:Event)=>void,
+    onclose?:(rtc:WebRTCInfo)=>void //custom callback
 }
 
 export type WebRTCInfo = {
@@ -30,7 +31,9 @@ export type WebRTCInfo = {
     post:(route:any, args?:any)=>void,
     run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>Promise<number>,
-    unsubscribe:(route:any, sub:number)=>Promise<boolean>
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>,
+    terminate:()=>boolean,
+    graph:WebRTCfrontend
 } & WebRTCProps
 
 //webrtc establishes secure P2P contexts between two users directly.
@@ -50,6 +53,10 @@ export class WebRTCfrontend extends Service {
         { urls: ['stun:stun3.l.google.com:19302'] },
         { urls: ['stun:stun4.l.google.com:19302'] }
     ];
+
+    connections = { //higher level reference for router
+        rtc:this.rtc
+    }
 
     constructor(
         options?:ServiceOptions, 
@@ -185,6 +192,10 @@ export class WebRTCfrontend extends Service {
                 return run('unsubscribe',[route,sub]);
             }
  
+            let terminate = () => {
+                return this.terminate(options._id);
+            }
+
             this.rtc[options._id] = {
                 rtc,
                 _id:options._id,
@@ -194,6 +205,8 @@ export class WebRTCfrontend extends Service {
                 send,
                 subscribe,
                 unsubscribe,
+                terminate,
+                graph:this,
                 ...options
             }
 
@@ -238,6 +251,13 @@ export class WebRTCfrontend extends Service {
             rtc.onnegotiationneeded = options.onnegotiationneeded; 
             rtc.oniceconnectionstatechange = options.oniceconnectionstatechange; 
             rtc.onconnectionstatechange = options.onconnectionstatechange; 
+            rtc.addEventListener('connectionstatechange', (ev) => {
+                if(rtc.connectionState === 'closed' || rtc.connectionState === 'failed') {
+                    if(this.rtc[options._id].onclose) {
+                        this.rtc[options._id].onclose(this.rtc[options._id]);
+                    }
+                } 
+            })
         
         } else {
             Object.assign(this.rtc[options._id],options);
@@ -506,15 +526,17 @@ export class WebRTCfrontend extends Service {
                         else callback(res.args);
                     }
                 })
-                return c.request(JSON.stringify({route:'subscribeRTC', args:[route,channelId]}
-                ));
+                return c.request({route:'subscribeRTC', args:[route,channelId]});
             }
         }
     }
     
     routes:Routes = {
         //just echos webrtc info for server subscriptions to grab onto
-        openRTC:this.openRTC,
+        openRTC:{
+            operator:this.openRTC,
+            aliases:['open']
+        },
         request:this.request,
         runRequest:this.runRequest,
         createStream:this.createStream,
@@ -524,7 +546,8 @@ export class WebRTCfrontend extends Service {
         addDataChannel:this.addDataChannel,
         subscribeRTC:this.subscribeRTC,
         subscribeToRTC:this.subscribeToRTC,
-        unsubscribe:this.unsubscribe
+        unsubscribe:this.unsubscribe,
+        terminate:this.terminate
     }
 
 }

@@ -21,17 +21,21 @@ export type WorkerProps = {
     _id?:string,
     port?:MessagePort, //message channel for this instance
     onmessage?:(ev)=>void,
-    onerror?:(ev)=>void
+    onerror?:(ev)=>void,
+    onclose?:(worker:Worker|MessagePort)=>void
 } 
 
 export type WorkerInfo = {
-    worker:Worker,
+    worker:Worker|MessagePort,
     send:(message:any,transfer?:any)=>void,
     request:(message:any, transfer?:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any, transfer?:any)=>void,
     run:(route:any, args?:any, transfer?:any, method?:string)=>Promise<any>
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
-    unsubscribe:(route:any, sub:number)=>Promise<boolean>
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>,
+    terminate:()=>boolean,
+    graph:WorkerService,
+    _id:string
 } & WorkerProps & WorkerRoute
 
 //this spawns the workers
@@ -44,6 +48,10 @@ export class WorkerService extends Service {
     }={}
 
     threadRot = 0; //thread rotation if not specifying
+
+    connections = { //higher level reference for Router
+        workers:this.workers
+    }
 
     constructor(options?:ServiceOptions) {
         super(options);
@@ -166,7 +174,7 @@ export class WorkerService extends Service {
         onmessage?:(ev)=>void,
         onerror?:(ev)=>void
     }) => { //pass file location, web url, or javascript dataurl string
-        let worker;
+        let worker:Worker|MessagePort;
 
         if(!options._id) 
             options._id = `worker${Math.floor(Math.random()*1000000000000000)}`;
@@ -243,6 +251,10 @@ export class WorkerService extends Service {
             return run('unsubscribe',[route,sub]);
         }
 
+        let terminate = () => {
+            return this.terminate(options._id);
+        }
+
         if(!options.onmessage) options.onmessage = (ev) => {
             this.receive(ev.data);
             this.setState({[options._id as string]:ev.data});
@@ -255,18 +267,20 @@ export class WorkerService extends Service {
         }
 
         worker.onmessage = options.onmessage;
-        worker.onerror = options.onerror;
+        (worker as Worker).onerror = options.onerror;
 
         this.workers[options._id] = {
-            worker,
+            worker:(worker as any),
             send,
             post,
             run,
             request,
             subscribe,
             unsubscribe,
+            terminate,
+            graph:this,
             ...options
-        }
+        } as WorkerInfo;
 
         return this.workers[options._id];
     }
@@ -375,17 +389,21 @@ export class WorkerService extends Service {
     }
 
     terminate = (worker:Worker|MessagePort|string) => {
+        let onclose;
         if(typeof worker === 'string') {
             let obj = this.workers[worker];
             if(obj) delete this.workers[worker];
             worker = obj.worker;
+            if(obj.onclose) onclose = obj.onclose;
         }
         if(worker instanceof Worker) {
             worker.terminate();
+            if(onclose) onclose(worker);
             return true;
         }
         if(worker instanceof MessagePort) {
             worker.close();
+            if(onclose) onclose(worker);
             return true;
         }
         return false;
@@ -535,14 +553,18 @@ export class WorkerService extends Service {
 
 
     routes:Routes={
-        addWorker:this.addWorker,
+        addWorker:{
+            operator:this.addWorker,
+            aliases:['open']
+        },
         toObjectURL:this.toObjectURL,
         request:this.request,
         runRequest:this.runRequest,
         establishMessageChannel:this.establishMessageChannel,
         subscribeWorker:this.subscribeWorker,
         subscribeToWorker:this.subscribeToWorker,
-        unsubscribe:this.unsubscribe
+        unsubscribe:this.unsubscribe,
+        terminate:this.terminate
     }
 
 }

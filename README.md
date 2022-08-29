@@ -27,7 +27,6 @@ For additional services (currently gpu.js service and the compiled worker dataur
 ## * [Graphs and GraphNodes](https://github.com/brainsatplay/graphscript/blob/master/docs/Graph.md)
 ## * [Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md)
    * * [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
-## * [Routers](https://github.com/brainsatplay/graphscript/blob/master/docs/Router.md)
 
 (WIP)
 
