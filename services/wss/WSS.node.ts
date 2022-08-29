@@ -254,6 +254,7 @@ export class WSSbackend extends Service {
         this.servers[address].unsubscribe = unsubscribe;
         this.servers[address].terminate = terminate;
         this.servers[address].graph = this;
+        this.servers[address]._id = options._id ? options._id : address;
 
         return this.servers[address];
     }

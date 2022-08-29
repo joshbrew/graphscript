@@ -14,6 +14,7 @@ export type SSEProps = {
     onclose?:(sse:any)=>void,
     onconnectionclose?:(session:any,sseinfo:any,_id:string,req:http.IncomingMessage,res:http.ServerResponse)=>void,
     type?:'sse'|string,
+    _id?:string,
     [key:string]:any
 }
 
@@ -30,6 +31,7 @@ export type SSEChannelInfo = {
     subscribe:(route:any, callback?:((res:any)=>void)|string, sessionId?:string)=>Promise<number>|Promise<number>[]|undefined,
     unsubscribe:(route:any, sub:number, sessionId?:string, eventName?:string)=>Promise<boolean>|Promise<boolean>[],
     terminate:() => boolean,
+    _id:string,
     graph:SSEbackend
 } & SSEProps;
 
@@ -91,6 +93,8 @@ export class SSEbackend extends Service {
         } as SSEChannelInfo;
         
         this.servers[path] = sse;
+
+        sse._id = options._id ? options._id : path;
 
         if(!sse.onconnectionclose) sse.onconnectionclose = (session,sse,id,req,res) => {
             delete sse.sessions[id];

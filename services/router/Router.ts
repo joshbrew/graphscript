@@ -177,7 +177,7 @@ export class Router extends Service {
     }
 
     addUser = (
-        info:Partial<ProfileStruct> & {onclose:(connection:ConnectionInfo,...args:any[])=>void},
+        info:Partial<ProfileStruct> & {onclose?:(connection:ConnectionInfo,...args:any[])=>void},
         connections?:{[key:string]:ConnectionProps|string|ConnectionInfo},
         config?:{ //configure connections per service
             [key:string]:{ //configure multiple connection instances using the generic 'open' function

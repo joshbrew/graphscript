@@ -16,6 +16,7 @@ export type WebSocketProps = {
 }
 
 export type WebSocketInfo = {
+    _id:string,
     socket:WebSocket,
     address:string,
     send:(message:any)=>void,
@@ -191,6 +192,7 @@ export class WSSfrontend extends Service {
             unsubscribe,
             terminate,
             graph:this,
+            _id:options?._id ? options._id : address,
             ...options
         };
 

@@ -34,7 +34,8 @@ export type WorkerInfo = {
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
     terminate:()=>boolean,
-    graph:WorkerService
+    graph:WorkerService,
+    _id:string
 } & WorkerProps & WorkerRoute
 
 //this spawns the workers
@@ -279,7 +280,7 @@ export class WorkerService extends Service {
             terminate,
             graph:this,
             ...options
-        }
+        } as WorkerInfo;
 
         return this.workers[options._id];
     }

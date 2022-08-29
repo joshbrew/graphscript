@@ -42,7 +42,10 @@ const router = new Router({
                 'testsocket':{
                     host:'localhost',
                     port:8080,
-                    path:'wss'
+                    path:'wss',
+                    onopen:(ev,ws,wsinfo)=>{
+                        router.addUser({_id:'helloworld'},{ 'ws':wsinfo._id })
+                    }
                 } as WebSocketProps,
                 'hotreload':{
                     host:'localhost',

@@ -27,6 +27,7 @@ export type ServerProps = {
     keepState?:boolean, //setState whenever a route is run? State will be available at the address (same key of the object storing it here)
     onopen?:(served:ServerInfo)=>void, //onopen callback
     onclose?:(served:ServerInfo)=>void, //server close callback
+    _id?:string,
     [key:string]:any
 }
 
@@ -34,7 +35,8 @@ export type ServerInfo = {
     server:https.Server|http.Server,
     address:string,
     terminate:()=>void,
-    graph:HTTPbackend
+    graph:HTTPbackend,
+    _id:string
 } & ServerProps
 
 export type ReqOptions = {
@@ -212,6 +214,7 @@ export class HTTPbackend extends Service {
         // });
 
         this.servers[address] = served;
+        served._id = options._id ? options._id : address;
 
         //SITE AVAILABLE ON PORT:
         return new Promise((resolve,reject) => {
@@ -261,10 +264,12 @@ export class HTTPbackend extends Service {
 
         if(!('keepState' in options)) options.keepState = true; //default true
 
+        const address = `${host}:${port}`;
+
         const served = {
             server:undefined as any,
             type:'httpserver',
-            address:`${host}:${port}`,
+            address,
             ...options
         } as ServerInfo;
 
@@ -320,7 +325,8 @@ export class HTTPbackend extends Service {
         //     this.onUpgrade(request, socket, head);
         // });
 
-        this.servers[`${host}:${port}`] = served;
+        this.servers[address] = served;
+        served._id = options._id ? options._id : address;
 
         //SITE AVAILABLE ON PORT:
         return new Promise((resolve,reject) => {
