@@ -158,7 +158,6 @@ function merge(props) {
         for (let k in props) {
             if (k === '_state') continue;
             else {
-                this[k] = props[k];
                 this._state[k] = props[k];
                 Object.defineProperty(this, k, {
                     get: () => this._state[k],
