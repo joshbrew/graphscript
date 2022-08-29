@@ -431,8 +431,10 @@ export class Service extends Graph {
     ) => { //For handling RouteProp or other routes with multiple methods 
         let m = method.toLowerCase(); //lower case is enforced in the route keys
         let src = this.nodes.get(route);
-        if(!src) src = this.routes[route];
-        if(!src) src = this.tree[route]; //maybe it's here?
+        if(!src) {
+            src = this.routes[route];
+            if(!src) src = this.tree[route]; //maybe it's here?
+        }
         if(src?.[m]) {
             if(!(src[m] instanceof Function)) {
                 if(args) src[m] = args; //if args were passed set the value
