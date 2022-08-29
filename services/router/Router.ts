@@ -34,16 +34,15 @@ export type User = { //users have macros to call grouped connections generically
 
 
 export type ConnectionProps = {
-    connection:GraphNode|Graph|any, //will include the service as 'graph' from our boilerplate
+    connection:GraphNode|Graph|{[key:string]:any}|string, //can be a node, graph, connection Info object or _id string 
     service?:string|Graph|Service,
-    _id?:string,   //unique id
     source?:string, //group of connections the connection belongs to, e.g. a user id or a service 
     onclose?:(connection:ConnectionInfo,...args:any[])=>void
 }
-//valid connections: SocketInfo, SocketServerInfo, SSEChannelInfo, SSESessionInfo, EventSourceInfo, ServerInfo
+//valid connections: SocketInfo, SocketServerInfo, SSEChannelInfo, SSESessionInfo, EventSourceInfo, ServerInfo, WebRTCInfo
 
 export type ConnectionInfo = {
-    connection:GraphNode|Graph|any,
+    connection:GraphNode|Graph|{[key:string]:any}, //can be a node, graph, connection Info object or _id string 
     service?:string|Service|Graph,
     _id:string,
     source:string,
@@ -383,21 +382,21 @@ export class Router extends Service {
         } else {
             let c = options.connection;
             if(typeof c === 'string') { //get by connection ID
-                if(options.service) {
+                if (this.connections[c]) c = this.connections[c];
+                else if(options.service) {
                     if(typeof options.service === 'string') {
                         options.service = this.services[options.service];
                     }
                     if(typeof options.service === 'object') {
-                        if(options.service.connections) { //cheap reference we have
+                        if(options.service.connections) { //reference we have on available services
                             for(const key in options.service.connections) {
-                                if(options.service.connections[key][c]) {   
-                                    c = options.service.connections[key][c]
+                                if(options.service.connections[key][c as string]) {   
+                                    c = options.service.connections[key][c as string]
                                 }
                             }
                         }
                     }
                 }
-                else if (this.connections[c]) c = this.connections[c];
             } 
             if(typeof c !== 'object') return undefined;
             settings._id = c._id;
@@ -428,7 +427,7 @@ export class Router extends Service {
             if(!this.order.indexOf('local')) this.order.unshift('local'); 
         }
 
-        if(!settings._id) settings._id = options._id ? options._id : `connection${Math.floor(Math.random()*1000000000000000)}`;
+        if(!settings._id) settings._id = `connection${Math.floor(Math.random()*1000000000000000)}`;
     
         if(settings.source) {
             if(!this.sources[settings.source])
