@@ -35,7 +35,7 @@ export type User = { //users have macros to call grouped connections generically
 
 export type ConnectionProps = {
     connection:GraphNode|Graph|{[key:string]:any}|string, //can be a node, graph, connection Info object or _id string 
-    service?:string|Graph|Service,
+    service?:string|Graph|Service, //
     source?:string, //group of connections the connection belongs to, e.g. a user id or a service 
     onclose?:(connection:ConnectionInfo,...args:any[])=>void
 }
@@ -406,6 +406,7 @@ export class Router extends Service {
                         for (const k in this.serviceConnections[j]) {
                             if(this.serviceConnections[j][k][c as string]) {
                                 c = this.serviceConnections[j][k][c as string];
+                                options.service = j;
                                 break;
                             }
                         }
