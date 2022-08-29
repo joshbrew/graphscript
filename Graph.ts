@@ -150,10 +150,32 @@ export const state = {
    * ```
    */
 
+
+//set the node's props as this
+function merge(props) {
+    //  this._state = props._state;
+    // else {
+        for (let k in props) {
+            if (k === '_state') continue;
+            else {
+                this[k] = props[k];
+                this._state[k] = props[k];
+                Object.defineProperty(this, k, {
+                    get: () => this._state[k],
+                    set: (v) => this._state[k] = v,
+                    enumerable: true
+                })
+            }
+        }
+}
+
+
+
 export class GraphNode {
 
     nodes:Map<any,any> = new Map()
     _initial:{[key:string]:any} = {}; //keep track of custom _initial properties added that aren't default on the current class object
+    _state:{[key:string]:any} = {}; //keep track of custom _initial properties added that aren't default on the current class object
 
     tag:string;
     parent:GraphNode|Graph;
@@ -179,6 +201,7 @@ export class GraphNode {
         parentNode?:GraphNode|Graph, 
         graph?:Graph
     ) {    
+
 
         if(typeof properties === 'function') { //pass a function instead of properties to set up a functional graph quickly
             properties = { operator:properties as any };
@@ -254,7 +277,7 @@ export class GraphNode {
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
                 if(hasnode) {
-                    for (let k in hasnode)  this[k] = hasnode[k]; //set the node's props as this
+                    this.merge(hasnode)
 
                     if(!this.source) this.source = hasnode;
 
@@ -298,7 +321,7 @@ export class GraphNode {
             }
             if(properties.children) this._initial.children = Object.assign({},properties.children); //preserve the prototypes
 
-            for (let k in properties) this[k] = properties[k]; //set the node's props as this
+            this.merge(properties)
 
 
             if(!this.tag) {
@@ -343,6 +366,9 @@ export class GraphNode {
         else return properties;
       
     }
+
+    merge = merge
+
     
     // I/O scheme for this node in the graph
     operator:OperatorType = (...args:any[]) => {
@@ -1034,7 +1060,6 @@ export class GraphNode {
 }
 
 
-
 // Macro set for GraphNodes
 export class Graph {
 
@@ -1043,6 +1068,7 @@ export class Graph {
     nodes:Map<any,any> = new Map();
     state=state;
     _initial:any;
+    _state: any = {};
 
     //can create preset node trees on the graph
     tree:Tree = {};
@@ -1052,12 +1078,15 @@ export class Graph {
     constructor( tree?:Tree, tag?:string, props?:{[key:string]:any} ) {
         this.tag = tag ? tag : `graph${Math.floor(Math.random()*100000000000)}`;
 
+
         if(props) {
-            for (let k in props) this[k] = props[k]; //set other props like flow properties in a nested graph
+            this.merge(props)
             this._initial = props;
         }
         if(tree || Object.keys(this.tree).length > 0) this.setTree(tree);
     }
+
+    merge = merge
 
     //converts all children nodes and tag references to GraphNodes also
     add = (n:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
