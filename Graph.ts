@@ -391,6 +391,10 @@ export class GraphNode {
 
     transformArgs: (args:any[], self?:GraphNode) => any[] = (args=[]) => args
 
+    isRunSync = () => {
+        return !(this.children && this.forward || this.parent && this.backward || this.repeat || this.delay || this.frame || this.recursive || this.branch);
+    };
+
     run = (...args:any[]) => {
 
         if (typeof this.transformArgs === 'function') args = this.transformArgs(args, this)
@@ -400,16 +404,7 @@ export class GraphNode {
         //can add an animationFrame coroutine, one per node //because why not
         if(this.firstRun) {
             this.firstRun = false;
-
-            if(
-                !( 
-                   (this.children && this.forward) || 
-                   (this.parent && this.backward) || 
-                   this.repeat || this.delay || 
-                   this.frame || this.recursive ||
-                   this.branch
-                )
-            ) this.runSync = true;
+            this.runSync = this.isRunSync()
 
             if(this.animate && !this.isAnimating) {
                 this.runAnimation(this.animation,args);
@@ -815,14 +810,7 @@ export class GraphNode {
         }
 
         Object.assign(tmp,props);
-        if(
-            !( 
-               (this.children && this.forward) || 
-               (this.parent && this.backward) || 
-               this.repeat || this.delay || 
-               this.frame || this.recursive
-            )
-        ) this.runSync = true;
+        this.runSync = this.isRunSync()
 
     }
 
