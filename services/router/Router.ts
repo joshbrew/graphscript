@@ -435,7 +435,10 @@ export class Router extends Service {
             } else if(c.graph) settings.service = c.graph;
         }
 
-        if(!settings.source && options.service) {
+        if(!settings.source && options.source) {
+            settings.source = options.source;
+        }
+        else if(!settings.source && options.service) {
             settings.source = typeof options.service === 'string' ? options.service : options.service.name;
         } else if (!settings.source && (settings.connection instanceof GraphNode || settings.connection instanceof Graph)) {
             settings.source = 'local';
