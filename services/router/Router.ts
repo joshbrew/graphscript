@@ -57,7 +57,7 @@ export type ConnectionInfo = {
 }
 
 export type RouterOptions = ServiceOptions & {
-    connections?:{[key:string]:ConnectionProps}
+    connections?:{[key:string]:ConnectionProps|string}
     services?:{
         [key:string]:Service|any|{
             service:Service,
@@ -124,7 +124,7 @@ export class Router extends Service {
             }
             if(options.connections){
                 for(const key in options.connections) {
-                    this.addConnection({connection:options.connections[key], service:options.connections[key].service});
+                    this.addConnection({connection:options.connections[key]});
                 }
             }
         }
@@ -132,7 +132,7 @@ export class Router extends Service {
 
     addUser = (
         info:Partial<ProfileStruct> & {onclose:(connection:ConnectionInfo,...args:any[])=>void},
-        connections?:{[key:string]:ConnectionProps}    
+        connections?:{[key:string]:ConnectionProps|string}    
     ) => {
         if(!info._id) {
             info._id = `user${Math.floor(Math.random()*1000000000000000)}`;
