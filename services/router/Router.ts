@@ -86,6 +86,10 @@ export class Router extends Service {
         [key:string]:Service
     } = {}
 
+    serviceConnections:{ //the service's connections objects if provided, these are managed by the services themselves so we don't need to perform cleanup
+        [key:string]:{[key:string]:{[key:string]:any}}
+    }
+
     users:{[key:string]:User}; //jsonifiable information
 
     order:string[]; //execute connections in preferred order
@@ -391,8 +395,18 @@ export class Router extends Service {
                         if(options.service.connections) { //reference we have on available services
                             for(const key in options.service.connections) {
                                 if(options.service.connections[key][c as string]) {   
-                                    c = options.service.connections[key][c as string]
+                                    c = options.service.connections[key][c as string];
+                                    break;
                                 }
+                            }
+                        }
+                    }
+                } else { //check all the service-managed connection objects that we linked
+                    for(const j in this.serviceConnections) {
+                        for (const k in this.serviceConnections[j]) {
+                            if(this.serviceConnections[j][k][c as string]) {
+                                c = this.serviceConnections[j][k][c as string];
+                                break;
                             }
                         }
                     }
@@ -441,7 +455,7 @@ export class Router extends Service {
         return settings;
     }
 
-    removeConnection = (connection:string|ConnectionInfo|{_id:string,[key:string]:any}, terminate:boolean=true) => {
+    removeConnection = (connection:string|ConnectionInfo|{_id:string,[key:string]:any}, terminate:boolean=false) => {
         if(typeof connection === 'object' && connection._id) connection = connection._id;
         if(typeof connection === 'string') {
             if(this.connections[connection]) {
@@ -492,6 +506,9 @@ export class Router extends Service {
     ) => {
         if(connectionsKey && service[connectionsKey]) {
             let newConnections = {};
+            if(!this.serviceConnections[service.name]) this.serviceConnections[service.name] = {};
+            this.serviceConnections[service.name][connectionsKey] = service[connectionsKey];
+
             for(const key in service[connectionsKey]) {
                 if(!this.connections[key]) 
                     newConnections[key] = this.addConnection({connection:service[connectionsKey][key], service},source);
