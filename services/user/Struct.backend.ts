@@ -1,14 +1,13 @@
 import ObjectID from "bson-objectid"
 import { AuthorizationStruct, CommentStruct, GroupStruct, ProfileStruct } from "./datastructures/types";
 import { Routes, Service, ServiceOptions } from "../Service";
+import { User } from "./User.Router";
 
 export const randomId = (prefix?) => ((prefix) ? `${prefix}_` : '')  + Math.floor(1000000000000000*Math.random())
 
 export const toObjectID = (str) => {
     return (typeof str === 'string' && str.length === 24) ? ObjectID(str) : str //wraps a string with an objectid if it isn't
 }
-
-export type UserStruct = {request:any, send:any} & ProfileStruct; //e.g. assign a SocketInfo object to your profile struct to use the connectivity features
 
 export const getStringId = (mongoid:string|ObjectID) => {
     if(typeof mongoid === 'object') return mongoid.toString() //parse strig from mongo objectid
@@ -53,7 +52,7 @@ export class StructBackend extends Service {
     debug:boolean=false;
 
     db: any; // mongodb instance (mongoose)
-    users:{[key:string]:UserStruct} = {}
+    users:{[key:string]:User} = {}
     collections: CollectionsType = {}
     mode: 'local' | 'mongodb' | string 
     useAuths: boolean = true //check if the user querying has the correct permissions 
@@ -61,7 +60,7 @@ export class StructBackend extends Service {
     constructor(
         options?:ServiceOptions,
         dboptions?:{
-            users?:{[key:string]:UserStruct},
+            users?:{[key:string]:User},
             mode?:'local' | 'mongodb' | string,
             db?:any, //mongodb instance (mongoose)
             collections?:CollectionsType
@@ -84,8 +83,8 @@ export class StructBackend extends Service {
 
     //------------------------------------
     //routes to be loaded
-    query = async (requesterId:string,collection?:any,queryObj?:any,findOne?:boolean,skip?:number) => {
-        let user = this.users[requesterId];
+    query = async (requestingUserId:string,collection?:any,queryObj?:any,findOne?:boolean,skip?:number) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         if(this.mode.indexOf('mongo') > -1) {
@@ -110,8 +109,8 @@ export class StructBackend extends Service {
         }
     }
 
-    getUser = async (requesterId:string, lookupId:string) => {
-        let user = this.users[requesterId];
+    getUser = async (requestingUserId:string, lookupId:string) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data:any;
@@ -135,8 +134,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    setUser = async (requesterId:string, struct:Partial<ProfileStruct>) => {
-        let user = this.users[requesterId];
+    setUser = async (requestingUserId:string, struct:Partial<ProfileStruct>) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data:any;
@@ -153,8 +152,8 @@ export class StructBackend extends Service {
             return data;
     }
 
-    getUsersByIds = async (requesterId:string, userIds:string[]) => {
-        let user = this.users[requesterId];
+    getUsersByIds = async (requestingUserId:string, userIds:string[]) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -171,8 +170,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getUsersByRole = async (requesterId:string, role:string) => {
-        let user = this.users[requesterId];
+    getUsersByRole = async (requestingUserId:string, role:string) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -191,8 +190,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteUser = async (requesterId:string, userId:string) => {
-        let user = this.users[requesterId];
+    deleteUser = async (requestingUserId:string, userId:string) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -212,8 +211,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    setData = async (requesterId:string, structs:any[], notify?:boolean) => {
-        let user = this.users[requesterId];
+    setData = async (requestingUserId:string, structs:any[], notify?:boolean) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -246,8 +245,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getData = async (requesterId:string, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number) => {
-        let user = this.users[requesterId];
+    getData = async (requestingUserId:string, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -271,8 +270,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getDataByIds = async (requesterId:string, structIds:string[], ownerId?:string, collection?:string) => {
-        let user = this.users[requesterId];
+    getDataByIds = async (requestingUserId:string, structIds:string[], ownerId?:string, collection?:string) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -295,8 +294,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAllData = async (requesterId:string, ownerId:string, excludedCollections?:string[]) => {
-        let user = this.users[requesterId];
+    getAllData = async (requestingUserId:string, ownerId:string, excludedCollections?:string[]) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -326,8 +325,8 @@ export class StructBackend extends Service {
         return data;
     }   
 
-    deleteData = async (requesterId:string, structIds:string[]) => {
-        let user = this.users[requesterId];
+    deleteData = async (requestingUserId:string, structIds:string[]) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -348,8 +347,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getUserGroups = async (requesterId:string, userId?:string, groupId?:string) => {
-        let user = this.users[requesterId];
+    getUserGroups = async (requestingUserId:string, userId?:string, groupId?:string) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -377,8 +376,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteGroup = async (requesterId:string, groupId:string) => {
-        let user = this.users[requesterId];
+    deleteGroup = async (requestingUserId:string, groupId:string) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -399,8 +398,8 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAuthorizations = async (requesterId:string, ownerId?: string, authId?: string) => {
-        let user = this.users[requesterId];
+    getAuthorizations = async (requestingUserId:string, ownerId?: string, authId?: string) => {
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
@@ -418,9 +417,9 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteAuthorization = async (requesterId:string, authId:string) => {
+    deleteAuthorization = async (requestingUserId:string, authId:string) => {
         
-        let user = this.users[requesterId];
+        let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;

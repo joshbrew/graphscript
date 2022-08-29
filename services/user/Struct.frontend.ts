@@ -1,28 +1,26 @@
 import { DataTablet, DS } from './datastructures/index'
 import { Data, ProfileStruct, AuthorizationStruct, GroupStruct, DataStruct, EventStruct, ChatroomStruct, CommentStruct, Struct } from './datastructures/types';
-import { UserProps } from '../../routers/users/User.router';
 import { Routes, Service, ServiceOptions } from '../Service';
+import { User } from './User.Router';
 
 export const randomId = (prefix?) => ((prefix) ? `${prefix}` : '')  + Math.floor(1000000000000000*Math.random())
 
 export const pseudoObjectId = (m = Math, d = Date, h = 16, s = s => m.floor(s).toString(h)) => //the fuck?
     s(d.now() / 1000) + ' '.repeat(h).replace(/./g, () => s(m.random() * h))
 
-export type UserStruct = {request:any, send:any} & ProfileStruct;  //e.g. assign a SocketInfo object to your profile struct to use the connectivity features
-
 //intended for use with a UserRouter
 
 export class StructFrontend extends Service {
     name='structs'
 
-    currentUser: UserStruct //user from the UserRouter whose endpoints we want to use 
+    currentUser: User //user from the UserRouter whose endpoints we want to use 
     tablet = new DataTablet(); //DataTablet 
     collections = this.tablet.collections;
     id: string = randomId()
 
     constructor(
         options?:ServiceOptions,
-        user?:Partial<UserStruct>
+        user?:Partial<User>
     ) {
         super(options);
         this.load(this.routes);
@@ -32,7 +30,7 @@ export class StructFrontend extends Service {
 
     //TODO: make this able to be awaited to return the currentUser
     //uses a bunch of the functions below to set up a user and get their data w/ some cross checking for consistent profiles
-    async setupUser(userinfo:Partial<UserStruct>, callback=(currentUser)=>{}) {
+    async setupUser(userinfo:Partial<User>, callback=(currentUser)=>{}) {
 
         if(!userinfo) {
             console.error('must provide a minimum info object! e.g. {_id:"abc123"}');
@@ -565,7 +563,7 @@ export class StructFrontend extends Service {
 
     
     //pass notifications you're ready to resolve and set pull to true to grab the associated data structure.
-    resolveNotifications = async (notifications:any[]=[], pull:boolean=true, user:Partial<UserStruct>=this.currentUser) => {
+    resolveNotifications = async (notifications:any[]=[], pull:boolean=true, user:Partial<User>=this.currentUser) => {
         if(!user || notifications.length === 0) return;
         let structIds:any[] = [];
         let notificationIds:any[] = [];
@@ -875,7 +873,7 @@ export class StructFrontend extends Service {
     stripStruct(struct={}) {
         const copy = Object.assign({ }, struct);
         for(const prop in copy) {
-            if(copy[prop] === undefined || copy[prop].constructor.name === 'Map') delete copy[prop]; //delete undefined 
+            if(copy[prop] === undefined || copy[prop].constructor.name === 'Map' || typeof copy[prop] === 'function') delete copy[prop]; //delete undefined 
         }
         return copy;
     }
@@ -887,7 +885,7 @@ export class StructFrontend extends Service {
     }
 
     userStruct (
-        props: Partial<UserStruct>={}, 
+        props: Partial<User>={}, 
         currentUser=false
     ) {
         let user = DS.ProfileStruct(undefined, props, props);
@@ -908,7 +906,7 @@ export class StructFrontend extends Service {
 
     //TODO: Update the rest of these to use the DB structs but this should all work the same for now
     authorizeUser = async (
-        parentUser:Partial<UserStruct>,
+        parentUser:Partial<User>,
         authorizerUserId='',
         authorizerUserName='',
         authorizedUserId='',
@@ -941,7 +939,7 @@ export class StructFrontend extends Service {
     }
 
     addGroup = async (
-        parentUser:Partial<UserStruct>,
+        parentUser:Partial<User>,
         name='',  
         details='',
         admins:{}={}, 
@@ -987,7 +985,7 @@ export class StructFrontend extends Service {
     }
 
     addData = async (
-        parentUser:Partial<UserStruct>, 
+        parentUser:Partial<User>, 
         author='', 
         title='', 
         type='', 
@@ -1013,7 +1011,7 @@ export class StructFrontend extends Service {
     }
 
     addEvent = async (
-        parentUser:Partial<UserStruct>,
+        parentUser:Partial<User>,
         author='', 
         event='', 
         notes='', 
@@ -1045,7 +1043,7 @@ export class StructFrontend extends Service {
     }
 
     addChatroom = async (
-        parentUser:Partial<UserStruct>,
+        parentUser:Partial<User>,
         authorId='', 
         message='', 
         attachments:string|Data[]=[], 
@@ -1072,7 +1070,7 @@ export class StructFrontend extends Service {
 
     //add comment to chatroom or discussion board
     addComment = async (
-        parentUser:Partial<UserStruct>,
+        parentUser:Partial<User>,
         roomStruct?:{
             _id: string;
             users: any[];

@@ -112,7 +112,7 @@ export class Router extends Service {
 
 
     //pick the preferred connection by service name if passing a source, or pick the connection by id if not a source
-    getConnection = (sourceId:string) => {
+    getConnection = (sourceId:string, hasMethod?:string):ConnectionInfo => {
         let connection;
         if(this.sources[sourceId]) {
             if (this.order) {
@@ -123,30 +123,43 @@ export class Router extends Service {
                             if(typeof this.sources[sourceId as string][key].service === 'object') {
                                 if((this.sources[sourceId as string][key].service as Graph).tag === k) {
                                     connection = this.sources[sourceId as string][key];
+                                    break;
                                 }
                             }
                         }
                     }
                 }
             }
-            else Object.keys(this.sources[sourceId]).forEach((k) => {
-                if(this.sources[sourceId as string][k].send) {
-                    connection = this.sources[sourceId as string][k]
+            else {
+                
+                for(const k in this.sources[sourceId as string]) {
+                    if(hasMethod && this.sources[sourceId as string][k][hasMethod]) {
+                        connection = this.sources[sourceId as string][k];
+                        break;
+                    }
+                    else {
+                        connection = this.sources[sourceId as string][k];
+                        break;
+                    }
                 }
-            });
+                
+            }
         } else if (this.order) {
             for(let i = 0; i < this.order.length; i++) {
                 let k = this.order[i];  
-                if(this.sources[k][sourceId as string]?.run) {
+                if(hasMethod && this.sources[k][sourceId as string]?.[hasMethod]) {
+                    connection = this.sources[k][sourceId as string];
+                    break;
+                }
+                else {
                     connection = this.sources[k][sourceId as string];
                     break;
                 }
             }
         } 
         if(typeof sourceId === 'string' && this.connections[sourceId] && this.connections[sourceId].send) {
-            connection = this.connections[sourceId];
+            connection = this.connections[sourceId]; //regardless of method, as this is a direct connection reference
         } 
-        if(typeof sourceId === 'string') return undefined;
         return connection;
     }
 
@@ -300,7 +313,6 @@ export class Router extends Service {
 
         if(!settings._id) settings._id = options._id ? options._id : `connection${Math.floor(Math.random()*1000000000000000)}`;
     
-    
         if(settings.source) {
             if(!this.sources[settings.source])
                 this.sources[settings.source] = {};
@@ -313,16 +325,23 @@ export class Router extends Service {
         return settings;
     }
 
-    removeConnection = (connection:string|ConnectionInfo) => {
+    removeConnection = (connection:string|ConnectionInfo|{_id:string,[key:string]:any}, terminate:boolean=true) => {
+        if(typeof connection === 'object' && connection._id) connection = connection._id;
         if(typeof connection === 'string') {
-            delete this.connections[connection];
-            for(const key in this.sources) {
-                if(this.sources[key][connection])
-                    delete this.sources[key][connection];
+            if(this.connections[connection]) {
+                if(terminate && this.connections[connection]) this.connections[connection].terminate();
+                delete this.connections[connection];
+                for(const key in this.sources) {
+                    if(this.sources[key][connection])
+                        delete this.sources[key][connection];
+                }
+                return true;
+            } else if (this.sources[connection]) {
+                for(const key in this.sources[connection]) {
+                    this.removeConnection(this.sources[connection][key],terminate);
+                }
+                return true;
             }
-        } else {
-            delete this.connections[connection._id];
-            if(connection.source) delete this.sources[connection.source][connection._id];
         }
     }
 
@@ -399,7 +418,7 @@ export class Router extends Service {
         ...args:any[]
     ) => {
         if(typeof router === 'string') {
-            router = this.getConnection(router);
+            router = this.getConnection(router,'run');
         }
 
         return new Promise((res,rej) => {
@@ -415,7 +434,7 @@ export class Router extends Service {
                 });
                 res(sub);
             }).catch(rej);
-        })
+        });
     }
 
     //we will use the router to relay subscriptions between endpoints generically
@@ -431,7 +450,7 @@ export class Router extends Service {
             if(this.sources[receiver]) {
                 rxsrc = receiver;
             }
-            receiver = this.getConnection(receiver);
+            receiver = this.getConnection(receiver,'send');
 
         }
 
@@ -440,7 +459,7 @@ export class Router extends Service {
             // if(this.sources[transmitter]) {
             //     txsrc = transmitter;
             // }
-            transmitter = this.getConnection(transmitter);
+            transmitter = this.getConnection(transmitter,'subscribe');
         }
 
         if((transmitter as ConnectionInfo)?.subscribe && (receiver as ConnectionInfo)?.send) {
