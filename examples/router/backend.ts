@@ -1,4 +1,17 @@
-import { Router } from "../../services/router/Router";
+function exitHandler(options, exitCode) {
+        
+    if (exitCode || exitCode === 0) console.log('SERVER EXITED WITH CODE: ',exitCode);
+    if (options.exit) process.exit();
+}
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null,{cleanup:true}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+
+import { Router, User } from "../../services/router/Router";
 import { SocketServerProps, WSSbackend } from "../../services/wss/WSS.node";
 import { SSEbackend, SSEProps } from "../../services/sse/SSE.node";
 import { HTTPbackend, ServerProps } from "../../services/http/HTTP.node";
@@ -6,10 +19,8 @@ import { SessionsService } from "../../services/streaming/sessions.service";
 import { scriptBoilerPlate } from "../../services/http/boilerplate";
 
 const router = new Router({
-    routes:{
-        SessionsService
-    },
     services:{
+        'sessions':SessionsService,
         'wss':WSSbackend,
         'sse':SSEbackend,
         'http':{
@@ -80,7 +91,7 @@ const router = new Router({
                                         )
                                     );
                                 }
-                            }
+                            } as SSEProps
                         )
                     }
                     // startpage:'index.html',
@@ -96,3 +107,34 @@ const router = new Router({
     order:['sse','wss'],//prefer certain connection sources in a certain order, defaults to load order (if appropriate callbacks are available for subscription)
     syncServices:true
 }); //on frontend we want to prefer wss first as sse is POST-reliant from browser
+
+router.addUser({
+    _id:'admin'
+});
+
+router.run('sessionLoop');
+
+let session = (router.services.sessions as SessionsService).openSharedSession(
+    {
+        _id:'webrtcrooms',
+        settings:{
+            name:'webrtcrooms',
+            propnames:{
+                rooms:true //if these props are updated on the user object we'll return them
+            }  
+        }
+    },
+    'admin'
+);
+
+router.run('sessions.sessionLoop');
+
+router.subscribe('addUser', (user:User) => {
+    if(typeof user === 'object') {
+        let joined = (router.services.sessions as SessionsService).joinSession('webrtcrooms', user._id);
+
+        if(joined) {
+            user.send({route:'sessions.joinSession',args:[joined._id,user._id,joined]})
+        }
+    }
+});

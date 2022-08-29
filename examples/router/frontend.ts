@@ -44,7 +44,15 @@ const router = new Router({
                     port:8080,
                     path:'wss',
                     onopen:(ev,ws,wsinfo)=>{
-                        router.addUser({_id:'helloworld'},{ 'ws':wsinfo._id })
+                        let user = router.addUser(
+                            {_id:`user${Math.floor(Math.random()*1000000000000000)}`},
+                            { 'ws':{ connection:wsinfo } }
+                        ).then((user) => {
+                            router.subscribe('joinSession', (res) => {
+                                console.log('joinSessions fired', res);
+                            });
+                        });
+
                     }
                 } as WebSocketProps,
                 'hotreload':{
@@ -59,3 +67,5 @@ const router = new Router({
     syncServices:true,
     order:['webrtc','wss','sse']
 });
+
+

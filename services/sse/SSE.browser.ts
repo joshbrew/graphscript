@@ -160,7 +160,6 @@ export class SSEfrontend extends Service {
         sse.unsubscribe = unsubscribe;
         sse.terminate = terminate;
         sse.graph = this;
-        sse._id = options._id ? options._id : options.url;
 
         this.eventsources[options.url] = sse;
         //console.log(source);

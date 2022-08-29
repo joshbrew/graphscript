@@ -176,7 +176,7 @@ export class Router extends Service {
         }
     }
 
-    addUser = (
+    addUser = async (
         info:Partial<ProfileStruct> & {onclose?:(connection:ConnectionInfo,...args:any[])=>void},
         connections?:{[key:string]:ConnectionProps|string|ConnectionInfo},
         config?:{ //configure connections per service
@@ -196,6 +196,34 @@ export class Router extends Service {
         let user = Profile(info._id,info) as User;
         
         if(connections){
+            for(const key in connections) {
+                if(typeof connections[key] === 'object') {
+                    if(!(connections[key] as any).connection._id) {
+                        await new Promise((res,rej) => {
+                            let start = performance.now();
+                            let checker = () => {
+                                if(!(connections[key] as any).connection._id) {
+                                    if(performance.now() - start > 3000) {
+                                        delete connections[key];
+                                        rej(false);
+                                    } else {
+                                        setTimeout(()=>{
+                                            checker();
+                                        },100); //check every 100ms
+                                    }
+                                } else {
+                                    res(true);
+                                }
+                            }
+        
+                            checker();
+        
+                        }).catch((er) => {
+                            console.error('Connections timed out:', er); 
+                        });
+                    }
+                }
+            }
             for(const key in connections) {
                 connections[key] = this.addConnection(connections[key], user._id) as any;
             }
@@ -641,7 +669,7 @@ export class Router extends Service {
         }
     }
 
-    openConnection = (
+    openConnection = async (
         service:string|Service, //the service we are calling
         options:{[key:string]:any},  //all of the creation function start with objects in our service library 
         source?:string,
@@ -653,11 +681,54 @@ export class Router extends Service {
         if(service instanceof Service) {
             let connection = service.run('open', options, ...args);
             if(connection instanceof Promise) {
-                connection.then((info) => {
-                    this.addConnection({connection:info, service}, source);
+                return connection.then(async (info) => {
+                    if(!info._id) {
+                        await new Promise((res,rej) => {
+                            let start = performance.now();
+                            let checker = () => {
+                                if(!info._id) {
+                                    if(performance.now() - start > 3000) {
+                                        rej(false);
+                                    } else {
+                                        setTimeout(()=>{
+                                            checker();
+                                        },100); //check every 100ms
+                                    }
+                                } else {
+                                    res(true);
+                                }
+                            }
+        
+                            checker();
+        
+                        }).catch((er) => {console.error('Connections timed out:', er); });
+                    }
+                    if(info._id) this.addConnection({connection:info, service}, source);
                 })
             } else if(connection) {
-                this.addConnection({connection, service}, source);
+                if(!connection._id) {
+                    await new Promise((res,rej) => {
+    
+                        let start = performance.now();
+                        let checker = () => {
+                            if(!connection._id) {
+                                if(performance.now() - start > 3000) {
+                                    rej(false);
+                                } else {
+                                    setTimeout(()=>{
+                                        checker();
+                                    },100); //check every 100ms
+                                }
+                            } else {
+                                res(true);
+                            }
+                        }
+    
+                        checker();
+    
+                    }).catch((er) => {console.error('Connections timed out:', er); });
+                }
+                if(connection._id) return this.addConnection({connection, service}, source);
             }
         }
     }
