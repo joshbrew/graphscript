@@ -502,7 +502,7 @@ export class Service extends Graph {
                 args[0] = JSON.parse(args[0]); //parse stringified args
             }
         }
-
+        
         if(typeof args[0] === 'object') {
             if(args[0].method) { //run a route method directly, results not linked to graph
                 return this.handleMethod(args[0].route, args[0].method, args[0].args);

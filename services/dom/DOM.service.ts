@@ -125,6 +125,8 @@ export class DOMService extends Service {
                 Object.assign(this.interpreters,interpreters);
             }
 
+            //console.log('init domservice', options)
+
             this.init(options);
             
     }
@@ -220,7 +222,6 @@ export class DOMService extends Service {
             options.onresize = (ev) => { onresize(ev, elm, this.elements[options.id]) };
             window.addEventListener('resize', options.onresize as EventListener);
         }
-
         
         if(!elm.parentNode) {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
@@ -287,7 +288,11 @@ export class DOMService extends Service {
                 if(typeof options.attributes[key] === 'function') element[key] = (...args) => options.attributes[key](...args); // replace this scope
                 else element[key] = options.attributes[key];
             }
-
+        } 
+        if (!options.attributes?.innerHTML && options.innerHTML) {
+            element.innerHTML = options.innerHTML;
+        } else if (!options.attributes?.innerText && options.innerText) {
+            element.innerText = options.innerText;
         }
         
         return options;
@@ -371,7 +376,6 @@ export class DOMService extends Service {
                 
             return props;
         }
-
         
         let node = this.resolveNode(elm, options);
 

@@ -141,10 +141,12 @@ export class WSSbackend extends Service {
 
             ws.send(JSON.stringify({ route:'setId', args:clientId }));
 
-            this.openWS({
+            let info = this.openWS({
                 socket:ws,
-                address:clientId
+                address:clientId,
+                _id:clientId
             }); //add send/receive etc functionality
+
 
             if(options.onconnection) 
                 options.onconnection(ws,request,this.servers[address], clientId);//can overwrite the default onmesssage response 
@@ -280,29 +282,41 @@ export class WSSbackend extends Service {
         if(!('keepState' in options)) options.keepState = true;
 
         if(options.onmessage) socket.on('message',(data)=>{(options as any).onmessage(data,socket,this.sockets[address]);}); 
+        else if (options._id) {
+            socket.on('message', (data:any)=> {
+                if(ArrayBuffer.isView(data)) data = data.toString();
+                this.receive(data,socket,this.sockets[address]); 
+                if(options.keepState) {
+                    this.setState({[address]:data});
+                }
+            }); //clear this extra logic after id is set
+        }
         else {
             let socketonmessage = (data:any)=>{ 
-          
-                if(data) if(typeof data === 'string') { //pulling this out of receive to check if setId was called
-                    let substr = data.substring(0,8);
-                    if(substr.includes('{') || substr.includes('[')) {    
-                        if(substr.includes('\\')) data = data.replace(/\\/g,"");
-                        if(data[0] === '"') { data = data.substring(1,data.length-1)};
-                        //console.log(message)
-                        data = JSON.parse(data); //parse stringified objects
+                if(ArrayBuffer.isView(data)) data = data.toString();
+                if(data) {
+                    if(typeof data === 'string') { //pulling this out of receive to check if setId was called
+                        let substr = data.substring(0,8);
+                        if(substr.includes('{') || substr.includes('[')) {    
+                            if(substr.includes('\\')) data = data.replace(/\\/g,"");
+                            if(data[0] === '"') { data = data.substring(1,data.length-1)};
+                            //console.log(message)
+                            data = JSON.parse(data); //parse stringified objects
 
-                        if(data.route === 'setId') {
-                            this.sockets[address]._id = data.args;
-                            socket.removeEventListener('message',socketonmessage);
-                            socket.on('message', (data:any)=> {
-                                this.receive(data,socket,this.sockets[address]); 
-                                if(options.keepState) {
-                                    this.setState({[address]:data});
-                                }
-                            }); //clear this extra logic after id is set
+                            if(data.route === 'setId') {
+                                this.sockets[address]._id = data.args;
+                                socket.removeEventListener('message',socketonmessage);
+                                socket.on('message', (data:any)=> {                
+                                    if(ArrayBuffer.isView(data)) data = data.toString();
+                                    this.receive(data,socket,this.sockets[address]); 
+                                    if(options.keepState) {
+                                        this.setState({[address]:data});
+                                    }
+                                }); //clear this extra logic after id is set
+                            }
                         }
-                    }
-                } 
+                    } 
+                }
 
                 this.receive(data,socket,this.sockets[address]); 
                 if(options.keepState) this.setState({[address]:data}); 
@@ -380,7 +394,7 @@ export class WSSbackend extends Service {
             ...options
         }
 
-        return socket;
+        return this.sockets[address];
     }
 
     transmit = (

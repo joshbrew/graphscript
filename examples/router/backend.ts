@@ -108,6 +108,8 @@ const router = new Router({
     syncServices:true
 }); //on frontend we want to prefer wss first as sse is POST-reliant from browser
 
+router.services.sessions.users = router.users;
+
 router.addUser({
     _id:'admin'
 });
@@ -128,11 +130,14 @@ let session = (router.services.sessions as SessionsService).openSharedSession(
 router.run('sessions.sessionLoop');
 
 router.subscribe('addUser', (user:User) => {
+    console.log('new user!', user)
     if(typeof user === 'object') {
         let joined = (router.services.sessions as SessionsService).joinSession('webrtcrooms', user._id);
-
         if(joined) {
+            let con = router.getConnection(user._id,'run');
             user.send({route:'sessions.joinSession',args:[joined._id,user._id,joined]})
         }
     }
 });
+
+//console.log('router nodes',router.nodes.keys(),'\n\n wss nodes',router.services.wss.nodes.keys())

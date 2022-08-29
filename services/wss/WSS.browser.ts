@@ -75,8 +75,8 @@ export class WSSfrontend extends Service {
         const socket = new WebSocket(address);
 
         if(!options.onmessage) {
+            if(!options._id){
             options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { 
-            
                 if(data) if(typeof data === 'string') {
                     let substr = data.substring(0,8);
                     if(substr.includes('{') || substr.includes('[')) {    
@@ -100,6 +100,15 @@ export class WSSfrontend extends Service {
                 let res = this.receive(data); 
                 if(options.keepState) this.setState({[address]:data}); 
             } //default onmessage
+            }
+            else {
+                options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo)=> {
+                    this.receive(data,socket,this.sockets[address]); 
+                    if(options.keepState) {
+                        this.setState({[address]:data});
+                    }
+                }; //clear this extra logic after id is set
+            }
         }
 
         if((options as any).onmessage) {

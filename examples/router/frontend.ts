@@ -8,7 +8,6 @@ import { DOMService } from '../../services/dom/DOM.service';
 
 const router = new Router({
     routes:{
-        HTTPfrontend,
         'dom': new DOMService({
             routes:{
                 'main':{
@@ -24,6 +23,7 @@ const router = new Router({
         })
     },
     services:{
+        'http':HTTPfrontend,
         'sessions':SessionsService,
         'sse':{
             service:SSEfrontend,
@@ -44,22 +44,27 @@ const router = new Router({
                     port:8080,
                     path:'wss',
                     onopen:(ev,ws,wsinfo)=>{
-                        let user = router.addUser(
+                        console.log('socket opened!');
+
+                        router.addUser(
                             {_id:`user${Math.floor(Math.random()*1000000000000000)}`},
                             { 'ws':{ connection:wsinfo } }
                         ).then((user) => {
-                            router.subscribe('sessions.joinSession', (res) => {
-                                console.log('joinSessions fired', res);
+                            console.log('new user', user);
+
+                            router.subscribe('joinSession', (res) => {
+                                console.log('joinSession fired', res);
+                                (document.getElementById('header') as HTMLElement).innerHTML = `Joined: ${JSON.stringify(res)}`;
                             });
                         });
 
                     }
                 } as WebSocketProps,
-                'hotreload':{
-                    host:'localhost',
-                    port:8080,
-                    path:'hotreload'
-                } as WebSocketProps
+                // 'hotreload':{
+                //     host:'localhost',
+                //     port:8080,
+                //     path:'hotreload'
+                // } as WebSocketProps
             }
         },
         'webrtc':WebRTCfrontend
@@ -68,4 +73,6 @@ const router = new Router({
     order:['webrtc','wss','sse']
 });
 
+router.services.sessions.users = router.users;
 
+console.log(router.nodes.keys())
