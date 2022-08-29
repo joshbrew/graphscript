@@ -58,13 +58,21 @@ export type ConnectionInfo = {
 }
 
 export type RouterOptions = ServiceOptions & {
-    connections?:{[key:string]:ConnectionProps|string}
     services?:{
         [key:string]:Service|any|{
-            service:Service,
-            connections:string[]|{[key:string]:any}
+            service:Service|any,
+            connections:string[]|{[key:string]:any},
+            config?:{ //configure connections per service
+                [key:string]:{ //configure multiple connection instances using the generic 'open' function
+                    _id?:string,
+                    source?:string,
+                    onclose?:(c:ConnectionInfo,...args:any[])=>void,
+                    args?:any[], //other arguments a service spec expects other than the main config object (try to make it just one object for easier config automation!)
+                    [key:string]:any //configuration settings
+                }
+            }, //configure new connections after adding the relevant services?
         } //can be a service constructor
-    },
+    }
     syncServices?:boolean,
     order?:string[]
 }
@@ -97,35 +105,72 @@ export class Router extends Service {
 
     constructor(options?:RouterOptions){
         super(options);
+        this.load(this.routes);
         if(options) {
             if(options.order) this.order = options.order;
 
             if(options.services) {
                 for(const key in options.services) {
-                    if(options.services[key] instanceof Service) {
-                        options.services[key].service.name = key; options.services[key].service.tag = key;
-                        this.addService(options.services[key].service, options.services[key].connections, options.includeClassName, options.routeFormat, options.syncServices);
-                    } else if (typeof options.services[key] === 'function') {
-                        let service = options.services[key]({name:key}) as Service; //instantiate a class prototype
+                    let opt = (options.services[key] as any);
+                    if(opt instanceof Service) {
+                        opt.service.name = key; opt.service.tag = key;
+                        this.addService(opt.service, opt.connections, options.includeClassName, options.routeFormat, options.syncServices);
+                    } else if (typeof opt === 'function') {
+                        let service = opt({name:key}) as Service; //instantiate a class prototype
                         service.name = key; service.tag = key;
-                        if(service) this.addService(service, service.connections, options.includeClassName, options.routeFormat, options.syncServices);
+                        if(service) 
+                            this.addService(
+                                service, 
+                                service.connections, 
+                                options.includeClassName, 
+                                options.routeFormat, 
+                                options.syncServices
+                            );
                     }
-                    else if(options.services[key].service instanceof Service) {
-                        options.services[key].service.name = key; options.services[key].service.tag = key;
-                        this.addService(options.services[key].service, undefined, options.includeClassName, options.routeFormat, options.syncServices);
-                        if(options.services[key].connections) {
-                            if(Array.isArray(options.services[key].connections)) {
-                                (options.services[key].connections as any).forEach((k) => {
-                                    this.addConnections((options.services as any)[key].service,k);
-                                })
-                            } else this.addConnections(options.services[key].service,options.services[key].connections);
+                    else {
+                        if (typeof opt.service === 'function') {
+                            let service = opt.service({name:key}) as Service; //instantiate a class prototype
+                            service.name = key; service.tag = key;
+                            if(service) 
+                                this.addService(
+                                    service, 
+                                    undefined, 
+                                    options.includeClassName, 
+                                    options.routeFormat, 
+                                    options.syncServices
+                                );
+                                opt.service = service;
+                        }
+                        else if(opt.service instanceof Service) {
+                            opt.service.name = key; opt.service.tag = key;
+                            this.addService(
+                                opt.service, 
+                                undefined,
+                                options.includeClassName, 
+                                options.routeFormat, 
+                                options.syncServices
+                            );
+                        }
+                        if(typeof opt.service === 'object') {
+                            if(opt.connections) {
+                                if(Array.isArray(opt.connections)) {
+                                    (opt.connections as any).forEach((k) => {
+                                        this.addConnections(opt[key].service,k);
+                                    })
+                                } else this.addConnections(opt.service,opt.connections);
+                            }
+                            if(opt.config) {
+                                for(const c in opt.config) {
+                                    this.openConnection(
+                                        opt.service, 
+                                        opt.config[c],
+                                        opt.config[c].source,
+                                        opt.config[c].args
+                                    );
+                                }
+                            }
                         }
                     }
-                }
-            }
-            if(options.connections){
-                for(const key in options.connections) {
-                    this.addConnection({connection:options.connections[key]});
                 }
             }
         }

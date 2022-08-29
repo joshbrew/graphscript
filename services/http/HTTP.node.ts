@@ -25,6 +25,7 @@ export type ServerProps = {
     protocol?:'http'|'https',
     type?:'httpserver'|string,
     keepState?:boolean, //setState whenever a route is run? State will be available at the address (same key of the object storing it here)
+    onopen?:(served:ServerInfo)=>void, //onopen callback
     onclose?:(served:ServerInfo)=>void, //server close callback
     [key:string]:any
 }
@@ -220,7 +221,11 @@ export class HTTPbackend extends Service {
             });
             server.listen( 
                 port,host,
-                ()=>{onStarted(); resolve(served);}
+                ()=>{
+                    onStarted(); 
+                    if(served.onopen) served.onopen(served);
+                    resolve(served);
+                }
             );
         }) as Promise<ServerInfo> ;
     }
@@ -325,7 +330,11 @@ export class HTTPbackend extends Service {
             })
             server.listen( 
                 port,host,
-                ()=>{onStarted(); resolve(served); }
+                ()=>{
+                    onStarted(); 
+                    if(served.onopen) served.onopen(served);
+                    resolve(served); 
+                }
             );
         }) as Promise<ServerInfo>;
     }

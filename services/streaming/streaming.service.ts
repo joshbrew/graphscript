@@ -1,4 +1,4 @@
-import { Routes, Service } from "../Service";
+import { Routes, Service, ServiceOptions } from "../Service";
 
 
 
@@ -21,6 +21,13 @@ export class StreamingService extends Service {
             }
         }
     } = {};
+
+
+    constructor(options:ServiceOptions) {
+        super(options);
+        this.load(this.routes);
+    }
+
 
     streamFunctions:any = {
         //these default functions will only send the latest of an array or value if changes are detected, and can handle single nested objects 

@@ -83,6 +83,7 @@ export class SessionsService extends Service {
 
     constructor(options:ServiceOptions, users?:{[key:string]:SessionUser}) {
         super(options);
+        this.load(this.routes);
         if(users) this.users = users;
     }
 
