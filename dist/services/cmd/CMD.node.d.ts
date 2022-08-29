@@ -36,6 +36,9 @@ export declare class CMDService extends Service {
             controller: AbortController;
         } & CMDRoute;
     };
+    connections: {
+        processes: any;
+    };
     customRoutes: ServiceOptions['customRoutes'];
     constructor(options?: ServiceOptions);
     createProcess: (properties: CMDRoute) => CMDRoute;

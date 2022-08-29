@@ -24,11 +24,21 @@ export declare type SocketServerInfo = {
         [key: string]: WebSocket;
     };
     address: string;
+    send: (message: any, socketId?: string) => void;
+    request: (message: any, method?: string, socketId?: string) => Promise<any> | Promise<any>[];
+    post: (route: any, args?: any, method?: string, socketId?: string) => void;
+    run: (route: any, args?: any, method?: string, socketId?: string) => Promise<any> | Promise<any>[];
+    subscribe: (route: any, callback?: ((res: any) => void) | string, socketId?: string) => Promise<number> | Promise<number>[] | undefined;
+    unsubscribe: (route: any, sub: number, socketId?: string) => Promise<boolean> | Promise<boolean>[];
+    terminate: (socketId?: string) => boolean;
+    graph: WSSbackend;
 } & SocketServerProps;
 export declare type SocketProps = {
-    host: string;
-    port: number;
+    host?: string;
+    port?: number;
     path?: string;
+    socket?: WebSocket;
+    address?: string;
     serverOptions?: WebSocket.ServerOptions;
     onmessage?: (data: string | ArrayBufferLike | Blob | ArrayBufferView | Buffer[], ws: WebSocket, wsinfo: SocketProps) => void;
     onopen?: (ws: WebSocket, wsinfo: SocketProps) => void;
@@ -44,10 +54,12 @@ export declare type SocketInfo = {
     address?: string;
     send: (message: any) => void;
     request: (message: any, method?: string) => Promise<any>;
-    post: (route: any, args?: any) => void;
+    post: (route: any, args?: any, method?: string) => void;
     run: (route: any, args?: any, method?: string) => Promise<any>;
     subscribe: (route: any, callback?: ((res: any) => void) | string) => any;
     unsubscribe: (route: any, sub: number) => Promise<boolean>;
+    terminate: () => void;
+    graph: WSSbackend;
 } & SocketProps;
 export declare class WSSbackend extends Service {
     name: string;
@@ -58,15 +70,23 @@ export declare class WSSbackend extends Service {
     sockets: {
         [key: string]: SocketInfo;
     };
+    connections: {
+        servers: {
+            [key: string]: SocketServerInfo;
+        };
+        sockets: {
+            [key: string]: SocketInfo;
+        };
+    };
     constructor(options?: ServiceOptions);
     setupWSS: (options: SocketServerProps) => SocketServerInfo;
-    openWS: (options: SocketProps) => WebSocket;
+    openWS: (options: SocketProps) => SocketInfo;
     transmit: (message: string | ArrayBufferLike | Blob | ArrayBufferView | Buffer[] | ServiceMessage, ws: WebSocketServer | WebSocket) => void;
     closeWS: (ws: WebSocket | string) => boolean;
     terminate: (ws: WebSocketServer | WebSocket | string) => boolean;
     request: (message: ServiceMessage | any, ws: WebSocket, _id: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, ws: WebSocket | string, callbackId: string | number) => any;
-    subscribeSocket(route: string, socket: WebSocket | string): number;
-    subscribeToSocket(route: string, socketId: string, callback?: string | ((res: any) => void)): Promise<any>;
+    subscribeSocket: (route: string, socket: WebSocket | string) => number;
+    subscribeToSocket: (route: string, socketId: string, callback?: string | ((res: any) => void)) => Promise<any>;
     routes: Routes;
 }

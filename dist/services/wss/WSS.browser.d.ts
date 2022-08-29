@@ -22,11 +22,19 @@ export declare type WebSocketInfo = {
     run: (route: any, args?: any, method?: string) => Promise<any>;
     subscribe: (route: any, callback?: ((res: any) => void) | string) => any;
     unsubscribe: (route: any, sub: number) => Promise<boolean>;
+    terminate: () => boolean;
+    _id?: string;
+    graph: WSSfrontend;
 } & WebSocketProps;
 export declare class WSSfrontend extends Service {
     name: string;
     sockets: {
         [key: string]: WebSocketInfo;
+    };
+    connections: {
+        sockets: {
+            [key: string]: WebSocketInfo;
+        };
     };
     constructor(options?: ServiceOptions);
     openWS: (options?: WebSocketProps) => WebSocketInfo;
@@ -34,7 +42,7 @@ export declare class WSSfrontend extends Service {
     terminate: (ws: WebSocket | string) => boolean;
     request: (message: ServiceMessage | any, ws: WebSocket, _id: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, ws: WebSocket | string, callbackId: string | number) => any;
-    subscribeSocket(route: string, socket: WebSocket | string): number;
-    subscribeToSocket(route: string, socketId: string, callback?: ((res: any) => void) | string): Promise<any>;
+    subscribeSocket: (route: string, socket: WebSocket | string) => number;
+    subscribeToSocket: (route: string, socketId: string, callback?: string | ((res: any) => void)) => Promise<any>;
     routes: Routes;
 }

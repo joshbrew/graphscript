@@ -12,11 +12,13 @@ import gsworker from './worker'
 
 const workers = new WorkerService();
 
-const router = new Router([
-    DOMService,
-    workers,
-    workerCanvasRoutes
-]);
+const router = new Router({
+    routes:[
+        DOMService,
+        workers,
+        workerCanvasRoutes
+    ]
+});
 
 console.log(router)
 
@@ -65,6 +67,12 @@ let ret = router.load({
                                     
                                     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
                                     camera.position.z = 4;
+
+                                    renderer.setSize(canvas.width, canvas.height, false);
+                                        if(camera) {
+                                            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                                            camera.updateProjectionMatrix();
+                                        }
 
                                     const controls = new OrbitControls(camera, canvas);
                                     controls.target.set(0,0,0);

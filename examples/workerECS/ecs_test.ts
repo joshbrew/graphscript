@@ -16,11 +16,13 @@ import gsworker from './worker'
 
 const workers = new WorkerService();
 
-const router = new Router([
-    DOMService,
-    workers,
-    workerCanvasRoutes
-]);
+const router = new Router({
+    routes:[
+        DOMService,
+        workers,
+        workerCanvasRoutes
+    ]
+});
 
 console.log(router)
 

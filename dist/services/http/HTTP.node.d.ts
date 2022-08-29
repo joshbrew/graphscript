@@ -25,11 +25,17 @@ export declare type ServerProps = {
     protocol?: 'http' | 'https';
     type?: 'httpserver' | string;
     keepState?: boolean;
+    onopen?: (served: ServerInfo) => void;
+    onclose?: (served: ServerInfo) => void;
+    _id?: string;
     [key: string]: any;
 };
 export declare type ServerInfo = {
     server: https.Server | http.Server;
     address: string;
+    terminate: () => void;
+    graph: HTTPbackend;
+    _id: string;
 } & ServerProps;
 export declare type ReqOptions = {
     protocol: 'http' | 'https' | string;
@@ -61,9 +67,9 @@ export declare class HTTPbackend extends Service {
         keypath?: string;
     });
     onStarted: (protocol: 'http' | 'https' | string, host: string, port: number) => void;
-    setupServer: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<unknown>;
-    setupHTTPserver: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<unknown>;
-    setupHTTPSserver: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<unknown>;
+    setupServer: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
+    setupHTTPserver: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
+    setupHTTPSserver: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
     transmit: (message: any | ServiceMessage, options: string | {
         protocol: 'http' | 'https' | string;
         host: string;
@@ -104,9 +110,7 @@ export declare class HTTPbackend extends Service {
         'Content-Length'?: number;
     }) => http.ClientRequest;
     get: (url: string | URL | http.RequestOptions) => Promise<Buffer>;
-    terminate: (served: string | {
-        server: http.Server | https.Server;
-    }) => void;
+    terminate: (served: string | ServerInfo) => void;
     getRequestBody(req: http.IncomingMessage): Promise<Buffer>;
     addPage: (path: string, template: string) => void;
     addHTML: (path: string, template: string) => void;

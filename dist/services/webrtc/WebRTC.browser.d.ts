@@ -23,6 +23,7 @@ export declare type WebRTCProps = {
     ondata?: (ev: MessageEvent<any>, channel: RTCDataChannel, room: any) => void;
     onconnectionstatechange?: (ev: Event) => void;
     oniceconnectionstatechange?: (ev: Event) => void;
+    onclose?: (rtc: WebRTCInfo) => void;
 };
 export declare type WebRTCInfo = {
     _id: string;
@@ -33,6 +34,8 @@ export declare type WebRTCInfo = {
     run: (route: any, args?: any, method?: string) => Promise<any>;
     subscribe: (route: any, callback?: ((res: any) => void) | string) => Promise<number>;
     unsubscribe: (route: any, sub: number) => Promise<boolean>;
+    terminate: () => boolean;
+    graph: WebRTCfrontend;
 } & WebRTCProps;
 export declare class WebRTCfrontend extends Service {
     name: string;
@@ -42,6 +45,11 @@ export declare class WebRTCfrontend extends Service {
     iceServers: {
         urls: string[];
     }[];
+    connections: {
+        rtc: {
+            [key: string]: WebRTCInfo;
+        };
+    };
     constructor(options?: ServiceOptions, iceServers?: {
         urls: string[];
     }[]);
