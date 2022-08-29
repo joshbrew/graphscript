@@ -267,8 +267,21 @@ export class Router extends Service {
 
         if(source) settings.source = source;
         if(typeof options === 'string') {
-            options = this.connections[options];
-        } if(!options) return undefined;
+            if (this.connections[options]) {
+                options = this.connections[options];
+            } else { //check all the service-managed connection objects that we linked
+                for(const j in this.serviceConnections) {
+                    for (const k in this.serviceConnections[j]) {
+                        if(this.serviceConnections[j][k][options as string]) {
+                            options = {connection:this.serviceConnections[j][k][options as string]};
+                            options.service = j;
+                            break;
+                        }
+                    }
+                }
+            }
+        } 
+        if(!options || typeof options === 'string') return undefined;
 
         if(options.connection instanceof GraphNode) {
             settings.connection = options.connection;
