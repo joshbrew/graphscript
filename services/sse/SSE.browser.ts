@@ -64,10 +64,10 @@ export class SSEfrontend extends Service {
         if(!('keepState' in options)) options.keepState = true; //default true
         if(!options.events) options.events = {};
 
-        if(options.onmessage) options.events.message = options.onmessage;
-        if(options.onclose)  options.events.close = options.onclose;
-        if(options.onopen) options.events.open = options.onopen;
-        if(options.onerror)  options.events.error = options.onerror;
+        if(options.onmessage) options.events.message = (ev) => { options.onmessage(ev)} ;
+        if(options.onclose)  options.events.close = (ev) => { options.onclose(ev) };
+        if(options.onopen) options.events.open = (ev) => { options.onopen(ev) } ;
+        if(options.onerror)  options.events.error = (ev) => { options.onerror(ev) };
 
         if(!options.events.message) {
             options.events.message = (ev, sse) => {
