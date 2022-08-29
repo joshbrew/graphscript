@@ -4,11 +4,25 @@ import { EventSourceProps, SSEfrontend } from '../../services/sse/SSE.browser';
 import { SessionsService } from '../../services/streaming/sessions.service';
 import { WebRTCfrontend } from '../../services/webrtc/WebRTC.browser';
 import { WebSocketProps, WSSfrontend } from '../../services/wss/WSS.browser';
+import { DOMService } from '../../services/dom/DOM.service';
 
 const router = new Router({
     routes:{
         HTTPfrontend,
-        SessionsService
+        SessionsService,
+        'dom': new DOMService({
+            routes:{
+                'main':{
+                    tagName:'div',
+                    children:{
+                        'header':{
+                            tagName:'h4',
+                            innerHTML:`Hello World!`
+                        }
+                    }
+                }
+            }
+        })
     },
     services:{
         'sse':{
@@ -29,6 +43,11 @@ const router = new Router({
                     host:'localhost',
                     port:8080,
                     path:'wss'
+                } as WebSocketProps,
+                'hotreload':{
+                    host:'localhost',
+                    port:8080,
+                    path:'hotreload'
                 } as WebSocketProps
             }
         },
@@ -36,4 +55,4 @@ const router = new Router({
     },
     syncServices:true,
     order:['webrtc','wss','sse']
-})
+});

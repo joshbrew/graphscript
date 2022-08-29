@@ -3,6 +3,7 @@ import { SocketServerProps, WSSbackend } from "../../services/wss/WSS.node";
 import { SSEbackend, SSEProps } from "../../services/sse/SSE.node";
 import { HTTPbackend, ServerProps } from "../../services/http/HTTP.node";
 import { SessionsService } from "../../services/streaming/sessions.service";
+import { scriptBoilerPlate } from "../../services/http/boilerplate";
 
 const router = new Router({
     routes:{
@@ -19,12 +20,7 @@ const router = new Router({
                     host:'localhost',
                     port:8080,
                     pages:{
-                        '/':{
-                            template:`<div>Nice...</div>`,
-                            onrequest:(self,node,req,res)=>{ 
-                                node.get = `<h3>Hello World!! The Time: ${new Date(Date.now()).toISOString()}</h3>`  
-                            }
-                        },
+                        '/':scriptBoilerPlate('dist/frontend.js'), //serve the built dist
                         'config':{
                             template:'tinybuild.config.js'
                         },
