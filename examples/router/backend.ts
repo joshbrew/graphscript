@@ -38,7 +38,9 @@ const router = new Router({
                         }
                     },
                     onopen:(served)=>{
-                        const socketserver = (router.services.wss as WSSbackend).setupWSS(
+
+                        router.openConnection(
+                            'wss',
                             {
                                 server:served.server,
                                 host:served.host,
@@ -49,8 +51,9 @@ const router = new Router({
                                 }
                             } as SocketServerProps
                         )
-                    
-                        const hotreload = (router.services.wss as WSSbackend).setupWSS(
+
+                        router.openConnection(
+                            'wss',
                             {
                                 server:served.server,
                                 host:served.host,
@@ -60,9 +63,10 @@ const router = new Router({
                                     ws.send('Hot reload port opened!');
                                 }
                             } as SocketServerProps
-                        );
-                    
-                        const sseinfo = (router.services.sse as SSEbackend).setupSSE(
+                        )
+
+                        router.openConnection(
+                            'sse',
                             {
                                 server:served.server,
                                 path:'sse',
@@ -75,9 +79,9 @@ const router = new Router({
                                             'SSE connection at '+req.headers.host+'/'+req.url, c 
                                         )
                                     );
-                                },
-                            } as SSEProps
-                        );
+                                }
+                            }
+                        )
                     }
                     // startpage:'index.html',
                     // errpage:undefined,

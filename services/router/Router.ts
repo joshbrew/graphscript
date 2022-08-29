@@ -178,7 +178,16 @@ export class Router extends Service {
 
     addUser = (
         info:Partial<ProfileStruct> & {onclose:(connection:ConnectionInfo,...args:any[])=>void},
-        connections?:{[key:string]:ConnectionProps|string|ConnectionInfo}    
+        connections?:{[key:string]:ConnectionProps|string|ConnectionInfo},
+        config?:{ //configure connections per service
+            [key:string]:{ //configure multiple connection instances using the generic 'open' function
+                service:Service,
+                _id?:string,
+                onclose?:(c:ConnectionInfo,...args:any[])=>void,
+                args?:any[], //other arguments a service spec expects other than the main config object (try to make it just one object for easier config automation!)
+                [key:string]:any //configuration settings
+            }
+        }, //configure new connections after adding the relevant services?
     ) => {
         if(!info._id) {
             info._id = `user${Math.floor(Math.random()*1000000000000000)}`;
@@ -189,6 +198,16 @@ export class Router extends Service {
         if(connections){
             for(const key in connections) {
                 connections[key] = this.addConnection(connections[key], user._id) as any;
+            }
+        }
+        if(config) {
+            for(const c in config) {
+                this.openConnection(
+                    config[c].service, 
+                    config[c],
+                    user._id,
+                    config[c].args
+                );
             }
         }
 

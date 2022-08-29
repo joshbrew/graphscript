@@ -1,4 +1,16 @@
 
+export function htmlBodyBoilerPlate(html:string|string[]) {
+    let template = `<!DOCTYPE html><html><head><body>`
+    if(Array.isArray(html)) {
+        html.forEach((src) => {
+            template += src;
+        })
+    } else {
+        template += html;
+    }
+    template += `</body></html>`
+    return template;
+}
 
 export function scriptBoilerPlate(scripts:string|string[]) {
     let template = `<!DOCTYPE html><html><head><body>`
@@ -12,3 +24,5 @@ export function scriptBoilerPlate(scripts:string|string[]) {
     template += `</body></html>`
     return template;
 }
+
+
