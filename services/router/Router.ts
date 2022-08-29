@@ -601,35 +601,36 @@ export class Router extends Service {
         return connection.terminate();
     }
 
-    subscribeToConnection = (
+    subscribeThroughConnection = (
         route:string, //the route on the endpoint we want to subscribe to outputs from
-        router:string|ConnectionInfo, //the router we are trying to relay messages through
-        transmitter:string, //the endpoint on the router that we want to subscribe to through the router
+        relay:string|ConnectionInfo, //the router we are trying to relay messages through
+        endpoint:string, //the endpoint on the router that we want to subscribe to through the router
         callback:string|((res:any)=>void),
         ...args:any[]
     ) => {
-        if(typeof router === 'string') {
-            router = this.getConnection(router,'run');
+        if(typeof relay === 'string') {
+            relay = this.getConnection(relay,'run');
         }
 
-        return new Promise((res,rej) => {
-            (router as any).run('subscribeConnection',[route,transmitter,(router as any)._id,...args]).then((sub) => {
-                this.subscribe(transmitter, (res) => {
-                    if(res?.callbackId === route) {
-                        if(!callback) this.setState({[transmitter]:res.args});
-                        else if(typeof callback === 'string') { //just set state 
-                            this.setState({[callback]:res.args});
+        if(typeof relay === 'object')
+            return new Promise((res,rej) => {
+                (relay as any).run('routeConnections',[route,endpoint,(relay as any)._id,...args]).then((sub) => {
+                    this.subscribe(endpoint, (res) => {
+                        if(res?.callbackId === route) {
+                            if(!callback) this.setState({[endpoint]:res.args});
+                            else if(typeof callback === 'string') { //just set state 
+                                this.setState({[callback]:res.args});
+                            }
+                            else callback(res.args);
                         }
-                        else callback(res.args);
-                    }
-                });
-                res(sub);
-            }).catch(rej);
-        });
+                    });
+                    res(sub);
+                }).catch(rej);
+            });
     }
 
     //we will use the router to relay subscriptions between endpoints generically
-    subscribeConnection = (
+    routeConnections = (
         route:string, //the route on the endpoint we want to subscribe to outputs from
         transmitter:string|ConnectionInfo, //the endpoint we want to subscribe to through the router
         receiver:string|ConnectionInfo, //the endpoint we want to receive messages on from the router
@@ -722,8 +723,8 @@ export class Router extends Service {
         addConnections:this.addConnections,
         openConnection:this.openConnection,
         terminate:this.terminate,
-        subscribeConnection:this.subscribeConnection,
-        subscribeToConnection:this.subscribeToConnection,
+        routeConnections:this.routeConnections,
+        subscribeThroughConnection:this.subscribeThroughConnection,
         syncServices:this.syncServices
     }
 
