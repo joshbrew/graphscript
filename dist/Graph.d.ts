@@ -45,7 +45,7 @@ export declare const state: {
         [key: string]: any;
     }): {};
     subscribeTrigger(key: string, onchange: (res: any) => void): number;
-    unsubscribeTrigger(key: string, sub: number): boolean;
+    unsubscribeTrigger(key: string, sub?: number): boolean;
     subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
 };
 /**
@@ -73,7 +73,7 @@ export declare class GraphNode {
             [key: string]: any;
         }): {};
         subscribeTrigger(key: string, onchange: (res: any) => void): number;
-        unsubscribeTrigger(key: string, sub: number): boolean;
+        unsubscribeTrigger(key: string, sub?: number): boolean;
         subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
     };
     isLooping: boolean;
@@ -113,7 +113,7 @@ export declare class GraphNode {
     remove: (n: string | GraphNode) => void;
     append: (n: string | GraphNode, parentNode?: this) => void;
     subscribe: (callback: GraphNode | ((res: any) => void), tag?: string) => number;
-    unsubscribe: (sub: number, tag?: string) => void;
+    unsubscribe: (sub?: number, tag?: string) => boolean;
     addChildren: (children: {
         [key: string]: string | boolean | GraphNode | Graph | GraphNodeProperties;
     }) => void;
@@ -166,7 +166,7 @@ export declare class Graph {
             [key: string]: any;
         }): {};
         subscribeTrigger(key: string, onchange: (res: any) => void): number;
-        unsubscribeTrigger(key: string, sub: number): boolean;
+        unsubscribeTrigger(key: string, sub?: number): boolean;
         subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
     };
     _initial: any;
@@ -187,10 +187,10 @@ export declare class Graph {
     callParent: (n: GraphNode, ...args: any[]) => Promise<any>;
     callChildren: (n: GraphNode, ...args: any[]) => Promise<any>;
     subscribe: (n: string | GraphNode, callback: string | GraphNode | ((res: any) => void)) => number;
-    unsubscribe: (tag: string, sub: number) => void;
+    unsubscribe: (tag: string, sub?: number) => boolean;
     subscribeNode: (inputNode: string | GraphNode, outputNode: GraphNode | string) => number;
     stopNode: (n: string | GraphNode) => void;
-    print: (n?: GraphNode | undefined, printChildren?: boolean) => any;
+    print: (n?: GraphNode, printChildren?: boolean) => any;
     reconstruct: (json: string | {
         [x: string]: any;
     }) => GraphNode | GraphNodeProperties;

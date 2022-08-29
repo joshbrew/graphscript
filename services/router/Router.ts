@@ -116,7 +116,7 @@ export class Router extends Service {
                         opt.service.name = key; opt.service.tag = key;
                         this.addService(opt.service, opt.connections, options.includeClassName, options.routeFormat, options.syncServices);
                     } else if (typeof opt === 'function') {
-                        let service = new opt({name:key}) as Service; //instantiate a class prototype
+                        let service = new opt() as Service; //instantiate a class prototype
                         service.name = key; service.tag = key;
                         if(service) 
                             this.addService(
@@ -644,6 +644,7 @@ export class Router extends Service {
         source?:string,
         order?:string[],
     ) => {
+        //console.log(service)
         this.load(service,includeClassName,routeFormat,this.customRoutes,this.customChildren);
         this.services[service.name] = service;
         if(connections) {
@@ -656,7 +657,10 @@ export class Router extends Service {
         }
         if(syncServices) this.syncServices(); //maps all uncommon nodes to each service 
         if(order) this.order = order;
-        else this.order.push(service.name);
+        else {
+            if(!this.order) this.order = [];
+            this.order.push(service.name);
+        }
     }
 
     addServiceConnections = ( //sync connection objects that match our boilerplate (send/request/terminate etc) for quicker piping
@@ -838,6 +842,7 @@ export class Router extends Service {
     //tie node references together across service node maps so they can call each other's relative routes
     syncServices = () => {
         for(const name in this.services) { 
+            if('users' in this.services[name]) this.services[name].users = this.users;
             this.nodes.forEach((n,tag) => {
                 if(!this.services[name].nodes.get(n.tag)) {
                     this.services[name].nodes.set(tag,n);

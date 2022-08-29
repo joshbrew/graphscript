@@ -1,5 +1,5 @@
-import { UserRouter, HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "graphscript-node";//"../../index.node"//"graphscript-node";
-
+import { HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "graphscript-node";//"../../index.node"//"graphscript-node";
+import { Router } from '../../services/router/Router';
 
 function exitHandler(options, exitCode) {
         
@@ -14,15 +14,17 @@ process.on('exit', exitHandler.bind(null,{cleanup:true}));
 process.on('SIGINT', exitHandler.bind(null, {exit:true}));
 
 
-let router = new UserRouter([
-    HTTPbackend,
-    WSSbackend,
-    SSEbackend
-]);
+const router = new Router({
+    services:{
+        'http':HTTPbackend,
+        'wss':WSSbackend,
+        'sse':SSEbackend
+    },
+    syncServices:true,
+    loadDefaultRoutes:true
+});
 
-console.log(router);
-
-router.run(
+let server = router.run(
     'http.setupServer',
     {
         protocol:'http',
@@ -57,9 +59,11 @@ router.run(
         // keypath:'key.pem',
         // passphrase:'encryption',
     } as ServerProps
-).then((served:ServerInfo) => { //this function returns a promise so we can use .then, only explicitly async or promise-returning functions can be awaited or .then'd for good performance!
+)
+
+if(server instanceof Promise) server.then((served:ServerInfo) => { //this function returns a promise so we can use .then, only explicitly async or promise-returning functions can be awaited or .then'd for good performance!
     
-    console.log(router.services.http.nodes.keys())
+    console.log(router.nodes.keys());
 
     const socketserver = router.run(
         'wss.setupWSS',

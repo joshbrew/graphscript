@@ -112,7 +112,7 @@ export class HTTPbackend extends Service {
         requestListener?:http.RequestListener,
         onStarted?:()=>void
     )=>{
-
+        console.log(options);
         if(options.pages) {
             for(const key in options.pages) {
                 if (typeof options.pages[key] === 'string') {

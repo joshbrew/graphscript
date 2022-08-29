@@ -4,15 +4,15 @@ import { ElementProps } from "./element";
 import { CanvasElementProps } from "./canvascomponent";
 export declare type ComponentProps = GraphNodeProperties & {
     tagName?: string;
-    template?: string | ((self: DOMElement, props: any) => string | HTMLElement) | HTMLElement;
+    template?: string | ((element: DOMElement, props: any) => string | HTMLElement) | HTMLElement;
     interpreter?: 'wc' | 'md' | 'jsx';
     parentNode?: string | HTMLElement;
     styles?: string;
-    onrender?: (self: DOMElement, info?: ComponentInfo) => void;
-    onresize?: (self: DOMElement, info?: ComponentInfo) => void;
-    ondelete?: (self: DOMElement, info?: ComponentInfo) => void;
+    onrender?: (element: DOMElement, info?: ComponentInfo) => void;
+    onresize?: (element: DOMElement, info?: ComponentInfo) => void;
+    ondelete?: (element: DOMElement, info?: ComponentInfo) => void;
     onchanged?: (props: any) => void;
-    renderonchanged?: boolean | ((self: DOMElement, info: ComponentInfo) => void);
+    renderonchanged?: boolean | ((element: DOMElement, info: ComponentInfo) => void);
     innerText?: string;
     innerHTML?: string;
     id?: string;
@@ -29,15 +29,15 @@ export declare type ComponentInfo = {
 } & ComponentProps;
 export declare type ComponentOptions = GraphNodeProperties & {
     tagName?: string;
-    template?: string | ((self: DOMElement, props: any) => string | HTMLElement) | HTMLElement;
+    template?: string | ((element: DOMElement, props: any) => string | HTMLElement) | HTMLElement;
     parentNode?: string | HTMLElement;
     styles?: string;
     useShadow?: boolean;
-    onrender?: (self: DOMElement, info?: ComponentInfo) => void;
-    onresize?: (self: DOMElement, info?: ComponentInfo) => void;
-    onremove?: (self: DOMElement, info?: ComponentInfo) => void;
+    onrender?: (element: DOMElement, info?: ComponentInfo) => void;
+    onresize?: (element: DOMElement, info?: ComponentInfo) => void;
+    onremove?: (element: DOMElement, info?: ComponentInfo) => void;
     onchanged?: (props: any) => void;
-    renderonchanged?: boolean | ((self: DOMElement, info: ComponentInfo) => void);
+    renderonchanged?: boolean | ((element: DOMElement, info: ComponentInfo) => void);
     props?: {
         [key: string]: any;
     };

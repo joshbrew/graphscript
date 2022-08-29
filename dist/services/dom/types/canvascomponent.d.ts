@@ -10,13 +10,13 @@ export declare type CanvasElementProps = GraphNodeProperties & {
     id?: string;
     canvas?: HTMLCanvasElement;
     context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent' | RenderingContext;
-    draw: ((self: DOMElement, info: CanvasElementInfo) => void);
+    draw: ((element: DOMElement, info: CanvasElementInfo) => void);
     width?: string;
     height?: string;
-    onrender?: (self: DOMElement, info?: CanvasElementInfo) => void;
-    onresize?: (self: DOMElement, info?: CanvasElementInfo) => void;
-    onremove?: (self: DOMElement, info?: CanvasElementInfo) => void;
-    renderonchanged?: boolean | ((self: DOMElement, info?: CanvasElementInfo) => void);
+    onrender?: (element: DOMElement, info?: CanvasElementInfo) => void;
+    onresize?: (element: DOMElement, info?: CanvasElementInfo) => void;
+    onremove?: (element: DOMElement, info?: CanvasElementInfo) => void;
+    renderonchanged?: boolean | ((element: DOMElement, info?: CanvasElementInfo) => void);
     children?: {
         [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph | ComponentProps | ElementProps | CanvasElementProps;
     };
@@ -26,7 +26,7 @@ export declare type CanvasElementInfo = {
         canvas: HTMLCanvasElement;
         context: RenderingContext;
     };
-    draw: ((self: DOMElement, info: CanvasElementInfo) => void);
+    draw: ((element: DOMElement, info: CanvasElementInfo) => void);
     canvas: HTMLCanvasElement;
     context: RenderingContext;
     animating: boolean;
@@ -45,17 +45,17 @@ export declare type CanvasOptions = {
     tagName?: string;
     canvas?: HTMLCanvasElement;
     context: '2d' | 'webgl' | 'webgl2' | 'bitmaprenderer' | 'experimental-webgl' | 'xrpresent' | RenderingContext;
-    draw: ((self: DOMElement, info: CanvasElementInfo) => void);
+    draw: ((element: DOMElement, info: CanvasElementInfo) => void);
     width?: string;
     height?: string;
     style?: Partial<CSSStyleDeclaration>;
     parentNode?: string | HTMLElement;
     styles?: string;
-    onrender?: (self: DOMElement, info?: CanvasElementInfo) => void;
-    onresize?: (self: DOMElement, info?: CanvasElementInfo) => void;
-    onremove?: (self: DOMElement, info?: CanvasElementInfo) => void;
+    onrender?: (element: DOMElement, info?: CanvasElementInfo) => void;
+    onresize?: (element: DOMElement, info?: CanvasElementInfo) => void;
+    onremove?: (element: DOMElement, info?: CanvasElementInfo) => void;
     onchanged?: (props: any) => void;
-    renderonchanged?: boolean | ((self: DOMElement, info?: CanvasElementInfo) => void);
+    renderonchanged?: boolean | ((element: DOMElement, info?: CanvasElementInfo) => void);
     props?: {
         [key: string]: any;
     };

@@ -29,5 +29,4 @@ export * from './services/cmd/CMD.node'
 
 export * from './services/worker/Worker.node.service'
 
-export * from './routers/Router'
-export * from './routers/users/User.router'
+export * from './services/router/Router'

@@ -50,7 +50,7 @@ const router = new Router({
                             {_id:`user${Math.floor(Math.random()*1000000000000000)}`},
                             { 'ws':{ connection:wsinfo } }
                         ).then((user) => {
-                            console.log('new user', user);
+                            console.log('new user', user._id);
 
                             router.subscribe('joinSession', (res) => {
                                 console.log('joinSession fired', res);
@@ -73,6 +73,6 @@ const router = new Router({
     order:['webrtc','wss','sse']
 });
 
-router.services.sessions.users = router.users;
+//router.services.sessions.users = router.users;
 
 console.log(router.nodes.keys())

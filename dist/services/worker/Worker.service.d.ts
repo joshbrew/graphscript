@@ -22,15 +22,19 @@ export declare type WorkerProps = {
     port?: MessagePort;
     onmessage?: (ev: any) => void;
     onerror?: (ev: any) => void;
+    onclose?: (worker: Worker | MessagePort) => void;
 };
 export declare type WorkerInfo = {
-    worker: Worker;
+    worker: Worker | MessagePort;
     send: (message: any, transfer?: any) => void;
     request: (message: any, transfer?: any, method?: string) => Promise<any>;
     post: (route: any, args?: any, transfer?: any) => void;
     run: (route: any, args?: any, transfer?: any, method?: string) => Promise<any>;
     subscribe: (route: any, callback?: ((res: any) => void) | string) => any;
     unsubscribe: (route: any, sub: number) => Promise<boolean>;
+    terminate: () => boolean;
+    graph: WorkerService;
+    _id: string;
 } & WorkerProps & WorkerRoute;
 export declare class WorkerService extends Service {
     name: string;
@@ -38,6 +42,11 @@ export declare class WorkerService extends Service {
         [key: string]: WorkerInfo;
     };
     threadRot: number;
+    connections: {
+        workers: {
+            [key: string]: WorkerInfo;
+        };
+    };
     constructor(options?: ServiceOptions);
     customRoutes: ServiceOptions["customRoutes"];
     customChildren: ServiceOptions["customChildren"];
