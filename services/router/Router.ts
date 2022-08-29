@@ -382,6 +382,24 @@ export class Router extends Service {
             }
         } else {
             let c = options.connection;
+            if(typeof c === 'string') { //get by connection ID
+                if(options.service) {
+                    if(typeof options.service === 'string') {
+                        options.service = this.services[options.service];
+                    }
+                    if(typeof options.service === 'object') {
+                        if(options.service.connections) { //cheap reference we have
+                            for(const key in options.service.connections) {
+                                if(options.service.connections[key][c]) {   
+                                    c = options.service.connections[key][c]
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (this.connections[c]) c = this.connections[c];
+            } 
+            if(typeof c !== 'object') return undefined;
             settings._id = c._id;
             settings.send = c.send;
             settings.request = c.request;
@@ -394,6 +412,9 @@ export class Router extends Service {
             if(settings.onclose) {
                 let oldonclose = c.onclose;
                 c.onclose = (...args:any[]) => { if(settings.onclose) settings.onclose(settings, ...args); if(oldonclose) oldonclose(...args); }
+            } else {
+                let oldonclose = c.onclose;
+                c.onclose = (...args:any[]) => { this.removeConnection(settings); if(oldonclose) oldonclose(...args); } //default cleanup
             }
             if(options.service) {            
                 settings.service = options.service;
@@ -474,7 +495,7 @@ export class Router extends Service {
             let newConnections = {};
             for(const key in service[connectionsKey]) {
                 if(!this.connections[key]) 
-                    newConnections[key] = this.addConnection({connection:service[connectionsKey][key]},source);
+                    newConnections[key] = this.addConnection({connection:service[connectionsKey][key], service},source);
             }
             return newConnections;
         }
