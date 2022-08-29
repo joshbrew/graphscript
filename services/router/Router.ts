@@ -46,6 +46,7 @@ export type ConnectionInfo = {
     service?:string|Service|Graph,
     _id:string,
     source:string,
+    connectionType?:string, //if we know the key on the service we sourced an endpoint connection from, this helps with keeping track of things 
     send?:(...args:any[])=>any,
     request?:(...args:any[])=>Promise<any>|Promise<any>[],
     post?:(...args:any[])=>void,
@@ -241,6 +242,10 @@ export class Router extends Service {
                         if(this.sources[sourceId as string][key].service) {
                             if(typeof this.sources[sourceId as string][key].service === 'object') {
                                 if((this.sources[sourceId as string][key].service as Graph).tag === k) {
+                                    if(this.sources[sourceId as string][key].connectionType && (this.sources[sourceId as string][key].service as any)?.name) {
+                                        if(!this.serviceConnections[(this.sources[sourceId as string][key] as any).service.name]) this.removeConnection(connection); //some auto cleanup
+                                        continue;
+                                    }
                                     connection = this.sources[sourceId as string][key];
                                     break;
                                 }
@@ -250,8 +255,11 @@ export class Router extends Service {
                 }
             }
             else {
-                
                 for(const k in this.sources[sourceId as string]) {
+                    if(this.sources[sourceId as string][k].connectionType && (this.sources[sourceId as string][k].service as any)?.name) {
+                        if(!this.serviceConnections[(this.sources[sourceId as string][k] as any).service.name]) this.removeConnection(connection); //some auto cleanup
+                        continue;
+                    }
                     if(hasMethod && this.sources[sourceId as string][k][hasMethod]) {
                         connection = this.sources[sourceId as string][k];
                         break;
@@ -266,6 +274,10 @@ export class Router extends Service {
         } else if (this.order) {
             for(let i = 0; i < this.order.length; i++) {
                 let k = this.order[i];  
+                if(this.sources[sourceId as string][k].connectionType && (this.sources[sourceId as string][k].service as any)?.name) {
+                    if(!this.serviceConnections[(this.sources[sourceId as string][k] as any).service.name]) this.removeConnection(connection); //some auto cleanup
+                    continue;
+                }
                 if(hasMethod && this.sources[k][sourceId as string]?.[hasMethod]) {
                     connection = this.sources[k][sourceId as string];
                     break;
@@ -279,10 +291,12 @@ export class Router extends Service {
         if(typeof sourceId === 'string' && this.connections[sourceId] && this.connections[sourceId].send) {
             connection = this.connections[sourceId]; //regardless of method, as this is a direct connection reference
         } 
+        
         return connection;
     }
 
     addConnection = (options:ConnectionProps|string,source?:string) => {
+        let settings:ConnectionInfo = {} as any;
         if(typeof options === 'string') {
             if (this.connections[options]) {
                 options = this.connections[options];
@@ -292,6 +306,7 @@ export class Router extends Service {
                         if(this.serviceConnections[j][k][options as string]) {
                             options = {connection:this.serviceConnections[j][k][options as string]};
                             options.service = j;
+                            settings.connectionType = k;
                             break;
                         }
                     }
@@ -301,7 +316,6 @@ export class Router extends Service {
         } 
         if(!options || typeof options === 'string') return undefined;
 
-        let settings:ConnectionInfo = {} as any;
         if(source) settings.source = source;
 
         if(options.connection instanceof GraphNode) {
@@ -430,6 +444,7 @@ export class Router extends Service {
                             for(const key in options.service.connections) {
                                 if(options.service.connections[key][c as string]) {   
                                     c = options.service.connections[key][c as string];
+                                    settings.connectionType = key;
                                     break;
                                 }
                             }
@@ -441,6 +456,7 @@ export class Router extends Service {
                             if(this.serviceConnections[j][k][c as string]) {
                                 c = this.serviceConnections[j][k][c as string];
                                 options.service = j;
+                                settings.connectionType = k;
                                 break;
                             }
                         }
@@ -464,7 +480,8 @@ export class Router extends Service {
                 let oldonclose = c.onclose;
                 c.onclose = (...args:any[]) => { this.removeConnection(settings); if(oldonclose) oldonclose(...args); } //default cleanup
             }
-            if(options.service) {            
+            if(options.service) {   
+                if(typeof options.service === 'string') options.service = this.services[options.service];         
                 settings.service = options.service;
             } else if(c.graph) settings.service = c.graph;
         }
@@ -473,7 +490,7 @@ export class Router extends Service {
             settings.source = options.source;
         }
         else if(!settings.source && options.service) {
-            settings.source = typeof options.service === 'string' ? options.service : options.service.name;
+            settings.source = typeof options.service === 'object' ? options.service.name : undefined;
         } else if (!settings.source && (settings.connection instanceof GraphNode || settings.connection instanceof Graph)) {
             settings.source = 'local';
             if(!this.order.indexOf('local')) this.order.unshift('local'); 
@@ -549,7 +566,10 @@ export class Router extends Service {
 
             for(const key in service[connectionsKey]) {
                 if(!this.connections[key]) 
-                    newConnections[key] = this.addConnection({connection:service[connectionsKey][key], service},source);
+                    {
+                        newConnections[key] = this.addConnection({connection:service[connectionsKey][key], service},source);
+                        newConnections.connectionType = connectionsKey;
+                    }
             }
             return newConnections;
         }
