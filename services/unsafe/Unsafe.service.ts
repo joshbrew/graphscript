@@ -1,5 +1,6 @@
-import { GraphNode, parseFunctionFromText } from "../../Graph"
+import { parseFunctionFromText } from "../../Graph"
 import { Graph } from "../../Graph"
+import { Service } from "../Service";
 
 //Contains evals and other things you probably don't want wide open on an API
 export const unsafeRoutes = {
@@ -13,9 +14,12 @@ export const unsafeRoutes = {
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
             if(this.graph.get(fnName)) {
-                this.graph.get(fnName).setOperator(fn); //overwrite operator
+                this.graph.get(fnName).setOperator(fn.bind(this.graph.get(fnName))); //overwrite operator
             }
-            else (this.graph as Graph).load({[fnName]:{operator:fn}});
+            else {
+                let node = (this.graph as Graph).add({tag:fnName,operator:fn});
+                if(this.graph instanceof Service) this.graph.load({[fnName]:node});
+            }
             return true;
         }
         return false;
