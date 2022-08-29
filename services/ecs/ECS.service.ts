@@ -286,6 +286,13 @@ export class ECSService extends Service {
         return this.remove(tag);
     }
 
+    removeEntities(entities:string[]|{[key:string]:Entity}) {
+        if(!Array.isArray(entities)) entities = Object.keys(entities);
+        entities.forEach((t) => {
+            this.removeEntity(t);
+        })
+    }
+
     removeSystem = (tag:string) => {
         if(this.systems[tag]?.remove) {
             for(const e in this.entityKeyMap.get(tag)) { //run the remove routine over the system entities to run any desired cleanup
@@ -375,6 +382,7 @@ export class ECSService extends Service {
         addSystem:this.addSystem,
         addSystems:this.addSystems,
         removeEntity:this.removeEntity,
+        removeEntities:this.removeEntities,
         removeSystem:this.removeSystem,
         setupEntity:this.setupEntity,
         addEntities:this.addEntities,
