@@ -340,7 +340,7 @@ export class Router extends Service {
         return connection;
     }
 
-    addConnection = (options:ConnectionProps|string,source?:string) => {
+    addConnection = (options:ConnectionProps|ConnectionInfo|string,source?:string) => {
         let settings:ConnectionInfo = {} as any;
         if(typeof options === 'string') {
             if (this.connections[options]) {
@@ -476,7 +476,7 @@ export class Router extends Service {
                 graph.remove(n);
                 return true;
             }
-        } else {
+        } else if(!((options as ConnectionInfo)._id && this.connections[(options as ConnectionInfo)._id])) {
             let c = options.connection;
             if(typeof c === 'string') { //get by connection ID
                 if (this.connections[c]) c = this.connections[c];
@@ -519,8 +519,10 @@ export class Router extends Service {
             settings.terminate = c.terminate;
             settings.onclose = options.onclose;
             if(settings.onclose) {
-                let oldonclose = c.onclose;
-                c.onclose = (...args:any[]) => { if(settings.onclose) settings.onclose(settings, ...args); if(oldonclose) oldonclose(...args); }
+                if(!(c.onclose && settings.onclose.toString() === c.onclose.toString())) {
+                    let oldonclose = c.onclose;
+                    c.onclose = (...args:any[]) => { if(settings.onclose) settings.onclose(settings, ...args); if(oldonclose) oldonclose(...args); }
+                }
             } else {
                 let oldonclose = c.onclose;
                 c.onclose = (...args:any[]) => { this.removeConnection(settings); if(oldonclose) oldonclose(...args); } //default cleanup
