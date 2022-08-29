@@ -89,7 +89,7 @@ export class Router extends Service {
         [key:string]:{ //id'd connections e.g. different graphs local or remote
             [key:string]:ConnectionInfo //the services/graphs/nodes and connections by which to send on, these will be the corresponding info objects and the create/terminate functions for the appropriate services
         }
-    }
+    } = {}
 
     services:{ //lets you open whatever connections knowing the correct i/o
         [key:string]:Service
@@ -97,9 +97,9 @@ export class Router extends Service {
 
     serviceConnections:{ //the service's connections objects if provided, these are managed by the services themselves so we don't need to perform cleanup
         [key:string]:{[key:string]:{[key:string]:any}}
-    }
+    } = {}
 
-    users:{[key:string]:User}; //jsonifiable information
+    users:{[key:string]:User} = {}; //jsonifiable information
 
     order:string[]; //execute connections in preferred order
 
@@ -116,7 +116,7 @@ export class Router extends Service {
                         opt.service.name = key; opt.service.tag = key;
                         this.addService(opt.service, opt.connections, options.includeClassName, options.routeFormat, options.syncServices);
                     } else if (typeof opt === 'function') {
-                        let service = opt({name:key}) as Service; //instantiate a class prototype
+                        let service = new opt({name:key}) as Service; //instantiate a class prototype
                         service.name = key; service.tag = key;
                         if(service) 
                             this.addService(
@@ -129,7 +129,7 @@ export class Router extends Service {
                     }
                     else {
                         if (typeof opt.service === 'function') {
-                            let service = opt.service({name:key}) as Service; //instantiate a class prototype
+                            let service = new opt.service({name:key}) as Service; //instantiate a class prototype
                             service.name = key; service.tag = key;
                             if(service) 
                                 this.addService(
@@ -649,10 +649,13 @@ export class Router extends Service {
     }
 
     addServiceConnections = ( //sync connection objects that match our boilerplate (send/request/terminate etc) for quicker piping
-        service:Service,
+        service:Service|string,
         connectionsKey:any,
         source?:string
     ) => {
+        if(typeof service === 'string') {
+            service = this.services[service];
+        }
         if(connectionsKey && service[connectionsKey]) {
             let newConnections = {};
             if(!this.serviceConnections[service.name]) this.serviceConnections[service.name] = {};

@@ -70,7 +70,7 @@ export class SessionsService extends Service {
 
     name='sessions';
 
-    users:{ [key:string]:SessionUser }={}
+    users:{ [key:string]:SessionUser } = {}
 
     //complex user sessions with some premade rulesets
     sessions:{
@@ -124,7 +124,7 @@ export class SessionsService extends Service {
                 this.openPrivateSession(options,userId); //regen id
             }
         }   
-        if(options._id) {
+        if(options._id && userId && this.users[userId]) {
             if(userId){
                 if(!options.settings) options.settings = { listener:userId, source:userId, propnames:{latency:true}, admins:{[userId]:true}, ownerId:userId };
                 if(!options.settings.listener) options.settings.listener = userId;
@@ -144,7 +144,7 @@ export class SessionsService extends Service {
 
     openSharedSession = (
         options:SharedSessionProps, 
-        userId:string
+        userId?:string
     ) => {
         if(!options._id) {
             options._id = `shared${Math.floor(Math.random()*1000000000000000)}`;
@@ -153,7 +153,7 @@ export class SessionsService extends Service {
                 this.openSharedSession(options,userId); //regen id
             }
         } 
-        if(options._id){  
+        if(options._id && userId && this.users[userId]){  
             if(typeof userId === 'string') {
                 if(!options.settings) options.settings = { name:'shared', propnames:{latency:true}, users:{[userId]:true}, admins:{[userId]:true}, ownerId:userId };
                 
@@ -180,10 +180,10 @@ export class SessionsService extends Service {
     ) => {
         //add permissions checks based on which user ID is submitting the update
         let session:any;
-        if(options._id && typeof userId === 'string'){ 
+        if(options._id){ 
             session = this.sessions.private[options._id];
             if(!session) session = this.sessions.shared[options._id];
-            if(this.sesh.private[options._id]) {
+            if(this.sesh.private[options._id] && userId) {
                 let sesh = this.sessions.shared[options._id];
                 if(sesh.settings && (sesh?.settings.source === userId || sesh.settings.admins?.[userId] || sesh.settings.moderators?.[userId] || sesh.settings.ownerId === userId)) {
                     return Object.assign(this.session.shared[options._id],options);
@@ -201,7 +201,7 @@ export class SessionsService extends Service {
         userId:string,
         options?:SharedSessionProps|PrivateSessionProps
     ) => {
-        if(!userId) return false;
+        if(!userId && !this.users[userId]) return false;
         let sesh = this.sessions.shared[sessionId];
         //console.log(sessionId,userId,sesh,this.sessions);
         if(sesh?.settings) {

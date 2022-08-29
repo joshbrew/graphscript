@@ -3,9 +3,8 @@
   "version": "0.0.0",
   "description": "Barebones esbuild and test node server implementation. For building",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "start": "tinybuild path=tinybuild.frontend.js && tinybuild path=tinybuild.backend.js",
+    "start": "tinybuild && tinybuild path=tinybuild.backend.js && node dist/backend.node.js",
     "build": "tinybuild build",
     "serve": "tinybuild serve",
     "init": "node tinybuild/init.js",
@@ -19,10 +18,15 @@
   "keywords": [
     "esbuild"
   ],
+  "dependencies":{
+    "better-sse": "^0.7.1",
+    "brainsatplay-math": "^0.0.22",
+    "bson-objectid": "^2.0.3",
+    "gpujsutils": "^1.0.8",
+    "web-worker": "^1.2.0",
+    "ws": "^8.7.0"},
   "author": "",
   "license": "AGPL-3.0-or-later",
-  "dependencies": {},
-  "devDependencies": {},
   "nodemonConfig": {
     "env": {
       "NODEMON": true
