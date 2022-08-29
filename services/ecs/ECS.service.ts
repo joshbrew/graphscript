@@ -30,6 +30,7 @@ export type System = {
     operator:(entities:{[key:string]:Entity})=>any,
     setupEntities:(entities:{[key:string]:Entity})=>{[key:string]:Entity},
     setupEntity:(entity:Entity)=>Entity,
+    remove?:(entity:Entity,entitities:{[key:string]:Entity})=>Entity,
     entities:{[key:string]:Entity}, //the entities associated with this system 
     entityKeys:string[] //keys of entities associated with this system, reduces lookup times
 } & GraphNode;
@@ -70,7 +71,7 @@ export class ECSService extends Service {
 
         if(options.systems)
             for(const key in options.systems) {
-                this.addSystem(options.systems[key], undefined, undefined, undefined, options.order);
+                this.addSystem(options.systems[key], undefined, undefined, undefined, undefined, options.order);
             }
 
         if(options.entities) {
@@ -208,7 +209,7 @@ export class ECSService extends Service {
     ) => {
         for(const key in systems) {
             systems[key].tag = key;
-            this.addSystem(systems[key],undefined,undefined,undefined,order)
+            this.addSystem(systems[key],undefined,undefined,undefined,undefined,order)
         }
         return this.systems;
     }
@@ -217,7 +218,8 @@ export class ECSService extends Service {
         prototype:SystemProps, 
         setupEntities?:(entities:{[key:string]:Entity})=>any, //group rules
         setupEntity?:(entity:Entity)=>any, //single entity rules
-        operator?:(self:any,entities:any)=>any,
+        operator?:(entities:any)=>any,
+        remove?:(entities:any)=>any,
         order?:string[]
     ) => {
         if(!prototype) return;
@@ -225,6 +227,7 @@ export class ECSService extends Service {
         if(setupEntities) system.setupEntities = setupEntities;
         if(setupEntity) system.setupEntity = setupEntity;
         if(operator) system.operator = operator;
+        if(remove) system.remove = remove;
         if(system.tag && this.systems[system.tag]) {
             this.systemCt++;
             let tag = system.tag+this.systemCt;
@@ -275,13 +278,20 @@ export class ECSService extends Service {
                 delete this.entityMap.get(key)[entity.tag];
                 this.entityKeyMap.get(key).splice(this.entityKeyMap.get(key).indexOf(entity.tag),1);
             }
-            
+            if(this.systems[key]?.remove) {
+                this.systems[key].remove(entity,this.entityMap.get(key));
+            }   
         }
         delete this.entities[tag];
         return this.remove(tag);
     }
 
     removeSystem = (tag:string) => {
+        if(this.systems[tag]?.remove) {
+            for(const e in this.entityKeyMap.get(tag)) { //run the remove routine over the system entities to run any desired cleanup
+                this.systems[tag].remove(this.entityMap.get(tag)[e],this.entityMap.get(tag));
+            }
+        }
         delete this.systems[tag];
         this.entityMap.delete(tag);
         this.entityKeyMap.delete(tag);
