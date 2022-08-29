@@ -1,7 +1,7 @@
 import ObjectID from "bson-objectid"
 import { AuthorizationStruct, CommentStruct, GroupStruct, ProfileStruct } from "./datastructures/types";
 import { Routes, Service, ServiceOptions } from "../Service";
-import { User } from "./User.Router";
+import { User } from '../router/Router';
 
 export const randomId = (prefix?) => ((prefix) ? `${prefix}_` : '')  + Math.floor(1000000000000000*Math.random())
 

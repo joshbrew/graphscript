@@ -1,6 +1,6 @@
 import { stringifyFast } from "../../Graph";
 import { Routes, Service, ServiceOptions } from "../Service";
-import { User } from "../user/User.Router";
+import { User } from "../router/Router";
 
 //parse from this object/endpoint and send to that object/endpoint, e.g. single users
 export type PrivateSessionProps = {
