@@ -19,6 +19,20 @@ Frontend 1   Frontend 2
 
 */
 
+
+export type User = { //users have macros to call grouped connections generically, based on what's available
+    _id:string,
+    send:(...args:any[])=>any,
+    request:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
+    post:(...args:any[])=>void,
+    run:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
+    subscribe:(...args:any[])=>Promise<number>|Promise<number>[]|undefined,
+    unsubscribe:(...args:any[])=>Promise<boolean>|Promise<boolean>[]|undefined,
+    terminate:(...args:any[]) => boolean,
+    onclose?:(user:User)=>void
+} & Partial<ProfileStruct>
+
+
 export type ConnectionProps = {
     connection:GraphNode|Graph|any, //will include the service as 'graph' from our boilerplate
     service?:string|Graph|Service,
@@ -54,20 +68,6 @@ export type RouterOptions = ServiceOptions & {
     syncServices?:boolean,
     order?:string[]
 }
-
-export type User = {
-    _id:string,
-    send:(...args:any[])=>any,
-    request:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
-    post:(...args:any[])=>void,
-    run:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
-    subscribe:(...args:any[])=>Promise<number>|Promise<number>[]|undefined,
-    unsubscribe:(...args:any[])=>Promise<boolean>|Promise<boolean>[]|undefined,
-    terminate:(...args:any[]) => boolean,
-    onclose?:(user:User)=>void
-} & Partial<ProfileStruct>
-
-
 export class Router extends Service {
 
     name = 'router'
