@@ -501,7 +501,7 @@ export class DOMService extends Service {
 
     }
 
-    resolveParentNode = (elm, options, oncreate) => {
+    resolveParentNode = (elm, options, oncreate?) => {
         if(!elm.parentNode) {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
                 if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
