@@ -82,17 +82,19 @@ export class DOMService extends Service {
     customRoutes:ServiceOptions["customRoutes"] = {
         'dom':(r:DOMServiceRoute|any, route:string, routes:DOMRoutes|any) => {
             // console.log(r)
-            if(r.template) { //assume its a component node
-                if(!r.tag) r.tag = route;
-                this.addComponent(r,r.generateChildElementNodes);
-            }
-            else if(r.context) { //assume its a canvas node
-                if(!r.tag) r.tag = route;
-                this.addCanvasComponent(r);
-            }
-            else if(r.tagName || r.element) { //assume its an element node
-                if(!r.tag) r.tag = route;
-                this.addElement(r,r.generateChildElementNodes);
+            if(!(r instanceof GraphNode)) {
+                if(r.template) { //assume its a component node
+                    if(!r.tag) r.tag = route;
+                    this.addComponent(r,r.generateChildElementNodes);
+                }
+                else if(r.context) { //assume its a canvas node
+                    if(!r.tag) r.tag = route;
+                    this.addCanvasComponent(r);
+                }
+                else if(r.tagName || r.element) { //assume its an element node
+                    if(!r.tag) r.tag = route;
+                    this.addElement(r,r.generateChildElementNodes);
+                }
             }
 
             return r;

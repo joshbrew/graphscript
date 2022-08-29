@@ -195,7 +195,7 @@ export class Service extends Graph {
                             if(!par) checked[nd.tag] = true;
                             else checked[par.tag+routeFormat+nd.tag] = true;
 
-                            if(nd instanceof Graph || nd.source instanceof Graph || nd.nodes) {
+                            if(nd instanceof Graph || nd.source instanceof Graph || nd.setTree) {
                                 if(includeClassName) {
                                     let nm = nd.name;
                                     if(!nm) {

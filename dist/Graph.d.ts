@@ -101,6 +101,7 @@ export declare class GraphNode {
      */
     runAsync: (...args: any[]) => Promise<unknown>;
     transformArgs: (args: any[], self?: GraphNode) => any[];
+    isRunSync: () => boolean;
     run: (...args: any[]) => any;
     runParent: (n: GraphNode, ...args: any[]) => Promise<void>;
     runChildren: (n: GraphNode, ...args: any[]) => Promise<void>;
