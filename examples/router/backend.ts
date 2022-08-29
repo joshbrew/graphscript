@@ -112,8 +112,6 @@ router.addUser({
     _id:'admin'
 });
 
-router.run('sessionLoop');
-
 let session = (router.services.sessions as SessionsService).openSharedSession(
     {
         _id:'webrtcrooms',

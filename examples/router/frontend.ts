@@ -9,7 +9,6 @@ import { DOMService } from '../../services/dom/DOM.service';
 const router = new Router({
     routes:{
         HTTPfrontend,
-        SessionsService,
         'dom': new DOMService({
             routes:{
                 'main':{
@@ -25,6 +24,7 @@ const router = new Router({
         })
     },
     services:{
+        'sessions':SessionsService,
         'sse':{
             service:SSEfrontend,
             config:{
@@ -48,7 +48,7 @@ const router = new Router({
                             {_id:`user${Math.floor(Math.random()*1000000000000000)}`},
                             { 'ws':{ connection:wsinfo } }
                         ).then((user) => {
-                            router.subscribe('joinSession', (res) => {
+                            router.subscribe('sessions.joinSession', (res) => {
                                 console.log('joinSessions fired', res);
                             });
                         });
