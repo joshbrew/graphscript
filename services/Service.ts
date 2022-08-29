@@ -658,7 +658,6 @@ export class Service extends Graph {
         pipe:this.pipe,
         terminate:this.terminate,
         run:this.run,
-        _run:this._run,
         subscribe:this.subscribe,
         subscribeNode:this.subscribeNode,
         unsubscribe:this.unsubscribe,
