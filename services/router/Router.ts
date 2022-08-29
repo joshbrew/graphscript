@@ -263,9 +263,6 @@ export class Router extends Service {
     }
 
     addConnection = (options:ConnectionProps|string,source?:string) => {
-        let settings:ConnectionInfo = {} as any;
-
-        if(source) settings.source = source;
         if(typeof options === 'string') {
             if (this.connections[options]) {
                 options = this.connections[options];
@@ -282,6 +279,9 @@ export class Router extends Service {
             }
         } 
         if(!options || typeof options === 'string') return undefined;
+
+        let settings:ConnectionInfo = {} as any;
+        if(source) settings.source = source;
 
         if(options.connection instanceof GraphNode) {
             settings.connection = options.connection;
