@@ -155,9 +155,9 @@ export class Router extends Service {
                             if(opt.connections) {
                                 if(Array.isArray(opt.connections)) {
                                     (opt.connections as any).forEach((k) => {
-                                        this.addConnections(opt[key].service,k);
+                                        this.addServiceConnections(opt[key].service,k);
                                     })
-                                } else this.addConnections(opt.service,opt.connections);
+                                } else this.addServiceConnections(opt.service,opt.connections);
                             }
                             if(opt.config) {
                                 for(const c in opt.config) {
@@ -589,10 +589,10 @@ export class Router extends Service {
         this.load(service,includeClassName,routeFormat,this.customRoutes,this.customChildren);
         this.services[service.name] = service;
         if(connections) {
-            if(typeof connections === 'string') this.addConnections(service,connections,source);
+            if(typeof connections === 'string') this.addServiceConnections(service,connections,source);
             else {
                 for(const c in connections) {
-                    this.addConnections(service,c,source);
+                    this.addServiceConnections(service,c,source);
                 }
             }
         }
@@ -601,7 +601,7 @@ export class Router extends Service {
         else this.order.push(service.name);
     }
 
-    addConnections = ( //sync connection objects that match our boilerplate (send/request/terminate etc) for quicker piping
+    addServiceConnections = ( //sync connection objects that match our boilerplate (send/request/terminate etc) for quicker piping
         service:Service,
         connectionsKey:any,
         source?:string
@@ -767,7 +767,7 @@ export class Router extends Service {
         addConnection:this.addConnection,
         removeConnection:this.removeConnection,
         addService:this.addService,
-        addConnections:this.addConnections,
+        addServiceConnections:this.addServiceConnections,
         openConnection:this.openConnection,
         terminate:this.terminate,
         routeConnections:this.routeConnections,
