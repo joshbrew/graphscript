@@ -152,22 +152,23 @@ export const state = {
 
 
 //set the node's props as this
+const restrictedKeys = ['_state', 'graph']
+
 function merge(props) {
-    //  this._state = props._state;
-    // else {
-        for (let k in props) {
-            if (k === '_state') continue;
-            else {
-                this._state[k] = props[k];
-                if(!(k in this)) Object.defineProperty(this, k, {
-                    get: () => this._state[k],
-                    set: (v) => this._state[k] = v,
-                    enumerable: true
-                })
-                else this[k] = props[k];
-            }
-        }
-}
+    for (let k in props) {
+      if (restrictedKeys.includes(k)) continue;
+    //   else if (!(k in this._initial)) continue
+      else {
+        this._state[k] = props[k];
+        if (k in this) this[k] = props[k];
+        else Object.defineProperty(this, k, {
+          get: () => this._state[k],
+          set: (v) => this._state[k] = v,
+          enumerable: true
+        });
+      }
+    }
+  }
 
 
 
@@ -717,7 +718,8 @@ export class GraphNode {
     add = (n:GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
         if(typeof n === 'function') n = { operator:n as any};
 
-        if(!(n instanceof GraphNode)) n = new GraphNode(n,this,this.graph); 
+        if (n?.node instanceof GraphNode) n = n.node
+        if(!(n instanceof GraphNode)) n = new GraphNode(n.node ?? n,this,this.graph); 
         this.nodes.set(n.tag,n);
         if(this.graph) {
             this.graph.nodes.set(n.tag,n);
@@ -1093,8 +1095,12 @@ export class Graph {
 
     //converts all children nodes and tag references to GraphNodes also
     add = (n:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
+        
+        if (n?.node instanceof GraphNode) n = n.node
+
         let props = n;
-        if(!(n instanceof GraphNode)) n = new GraphNode(props,this,this); 
+
+        if(!(n instanceof GraphNode)) n = new GraphNode(props?.node ?? props,this,this); 
         else {
             this.nNodes = this.nodes.size;
             if(n.tag) {
