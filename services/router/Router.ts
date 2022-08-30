@@ -47,6 +47,7 @@ export type ConnectionInfo = {
     _id:string,
     source:string,
     connectionType?:string, //if we know the key on the service we sourced an endpoint connection from, this helps with keeping track of things 
+    connectionsKey?:string, //if we know the object on the service that the connection info is stored on
     send?:(...args:any[])=>any,
     request?:(...args:any[])=>Promise<any>|Promise<any>[],
     post?:(...args:any[])=>void,
@@ -397,6 +398,72 @@ export class Router extends Service {
         } 
     }
 
+
+    //get all connections with matching properties e.g. connectionType and connectionsKey
+    getConnections = (sourceId:string, hasMethod?:string, props?:{}) => {
+        if(this.sources[sourceId]) {
+            if(!props && !hasMethod) return this.sources[sourceId];
+
+            let found = {};
+            for(const key in this.sources[sourceId]) {
+                if(typeof this.sources[sourceId][key] === 'object') {
+                    if(!this.sources[sourceId][key]._id) {
+                        for(const k in this.sources[sourceId][key]) {
+                            if(typeof this.sources[sourceId][key][k] === 'object') {
+                                let pass = true;
+                                if(hasMethod && !this.sources[sourceId][key][k][hasMethod]) pass = false;
+                                for(const p in props) {
+                                    if(typeof this.sources[sourceId][key][k][p] === 'object' && typeof props[p] === 'object') {
+                                        //check one level down
+                                        for(const pp in props[p]) {
+                                            if(props[p][pp] !== this.sources[sourceId][key][k][p][pp]) {
+                                                pass = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else if(this.sources[sourceId][key][k][p] !== props[p]) {
+                                        pass = false;
+                                    } else {
+                                        pass = false;
+                                        break;
+                                    }
+                                }
+                                if(pass) {
+                                    found[this.sources[sourceId][key][k]._id] = this.sources[sourceId][key][k];
+                                }
+                            }
+                        }
+                    } else {
+                        let pass = true;
+                        if(hasMethod && !this.sources[sourceId][key][hasMethod]) pass = false;
+                        for(const p in props) {
+                            if(typeof this.sources[sourceId][key][p] === 'object' && typeof props[p] === 'object') {
+                                //check one level down
+                                for(const pp in props[p]) {
+                                    if(props[p][pp] !== this.sources[sourceId][key][p][pp]) {
+                                        pass = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            else if(this.sources[sourceId][key][p] !== props[p]) {
+                                pass = false;
+                            } else {
+                                pass = false;
+                                break;
+                            }
+                        }
+                        if(pass) {
+                            if(this.getConnection(this.sources[sourceId][key] as any, hasMethod))
+                                found[this.sources[sourceId][key]._id] = this.sources[sourceId][key];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     addConnection = (options:ConnectionProps|ConnectionInfo|string,source?:string) => {
         let settings:ConnectionInfo = {} as any;
         if(typeof options === 'string') {
@@ -409,6 +476,7 @@ export class Router extends Service {
                             options = {connection:this.serviceConnections[j][k][options as string]};
                             options.service = j;
                             settings.connectionType = j;
+                            settings.connectionsKey = k;
                             break;
                         }
                     }
@@ -548,6 +616,7 @@ export class Router extends Service {
                                 if(options.service.connections[key][c as string]) {   
                                     c = options.service.connections[key][c as string];
                                     settings.connectionType = key;
+                                    settings.connectionsKey = c as string;
                                     break;
                                 }
                             }
@@ -560,6 +629,7 @@ export class Router extends Service {
                                 c = this.serviceConnections[j][k][c as string];
                                 options.service = j;
                                 settings.connectionType = j;
+                                settings.connectionsKey = k;
                                 break;
                             }
                         }
