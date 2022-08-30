@@ -2,10 +2,7 @@ import { DOMElement } from "./DOMElement"; //https://github.com/joshbrew/DOMElem
 import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph';
 import { RouteProp, Service, ServiceOptions } from "../Service";
 
-import {CompleteOptions} from './types/general';
-import { ElementInfo, ElementProps} from './types/element';
-import { ComponentProps, ComponentInfo} from './types/component';
-import {CanvasElementProps, CanvasOptions, CanvasElementInfo} from './types/canvascomponent';
+import {CompleteOptions, ElementInfo, ElementProps, ComponentProps, ComponentInfo, CanvasElementProps, CanvasOptions, CanvasElementInfo} from './types/index';
 
 //alternative base service that additioanlly allows 'DOMRoutes' to be loaded which can tie in html and webcomponent blocks
 
@@ -159,7 +156,7 @@ export class DOMService extends Service {
         }
         
         node.element = element;
-
+        element.node = node;
 
         // -------- Bind Functions to GraphNode --------
         const initialOptions = options._initial ?? options
@@ -207,7 +204,6 @@ export class DOMService extends Service {
 
 
         let node = this.resolveNode(elm, options);
-        (elm as any).node = node; //self.node references the graphnode on the div now
         
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
         if(generateChildElementNodes) { //convert all child divs to additional nodes
@@ -218,17 +214,16 @@ export class DOMService extends Service {
         
         if(!node.ondelete) node.ondelete = (node) => { 
             elm.remove(); 
-            if(options.onremove) options.onremove(elm, this.elements[options.id]); 
+            if(options.onremove) options.onremove.call(this.elements[options.id].node, elm, this.elements[options.id]); 
         } //in this case we need to remove the element from the dom via the node and run callbacks here due to elements lacking an 'onremove' event
 
         if(options.onresize) {
             let onresize = options.onresize;
-            options.onresize = (ev) => { onresize(ev, elm, this.elements[options.id]) };
+            options.onresize = (ev) => { onresize.call(this.elements[options.id].node, ev, elm, this.elements[options.id]) };
             window.addEventListener('resize', options.onresize as EventListener);
         }
 
         this.resolveParentNode(elm, options, oncreate)
-
 
         return this.elements[options.id] as ElementInfo;
     }
@@ -293,25 +288,25 @@ export class DOMService extends Service {
         if(options.onrender) {
             let oncreate = options.onrender;
             (options.onrender as any) = (element:DOMElement) => {
-                oncreate(element, options as ComponentInfo);
+                oncreate.call((element as any).node, element, options as ComponentInfo);
             }
         }
         if(options.onresize) {
             let onresize = options.onresize;
             (options.onresize as any) = (element:DOMElement) => {
-                onresize(element, options as ComponentInfo);
+                onresize.call((element as any).node, element, options as ComponentInfo);
             }
         }
         if(options.onremove) {
             let ondelete = options.onremove;
-            (options.onremove as any) = (self:DOMElement) => {
-                ondelete(self, options as ComponentInfo);
+            (options.onremove as any) = (element:DOMElement) => {
+                ondelete.call((element as any).node, self, options as ComponentInfo);
             }
         }
         if(typeof options.renderonchanged === 'function') {
             let renderonchanged = options.renderonchanged;
             (options.renderonchanged as any) = (element:DOMElement) => {
-                renderonchanged(element, options as ComponentInfo);
+                renderonchanged.call((element as any).node, element, options as ComponentInfo);
             }
         }
 
@@ -367,7 +362,6 @@ export class DOMService extends Service {
 
         if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }
 
-        (elm as any).node = node; //this.node references the graphnode on the div now
 
         this.components[completeOptions.id] = {
             element:elm as any,
@@ -379,7 +373,6 @@ export class DOMService extends Service {
 
                 
         this.resolveParentNode(elm, options)
-
 
         return this.components[completeOptions.id] as ComponentInfo;
     }
@@ -399,25 +392,25 @@ export class DOMService extends Service {
         if(options.onrender) {
             let oncreate = options.onrender;
             (options.onrender as any) = (element:DOMElement) => {
-                oncreate(element, options as any);
+                oncreate.call((element as any).node, element, options as any);
             }
         }
         if(options.onresize) {
             let onresize = options.onresize;
             (options.onresize as any) = (element:DOMElement) => {
-                onresize(element, options as any);
+                onresize.call((element as any).node, element, options as any);
             }
         }
         if(options.ondelete) {
             let ondelete = options.onremove;
             (options.onremove as any) = (element:DOMElement) => {
-                ondelete(element, options as any);
+                ondelete.call((element as any).node, element, options as any);
             }
         }
         if(typeof options.renderonchanged === 'function') {
             let renderonchanged = options.renderonchanged;
             (options.renderonchanged as any) = (element:DOMElement) => {
-                renderonchanged(element, options as any);
+                renderonchanged.call((element as any).node, element, options as any);
             }
         }
 
@@ -468,7 +461,6 @@ export class DOMService extends Service {
         }
 
         let node = this.resolveNode(elm, options);
-        (elm as any).node = node; //self.node references the graphnode on the div now
 
         if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }
 
@@ -496,8 +488,6 @@ export class DOMService extends Service {
         node.context = context;
       
         this.resolveParentNode(elm, options)
-        
-        node.runAnimation(animation); //update the animation by calling this function again or setting node.animation manually
 
         return this.components[completeOptions.id] as CanvasElementInfo;
 
@@ -515,8 +505,15 @@ export class DOMService extends Service {
                     options.parentNode.appendChild(elm);
                 }
 
-                if(oncreate) oncreate(elm,this.elements[options.id]);
-            },0.01);
+                if(oncreate) oncreate.call(elm.node, elm, this.elements[options.id]);
+
+                if(elm.node.animation || elm.node.animate) {
+                    elm.node.runAnimation();
+                }
+                if(elm.node.looper || typeof elm.node.loop === 'number' && elm.node.loop) {
+                    elm.node.runLoop()
+                }   
+            },0.01); //small timeout makes sure the elements all load before executing node utilities
         }
     }
     

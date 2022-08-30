@@ -164,6 +164,7 @@ function merge(props) {
                     set: (v) => this._state[k] = v,
                     enumerable: true
                 })
+                else this[k] = props[k];
             }
         }
 }
@@ -362,6 +363,7 @@ export class GraphNode {
         
             if(typeof this.oncreate === 'function') this.oncreate(this);
             if(!this.firstRun) this.firstRun = true; 
+            if(this.animation && !this.animate) this.animate = true;
         }
         else return properties;
       

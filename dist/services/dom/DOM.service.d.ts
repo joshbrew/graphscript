@@ -1,10 +1,7 @@
 import { DOMElement } from "./DOMElement";
 import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph';
 import { RouteProp, Service, ServiceOptions } from "../Service";
-import { CompleteOptions } from './types/general';
-import { ElementInfo, ElementProps } from './types/element';
-import { ComponentProps, ComponentInfo } from './types/component';
-import { CanvasElementProps, CanvasOptions, CanvasElementInfo } from './types/canvascomponent';
+import { CompleteOptions, ElementInfo, ElementProps, ComponentProps, ComponentInfo, CanvasElementProps, CanvasOptions, CanvasElementInfo } from './types/index';
 export declare type DOMRouteProp = ElementProps | ComponentProps | CanvasElementProps;
 export declare type DOMServiceRoute = GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
     aliases?: string[];
