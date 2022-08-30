@@ -33,7 +33,6 @@ const soundFilePaths = [
 ];
 
 const GameState = {
-    playing:undefined as Howl,
     baselineHEG:0,
     currentHEG:0,
     shortChange:0,
@@ -42,11 +41,12 @@ const GameState = {
     lastTimestamp:Date.now(),
     dataFrameTime:0,
     raw:undefined,
+    hegDataBuffer:new Array(512).fill(0),
+    localMax:0,
 
+    playing:undefined as Howl,
     analyser:undefined,
     audioFFTBuffer:new Uint8Array(2048), //default fft size
-    hegDataBuffer:new Array(512).fill(0),
-    localMax:0
 }
 
 //start of your web page
@@ -259,6 +259,26 @@ const webappHtml = {
                             }
                         },
                     } as ElementProps,
+                    'resetstats':{
+                        tagName:'button',
+                        attributes:{
+                            onclick:() => {
+                                Object.assign(GameState,{
+                                    baselineHEG:0,
+                                    currentHEG:0,
+                                    shortChange:0,
+                                    longChange:0,
+                                    currentTimestamp:Date.now(),
+                                    lastTimestamp:Date.now(),
+                                    dataFrameTime:0,
+                                    raw:undefined,
+                                    hegDataBuffer:new Array(512).fill(0),
+                                    localMax:0,
+                                })
+                            },
+                            innerText:'Reset stats'
+                        }
+                    },
                     'waveform':{
                         tagName:'canvas',
                         style:{width:'100vw', height:'300px'},
