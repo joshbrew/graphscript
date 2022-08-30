@@ -159,7 +159,7 @@ function merge(props) {
             if (k === '_state') continue;
             else {
                 this._state[k] = props[k];
-                Object.defineProperty(this, k, {
+                if(!(k in this)) Object.defineProperty(this, k, {
                     get: () => this._state[k],
                     set: (v) => this._state[k] = v,
                     enumerable: true

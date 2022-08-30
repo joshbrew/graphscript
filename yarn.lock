@@ -2,49 +2,42 @@
 # yarn lockfile v1
 
 
-"@types/node@*", "@types/node@^17.0.36":
+"@types/node@*", "@types/node@~17.0.36":
   "integrity" "sha512-V3orv+ggDsWVHP99K3JlwtH20R7J4IhI1Kksgc+64q5VxgfRkQG8Ws3MFm/FZOKDYGy9feGFlZ70/HpCNe9QaA=="
   "resolved" "https://registry.npmjs.org/@types/node/-/node-17.0.36.tgz"
   "version" "17.0.36"
 
-"@types/ws@^8.5.3":
+"@types/ws@~8.5.3":
   "integrity" "sha512-6YOoWjruKj1uLf3INHH7D3qTXwFfEsg1kf3c0uDdSBJwfa/llkwIjrAGV7j7mVgGNbzTQ3HiHKKDXl6bJPD97w=="
   "resolved" "https://registry.npmjs.org/@types/ws/-/ws-8.5.3.tgz"
   "version" "8.5.3"
   dependencies:
     "@types/node" "*"
 
-"better-sse@^0.7.1":
-  "integrity" "sha512-2t7XGg6hQFNwtmFXKi6/jyY5K0/4fa5UoOqVSYG2W/AFbVCt8gPnFw2LHM9ude91a8KhoXtRt9zOwpVZ5f5K5g=="
-  "resolved" "https://registry.npmjs.org/better-sse/-/better-sse-0.7.1.tgz"
-  "version" "0.7.1"
-
-"brainsatplay-data@^0.0.48":
-  "integrity" "sha512-3xJ4C5ts0z6dKTkaEI0LrHO443gphOj/OAP9JfZARZXE5MO+kMsOIlvAgijeP7ty4btZtg7MNEEacwIBXREgbQ=="
-  "resolved" "https://registry.npmjs.org/brainsatplay-data/-/brainsatplay-data-0.0.48.tgz"
-  "version" "0.0.48"
-  dependencies:
-    "brainsatplay-math" "^0.0.2"
+"better-sse@~0.8.0":
+  "integrity" "sha512-ymOse8R0L+R2S1W85yOGkkc+yTzAmo52S4erjxPyBVwpqjpS+X228BG7hDwgKsGV/D51YhCYd+eaDwJ+sL5JhA=="
+  "resolved" "https://registry.npmjs.org/better-sse/-/better-sse-0.8.0.tgz"
+  "version" "0.8.0"
 
 "brainsatplay-math@^0.0.2":
   "integrity" "sha512-7fjUfcmR2TcHtRh9jCds1WF1HZWhvvDytE6ngrkOUnMTQTbrDs0iAcp8NjMEiHumJRjcaD/c6PN60wIY0rjQaQ=="
   "resolved" "https://registry.npmjs.org/brainsatplay-math/-/brainsatplay-math-0.0.2.tgz"
   "version" "0.0.2"
 
-"brainsatplay-math@^0.0.22":
+"brainsatplay-math@~0.0.22":
   "integrity" "sha512-er+7fobi+bgtuiaN5Pcg0cpOfl/d5hrM8W8sF5lnX9VWhcs2TvyG3J0UV+pozGYSBvtqij7Evs4HhhFIh3cfbQ=="
   "resolved" "https://registry.npmjs.org/brainsatplay-math/-/brainsatplay-math-0.0.22.tgz"
   "version" "0.0.22"
 
-"bson-objectid@^2.0.3":
+"bson-objectid@~2.0.3":
   "integrity" "sha512-WYwVtY9yqk179EPMNuF3vcxufdrGLEo2XwqdRVbfLVe9X6jLt7WKZQgP+ObOcprakBGbHxzl76tgTaieqsH29g=="
   "resolved" "https://registry.npmjs.org/bson-objectid/-/bson-objectid-2.0.3.tgz"
   "version" "2.0.3"
 
-"gpujsutils@^1.0.8":
-  "integrity" "sha512-TEWBNXDclnohXSgPs/Ofl5NDCD9PPquShftbhUDE78CsFypsK7wjExvK2z7yn8ZUqSRf/4htFUNXXBalRIV1TQ=="
-  "resolved" "https://registry.npmjs.org/gpujsutils/-/gpujsutils-1.0.8.tgz"
-  "version" "1.0.8"
+"gpujsutils@~1.0.10":
+  "integrity" "sha512-hn74yMSZrT4pf4nlS3SRZvUe7UaGCs3KYoi/dqhTJk3Gho2M9SScj7BHewTcNI1M2UonTkcaR/CA1KgXxekfVQ=="
+  "resolved" "https://registry.npmjs.org/gpujsutils/-/gpujsutils-1.0.10.tgz"
+  "version" "1.0.10"
 
 "tinybuild@file:../../../AppData/Roaming/npm/node_modules/tinybuild":
   "resolved" "file:../../../AppData/Roaming/npm/node_modules/tinybuild"
@@ -55,12 +48,12 @@
     "esbuild-plugin-d.ts" "^1.1.0"
     "ws" "^8.5.0"
 
-"web-worker@^1.2.0":
+"web-worker@~1.2.0":
   "integrity" "sha512-PgF341avzqyx60neE9DD+XS26MMNMoUQRz9NOZwW32nPQrF6p77f1htcnjBSEV8BGMKZ16choqUG4hyI0Hx7mA=="
   "resolved" "https://registry.npmjs.org/web-worker/-/web-worker-1.2.0.tgz"
   "version" "1.2.0"
 
-"ws@^8.7.0":
-  "integrity" "sha512-c2gsP0PRwcLFzUiA8Mkr37/MI7ilIlHQxaEAtd0uNMbVMoy8puJyafRlm0bV9MbGSabUPeLrRRaqIBcFcA2Pqg=="
-  "resolved" "https://registry.npmjs.org/ws/-/ws-8.7.0.tgz"
-  "version" "8.7.0"
+"ws@~8.8.1":
+  "integrity" "sha512-bGy2JzvzkPowEJV++hF07hAD6niYSr0JzBNo/J29WsB57A2r7Wlc1UFcTR9IzrPvuNVO4B8LGqF8qcpsVOhJCA=="
+  "resolved" "https://registry.npmjs.org/ws/-/ws-8.8.1.tgz"
+  "version" "8.8.1"
