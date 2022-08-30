@@ -175,6 +175,7 @@ export class GraphNode {
     nodes:Map<any,any> = new Map()
     _initial:{[key:string]:any} = {}; //keep track of custom _initial properties added that aren't default on the current class object
     _state:{[key:string]:any} = {}; //keep track of custom _initial properties added that aren't default on the current class object
+    _unique=Math.random(); //mostly-guaranteed unique id
 
     tag:string;
     parent:GraphNode|Graph;
@@ -1068,6 +1069,7 @@ export class Graph {
     state=state;
     _initial:any;
     _state: any = {};
+    _unique=Math.random(); //mostly-guaranteed unique id
 
     //can create preset node trees on the graph
     tree:Tree = {};

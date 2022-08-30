@@ -148,17 +148,18 @@ export class WSSbackend extends Service {
             }); //add send/receive etc functionality
 
 
-            if(options.onconnection) 
-                options.onconnection(ws,request,this.servers[address], clientId);//can overwrite the default onmesssage response 
+            if((this.servers[address] as any).onconnection) 
+                (this.servers[address] as any).onconnection(ws,request,this.servers[address], clientId);//can overwrite the default onmesssage response 
             
-            if(options.onconnectionclosed) ws.on('close',(code,reason)=>{
-                if(options.onconnectionclosed) options.onconnectionclosed(code,reason,ws, this.servers[address], clientId);
-            });
+            if((this.servers[address] as any).onconnectionclosed) 
+                ws.on('close',(code,reason)=>{
+                    if(this.servers[address].onconnectionclosed) (this.servers[address] as any).onconnectionclosed(code,reason,ws, this.servers[address], clientId);
+                });
         });
 
         wss.on('error',(err) => {
             if(this.debug) console.log("Socket Error:",err);
-            if(options.onerror) options.onerror(err, wss, this.servers[address]);   
+            if(this.servers[address].onerror) (this.servers[address] as any).onerror(err, wss, this.servers[address]);   
             else console.error(err);
         })
 
@@ -172,7 +173,7 @@ export class WSSbackend extends Service {
 
                 if(addr === address && this.servers[addr]) {
                     this.servers[addr].wss.handleUpgrade(request,socket,head, (ws) => {
-                        if(options.onupgrade) options.onupgrade(ws, this.servers[address], request, socket, head);
+                        if((this.servers[address] as any).onupgrade) (this.servers[address] as any).onupgrade(ws, this.servers[address], request, socket, head);
                         this.servers[addr].wss.emit('connection',ws,request);
                     });
                 }
@@ -183,7 +184,7 @@ export class WSSbackend extends Service {
 
         wss.on('close',()=> {
             server.removeListener('upgrade',onUpgrade);
-            if(options.onclose) options.onclose(wss, this.servers[address]);
+            if((this.servers[address] as any).onclose) (this.servers[address] as any).onclose(wss, this.servers[address]);
             else console.log(`wss closed: ${address}`);
         });
 
@@ -281,7 +282,7 @@ export class WSSbackend extends Service {
 
         if(!('keepState' in options)) options.keepState = true;
 
-        if(options.onmessage) socket.on('message',(data)=>{(options as any).onmessage(data,socket,this.sockets[address]);}); 
+        if(options.onmessage) socket.on('message',(data)=>{(this.sockets[address] as any).onmessage(data,socket,this.sockets[address]);}); 
         else if (options._id) {
             socket.on('message', (data:any)=> {
                 if(ArrayBuffer.isView(data)) data = data.toString();
@@ -324,9 +325,10 @@ export class WSSbackend extends Service {
             socket.on('message',socketonmessage); //add default callback if none specified
             options.onmessage = socketonmessage;
         }
-        if(options.onopen) socket.on('open',()=>{(options as any).onopen(socket,this.sockets[address]);});
-        if(options.onclose) socket.on('close',(code,reason)=>{(options as any).onclose(code,reason,socket,this.sockets[address]);});
-        if(options.onerror) socket.on('error',(er)=>{(options as any).onerror(er,socket,this.sockets[address]);});
+        socket.on('open',()=>{if(this.sockets[address].onopen) (this.sockets[address] as any).onopen(socket,this.sockets[address]);});
+        socket.on('close',(code,reason)=>{
+            if(this.sockets[address].onclose) (this.sockets[address] as any).onclose(code,reason,socket,this.sockets[address]);});
+        socket.on('error',(er)=>{if(this.sockets[address].onerror) (this.sockets[address] as any).onerror(er,socket,this.sockets[address]);});
 
         let send = (message:any) => {
             //console.log('sent', message)

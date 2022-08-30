@@ -11,6 +11,7 @@ export declare type User = {
     unsubscribe: (...args: any[]) => Promise<boolean> | Promise<boolean>[] | undefined;
     terminate: (...args: any[]) => boolean;
     onclose?: (user: User) => void;
+    [key: string]: any;
 } & Partial<ProfileStruct>;
 export declare type ConnectionProps = {
     connection: GraphNode | Graph | {
@@ -28,6 +29,7 @@ export declare type ConnectionInfo = {
     _id: string;
     source: string;
     connectionType?: string;
+    connectionsKey?: string;
     send?: (...args: any[]) => any;
     request?: (...args: any[]) => Promise<any> | Promise<any>[];
     post?: (...args: any[]) => void;
@@ -99,8 +101,11 @@ export declare class Router extends Service {
     removeUser(profile: string | User | {
         _id: string;
         [key: string]: any;
-    }, terminate?: true): boolean;
+    }, terminate?: boolean): boolean;
     getConnection: (sourceId: string, hasMethod?: string) => ConnectionInfo | undefined;
+    getConnections: (sourceId: string, hasMethod?: string, props?: {}) => {
+        [key: string]: ConnectionInfo;
+    };
     addConnection: (options: ConnectionProps | ConnectionInfo | string, source?: string) => ConnectionInfo;
     removeConnection: (connection: string | ConnectionInfo | {
         [key: string]: any;

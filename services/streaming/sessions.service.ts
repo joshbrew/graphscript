@@ -202,6 +202,7 @@ export class SessionsService extends Service {
         options?:SharedSessionProps|PrivateSessionProps
     ) => {
         if(!userId && !this.users[userId]) return false;
+        if(!this.users[userId].sessions) this.users[userId].sessions = {};
         let sesh = this.sessions.shared[sessionId];
         //console.log(sessionId,userId,sesh,this.sessions);
         if(sesh?.settings) {
@@ -213,7 +214,6 @@ export class SessionsService extends Service {
                 if(options.settings.password !== sesh.settings.password) return false
             }
             (sesh.settings.users as any)[userId] = true;
-            if(!this.users[userId].sessions) this.users[userId].sessions = {};
             this.users[userId].sessions[sessionId] = sesh;
             if(options) { return this.updateSession(options,userId); };
             //console.log(sesh)
@@ -351,7 +351,7 @@ export class SessionsService extends Service {
     }
 
     //iterate all subscriptions, e.g. run on backend
-    sessionLoop = (transmit=true) => {
+    sessionUpdateCheck = (transmit=true) => {
         let updates:any = {
             private:{},
             shared:{}
@@ -704,7 +704,7 @@ export class SessionsService extends Service {
             loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
         },
         sessionLoop:{
-            operator:this.sessionLoop, 
+            operator:this.sessionUpdateCheck, 
             loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
         }
     }

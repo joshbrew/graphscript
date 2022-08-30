@@ -29,7 +29,8 @@ export type User = { //users have macros to call grouped connections generically
     subscribe:(...args:any[])=>Promise<number>|Promise<number>[]|undefined,
     unsubscribe:(...args:any[])=>Promise<boolean>|Promise<boolean>[]|undefined,
     terminate:(...args:any[]) => boolean,
-    onclose?:(user:User)=>void
+    onclose?:(user:User)=>void,
+    [key:string]:any
 } & Partial<ProfileStruct>
 
 
@@ -314,7 +315,7 @@ export class Router extends Service {
     
     removeUser(
         profile:string | User | {_id:string, [key:string]:any},
-        terminate?:true
+        terminate?:boolean
     ) {
         if(terminate) this.removeConnection(profile as any, terminate);
 
@@ -379,18 +380,21 @@ export class Router extends Service {
         } else if (this.order) {
             for(let i = 0; i < this.order.length; i++) {
                 let k = this.order[i];  
-                if(this.sources[sourceId as string][k].connectionType && (this.sources[sourceId as string][k].service as any)?.name) {
-                    if(!this.serviceConnections[(this.sources[sourceId as string][k] as any).service.name]) {
-                        this.removeConnection(this.sources[sourceId as string][k]); //some auto cleanup
-                        continue;
+                if(this.sources[k]?.[sourceId]) {
+                    if (this.sources[k][sourceId].connectionType && (this.sources[k][sourceId].service as any)?.name) {
+                        if (!this.serviceConnections[(this.sources[k][sourceId].service as any).service.name]) {
+                            this.removeConnection((this.sources[k][sourceId].service as any));
+                            continue;
+                        }
+                    }
+                    if(hasMethod && this.sources[k][sourceId as string]?.[hasMethod]) {
+                        return this.sources[k][sourceId as string];
+                    }
+                    else {
+                        return this.sources[k][sourceId as string];
                     }
                 }
-                if(hasMethod && this.sources[k][sourceId as string]?.[hasMethod]) {
-                    return this.sources[k][sourceId as string];
-                }
-                else {
-                    return this.sources[k][sourceId as string];
-                }
+              
             }
         } 
         if(typeof sourceId === 'string' && this.connections[sourceId] && this.connections[sourceId].send) {
@@ -646,19 +650,35 @@ export class Router extends Service {
             settings.unsubscribe = c.unsubscribe;
             settings.terminate = c.terminate;
             settings.onclose = options.onclose;
+
+            //default onclose cleanup handlers to remove users and dead connections as needed
             if(settings.onclose) {
                 if(!(c.onclose && settings.onclose.toString() === c.onclose.toString())) {
                     let oldonclose = c.onclose;
-                    c.onclose = (...args:any[]) => { if(settings.onclose) settings.onclose(settings, ...args); if(oldonclose) oldonclose(...args); }
+                    c.onclose = (...args:any[]) => { 
+                        if(settings.onclose) settings.onclose(settings, ...args); 
+                        if(this.users[settings.source] && Object.keys(this.sources[settings.source]).length === 0) {
+                            this.removeUser(settings.source, false); 
+                        }  
+                        if(oldonclose) oldonclose(...args); 
+                    }
                 }
             } else {
                 let oldonclose = c.onclose;
-                c.onclose = (...args:any[]) => { this.removeConnection(settings); if(oldonclose) oldonclose(...args); } //default cleanup
+                c.onclose = (...args:any[]) => { 
+                    this.removeConnection(settings); 
+                    if(this.users[settings.source] && Object.keys(this.sources[settings.source]).length === 0) {
+                        this.removeUser(settings.source, false); 
+                    } 
+                    if(oldonclose) oldonclose(...args); 
+                } //default cleanup
             }
+            
             if(options.service) {   
                 if(typeof options.service === 'string') options.service = this.services[options.service];         
                 settings.service = options.service;
             } else if(c.graph) settings.service = c.graph;
+
         }
 
         if(!settings.source && options.source) {
@@ -689,11 +709,19 @@ export class Router extends Service {
         if(typeof connection === 'object' && connection._id) connection = connection._id;
         if(typeof connection === 'string') {
             if(this.connections[connection]) {
-                if(terminate && this.connections[connection]) this.connections[connection].terminate();
+                if(terminate && this.connections[connection]) 
+                    this.connections[connection].terminate();
                 delete this.connections[connection];
                 for(const key in this.sources) {
                     if(this.sources[key][connection])
                         delete this.sources[key][connection];
+                    else {
+                        for(const k in this.sources[key]) {
+                            if(this.sources[key][k]?.[connection]) {
+                                delete this.sources[key][connection];
+                            }
+                        }
+                    }
                 }
                 return true;
             } else if (this.sources[connection]) {
@@ -915,8 +943,11 @@ export class Router extends Service {
             if('users' in this.services[name]) this.services[name].users = this.users;
             this.nodes.forEach((n,tag) => {
                 if(!this.services[name].nodes.get(n.tag)) {
-                    this.services[name].nodes.set(tag,n);
-                } 
+                    this.services[name].nodes.set(n.tag,n);
+                } else {
+                    if(!this.services[name].nodes.get(tag) && n._UNIQUE !== this.services[name].nodes.get(n.tag)._UNIQUE) //use the remapped key if it's not the same node
+                        this.services[name].nodes.set(tag,n);
+                }
             });
         }
     }

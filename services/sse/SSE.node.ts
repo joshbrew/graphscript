@@ -46,6 +46,7 @@ export type SSEClientInfo = {
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
     unsubscribe:(route:any, sub:number, eventName?:string)=>Promise<boolean>,
     terminate:() => boolean,
+    onclose?:(session:any,sseinfo:any,_id:string,req:http.IncomingMessage,res:http.ServerResponse)=>void,
     graph:SSEbackend
 }
 
@@ -202,11 +203,12 @@ export class SSEbackend extends Service {
                                 delete sse.sessions[_id];
                                 return true;
                             },
+                            onclose:()=>options.onconnectionclose,
                             graph:this
                         } as SSEClientInfo;
     
                         session.push(JSON.stringify({route:'setId',args:_id})); //associate this user's connection with a server generated id 
-                        if(options.onconnectionclose) session.on('close',()=>{(options.onconnectionclose as any)(session,sse,_id,req,response)})
+                        session.on('close',()=>{if(this.eventsources[_id].onclose) (this.eventsources[_id] as any).onclose(session,sse,_id,req,response)})
                         if(sse.onconnection) {sse.onconnection(session,sse,_id,req,response);}
                     
                     });

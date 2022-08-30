@@ -44,6 +44,7 @@ export declare type SSEClientInfo = {
     subscribe: (route: any, callback?: ((res: any) => void) | string) => any;
     unsubscribe: (route: any, sub: number, eventName?: string) => Promise<boolean>;
     terminate: () => boolean;
+    onclose?: (session: any, sseinfo: any, _id: string, req: http.IncomingMessage, res: http.ServerResponse) => void;
     graph: SSEbackend;
 };
 export declare class SSEbackend extends Service {

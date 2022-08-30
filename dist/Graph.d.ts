@@ -56,11 +56,16 @@ export declare const state: {
  * const graph = new GraphNode({custom: 1, operator: (input) => console.log(input, self.custom)});
  * ```
  */
+declare function merge(props: any): void;
 export declare class GraphNode {
     nodes: Map<any, any>;
     _initial: {
         [key: string]: any;
     };
+    _state: {
+        [key: string]: any;
+    };
+    _unique: number;
     tag: string;
     parent: GraphNode | Graph;
     children: any;
@@ -89,6 +94,7 @@ export declare class GraphNode {
     tree: Tree;
     [key: string]: any;
     constructor(properties?: GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void), parentNode?: GraphNode | Graph, graph?: Graph);
+    merge: typeof merge;
     operator: OperatorType;
     runOp: (...args: any[]) => any;
     setOperator: (operator: OperatorType) => OperatorType;
@@ -171,11 +177,14 @@ export declare class Graph {
         subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
     };
     _initial: any;
+    _state: any;
+    _unique: number;
     tree: Tree;
     [key: string]: any;
     constructor(tree?: Tree, tag?: string, props?: {
         [key: string]: any;
     });
+    merge: typeof merge;
     add: (n?: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void)) => GraphNode | GraphNodeProperties;
     setTree: (tree?: Tree) => void;
     get: (tag: string) => any;
@@ -210,3 +219,4 @@ export declare function reconstructObject(json?: string | {
 export declare const stringifyWithCircularRefs: (obj: any, space?: any) => string;
 export declare const stringifyFast: (obj: any, space?: any) => string;
 export declare function createNode(operator: OperatorType, parentNode: GraphNode, props: GraphNodeProperties, graph: Graph): GraphNode;
+export {};
