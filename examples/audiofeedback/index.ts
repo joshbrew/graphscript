@@ -44,7 +44,9 @@ const GameState = {
     raw:undefined,
 
     analyser:undefined,
-    audioFFTBuffer:new Uint8Array(2048) //default fft size
+    audioFFTBuffer:new Uint8Array(2048), //default fft size
+    hegDataBuffer:new Array(512).fill(0),
+    localMax:0
 }
 
 //start of your web page
@@ -142,6 +144,17 @@ const webappHtml = {
                                                         GameState.shortChange = (GameState.baselineHEG * 0.10 + heg*0.9) - GameState.baselineHEG;
                                                         GameState.longChange = (GameState.baselineHEG * 0.99 +heg*0.01) - GameState.baselineHEG; 
                                                         GameState.baselineHEG = GameState.baselineHEG * 0.9999 + heg*0.0001; //have the baseline shift slowly (10000 samples)
+
+                                                        let newLocalMax = false;
+                                                        if(heg > GameState.localMax) {
+                                                            GameState.localMax = heg;
+                                                            newLocalMax = true;
+                                                        }
+                                                        let shifted = GameState.hegDataBuffer.shift(); 
+                                                        GameState.hegDataBuffer.push(heg);
+                                                        if(GameState.localMax === shifted && !newLocalMax) {
+                                                            GameState.localMax = Math.max(...GameState.hegDataBuffer);
+                                                        }
 
                                                         if(GameState.playing) {
                                                             let newVol = GameState.playing.volume() + GameState.longChange/GameState.baselineHEG;
@@ -262,17 +275,41 @@ const webappHtml = {
                         },
                         animation:function(){
                             //this = node, this.element = element
+
+                            this.ctx.fillStyle = '#000';
+                            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                            this.ctx.lineWidth = 2;
+                                
+                            this.ctx.strokeStyle = 'limegreen'
+                            this.ctx.beginPath();
+
+                            let sliceWidth = (this.canvas.width * 1.0) / 512;
+                            let x = 0;
+    
+                            for (let i = 0; i < 512; i++) {
+                                let v = 1 - GameState.hegDataBuffer[i] / GameState.localMax;
+                                let y = (v * this.canvas.height + this.canvas.height)*0.5;
+
+                                if (i === 0) {
+                                    this.ctx.moveTo(x, y)
+                                } else {
+                                    this.ctx.lineTo(x, y)
+                                }
+
+                                x += sliceWidth;
+                            }
+
+                            this.ctx.lineTo(this.canvas.width, this.canvas.height )
+                            this.ctx.stroke()
+
                             if(GameState.analyser) {
                                 GameState.analyser.getByteFrequencyData(GameState.audioFFTBuffer);
                                 //console.log(GameState.audioFFTBuffer);
-                                this.ctx.fillStyle = '#000'
-                                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-                                this.ctx.lineWidth = 2
-                                this.ctx.strokeStyle = 'limegreen'
+                               
+                                this.ctx.strokeStyle = 'royalblue'
                                 this.ctx.beginPath()
     
-                                let sliceWidth = (this.canvas.width * 1.0) / 512;
-                                let x = 0
+                                x = 0
     
                                 for (let i = 0; i < 512; i++) {
                                     let v = GameState.audioFFTBuffer[i] / 255.0
@@ -288,7 +325,9 @@ const webappHtml = {
                                 }
     
                                 this.ctx.lineTo(this.canvas.width, this.canvas.height )
-                                this.ctx.stroke()
+                                this.ctx.stroke();
+
+                               
                             }
                         }
                     }
