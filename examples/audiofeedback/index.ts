@@ -1,7 +1,7 @@
 //@ts-nocheck
 
 //resources
-import { DOMService, GraphNode } from '../../index';
+import { DOMService } from 'graphscript'//'../../index';
 import {initDevice, Devices} from 'device-decoder'
 import {Howl, Howler} from 'howler';
 
