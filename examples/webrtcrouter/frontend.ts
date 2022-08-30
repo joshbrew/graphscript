@@ -47,6 +47,8 @@ const router = new Router({
         })
     },
     loadDefaultRoutes:true,
+    syncServices:true,
+    order:['webrtc','wss','sse'],
     services:{
         'http':HTTPfrontend,
         'sessions':SessionsService,
@@ -322,9 +324,7 @@ const router = new Router({
             }
         },
         'webrtc':WebRTCfrontend
-    },
-    syncServices:true,
-    order:['webrtc','wss','sse']
+    }
 });
 
 //router.services.sessions.users = router.users;
