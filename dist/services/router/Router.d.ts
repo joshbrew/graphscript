@@ -1,6 +1,5 @@
 import { Graph, GraphNode } from "../../Graph";
 import { Routes, Service, ServiceOptions } from "../Service";
-import { ProfileStruct } from "../struct/datastructures/types";
 export declare type User = {
     _id: string;
     send: (...args: any[]) => any;
@@ -12,7 +11,7 @@ export declare type User = {
     terminate: (...args: any[]) => boolean;
     onclose?: (user: User) => void;
     [key: string]: any;
-} & Partial<ProfileStruct>;
+};
 export declare type ConnectionProps = {
     connection: GraphNode | Graph | {
         [key: string]: any;
@@ -30,13 +29,13 @@ export declare type ConnectionInfo = {
     source: string;
     connectionType?: string;
     connectionsKey?: string;
-    send?: (...args: any[]) => any;
-    request?: (...args: any[]) => Promise<any> | Promise<any>[];
-    post?: (...args: any[]) => void;
-    run?: (...args: any[]) => Promise<any> | Promise<any>[];
-    subscribe?: (...args: any[]) => Promise<number> | Promise<number>[] | undefined;
-    unsubscribe?: (...args: any[]) => Promise<boolean> | Promise<boolean>[];
-    terminate: (...args: any[]) => boolean;
+    send?: (message: any, ...a: any[]) => any;
+    request?: (message: any, method?: any, ...a: any[]) => Promise<any> | Promise<any>[];
+    post?: (route: any, args?: any, method?: string, ...a: any[]) => void;
+    run?: (route: any, args?: any, method?: string, ...a: any[]) => Promise<any> | Promise<any>[];
+    subscribe?: (route: any, callback?: ((res: any) => void) | string, ...a: any[]) => Promise<number> | Promise<number>[] | undefined;
+    unsubscribe?: (route: any, sub: number, ...arrayBuffer: any[]) => Promise<boolean> | Promise<boolean>[];
+    terminate: (...a: any[]) => boolean;
     onclose?: (connection: ConnectionInfo, ...args: any[]) => void;
 };
 export declare type RouterOptions = ServiceOptions & {
@@ -85,7 +84,9 @@ export declare class Router extends Service {
     };
     order: string[];
     constructor(options?: RouterOptions);
-    addUser: (info: Partial<ProfileStruct> & {
+    addUser: (info: {
+        _id: string;
+    } & {
         onclose?: (connection: ConnectionInfo, ...args: any[]) => void;
     }, connections?: {
         [key: string]: string | ConnectionInfo | ConnectionProps;

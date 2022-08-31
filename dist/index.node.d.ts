@@ -9,4 +9,5 @@ export * from './services/sse/SSE.node';
 export * from './services/wss/WSS.node';
 export * from './services/cmd/CMD.node';
 export * from './services/worker/Worker.node.service';
+export * from './services/sessions/sessions.service';
 export * from './services/router/Router';

@@ -1,8 +1,5 @@
 import { Graph, GraphNode } from "../../Graph"
 import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service"
-import { ProfileStruct } from "../struct/datastructures/types";
-import { ProfileStruct as Profile } from "../struct/datastructures/index";
-import { arrayBuffer } from '../e2ee/sjcl';
 
 /*
 Goals of router:
@@ -32,7 +29,7 @@ export type User = { //users have macros to call grouped connections generically
     terminate:(...args:any[]) => boolean,
     onclose?:(user:User)=>void,
     [key:string]:any
-} & Partial<ProfileStruct>
+} 
 
 
 export type ConnectionProps = {
@@ -181,7 +178,7 @@ export class Router extends Service {
     }
 
     addUser = async (
-        info:Partial<ProfileStruct> & {onclose?:(connection:ConnectionInfo,...args:any[])=>void},
+        info:{_id:string} & {onclose?:(connection:ConnectionInfo,...args:any[])=>void},
         connections?:{[key:string]:ConnectionProps|string|ConnectionInfo},
         config?:{ //configure connections per service
             [key:string]:{ //configure multiple connection instances using the generic 'open' function
@@ -198,7 +195,7 @@ export class Router extends Service {
             info._id = `user${Math.floor(Math.random()*1000000000000000)}`;
         }
 
-        let user = Profile(info._id,info) as User;
+        let user:User = Object.assign({},info) as any;//Profile(info._id,info) as User;
         
         if(connections){
             for(const key in connections) {

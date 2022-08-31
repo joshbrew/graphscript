@@ -56,8 +56,8 @@ export declare class Service extends Graph {
     loadDefaultRoutes: boolean;
     keepState: boolean;
     firstLoad: boolean;
-    customRoutes: {};
-    customChildren: {};
+    customRoutes: any;
+    customChildren: any;
     constructor(options?: ServiceOptions);
     init: (options?: ServiceOptions) => void;
     load: (routes?: any, includeClassName?: boolean, routeFormat?: string, customRoutes?: ServiceOptions["customRoutes"], customChildren?: ServiceOptions["customChildren"]) => Routes;

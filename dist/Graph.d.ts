@@ -48,14 +48,6 @@ export declare const state: {
     unsubscribeTrigger(key: string, sub?: number): boolean;
     subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
 };
-/**
- * Creates new instance of a GraphNode
- * The methods of this class can be referenced in the operator after setup for more complex functionality
- *
- * ```typescript
- * const graph = new GraphNode({custom: 1, operator: (input) => console.log(input, self.custom)});
- * ```
- */
 declare function merge(props: any): void;
 export declare class GraphNode {
     nodes: Map<any, any>;

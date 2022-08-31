@@ -29,4 +29,6 @@ export * from './services/worker/Worker.service'
 export * from './services/worker/ProxyListener'
 export * from './services/worker/WorkerCanvas'
 
+export * from './services/sessions/sessions.service'
+
 export * from './services/router/Router'
