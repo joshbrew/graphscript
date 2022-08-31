@@ -1,5 +1,3 @@
-//import { Router } from '../../routers/Router';
-
 //functionality
 import { WorkerService } from './Worker.service';
 //import { GPUService } from '../gpu/GPU.service';

@@ -2,6 +2,7 @@ import { Graph, GraphNode } from "../../Graph"
 import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service"
 import { ProfileStruct } from "../struct/datastructures/types";
 import { ProfileStruct as Profile } from "../struct/datastructures/index";
+import { arrayBuffer } from '../e2ee/sjcl';
 
 /*
 Goals of router:
@@ -40,22 +41,22 @@ export type ConnectionProps = {
     source?:string, //group of connections the connection belongs to, e.g. a user id or a service 
     onclose?:(connection:ConnectionInfo,...args:any[])=>void
 }
-//valid connections: SocketInfo, SocketServerInfo, SSEChannelInfo, SSESessionInfo, EventSourceInfo, ServerInfo, WebRTCInfo
+//valid connections: WebRTCInfo, WebSocketInfo, SocketInfo, SocketServerInfo, SSEChannelInfo, SSESessionInfo, EventSourceInfo, ServerInfo
 
 export type ConnectionInfo = {
     connection:GraphNode|Graph|{[key:string]:any}, //can be a node, graph, connection Info object or _id string 
     service?:string|Service|Graph,
     _id:string,
-    source:string,
+    source:string, // base connections can have multiple sources if you add the same connection again via addConnection with a new source specified!! These objects will be duplicated on each source container
     connectionType?:string, //if we know the key on the service we sourced an endpoint connection from, this helps with keeping track of things 
     connectionsKey?:string, //if we know the object on the service that the connection info is stored on
-    send?:(...args:any[])=>any,
-    request?:(...args:any[])=>Promise<any>|Promise<any>[],
-    post?:(...args:any[])=>void,
-    run?:(...args:any[])=>Promise<any>|Promise<any>[],
-    subscribe?:(...args:any[])=>Promise<number>|Promise<number>[]|undefined,
-    unsubscribe?:(...args:any[])=>Promise<boolean>|Promise<boolean>[],
-    terminate:(...args:any[]) => boolean,
+    send?:(message:any, ...a:any[])=>any,
+    request?:(message:any, method?:any,...a:any[])=>Promise<any>|Promise<any>[],
+    post?:(route:any, args?:any, method?:string, ...a:any[])=>void,
+    run?:(route:any, args?:any, method?:string, ...a:any[])=>Promise<any>|Promise<any>[],
+    subscribe?:(route:any, callback?:((res:any)=>void)|string, ...a:any[])=>Promise<number>|Promise<number>[]|undefined,
+    unsubscribe?:(route:any, sub:number, ...arrayBuffer:any[])=>Promise<boolean>|Promise<boolean>[],
+    terminate:(...a:any[]) => boolean,
     onclose?:(connection:ConnectionInfo,...args:any[])=>void
 }
 
@@ -78,6 +79,7 @@ export type RouterOptions = ServiceOptions & {
     syncServices?:boolean,
     order?:string[]
 }
+
 export class Router extends Service {
 
     name = 'router'

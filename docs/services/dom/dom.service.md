@@ -90,7 +90,7 @@ dom.load({
                         setTimeout(()=>{ ev.target.innerText = 'Click Me'},2000)
                     }
                 },
-                onrender:(self, info)=>{ console.log(self, info); } //button onrender callback
+                onrender:(self, info)=>{ console.log(this, self, info); } //button onrender callback
             } as ElementProps
         }
     } as ElementProps

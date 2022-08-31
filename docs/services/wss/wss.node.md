@@ -11,7 +11,8 @@ The default onmessage function handles service calls with jsonified commands. Yo
 
 import {WSSbackend} from 'graphscript-node'
 
-type SocketServerProps = {
+
+export type SocketServerProps = {
     server:http.Server|https.Server,
     host:'localhost'|'127.0.0.1'|string,
     port:7000|number,
@@ -27,11 +28,20 @@ type SocketServerProps = {
     [key:string]:any
 }
 
-type SocketServerInfo = {
+export type SocketServerInfo = {
     wss:WebSocketServer,
-    clients:{[key:string]:WebSocket},
-    address:string
+    clients:{[key:string]:WebSocket}, //corresponding socket controls are found in this.sockets for each clientId
+    address:string,
+    send:(message:any,socketId?:string)=>void,
+    request:(message:any, method?:string, socketId?:string)=>Promise<any>|Promise<any>[],
+    post:(route:any, args?:any, method?:string, socketId?:string)=>void,
+    run:(route:any, args?:any, method?:string, socketId?:string)=>Promise<any>|Promise<any>[],
+    subscribe:(route:any, callback?:((res:any)=>void)|string, socketId?:string)=>Promise<number>|Promise<number>[]|undefined,
+    unsubscribe:(route:any, sub:number,socketId?:string)=>Promise<boolean>|Promise<boolean>[],
+    terminate:(socketId?:string)=>boolean,
+    graph:WSSbackend
 } & SocketServerProps;
+
 
 const wss = new WSSbackend({loadDefaultRoutes:true});
 
@@ -54,31 +64,35 @@ To open a websocket connection from node to another server
 
 ```ts
 
-type SocketProps = {
-    host:string,
-    port:number,
+
+export type SocketProps = {
+    host?:string,
+    port?:number,
     path?:string,
+    socket?:WebSocket,
+    address?:string,
     serverOptions?:WebSocket.ServerOptions
     onmessage?:(data:string | ArrayBufferLike | Blob | ArrayBufferView | Buffer[], ws:WebSocket,wsinfo:SocketProps)=>void,  //will use this.receive as default
     onopen?:(ws:WebSocket,wsinfo:SocketProps)=>void,
     onclose?:(code:any,reason:any,ws:WebSocket,wsinfo:SocketProps)=>void,
     onerror?:(er:Error, ws:WebSocket,wsinfo:SocketProps)=>void,
-    
     protocol?:'ws'|'wss',
     type?:'socket',
     _id?:string,
     keepState?:boolean
 }
 
-type SocketInfo = {
+export type SocketInfo = {
     socket:WebSocket,
     address?:string,
     send:(message:any)=>void,
     request:(message:any, method?:string)=>Promise<any>,
-    post:(route:any, args?:any)=>void,
+    post:(route:any, args?:any, method?:string)=>void,
     run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
-    unsubscribe:(route:any, sub:number)=>Promise<boolean>
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>,
+    terminate:()=>void,
+    graph:WSSbackend
 } & SocketProps;
 
 let socketinfo = wss.openWS({

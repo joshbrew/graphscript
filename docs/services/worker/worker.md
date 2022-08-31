@@ -4,20 +4,20 @@ To use workers within our graph hierarchy, we need to establish a worker service
 
 e.g. worker.ts
 ```ts
-
 //functionality
-import { WorkerService, workerCanvasRoutes, unsafeRoutes } from 'graphscript';
-//import { GPUService } from 'graphscript-services';
+import { WorkerService, workerCanvasRoutes, workerCanvasRoutes, unsafeRoutes, ECSService } from 'graphscript';
 
 //wonder if we can have a scheme to dynamic import within the services? e.g. to bring in node-only or browser-only services without additional workers
 
 declare var WorkerGlobalScope;
 
 if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-    const worker = new WorkerService({
+    (self as any).SERVICE = new WorkerService({
         routes:[
+            (self as any).SERVICE,
             //GPUService,
             workerCanvasRoutes,
+            ECSService,
             unsafeRoutes //allows dynamic route loading
         ],
         includeClassName:false

@@ -61,6 +61,4 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
     console.log(worker)
 }
 
-
-
 export default self as any;

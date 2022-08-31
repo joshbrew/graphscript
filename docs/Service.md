@@ -49,7 +49,7 @@ type ServiceOptions = {
         [key:string]:(route:Route, routeKey:string, routes:Routes)=>Route|any|void
     },
     customChildren?:{ //modify child routes in the tree based on parent conditions
-        [key:string]:(child:Route, childRouteKey:string, parent:Route, routes:Routes)=>Route|any|void
+        [key:string]:(child:Route, childRouteKey:string, parent:Route, routes:Routes, checked:Routes)=>Route|any|void
     },
     [key:string]:any
 };
@@ -99,19 +99,24 @@ All of the remote message passing services with two way communication channels (
 
 ```ts
 
-type RemoteConnection = {
-    send:(message:any)=>void,
-    request:(message:any, method?:string)=>Promise<any>,
-    post:(route:any, args?:any)=>void,
-    run:(route:any, args?:any, method?:string)=>Promise<any>,
-    subscribe:(route:any, callback?:((res:any)=>void)|string)=>Promise<number>, //returns subscription number
-    unsubscribe:(route:any, sub:number)=>Promise<boolean>, //send the subscription number you got back from the remote port
-    ...RemoteConnectionInfo
+type ConnectionTemplate = {
+    _id?:string,
+    send?:(message:any, ...args:any[])=>any,
+    request?:(message:any, method?:any,...args:any[])=>Promise<any>|Promise<any>[],
+    post?:(route:any, args?:any, method?:string, ...args:any[])=>void,
+    run?:(route:any, args?:any, method?:string, ...args:any[])=>Promise<any>|Promise<any>[],
+    subscribe?:(route:any, callback?:((res:any)=>void)|string, ...args:any[])=>Promise<number>|Promise<number>[]|undefined,
+    unsubscribe?:(route:any, sub:number, ...args:any[])=>Promise<boolean>|Promise<boolean>[],
+    terminate:(...args:any[]) => boolean,
+    [key:string]:any //e.g. http server settings, or websocket paths, webrtc peer candidates, etc.
 }
+
 ```
 These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need increasing control over your program. There are no restrictions on top of the base protocols, it's all just boiled down to one liners and similar calls between services for mental clarity and a recommended configuration by default to enable the most desirable functionality e.g. if you do not specify your own onmessage callbacks for sockets or threads.
 
 The subscribe and unsubscribe functions act the same as they do locally and configure the endpoints with a state subscription on arbitrary routes for you to do what you want with on the listening port.
+
+To help out the `Router` service with less configuration, you can also stick all of your connections in a `connections:{}` object, which can objects that further group connections (e.g. socket servers versus sockets). This makes it easier to find connections that have opened and closed in real time to know when users join and leave or for associating endpoints properly, otherwise the Router provides configuration handles for everything you need to load your own services as long as the remote connection format is followed.
 
 # Included Services
 
@@ -126,15 +131,18 @@ For all services with remote message passing support (http, wss, sse, webrtc, et
     - - [HTTPbackend](./services/http/http.node.md)
     - - [HTTPfrontend](./services/http/http.browser.md)
 
-- WSS - Websocket server frontend and backend to route service messages. It's a simple single function call to create the socket server on the backend with your http server and then open connections on the frontend.
+- WSS - Websocket server frontend and backend to route service messages and for general use. It's a simple single function call to create the socket server on the backend with your http server and then open connections on the frontend.
     - - [WSSbackend](./services/wss/wss.node.md)
     - - [WSSfrontend](./services/wss/wss.browser.md)
 
-- SSE - [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) using [`better-sse`](https://www.npmjs.com/package/better-sse), this allows for one way communication to connected clients. This program gives you handles for each client as well, so individuals can be messaged on a shared channel without notifying others. This has much less overhead when two way communication is unnecessary or when you can fire-and-forget message results.
+- Router - Arbitrary connection pooling using our templated connections
+    - - [Router](./services/router/Router.md)
+
+- SSE - [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) using [`better-sse`](https://www.npmjs.com/package/better-sse), this allows for one way communication to connected clients. This api gives you handles for each client as well, so individuals can be messaged on a shared channel without notifying others. This has much less overhead when two way communication is unnecessary or when you can fire-and-forget message results.
     - - [SSEbackend](./services/sse/sse.node.md)
     - - [SSEfrontend](./services/sse/sse.browser.md)
 
-- [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) - Multithreading is essential for high performance applications, and essentially all logic not running directly on the UI should be offloaded to workers in a production environment, so we handled the message passing system for you. In nodejs, threads can even run their entire own servers. In browser, they can handle canvas draw calls, sockets, REST calls, etc. 
+- [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) - Multithreading is essential for high performance applications, and essentially all logic not running directly on the UI should be offloaded to workers in a production environment, so we handled the message passing system for you. In nodejs, threads can even run their entire own servers. In browser, they can handle canvas draw calls, sockets, REST calls, etc.  See examples for canvas, threejs, and entity component system examples.
     - - [WorkerService](./services/worker/worker.service.md)
     - - [Workers](./services/worker/worker.md)
 

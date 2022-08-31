@@ -78,8 +78,8 @@ export class Service extends Graph {
     loadDefaultRoutes = false;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
     firstLoad = true;
-    customRoutes = {};
-    customChildren = {};
+    customRoutes:any = {};
+    customChildren:any = {};
 
     constructor(options:ServiceOptions={}) {
         super(undefined,options.name ? options.name : `service${Math.floor(Math.random()*100000000000000)}`,options.props);

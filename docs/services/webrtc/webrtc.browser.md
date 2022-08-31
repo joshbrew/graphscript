@@ -8,9 +8,8 @@ See `examples/webrtc` for a basic implementation you can modify easily. There ar
 
 import {WebRTCfrontend} from 'graphscript'
 
-type WebRTCProps = {
+export type WebRTCProps = {
     _id?:string,
-    origin?:string,
     channels?:{
         [key:string]:(true|RTCDataChannelInit|RTCDataChannel)
     },
@@ -28,20 +27,22 @@ type WebRTCProps = {
     ondatachannel?:(ev:RTCDataChannelEvent)=>void,
     ondata?:(ev:MessageEvent<any>, channel:RTCDataChannel, room)=>void,
     onconnectionstatechange?:(ev:Event)=>void,
-    oniceconnectionstatechange?:(ev:Event)=>void
+    oniceconnectionstatechange?:(ev:Event)=>void,
+    onclose?:(rtc:WebRTCInfo)=>void //custom callback
 }
 
-type WebRTCInfo = {
-    rtcTransmit:RTCPeerConnection,
-    rtcReceive:RTCPeerConnection,
+export type WebRTCInfo = {
+    _id:string,
+    rtc:RTCPeerConnection,
     send:(message:any)=>void, //these callbacks work on the first available data channel to call to other webrtc services
-    request:(message:any, origin?:string, method?:string)=>Promise<any>,
+    request:(message:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
-    run:(route:any, args?:any, origin?:string, method?:string)=>Promise<any>,
+    run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>Promise<number>,
-    unsubscribe:(route:any, sub:number)=>Promise<boolean>
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>,
+    terminate:()=>boolean,
+    graph:WebRTCfrontend
 } & WebRTCProps
-
 
 let rtc = new WebRTCfrontend();
 

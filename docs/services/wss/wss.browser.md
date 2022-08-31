@@ -8,32 +8,34 @@ To open a websocket connection from node to another server
 import {WSSfrontend} from 'graphscript'
 
 
-type SocketProps = {
+export type WebSocketProps = {
     host:string,
     port:number,
     path?:string,
-    serverOptions?:WebSocket.ServerOptions
-    onmessage?:(data:string | ArrayBufferLike | Blob | ArrayBufferView | Buffer[], ws:WebSocket,wsinfo:SocketProps)=>void,  //will use this.receive as default
-    onopen?:(ws:WebSocket,wsinfo:SocketProps)=>void,
-    onclose?:(code:any,reason:any,ws:WebSocket,wsinfo:SocketProps)=>void,
-    onerror?:(er:Error, ws:WebSocket,wsinfo:SocketProps)=>void,
-    
+    onmessage?:(data:string | ArrayBufferLike | Blob | ArrayBufferView,  ws:WebSocket, wsinfo:WebSocketInfo)=>void, //will use this.receive as default
+    onopen?:(ev:any, ws:WebSocket, wsinfo:WebSocketInfo)=>void,
+    onclose?:(ev:any,  ws:WebSocket, wsinfo:WebSocketInfo)=>void,
+    onerror?:(ev:any,  ws:WebSocket, wsinfo:WebSocketInfo)=>void
     protocol?:'ws'|'wss',
+    keepState?:boolean,
     type?:'socket',
     _id?:string,
-    keepState?:boolean
+    [key:string]:any
 }
 
-type SocketInfo = {
+export type WebSocketInfo = {
     socket:WebSocket,
-    address?:string,
+    address:string,
     send:(message:any)=>void,
     request:(message:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
     run:(route:any, args?:any, method?:string)=>Promise<any>,
     subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
-    unsubscribe:(route:any, sub:number)=>Promise<boolean>
-} & SocketProps;
+    unsubscribe:(route:any, sub:number)=>Promise<boolean>,
+    terminate:()=>boolean,
+    _id?:string,
+    graph:WSSfrontend
+} & WebSocketProps
 
 
 const wss = new WSSfrontend();
