@@ -280,7 +280,6 @@ export class GraphNode {
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
                 if(hasnode) {
                     //this.merge(hasnode)
-                    //Object.assign(this,hasnode);
 
                     if(!this.source) this.source = hasnode;
 
