@@ -280,6 +280,7 @@ export class GraphNode {
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
                 if(hasnode) {
                     //this.merge(hasnode)
+                    Object.assign(this,hasnode);
 
                     if(!this.source) this.source = hasnode;
 
@@ -324,6 +325,7 @@ export class GraphNode {
             if(properties.children) this._initial.children = Object.assign({},properties.children); //preserve the prototypes
 
             //this.merge(properties)
+            Object.assign(this,properties);
 
 
             if(!this.tag) {
@@ -1086,6 +1088,7 @@ export class Graph {
 
         if(props) {
             //this.merge(props) //do this conditionally
+            Object.assign(this,props);
             this._initial = props;
         }
         if(tree || Object.keys(this.tree).length > 0) this.setTree(tree);
