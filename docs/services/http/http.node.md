@@ -110,4 +110,4 @@ The page specification lets you quickly set up static and dynamic page behaviors
 
 If a node's .get/.template returns a file path it will see if it can load the file on the server, just a nice way for dynamic file routing. 
 
-From here we can apply websocket, sse, and other services to build efficient web servers.
+From here we can apply websocket, sse, and other services to build efficient web servers. See `examples/httpserver` for a quick implementation
