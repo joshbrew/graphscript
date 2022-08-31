@@ -98,7 +98,7 @@ http.setupServer(
     } as ServerProps
 ).then((served:ServerInfo) => { //this function returns a promise so we can use .then, only explicitly async or promise-returning functions can be awaited or .then'd for good performance!
     
-    console.log(router.services.http.nodes.keys())
+    console.log(http.nodes.keys())
 
 });
 
