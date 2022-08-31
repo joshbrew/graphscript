@@ -1096,11 +1096,11 @@ export class Graph {
     //converts all children nodes and tag references to GraphNodes also
     add = (n:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
         
-        if (n?.node instanceof GraphNode) n = n.node
+        if ((n as GraphNode)?.node instanceof GraphNode) n = (n as GraphNode).node
 
         let props = n;
 
-        if(!(n instanceof GraphNode)) n = new GraphNode(props?.node ?? props,this,this); 
+        if(!(n instanceof GraphNode)) n = new GraphNode((props as GraphNode)?.node ?? props,this,this); 
         else {
             this.nNodes = this.nodes.size;
             if(n.tag) {
