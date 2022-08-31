@@ -2,9 +2,11 @@
 
 See [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
 
-Services build on the idea of creating pluggable [microservices](https://www.akana.com/resources/microservices-why-should-businesses-care) in a unified, componentized programming interface, and simplifies the amount of work required to implement increasing numbers of protocols with more syntax and functionality than we can normally remember. Building these instead as Services and following the general formula here can vastly speed up feature development and feature meshing. 
+Before reading and getting immediately confused by this alien API, scroll through the code in [Examples](https://github.com/brainsatplay/graphscript/blob/master/examples) for very clear, compelling implementatons that flex our feature sets.
 
-The Service class here extends the Graph class and adds additional methods for creating and linking execution graphs. 
+Services extend Graphs to build on the idea of creating pluggable [microservices](https://www.akana.com/resources/microservices-why-should-businesses-care) in a unified, componentized programming interface, and simplifies the amount of work required to implement increasing numbers of protocols with more syntax and functionality than we can normally remember. Building these instead as Services and following the general formula here can vastly speed up feature development and feature meshing. 
+
+The Service class extends the Graph class and adds additional methods for creating and linking execution graphs. All extended Services (WorkerService, HTTPbackend, etc) can load any other Services/Graphs/routes/etc. to serve as the entry point to your program depending on how you need to stage your programs. The only incompatibilities are based on nodejs or browser-specific functionality like command line or DOM access (without a document and window renderer in node anyway).
 
 Services provide a unifying function/class loading and message passing framework to make it really easy to chain program functions across http, socket, sse, webrtc, thread, child process, frontend rendering and any of your own protocols. It has more features to help with scoping connected node services as well. 
 
@@ -31,6 +33,7 @@ type Routes = { //same as the tree in the base acyclic graph but adds aliases an
     [key:string]:
         GraphNode |
         Graph | //special nodes, the graph will live on the .source property of this node and the operator accepts objects with key:value pairs to run functions on the graph and return a results object with corresponding key:value pairs.
+        Service | 
         GraphNodeProperties |
         ((...args)=>any|void) |
         { aliases?:string[] } & GraphNodeProperties |
@@ -69,9 +72,9 @@ const service = new Service({routes});
 
 ```
 
-In a Service you declare "routes" instead of a tree (the 'tree' proprerty still functional internally but not used in the service's constructor), which simply adds an additional graph node prototype that aims to multiplex the operator calls on a route the same way you can get/post/delete etc. to routes on a REST api, or in our case calling any method you specify on a route/node. Every service includes a set of optional default routes for basic operations like getting/setting/logging/subscribing/etc. so each service is self contained and works as the entry point to your program using whatever composition of services that have been loaded into it.
+In a Service you declare `routes` instead of a `tree` (the 'tree' proprerty still functional internally but not used in the service's constructor), which adds customizable GraphNodePrototypes for more advanced scripting, e.g. for DOM or Web Worker controls. The routes aim to multiplex the calls to GraphNodes the same way you can get/post/delete etc over single HTTP urls to on a REST api, or in our case calling any existing method (functions or e.g. stored html template strings) you specify on a route/node. Every service includes a set of optional default routes for basic operations like getting/setting/logging/subscribing/pinging/etc. so each service is self contained and works as the entry point to your program using whatever composition of services that have been loaded into it. 
 
-Services supply additional functions for piping the outputs of one function to others, including through to other services you've loaded into your main parent service interface. A lot of this is much better explained with code.
+Services supply additional functions for piping the outputs of one function to others, including through to other services you've loaded into your main parent service interface. A lot of this is much better explained with code. The Router service works as an even more general service bundler for creating easy user and server pipelines.
 
 Multiple services also support custom route formats which you can easily mirror when developing your own services with our object tree-based programmable systems. We spent a lot of time most notably on the DOM service which lets you quickly compose your web UI with HTML and heavily customizable web components. Support is expanding to include on-the-fly .md or .jsx format parsing, for example, which can include the needed scripts for you in-browser.
 
