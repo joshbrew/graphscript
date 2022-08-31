@@ -1,6 +1,6 @@
 ## WSSbackend
 
-This WSSbackend provides websocket server and websocket tools with one-liner configuration. Chain this with the HTTPbackend or use any generic http/https server. This uses the `ws` library which includes the websocket server spec that is not default in Node.js.
+This WSSbackend provides websocket server and websocket tools with one-liner configuration. Chain this with the HTTPbackend or use any generic http/https server. This uses the [`ws`](https://github.com/websockets/ws) library which includes the websocket server spec that is not default in Node.js.
 
 Socket server clients can subscribe to node states on the socket server as well so it's easy to set up listener logic in your flow graph.
 

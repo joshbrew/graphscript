@@ -131,7 +131,7 @@ For all services with remote message passing support (http, wss, sse, webrtc, et
     - - [HTTPbackend](./services/http/http.node.md)
     - - [HTTPfrontend](./services/http/http.browser.md)
 
-- WSS - Websocket server frontend and backend to route service messages and for general use. It's a simple single function call to create the socket server on the backend with your http server and then open connections on the frontend.
+- WSS - Websocket server frontend and backend to route service messages and for general use. It's a simple single function call to create the socket server on the backend with your http server and then open connections on the frontend. Leverages the small [`ws`](https://github.com/websockets/ws) library for nodejs. 
     - - [WSSbackend](./services/wss/wss.node.md)
     - - [WSSfrontend](./services/wss/wss.browser.md)
 
