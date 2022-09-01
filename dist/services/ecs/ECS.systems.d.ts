@@ -282,7 +282,6 @@ export declare const Systems: {
         tag: string;
         lastTime: number;
         G: number;
-        frameMax: number;
         setupEntities: (entities: {
             [key: string]: Entity;
         }) => {

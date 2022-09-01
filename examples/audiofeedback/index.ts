@@ -3,7 +3,7 @@
 //resources
 import { DOMService } from 'graphscript'//'../../index';
 import {initDevice, Devices} from 'device-decoder'
-import {Howl, Howler} from 'howler';
+import { Howl, Howler } from 'howler';
 
 
 import './index.css'
@@ -118,54 +118,85 @@ const webappHtml = {
                                         let info = initDevice(
                                             mode as 'BLE'|'USB', 
                                             selected, 
-                                            (data:{
-                                                red:number|number[], 
-                                                ir:number|number[], 
-                                                heg:number|number[], 
-                                                timestamp:number|number[]
-                                            }) => { //data returned from decoder thread, ready for 
-                                                //outputelm.innerText = JSON.stringify(data);
-                                                console.log(data)
-
-                                                GameState.raw = data;
-
-                                                if(data.heg) {
-                                                    let heg = Array.isArray(data.heg) ? data.heg[data.heg.length-1] : data.heg;
-                                                    GameState.currentHEG = heg;
-                                                    GameState.lastTimestamp = GameState.currentTimestamp;
-
-                                                    GameState.currentTimestamp = Array.isArray(data.timestamp) ? data.timestamp[data.timestamp.length-1] : data.timestamp;
-                                                    
-                                                    GameState.dataFrameTime = GameState.currentTimestamp - GameState.lastTimestamp; 
-
-                                                    if(!GameState.baselineHEG) 
-                                                        GameState.baselineHEG = heg; //first HEG sample
-                                                    else {
-                                                        GameState.shortChange = (GameState.baselineHEG * 0.10 + heg*0.9) - GameState.baselineHEG;
-                                                        GameState.longChange = (GameState.baselineHEG * 0.99 +heg*0.01) - GameState.baselineHEG; 
-                                                        GameState.baselineHEG = GameState.baselineHEG * 0.9999 + heg*0.0001; //have the baseline shift slowly (10000 samples)
-
-                                                        let newLocalMax = false;
-                                                        if(heg > GameState.localMax) {
-                                                            GameState.localMax = heg;
-                                                            newLocalMax = true;
+                                            {
+                                                ondecoded:
+                                                    (data:{
+                                                        red:number|number[], 
+                                                        ir:number|number[], 
+                                                        heg:number|number[], 
+                                                        timestamp:number|number[]
+                                                    }) => { //data returned from decoder thread, ready for 
+                                                        //outputelm.innerText = JSON.stringify(data);
+                                                        console.log(data)
+        
+                                                        GameState.raw = data;
+        
+                                                        if(data.heg) {
+                                                            let heg = Array.isArray(data.heg) ? data.heg[data.heg.length-1] : data.heg;
+                                                            GameState.currentHEG = heg;
+                                                            GameState.lastTimestamp = GameState.currentTimestamp;
+        
+                                                            GameState.currentTimestamp = Array.isArray(data.timestamp) ? data.timestamp[data.timestamp.length-1] : data.timestamp;
+                                                            
+                                                            GameState.dataFrameTime = GameState.currentTimestamp - GameState.lastTimestamp; 
+        
+                                                            if(!GameState.baselineHEG) 
+                                                                GameState.baselineHEG = heg; //first HEG sample
+                                                            else {
+                                                                GameState.shortChange = (GameState.baselineHEG * 0.10 + heg*0.9) - GameState.baselineHEG;
+                                                                GameState.longChange = (GameState.baselineHEG * 0.99 +heg*0.01) - GameState.baselineHEG; 
+                                                                GameState.baselineHEG = GameState.baselineHEG * 0.9999 + heg*0.0001; //have the baseline shift slowly (10000 samples)
+        
+                                                                let newLocalMax = false;
+                                                                if(heg > GameState.localMax) {
+                                                                    GameState.localMax = heg;
+                                                                    newLocalMax = true;
+                                                                }
+                                                                let shifted = GameState.hegDataBuffer.shift(); 
+                                                                GameState.hegDataBuffer.push(heg);
+                                                                if(GameState.localMax === shifted && !newLocalMax) {
+                                                                    GameState.localMax = Math.max(...GameState.hegDataBuffer);
+                                                                }
+        
+                                                                if(GameState.playing) {
+                                                                    let newVol = GameState.playing.volume() + GameState.longChange/GameState.baselineHEG;
+                                                                    if(newVol < 0) newVol = 0;
+                                                                    if(newVol > 1) newVol = 1;
+                                                                    GameState.playing.volume(newVol);
+                                                                }
+                                                            }
+                                                            //if(data.red)
+                                                            //if(data.ir)
+                                                            //if(data.timestamp)
                                                         }
-                                                        let shifted = GameState.hegDataBuffer.shift(); 
-                                                        GameState.hegDataBuffer.push(heg);
-                                                        if(GameState.localMax === shifted && !newLocalMax) {
-                                                            GameState.localMax = Math.max(...GameState.hegDataBuffer);
+                                                },
+                                                subprocesses:{
+                                                    hr: {
+                                                        init:'createAlgorithmContext',
+                                                        initArgs:[
+                                                            'heartrate', //preprogrammed algorithm
+                                                            {
+                                                                sps:Devices[mode][selected].sps
+                                                            }
+                                                        ],
+                                                        route:'runAlgorithm', //the init function will set the _id as an additional argument for runAlgorithm which selects existing contexts by _id 
+                                                        callback:(heartbeat)=>{
+                                                            console.log('heartrate result', heartbeat); //this algorithm only returns when it detects a beat
                                                         }
-
-                                                        if(GameState.playing) {
-                                                            let newVol = GameState.playing.volume() + GameState.longChange/GameState.baselineHEG;
-                                                            if(newVol < 0) newVol = 0;
-                                                            if(newVol > 1) newVol = 1;
-                                                            GameState.playing.volume(newVol);
+                                                    },
+                                                    breath:{
+                                                        init:'createAlgorithmContext',
+                                                        initArgs:[
+                                                            'breath',
+                                                            {
+                                                                sps:Devices[mode][selected].sps
+                                                            }
+                                                        ],
+                                                        route:'runAlgorithm',
+                                                        callback:(breath)=>{
+                                                            console.log('breath detect result', breath); //this algorithm only returns when it detects a beat
                                                         }
                                                     }
-                                                    //if(data.red)
-                                                    //if(data.ir)
-                                                    //if(data.timestamp)
                                                 }
                                             }
                                         );

@@ -27,6 +27,9 @@ export declare type GraphNodeProperties = {
     delay?: false | number;
     repeat?: false | number;
     recursive?: false | number;
+    reactive?: boolean | ((_state: {
+        [key: string]: any;
+    }) => void);
     frame?: boolean;
     animate?: boolean;
     loop?: false | number;
@@ -48,16 +51,21 @@ export declare const state: {
     unsubscribeTrigger(key: string, sub?: number): boolean;
     subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
 };
-declare function merge(props: any): void;
+/**
+ * Creates new instance of a GraphNode
+ * The methods of this class can be referenced in the operator after setup for more complex functionality
+ *
+ * ```typescript
+ * const graph = new GraphNode({custom: 1, operator: (input) => console.log(input, self.custom)});
+ * ```
+ */
+declare function addLocalState(props: any): void;
 export declare class GraphNode {
     nodes: Map<any, any>;
     _initial: {
         [key: string]: any;
     };
-    _state: {
-        [key: string]: any;
-    };
-    _unique: number;
+    _unique: string;
     tag: string;
     parent: GraphNode | Graph;
     children: any;
@@ -79,6 +87,9 @@ export declare class GraphNode {
     animation: any;
     forward: boolean;
     backward: boolean;
+    reactive: boolean | ((_state: {
+        [key: string]: any;
+    }) => void);
     runSync: boolean;
     firstRun: boolean;
     DEBUGNODE: boolean;
@@ -86,7 +97,7 @@ export declare class GraphNode {
     tree: Tree;
     [key: string]: any;
     constructor(properties?: GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void), parentNode?: GraphNode | Graph, graph?: Graph);
-    merge: typeof merge;
+    addLocalState: typeof addLocalState;
     operator: OperatorType;
     runOp: (...args: any[]) => any;
     setOperator: (operator: OperatorType) => OperatorType;
@@ -111,14 +122,15 @@ export declare class GraphNode {
     add: (n?: GraphNodeProperties | OperatorType | ((...args: any[]) => any | void)) => GraphNode | GraphNodeProperties;
     remove: (n: string | GraphNode) => void;
     append: (n: string | GraphNode, parentNode?: this) => void;
-    subscribe: (callback: GraphNode | ((res: any) => void), tag?: string) => number;
+    subscribe: (callback: string | GraphNode | ((res: any) => void), tag?: string) => number;
     unsubscribe: (sub?: number, tag?: string) => boolean;
+    subscribeState: (callback: string | GraphNode | ((res: any) => void)) => number;
     addChildren: (children: {
         [key: string]: string | boolean | GraphNode | Graph | GraphNodeProperties;
     }) => void;
     callParent: (...args: any[]) => any;
     callChildren: (...args: any[]) => any;
-    getProps: (n?: this) => {
+    getProps: (n?: this, getInitial?: boolean) => {
         tag: string;
         operator: OperatorType;
         graph: Graph;
@@ -134,6 +146,9 @@ export declare class GraphNode {
         repeat: any;
         branch: any;
         oncreate: any;
+        reactive: boolean | ((_state: {
+            [key: string]: any;
+        }) => void);
         DEBUGNODE: boolean;
     };
     setProps: (props?: GraphNodeProperties) => void;
@@ -168,15 +183,17 @@ export declare class Graph {
         unsubscribeTrigger(key: string, sub?: number): boolean;
         subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
     };
+    reactive: boolean | ((_state: {
+        [key: string]: any;
+    }) => void);
     _initial: any;
-    _state: any;
-    _unique: number;
+    _unique: string;
     tree: Tree;
     [key: string]: any;
     constructor(tree?: Tree, tag?: string, props?: {
         [key: string]: any;
     });
-    merge: typeof merge;
+    addLocalState: typeof addLocalState;
     add: (n?: GraphNode | GraphNodeProperties | OperatorType | ((...args: any[]) => any | void)) => GraphNode | GraphNodeProperties;
     setTree: (tree?: Tree) => void;
     get: (tag: string) => any;
@@ -190,6 +207,7 @@ export declare class Graph {
     callChildren: (n: GraphNode, ...args: any[]) => Promise<any>;
     subscribe: (n: string | GraphNode, callback: string | GraphNode | ((res: any) => void)) => number;
     unsubscribe: (tag: string, sub?: number) => boolean;
+    subscribeState: (callback: string | GraphNode | ((res: any) => void)) => number;
     subscribeNode: (inputNode: string | GraphNode, outputNode: GraphNode | string) => number;
     stopNode: (n: string | GraphNode) => void;
     print: (n?: GraphNode, printChildren?: boolean) => any;

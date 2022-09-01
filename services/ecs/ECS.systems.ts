@@ -968,7 +968,6 @@ export const Systems = {
         tag:'nbody',
         lastTime:performance.now(),
         G:0.00000000006674, //Newton's gravitational constant, can set differently on different sets of components 
-        frameMax:10, //maximum number of entities to search per frame
         setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
@@ -984,8 +983,9 @@ export const Systems = {
 
             entity.isAttractor = true;
             if(!('attractorGroup' in entity)) entity.attractorGroup = 0;
+            if(!('attractorFrameSearchMax' in entity)) entity.attractorFrameSearchMax = 10;
             if(!('attractorGroupRules' in entity)) entity.attractorGroupRules = { //set attractor group rules
-                0:this.G
+                0:{ G:this.G, maxDist:undefined } //can set as a G number Or an object with a maximum distance to apply the group rule 
             }
         
             return entity;
@@ -1005,7 +1005,6 @@ export const Systems = {
                     let randKey = keys[Math.floor(Math.random()*keys.length)];
                     nSearched++;
                     const entity2 = entities[randKey];
-                    if(nSearched > this.frameMax) break nested;
                     if(entity2.components) if(!entity2.components[this.tag]) continue nested;
                     if(!entity2.mass || !entity2.isAttractor) continue nested;
 
@@ -1015,6 +1014,8 @@ export const Systems = {
                         undefined,
                         this.G
                     );
+
+                    if(nSearched > entity.attractorFrameSearchMax) break nested;
                 }
             }
 
@@ -1034,9 +1035,14 @@ export const Systems = {
             ) as any; // a to b
 
             let Fg = 0;
-            if(dist < 0.1) dist = .1;
+            if(dist < 0.01) dist = .01;
             if(body1.attractorGroupRules[body2.attractorGroup]) {
-                Fg = body1.attractorGroupRules[body2.attractorGroup] * body1.mass * body2.mass / (dist*dist);
+
+                if(typeof body1.attractorGroupRules[body2.attractorGroup] === 'object') {
+                    if(body1.attractorGroupRules[body2.attractorGroup].maxDist && body1.attractorGroupRules[body2.attractorGroup].maxDist < dist) {
+
+                    } else Fg = body1.attractorGroupRules[body2.attractorGroup].G * body1.mass * body2.mass / (dist*dist);
+                } else Fg = body1.attractorGroupRules[body2.attractorGroup] * body1.mass * body2.mass / (dist*dist);
             } else Fg = G * body1.mass * body2.mass / (dist*dist);
             
             //Newton's law of gravitation

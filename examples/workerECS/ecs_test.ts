@@ -71,7 +71,7 @@ let ret = router.load({
                                     nbody:false, //gravitational math
                                     movement:true, //force -> accel -> velocity -> position updates
                                 },
-                                ct: 5000
+                                ct: 2500
                             },
                             1:{
                                 prototype:{
@@ -87,11 +87,13 @@ let ret = router.load({
                                     },
                                     attractorGroup:1,
                                     attractorGroupRules:{
-                                        1:100,
-                                        2:200,
-                                        3:1000,
-                                        4:-500
-                                    }
+                                        1:5000,
+                                        2:{G:200, maxDist:145},
+                                        3:{G:100, maxDist:45},
+                                        4:{G:-10000, maxDist:30}
+                                    },
+                                    attractorFrameSearchMax:3,
+                                    maxSpeed:30
                                 },
                                 components:{
                                     //boids:true
@@ -100,7 +102,7 @@ let ret = router.load({
                                     nbody:true,
                                     movement:true
                                 },
-                                ct: 100
+                                ct: 500
                             },
                             2:{
                                 prototype:{
@@ -115,12 +117,14 @@ let ret = router.load({
                                         back:300  
                                     },
                                     attractorGroup:2,
+                                    attractorFrameSearchMax:3,
                                     attractorGroupRules:{
-                                        1:-100,
-                                        2:200,
-                                        3:-100,
-                                        4:600
-                                    }
+                                        1:{G:-100, maxDist:45},
+                                        2:{G:200, maxDist:145},
+                                        3:{G:-100, maxDist:100},
+                                        4:{G:600, maxDist:45}
+                                    },
+                                    maxSpeed:20
                                 },
                                 components:{
                                     //boids:true
@@ -144,12 +148,14 @@ let ret = router.load({
                                         back:300  
                                     },
                                     attractorGroup:3,
+                                    attractorFrameSearchMax:3,
                                     attractorGroupRules:{
-                                        1:0,
-                                        2:-800,
-                                        3:30,
-                                        4:1000
-                                    }
+                                        1:1500,
+                                        2:{G:-800, maxDist:60},
+                                        3:{G:30, maxDist:45},
+                                        4:{G:3000, maxDist:45}
+                                    },
+                                    maxSpeed:60
                                 },
                                 components:{
                                     //boids:true
@@ -174,11 +180,13 @@ let ret = router.load({
                                     },
                                     attractorGroup:4,
                                     attractorGroupRules:{
-                                        1:-400,
-                                        2:-200,
-                                        3:-2000,
-                                        4:1000
-                                    }
+                                        1:10000,
+                                        2:0,
+                                        3:0,
+                                        4:{G:-500, maxDist:100}
+                                    },
+                                    attractorFrameSearchMax:3,
+                                    maxSpeed:60
                                 },
                                 components:{
                                     //boids:true,
@@ -187,7 +195,7 @@ let ret = router.load({
                                     nbody:true,
                                     movement:true
                                 },
-                                ct: 100
+                                ct: 500
                             }
                         }
     

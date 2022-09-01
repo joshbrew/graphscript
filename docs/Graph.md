@@ -26,10 +26,11 @@ export type OperatorType = ( //can be async
 )=>any|void
 
 
-type GraphNodeProperties = {
+//properties input on GraphNode or add, or for children
+export type GraphNodeProperties = {
     tag?:string, //generated if not specified, or use to get another node by tag instead of generating a new one
     
-    operator?:((...args)=>any|void), //Operator to handle I/O on this node. Returned inputs can propagate according to below settings
+    operator?:OperatorType|((...args)=>any|void), //Operator to handle I/O on this node. Returned inputs can propagate according to below settings
     
     forward?:boolean, //pass output to child nodes
     
@@ -38,13 +39,15 @@ type GraphNodeProperties = {
     children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph}//string|GraphNodeProperties|GraphNode|(GraphNodeProperties|GraphNode|string)[], //child node(s), can be tags of other nodes, properties objects like this, or GraphNodes, or null
     
     parent?:GraphNode|Graph, //parent graph node
-
+    
     branch?:{ //based on the operator result, automatically do something
         [label:string]:{ //apply any label for your own indexing
             if:any|((output:any)=>boolean), //if this value, or pass a callback that returns true/false
             then:string|((...operator_result:any[])=>any)|GraphNode //then do this, e.g. use a node tag, a GraphNode, or supply any function
-        } //it still returns afterward but is treated like an additional flow statement :D
+        } //it still returns afterward but is treated like an additional flow statement :D. GraphNodes being run will contain the origin node (who had the branch)
     },
+    
+    reactive?:boolean|((_state:{[key:string]:any})=>void), //use a local state object to trigger state subscriptions, using the node's _unique tag for subscribing on global state
 
     tree?:Tree, //can also declare independent node maps on a node for referencing
     
@@ -53,6 +56,7 @@ type GraphNodeProperties = {
     repeat?:false|number, // set repeat as an integer to repeat the input n times, cmd will be the number of times the operation has been repeated
     
     recursive?:false|number, //or set recursive with an integer to pass the output back in as the next input n times, cmd will be the number of times the operation has been repeated
+    
     frame?:boolean, //true or false. If repeating or recursing, execute on requestAnimationFrame? Careful mixing this with animate:true
     
     animate?:boolean, //true or false, run the operation on an animationFrame loop?
@@ -63,14 +67,16 @@ type GraphNodeProperties = {
     
     looper?: OperatorType, //if it outputs something not undefined it will trigger parent/child operators
     
-    oncreate?:(self:GraphNode)=>void //do something after initializing the node, if loaded in a graph it only runs after setTree
+    oncreate?:(self:GraphNode|any,...args:any[])=>void, //do something after _initializing the node, if loaded in a graph it only runs after setTree
+    
+    ondelete?:(self:GraphNode|any,...args:any[])=>void, //do something after deleting the node
+    
+    DEBUGNODE?:boolean, // print a console.time and the result for a node by tag, run DEBUGNODES on a GraphNode or Graph to toggle debug on all attached nodes.
+    
+    [key:string]:any //add whatever variables and utilities, if reactive is true or a callback, you can subscribe to updates whenever these properties change
 
-    ondelete?:(self:GraphNode|any)=>void, //do something after deleting the node
-    
-    DEBUGNODE?:boolean // print a console.time and the result for a node by tag, run DEBUGNODES on a GraphNode or Graph to toggle debug on all attached nodes.
-    
-    [key:string]:any //add whatever variables and utilities
 }; //can specify properties of the element which can be subscribed to for changes.
+
 
 type Tree = {
     [key:string]: //the key becomes the node tag on the graph
@@ -103,6 +109,7 @@ GraphNode utilities
         repeat:false, // set repeat as an integer to repeat the input n times
         recursive:false, //or set recursive with an integer to pass the output back in as the next input n times
         frame:false, //true or false. If repeating or recursing, execute on requestAnimationFrame? Careful mixing this with animate:true
+        reactive:undefined, //subscribe to unique props changes (not including these props)
         animate:false, //true or false
         animation:undefined, //independent animation function from main operator?
         loop:undefined, //milliseconds or false
