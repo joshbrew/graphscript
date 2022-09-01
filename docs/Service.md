@@ -145,11 +145,11 @@ For all services with remote message passing support (http, wss, sse, webrtc, et
     - - [SSEbackend](./services/sse/sse.node.md)
     - - [SSEfrontend](./services/sse/sse.browser.md)
 
-- [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) - Multithreading is essential for high performance applications, and essentially all logic not running directly on the UI should be offloaded to workers in a production environment, so we handled the message passing system for you. In nodejs, threads can even run their entire own servers. In browser, they can handle canvas draw calls, sockets, REST calls, etc.  See examples for canvas, threejs, and entity component system examples.
+- [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) - Multithreading is essential for high performance applications, and essentially all logic not running directly on the UI should be offloaded to workers in a production environment, so we handled the message passing system for you. In nodejs, threads can even run their entire own servers. In browser, they can handle canvas draw calls, sockets, REST calls, etc.  See examples for canvas, threejs, and entity component system samples.
     - - [WorkerService](./services/worker/worker.service.md)
     - - [Workers](./services/worker/worker.md)
 
-- [WebRTC](https://webrtc.org/) - Browser supported peer 2 peer streaming and data channels with [WebRTC](https://webrtc.org/). We can easily use the service and sessions framework internal to Routers/UserRouters to share room information or create remote commander/listener instances through a server easily. 
+- [WebRTC](https://webrtc.org/) - Browser supported peer 2 peer streaming and data channels with [WebRTC](https://webrtc.org/). We can easily use the service and Router user framework to share room information or create remote commander/listener instances through a server.
     - - [WebRTCfrontend](./services/webrtc/webrtc.browser.md)
 
 - CMD - Command [child processes](https://nodejs.org/api/child_process.html), load processes that run their own CMD services to listen for cross-process service messages. This is the entry point for containerized applications with independent memory pools e.g. for rapid testing or for server multiplexing. (server only)
@@ -164,3 +164,5 @@ For all services with remote message passing support (http, wss, sse, webrtc, et
 - ECS - [Entity Component System](https://github.com/SanderMertens/ecs-faq#what-is-ecs) Service provides a simple spec to help you organize 'entities' with 'components' that tell different 'systems' to execute based on an execution order you provide. E.g. physics entities may have a collision system and a movement system before a final render system, and each entity will have values stored that get mutated by each system in an order that makes physical sense (e.g. check collision -> update velocity -> update position -> update render each frame). This is a loose spec, the rest is provided by the base Service/Graph node composition tools to give you full flow graph and state management under the hood. 
 
 - Unsafe - These let you dynamically transfer functions and classes or read/write global values across service instances, e.g. to other threads or between frontend/backend. Use with caution as it is reliant on eval(), but generally this is an easy way to generate and control entire backends and thread pools from a single file.
+
+This is all receiving constant updates and is not entirely tested. 
