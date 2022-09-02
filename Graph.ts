@@ -77,7 +77,7 @@ export type GraphNodeProperties = {
     delay?:false|number, //ms delay to fire the node
     repeat?:false|number, // set repeat as an integer to repeat the input n times, cmd will be the number of times the operation has been repeated
     recursive?:false|number, //or set recursive with an integer to pass the output back in as the next input n times, cmd will be the number of times the operation has been repeated
-    reactive?:boolean|((_state:{[key:string]:any})=>void), //use a local state object to trigger state subscriptions, using the node's _unique properties
+    reactive?:boolean|((_state:{[key:string]:any})=>void), //use a local state object to trigger state subscriptions, using the node's _unique tag to subscribe
     frame?:boolean, //true or false. If repeating or recursing, execute on requestAnimationFrame? Careful mixing this with animate:true
     animate?:boolean, //true or false, run the operation on an animationFrame loop?
     loop?:false|number, //milliseconds or false, run the operation on a loop?
