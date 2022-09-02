@@ -335,7 +335,8 @@ export class GraphNode {
                 if(!keys.includes(key)) this._initial[key] = properties[key]; //get custom _initial values 
             }
             if(properties.children) this._initial.children = Object.assign({},properties.children); //preserve the prototypes
-            else Object.assign(this,properties);
+            
+            Object.assign(this,properties);
 
 
             if(!this.tag) {
