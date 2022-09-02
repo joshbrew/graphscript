@@ -41,7 +41,7 @@ type Routes = { //same as the tree in the base acyclic graph but adds aliases an
 }
 
 //the input options are kind of complex but allow for robust programmatic customization. 
-type ServiceOptions = {
+export type ServiceOptions = {
     routes?:Routes|Routes[], 
     name?:string, 
     props?:{[key:string]:any}, 
@@ -54,8 +54,10 @@ type ServiceOptions = {
     customChildren?:{ //modify child routes in the tree based on parent conditions
         [key:string]:(child:Route, childRouteKey:string, parent:Route, routes:Routes, checked:Routes)=>Route|any|void
     },
+    sharedState?:boolean, //share state between services? default is true, graphs have independent states at the base
     [key:string]:any
 };
+
 
 //these are the same as trees except they can turn get or post into operators,
 // this makes more sense when the http server is involved but you can specify any
