@@ -182,6 +182,10 @@ export declare class Graph {
         subscribeTrigger(key: string, onchange: (res: any) => void): number;
         unsubscribeTrigger(key: string, sub?: number): boolean;
         subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
+    } & {
+        pushToState: {};
+        data: {};
+        triggers: {};
     };
     reactive: boolean | ((_state: {
         [key: string]: any;

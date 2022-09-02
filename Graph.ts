@@ -335,13 +335,6 @@ export class GraphNode {
                 if(!keys.includes(key)) this._initial[key] = properties[key]; //get custom _initial values 
             }
             if(properties.children) this._initial.children = Object.assign({},properties.children); //preserve the prototypes
-
-            if(this.reactive) {
-                addLocalState(properties);
-                if(typeof this.reactive === 'function') {
-                    this.state.subscribeTrigger(this._unique,this.reactive);
-                }
-            }
             else Object.assign(this,properties);
 
 
@@ -360,6 +353,15 @@ export class GraphNode {
                 }
                 graph.nodes.set(this.tag,this);
                 graph.nNodes++;
+                this.state = graph.state; //use the parent graph's unique state object to prevent overlap on common node names
+            }
+
+
+            if(this.reactive) {
+                addLocalState(properties);
+                if(typeof this.reactive === 'function') {
+                    this.state.subscribeTrigger(this._unique,this.reactive);
+                }
             }
 
             if(parentNode) {
@@ -1139,7 +1141,7 @@ export class Graph {
     nNodes = 0
     tag:string;
     nodes:Map<any,any> = new Map();
-    state=state;
+    state=Object.assign(Object.assign({},state),{pushToState:{},data:{},triggers:{}}); //give graphs a unique state
     reactive:boolean|((_state:{[key:string]:any})=>void)
     _initial:any;
     //_state: any = {};
@@ -1152,7 +1154,6 @@ export class Graph {
 
     constructor( tree?:Tree, tag?:string, props?:{[key:string]:any} ) {
         this.tag = tag ? tag : `graph${Math.floor(Math.random()*100000000000)}`;
-
 
         if(props) {
             if(props.reactive) {
