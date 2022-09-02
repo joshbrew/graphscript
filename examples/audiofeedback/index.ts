@@ -2,7 +2,7 @@
 
 //resources
 import { DOMService } from 'graphscript'//'../../index';
-import {initDevice, Devices} from 'device-decoder'
+import {initDevice, Devices} from 'device-decoder' //'../../../device_debugger/src/device.frontend'//'device-decoder'
 import { Howl, Howler } from 'howler';
 
 
@@ -115,6 +115,8 @@ const webappHtml = {
                                         else if (mode === 'USB') 
                                             selected = (document.getElementById('selectUSB') as HTMLSelectElement).value;
 
+                                        console.log('sps',Devices[mode][selected].sps)
+
                                         let info = initDevice(
                                             mode as 'BLE'|'USB', 
                                             selected, 
@@ -127,7 +129,7 @@ const webappHtml = {
                                                         timestamp:number|number[]
                                                     }) => { //data returned from decoder thread, ready for 
                                                         //outputelm.innerText = JSON.stringify(data);
-                                                        console.log(data)
+                                                        //console.log(data)
         
                                                         GameState.raw = data;
         
@@ -180,7 +182,13 @@ const webappHtml = {
                                                             }
                                                         ],
                                                         route:'runAlgorithm', //the init function will set the _id as an additional argument for runAlgorithm which selects existing contexts by _id 
-                                                        callback:(heartbeat)=>{
+                                                        callback:(heartbeat:{
+                                                            bpm: number,
+                                                            change: number, //i.e. HRV
+                                                            height0: number,
+                                                            height1: number,
+                                                            timestamp: number
+                                                        })=>{
                                                             console.log('heartrate result', heartbeat); //this algorithm only returns when it detects a beat
                                                         }
                                                     },
@@ -193,7 +201,13 @@ const webappHtml = {
                                                             }
                                                         ],
                                                         route:'runAlgorithm',
-                                                        callback:(breath)=>{
+                                                        callback:(breath:{
+                                                                bpm: number,
+                                                                change: number,
+                                                                height0: number,
+                                                                height1: number,
+                                                                timestamp: number
+                                                        })=>{
                                                             console.log('breath detect result', breath); //this algorithm only returns when it detects a beat
                                                         }
                                                     }

@@ -15,7 +15,7 @@ import { Router, User } from "../../services/router/Router";
 import { SocketServerProps, WSSbackend } from "../../services/wss/WSS.node";
 import { SSEbackend, SSEProps } from "../../services/sse/SSE.node";
 import { HTTPbackend, ServerProps } from "../../services/http/HTTP.node";
-import { SessionsService } from "../../services/streaming/sessions.service";
+import { SessionsService } from "../../services/sessions/sessions.service";
 import { scriptBoilerPlate } from "../../services/http/boilerplate";
 
 const router = new Router({
@@ -33,7 +33,10 @@ const router = new Router({
                     pages:{
                         '/':scriptBoilerPlate('dist/frontend.js'), //serve the built dist
                         'config':{
-                            template:'tinybuild.config.js'
+                            template:'tinybuild.config.js',
+                            onrequest:function (self, node, request, response) {
+                                
+                            }
                         },
                         'home':{
                             redirect:'/'

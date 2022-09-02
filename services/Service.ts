@@ -590,12 +590,12 @@ export class Service extends Graph {
 
     recursivelyAssign = (target,obj) => {
         for(const key in obj) {
-            if(typeof obj[key] === 'object') {
-                if(typeof target[key] === 'object') this.recursivelyAssign(target[key], obj[key]);
+            if(typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+                if(typeof target[key] === 'object' && !Array.isArray(target[key])) this.recursivelyAssign(target[key], obj[key]);
                 else target[key] = this.recursivelyAssign({},obj[key]); 
             } else target[key] = obj[key];
         }
-
+    
         return target;
     }
     

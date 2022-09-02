@@ -21194,60 +21194,90 @@ function parseFunctionFromText(method = "") {
   }
   return newFunc;
 }
-var state = {
-  pushToState: {},
-  data: {},
-  triggers: {},
-  setState(updateObj) {
-    Object.assign(state.data, updateObj);
-    for (const prop of Object.getOwnPropertyNames(updateObj)) {
-      if (state.triggers[prop])
-        state.triggers[prop].forEach((obj) => obj.onchange(state.data[prop]));
-    }
-    return state.data;
-  },
-  subscribeTrigger(key, onchange) {
-    if (key) {
-      if (!state.triggers[key]) {
-        state.triggers[key] = [];
+var EventHandler = class {
+  constructor() {
+    this.pushToState = {};
+    this.data = {};
+    this.triggers = {};
+    this.setState = (updateObj) => {
+      Object.assign(this.data, updateObj);
+      for (const prop of Object.getOwnPropertyNames(updateObj)) {
+        if (this.triggers[prop])
+          this.triggers[prop].forEach((obj) => obj.onchange(this.data[prop]));
       }
-      let l = state.triggers[key].length;
-      state.triggers[key].push({ idx: l, onchange });
-      return state.triggers[key].length - 1;
-    } else
-      return void 0;
-  },
-  unsubscribeTrigger(key, sub) {
-    let idx = void 0;
-    let triggers = state.triggers[key];
-    if (triggers) {
-      if (!sub)
-        delete state.triggers[key];
-      else {
-        let obj = triggers.find((o) => {
-          if (o.idx === sub) {
-            return true;
-          }
-        });
-        if (obj)
-          triggers.splice(idx, 1);
-        return true;
-      }
-    }
-  },
-  subscribeTriggerOnce(key, onchange) {
-    let sub;
-    let changed = (value2) => {
-      onchange(value2);
-      state.unsubscribeTrigger(key, sub);
+      return this.data;
     };
-    sub = state.subscribeTrigger(key, changed);
+    this.subscribeTrigger = (key, onchange) => {
+      if (key) {
+        if (!this.triggers[key]) {
+          this.triggers[key] = [];
+        }
+        let l = this.triggers[key].length;
+        this.triggers[key].push({ idx: l, onchange });
+        return this.triggers[key].length - 1;
+      } else
+        return void 0;
+    };
+    this.unsubscribeTrigger = (key, sub) => {
+      let idx = void 0;
+      let triggers = this.triggers[key];
+      if (triggers) {
+        if (!sub)
+          delete this.triggers[key];
+        else {
+          let obj = triggers.find((o) => {
+            if (o.idx === sub) {
+              return true;
+            }
+          });
+          if (obj)
+            triggers.splice(idx, 1);
+          return true;
+        }
+      }
+    };
+    this.subscribeTriggerOnce = (key, onchange) => {
+      let sub;
+      let changed = (value2) => {
+        onchange(value2);
+        this.unsubscribeTrigger(key, sub);
+      };
+      sub = this.subscribeTrigger(key, changed);
+    };
   }
 };
+var state = new EventHandler();
+function addLocalState(props) {
+  if (!this._state)
+    this._state = {};
+  for (let k in props) {
+    if (k === "_state" || k === "graph")
+      continue;
+    else {
+      this._state[k] = props[k];
+      if (k in this)
+        this[k] = props[k];
+      else
+        Object.defineProperty(this, k, {
+          get: () => {
+            this._state[k];
+          },
+          set: (v) => {
+            this._state[k] = v;
+            if (this.state.triggers[this._unique])
+              this.setState({ [this._unique]: this._state });
+          },
+          enumerable: true,
+          configurable: true
+        });
+    }
+  }
+}
 var GraphNode = class {
   constructor(properties = {}, parentNode, graph) {
     this.nodes = /* @__PURE__ */ new Map();
     this._initial = {};
+    this._unique = `${Math.random()}`;
     this.state = state;
     this.isLooping = false;
     this.isAnimating = false;
@@ -21255,9 +21285,11 @@ var GraphNode = class {
     this.animation = void 0;
     this.forward = true;
     this.backward = false;
+    this.reactive = false;
     this.runSync = false;
     this.firstRun = true;
     this.DEBUGNODE = false;
+    this.addLocalState = addLocalState;
     this.operator = (...args) => {
       return args;
     };
@@ -21301,13 +21333,15 @@ var GraphNode = class {
       });
     };
     this.transformArgs = (args = []) => args;
+    this.isRunSync = () => {
+      return !(this.children && this.forward || this.parent && this.backward || this.repeat || this.delay || this.frame || this.recursive || this.branch);
+    };
     this.run = (...args) => {
       if (typeof this.transformArgs === "function")
         args = this.transformArgs(args, this);
       if (this.firstRun) {
         this.firstRun = false;
-        if (!(this.children && this.forward || this.parent && this.backward || this.repeat || this.delay || this.frame || this.recursive || this.branch))
-          this.runSync = true;
+        this.runSync = this.isRunSync();
         if (this.animate && !this.isAnimating) {
           this.runAnimation(this.animation, args);
         }
@@ -21599,8 +21633,10 @@ var GraphNode = class {
     this.add = (n = {}) => {
       if (typeof n === "function")
         n = { operator: n };
+      if (n?.node instanceof GraphNode)
+        n = n.node;
       if (!(n instanceof GraphNode))
-        n = new GraphNode(n, this, this.graph);
+        n = new GraphNode(n.node ?? n, this, this.graph);
       this.nodes.set(n.tag, n);
       if (this.graph) {
         this.graph.nodes.set(n.tag, n);
@@ -21631,6 +21667,9 @@ var GraphNode = class {
         if (n.ondelete)
           n.ondelete(n);
       }
+      if (typeof this._state === "object") {
+        this.state.unsubscribeTrigger(this._unique);
+      }
     };
     this.append = (n, parentNode = this) => {
       if (typeof n === "string")
@@ -21642,13 +21681,40 @@ var GraphNode = class {
       }
     };
     this.subscribe = (callback, tag = this.tag) => {
-      if (callback.run) {
-        return this.subscribeNode(callback);
-      } else
+      console.log(this.state);
+      if (typeof callback === "string") {
+        if (this.graph)
+          callback = this.graph.get(callback);
+        else
+          callback = this.nodes.get(callback);
+      }
+      if (typeof callback === "function") {
         return this.state.subscribeTrigger(tag, callback);
+      } else if (callback)
+        return this.state.subscribeTrigger(tag, (res) => {
+          callback.run(res);
+        });
     };
     this.unsubscribe = (sub, tag = this.tag) => {
       return this.state.unsubscribeTrigger(tag, sub);
+    };
+    this.subscribeState = (callback) => {
+      if (!this.reactive) {
+        return void 0;
+      } else {
+        if (typeof callback === "string") {
+          if (this.graph)
+            callback = this.graph.get(callback);
+          else
+            callback = this.nodes.get(callback);
+        }
+        if (typeof callback === "function") {
+          return this.state.subscribeTrigger(this._unique, callback);
+        } else if (callback)
+          return this.state.subscribeTrigger(this._unique, (_state) => {
+            callback.run(_state);
+          });
+      }
     };
     this.addChildren = (children) => {
       if (!this.children)
@@ -21682,8 +21748,8 @@ var GraphNode = class {
       }
       return result;
     };
-    this.getProps = (n = this) => {
-      return {
+    this.getProps = (n = this, getInitial = true) => {
+      let baseprops = {
         tag: n.tag,
         operator: n.operator,
         graph: n.graph,
@@ -21699,9 +21765,36 @@ var GraphNode = class {
         repeat: n.repeat,
         branch: n.branch,
         oncreate: n.oncreate,
-        DEBUGNODE: n.DEBUGNODE,
-        ...this._initial
+        reactive: n.reactive,
+        DEBUGNODE: n.DEBUGNODE
       };
+      if (!getInitial) {
+        let uniqueprops = {};
+        for (const key in this._initial) {
+          uniqueprops[key] = this[key];
+        }
+        return Object.assign(baseprops, uniqueprops);
+      } else
+        return {
+          tag: n.tag,
+          operator: n.operator,
+          graph: n.graph,
+          children: n.children,
+          parent: n.parent,
+          forward: n.forward,
+          backward: n.bacward,
+          loop: n.loop,
+          animate: n.animate,
+          frame: n.frame,
+          delay: n.delay,
+          recursive: n.recursive,
+          repeat: n.repeat,
+          branch: n.branch,
+          oncreate: n.oncreate,
+          reactive: n.reactive,
+          DEBUGNODE: n.DEBUGNODE,
+          ...this._initial
+        };
     };
     this.setProps = (props = {}) => {
       let tmp = Object.assign({}, props);
@@ -21714,8 +21807,7 @@ var GraphNode = class {
         delete tmp.operator;
       }
       Object.assign(tmp, props);
-      if (!(this.children && this.forward || this.parent && this.backward || this.repeat || this.delay || this.frame || this.recursive))
-        this.runSync = true;
+      this.runSync = this.isRunSync();
     };
     this.removeTree = (n) => {
       if (n) {
@@ -21788,7 +21880,7 @@ var GraphNode = class {
           }
         }
         if (n.parent instanceof GraphNode) {
-          if (n.nodes.get(child.tag) && !n.parent.nodes.get(child.tag))
+          if (n.nodes.get(child.tag))
             n.parent.nodes.set(child.tag, child);
           if (n.parent.children) {
             this.checkNodesHaveChildMapped(n.parent, child, checked);
@@ -21834,16 +21926,6 @@ var GraphNode = class {
                   n.children[key] = n.nodes.get(key);
               }
               if (n.children[key] instanceof GraphNode) {
-                if (n.graph) {
-                  let props = n.children[key].getProps();
-                  delete props.parent;
-                  delete props.graph;
-                  if (n.source instanceof Graph) {
-                    n.children[key] = new GraphNode(props, n, n.source);
-                  } else {
-                    n.children[key] = new GraphNode(props, n, n.graph);
-                  }
-                }
                 n.nodes.set(n.children[key].tag, n.children[key]);
                 this.checkNodesHaveChildMapped(n, n.children[key]);
                 if (!(n.children[key].tag in n))
@@ -21926,7 +22008,9 @@ var GraphNode = class {
       if (parsed)
         return this.add(parsed);
     };
-    this.setState = this.state.setState;
+    this.setState = (data) => {
+      this.state.setState(data);
+    };
     this.DEBUGNODES = (debugging = true) => {
       this.DEBUGNODE = debugging;
       this.nodes.forEach((n) => {
@@ -22017,8 +22101,9 @@ var GraphNode = class {
           hasnode = parentNode.nodes.get(properties.tag);
         }
         if (hasnode) {
-          for (let k in hasnode)
-            this[k] = hasnode[k];
+          if (this.reactive) {
+            this.addLocalState(hasnode);
+          }
           if (!this.source)
             this.source = hasnode;
           let props = hasnode.getProps();
@@ -22043,8 +22128,7 @@ var GraphNode = class {
       }
       if (properties.children)
         this._initial.children = Object.assign({}, properties.children);
-      for (let k in properties)
-        this[k] = properties[k];
+      Object.assign(this, properties);
       if (!this.tag) {
         if (graph) {
           this.tag = `node${graph.nNodes}`;
@@ -22059,6 +22143,13 @@ var GraphNode = class {
         }
         graph.nodes.set(this.tag, this);
         graph.nNodes++;
+        this.state = graph.state;
+      }
+      if (this.reactive) {
+        addLocalState(properties);
+        if (typeof this.reactive === "function") {
+          this.state.subscribeTrigger(this._unique, this.reactive);
+        }
       }
       if (parentNode) {
         this.parent = parentNode;
@@ -22084,6 +22175,8 @@ var GraphNode = class {
         this.oncreate(this);
       if (!this.firstRun)
         this.firstRun = true;
+      if (this.animation && !this.animate)
+        this.animate = true;
     } else
       return properties;
   }
@@ -22092,12 +22185,16 @@ var Graph = class {
   constructor(tree, tag, props) {
     this.nNodes = 0;
     this.nodes = /* @__PURE__ */ new Map();
-    this.state = state;
+    this.state = new EventHandler();
+    this._unique = `${Math.random()}`;
     this.tree = {};
+    this.addLocalState = addLocalState;
     this.add = (n = {}) => {
+      if (n?.node instanceof GraphNode)
+        n = n.node;
       let props = n;
       if (!(n instanceof GraphNode))
-        n = new GraphNode(props, this, this);
+        n = new GraphNode(props?.node ?? props, this, this);
       else {
         this.nNodes = this.nodes.size;
         if (n.tag) {
@@ -22327,6 +22424,24 @@ var Graph = class {
     this.unsubscribe = (tag, sub) => {
       return this.state.unsubscribeTrigger(tag, sub);
     };
+    this.subscribeState = (callback) => {
+      if (!this.reactive) {
+        return void 0;
+      } else {
+        if (typeof callback === "string") {
+          if (this.graph)
+            callback = this.graph.get(callback);
+          else
+            callback = this.nodes.get(callback);
+        }
+        if (typeof callback === "function") {
+          return this.state.subscribeTrigger(this._unique, callback);
+        } else if (callback)
+          return this.state.subscribeTrigger(this._unique, (_state) => {
+            callback.run(_state);
+          });
+      }
+    };
     this.subscribeNode = (inputNode, outputNode) => {
       let tag;
       if (inputNode?.tag)
@@ -22373,7 +22488,9 @@ var Graph = class {
     this.create = (operator, parentNode, props) => {
       return createNode(operator, parentNode, props, this);
     };
-    this.setState = this.state.setState;
+    this.setState = (data) => {
+      this.state.setState(data);
+    };
     this.DEBUGNODES = (debugging = true) => {
       this.nodes.forEach((n) => {
         if (debugging)
@@ -22384,8 +22501,10 @@ var Graph = class {
     };
     this.tag = tag ? tag : `graph${Math.floor(Math.random() * 1e11)}`;
     if (props) {
-      for (let k in props)
-        this[k] = props[k];
+      if (props.reactive) {
+        this.addLocalState(props);
+      } else
+        Object.assign(this, props);
       this._initial = props;
     }
     if (tree || Object.keys(this.tree).length > 0)
@@ -22617,6 +22736,8 @@ var Service = class extends Graph {
     this.loadDefaultRoutes = false;
     this.keepState = true;
     this.firstLoad = true;
+    this.customRoutes = {};
+    this.customChildren = {};
     this.init = (options) => {
       if (options)
         options = Object.assign({}, options);
@@ -22637,7 +22758,8 @@ var Service = class extends Graph {
             options.includeClassName,
             options.routeFormat,
             options.customRoutes,
-            options.customChildren
+            options.customChildren,
+            options.sharedState
           );
         });
       } else if (options.routes || (Object.keys(this.routes).length > 0 || this.loadDefaultRoutes) && this.firstLoad)
@@ -22646,10 +22768,11 @@ var Service = class extends Graph {
           options.includeClassName,
           options.routeFormat,
           options.customRoutes,
-          options.customChildren
+          options.customChildren,
+          options.sharedState
         );
     };
-    this.load = (routes, includeClassName = true, routeFormat = ".", customRoutes, customChildren) => {
+    this.load = (routes, includeClassName = true, routeFormat = ".", customRoutes, customChildren, sharedState = true) => {
       if (!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad))
         return;
       if (this.firstLoad)
@@ -22658,12 +22781,10 @@ var Service = class extends Graph {
         customRoutes = Object.assign(this.customRoutes, customRoutes);
       else
         customRoutes = this.customRoutes;
-      if (customChildren)
-        customChildren = Object.assign(this.customChildren, customChildren);
       let service;
       let allRoutes = {};
       if (routes) {
-        if (!(routes instanceof Graph) && routes?.name && !routes.nodes) {
+        if (!(routes instanceof Graph) && routes?.name && !routes.setTree) {
           if (routes.module) {
             let mod = routes;
             routes = {};
@@ -22676,11 +22797,23 @@ var Service = class extends Graph {
           } else if (typeof routes === "function") {
             service = new routes({ loadDefaultRoutes: this.loadDefaultRoutes });
             service.load();
+            if (sharedState)
+              service.state = this.state;
             routes = service.routes;
+            if (service.customRoutes && !this.customRoutes)
+              this.customRoutes = service.customRoutes;
+            else if (service.customRoutes && this.customRoutes)
+              Object.assign(this.customRoutes, service.customRoutes);
+            if (service.customChildren && !this.customChildren)
+              this.customChildren = service.customChildren;
+            else if (service.customChildren && this.customChildren)
+              Object.assign(this.customChildren, service.customChildren);
           }
-        } else if (routes instanceof Graph || routes.source instanceof Graph || routes.nodes) {
+        } else if (routes instanceof Graph || routes.source instanceof Graph || routes.setTree) {
           service = routes;
           routes = {};
+          if (sharedState)
+            service.state = this.state;
           if (includeClassName) {
             let name2 = service.name;
             if (!name2) {
@@ -22710,7 +22843,9 @@ var Service = class extends Graph {
                   checked[nd.tag] = true;
                 else
                   checked[par.tag + routeFormat + nd.tag] = true;
-                if (nd instanceof Graph || nd.source instanceof Graph || nd.nodes) {
+                if (nd instanceof Graph || nd.source instanceof Graph || nd.setTree) {
+                  if (sharedState)
+                    nd.state = this.state;
                   if (includeClassName) {
                     let nm = nd.name;
                     if (!nm) {
@@ -22755,7 +22890,7 @@ var Service = class extends Graph {
             });
           }
         }
-        if ((service instanceof Graph || service?.nodes) && service.name && includeClassName) {
+        if ((service instanceof Graph || service?.setTree) && service.name && includeClassName) {
           routes = Object.assign({}, routes);
           for (const prop in routes) {
             let route = routes[prop];
@@ -23048,8 +23183,8 @@ var Service = class extends Graph {
     };
     this.recursivelyAssign = (target, obj) => {
       for (const key in obj) {
-        if (typeof obj[key] === "object") {
-          if (typeof target[key] === "object")
+        if (typeof obj[key] === "object" && !Array.isArray(obj[key])) {
+          if (typeof target[key] === "object" && !Array.isArray(target[key]))
             this.recursivelyAssign(target[key], obj[key]);
           else
             target[key] = this.recursivelyAssign({}, obj[key]);
@@ -23190,47 +23325,6 @@ var Service = class extends Graph {
   }
 };
 
-// ../../services/struct/datastructures/DataStructures.ts
-function Struct(structType = "struct", assignProps = {}, parentUser = { _id: "" }, parentStruct = { structType: "struct", _id: "" }) {
-  function randomId(tag = "") {
-    return `${tag + Math.floor(Math.random() + Math.random() * Math.random() * 1e16)}`;
-  }
-  let struct = {
-    _id: randomId(structType + "defaultId"),
-    structType,
-    ownerId: parentUser?._id,
-    timestamp: Date.now(),
-    parent: { structType: parentStruct?.structType, _id: parentStruct?._id }
-  };
-  if (!struct.ownerId)
-    delete struct.ownerId;
-  if (!struct?.parent?._id)
-    delete struct.parent;
-  if (Object.keys(assignProps).length > 0)
-    Object.assign(struct, assignProps);
-  return struct;
-}
-function ProfileStruct(tag = "", assignProps = {}, parentUser = { _id: "" }, parentStruct = { structType: "struct", _id: "" }) {
-  let props = {
-    tag,
-    name: "",
-    username: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    sex: "",
-    birthday: "",
-    type: "",
-    userRoles: {},
-    socials: {},
-    data: {},
-    id: ""
-  };
-  let struct = Struct("profile", props, parentUser, parentStruct);
-  return Object.assign(struct, assignProps);
-}
-
 // ../../services/router/Router.ts
 var Router = class extends Service {
   constructor(options) {
@@ -23245,7 +23339,7 @@ var Router = class extends Service {
       if (!info._id) {
         info._id = `user${Math.floor(Math.random() * 1e15)}`;
       }
-      let user = ProfileStruct(info._id, info);
+      let user = Object.assign({}, info);
       if (connections) {
         for (const key in connections) {
           if (typeof connections[key] === "object") {
@@ -23397,21 +23491,84 @@ var Router = class extends Service {
       } else if (this.order) {
         for (let i = 0; i < this.order.length; i++) {
           let k = this.order[i];
-          if (this.sources[sourceId][k].connectionType && this.sources[sourceId][k].service?.name) {
-            if (!this.serviceConnections[this.sources[sourceId][k].service.name]) {
-              this.removeConnection(this.sources[sourceId][k]);
-              continue;
+          if (this.sources[k]?.[sourceId]) {
+            if (this.sources[k][sourceId].connectionType && this.sources[k][sourceId].service?.name) {
+              if (!this.serviceConnections[this.sources[k][sourceId].service.service.name]) {
+                this.removeConnection(this.sources[k][sourceId].service);
+                continue;
+              }
             }
-          }
-          if (hasMethod && this.sources[k][sourceId]?.[hasMethod]) {
-            return this.sources[k][sourceId];
-          } else {
-            return this.sources[k][sourceId];
+            if (hasMethod && this.sources[k][sourceId]?.[hasMethod]) {
+              return this.sources[k][sourceId];
+            } else {
+              return this.sources[k][sourceId];
+            }
           }
         }
       }
       if (typeof sourceId === "string" && this.connections[sourceId] && this.connections[sourceId].send) {
         return this.connections[sourceId];
+      }
+    };
+    this.getConnections = (sourceId, hasMethod, props) => {
+      if (this.sources[sourceId]) {
+        if (!props && !hasMethod)
+          return this.sources[sourceId];
+        let found = {};
+        for (const key in this.sources[sourceId]) {
+          if (typeof this.sources[sourceId][key] === "object") {
+            if (!this.sources[sourceId][key]._id) {
+              for (const k in this.sources[sourceId][key]) {
+                if (typeof this.sources[sourceId][key][k] === "object") {
+                  let pass = true;
+                  if (hasMethod && !this.sources[sourceId][key][k][hasMethod])
+                    pass = false;
+                  for (const p in props) {
+                    if (typeof this.sources[sourceId][key][k][p] === "object" && typeof props[p] === "object") {
+                      for (const pp in props[p]) {
+                        if (props[p][pp] !== this.sources[sourceId][key][k][p][pp]) {
+                          pass = false;
+                          break;
+                        }
+                      }
+                    } else if (this.sources[sourceId][key][k][p] !== props[p]) {
+                      pass = false;
+                    } else {
+                      pass = false;
+                      break;
+                    }
+                  }
+                  if (pass) {
+                    found[this.sources[sourceId][key][k]._id] = this.sources[sourceId][key][k];
+                  }
+                }
+              }
+            } else {
+              let pass = true;
+              if (hasMethod && !this.sources[sourceId][key][hasMethod])
+                pass = false;
+              for (const p in props) {
+                if (typeof this.sources[sourceId][key][p] === "object" && typeof props[p] === "object") {
+                  for (const pp in props[p]) {
+                    if (props[p][pp] !== this.sources[sourceId][key][p][pp]) {
+                      pass = false;
+                      break;
+                    }
+                  }
+                } else if (this.sources[sourceId][key][p] !== props[p]) {
+                  pass = false;
+                } else {
+                  pass = false;
+                  break;
+                }
+              }
+              if (pass) {
+                if (this.getConnection(this.sources[sourceId][key], hasMethod))
+                  found[this.sources[sourceId][key]._id] = this.sources[sourceId][key];
+              }
+            }
+          }
+        }
       }
     };
     this.addConnection = (options, source) => {
@@ -23426,6 +23583,7 @@ var Router = class extends Service {
                 options = { connection: this.serviceConnections[j][k][options] };
                 options.service = j;
                 settings.connectionType = j;
+                settings.connectionsKey = k;
                 break;
               }
             }
@@ -23585,6 +23743,7 @@ var Router = class extends Service {
                   if (options.service.connections[key][c]) {
                     c = options.service.connections[key][c];
                     settings.connectionType = key;
+                    settings.connectionsKey = c;
                     break;
                   }
                 }
@@ -23597,6 +23756,7 @@ var Router = class extends Service {
                   c = this.serviceConnections[j][k][c];
                   options.service = j;
                   settings.connectionType = j;
+                  settings.connectionsKey = k;
                   break;
                 }
               }
@@ -23620,6 +23780,9 @@ var Router = class extends Service {
             c.onclose = (...args) => {
               if (settings.onclose)
                 settings.onclose(settings, ...args);
+              if (this.users[settings.source] && Object.keys(this.sources[settings.source]).length === 0) {
+                this.removeUser(settings.source, false);
+              }
               if (oldonclose)
                 oldonclose(...args);
             };
@@ -23628,6 +23791,9 @@ var Router = class extends Service {
           let oldonclose = c.onclose;
           c.onclose = (...args) => {
             this.removeConnection(settings);
+            if (this.users[settings.source] && Object.keys(this.sources[settings.source]).length === 0) {
+              this.removeUser(settings.source, false);
+            }
             if (oldonclose)
               oldonclose(...args);
           };
@@ -23670,6 +23836,13 @@ var Router = class extends Service {
           for (const key in this.sources) {
             if (this.sources[key][connection])
               delete this.sources[key][connection];
+            else {
+              for (const k in this.sources[key]) {
+                if (this.sources[key][k]?.[connection]) {
+                  delete this.sources[key][connection];
+                }
+              }
+            }
           }
           return true;
         } else if (this.sources[connection]) {
@@ -23849,7 +24022,10 @@ var Router = class extends Service {
           this.services[name2].users = this.users;
         this.nodes.forEach((n, tag) => {
           if (!this.services[name2].nodes.get(n.tag)) {
-            this.services[name2].nodes.set(tag, n);
+            this.services[name2].nodes.set(n.tag, n);
+          } else {
+            if (!this.services[name2].nodes.get(tag) && n._UNIQUE !== this.services[name2].nodes.get(n.tag)._UNIQUE)
+              this.services[name2].nodes.set(tag, n);
           }
         });
       }

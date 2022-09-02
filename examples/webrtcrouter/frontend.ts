@@ -1,7 +1,7 @@
 import { HTTPfrontend } from '../../services/http/HTTP.browser';
 import { Router } from '../../services/router/Router'
 import { EventSourceProps, SSEfrontend } from '../../services/sse/SSE.browser';
-import { SessionsService } from '../../services/streaming/sessions.service';
+import { SessionsService } from '../../services/sessions/sessions.service';
 import { WebRTCfrontend, WebRTCInfo } from '../../services/webrtc/WebRTC.browser';
 import { WebSocketProps, WSSfrontend } from '../../services/wss/WSS.browser';
 import { DOMService } from '../../services/dom/DOM.service';

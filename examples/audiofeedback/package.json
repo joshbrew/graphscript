@@ -22,8 +22,8 @@
   "author": "",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "device-decoder": "~0.1.26",
-    "graphscript": "~0.1.19",
+    "device-decoder": "~0.1.27",
+    "graphscript": "~0.1.22",
     "howler": "~2.2.3"
   },
   "nodemonConfig": {
