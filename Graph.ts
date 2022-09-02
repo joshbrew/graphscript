@@ -95,32 +95,36 @@ export type GraphNodeProperties = {
 //   relied on for absolute maximal performance concerns, those generally require custom solutions e.g. matrix math or clever indexing, but this can be used as a step toward that.
 
 //a graph representing a callstack of nodes which can be arranged arbitrarily with forward and backprop or propagation to wherever
-export const state = {
-    pushToState:{},
-    data:{},
-    triggers:{},
-    setState(updateObj:{[key:string]:any}){
-        Object.assign(state.data, updateObj);
+export class EventHandler {
+
+    pushToState={}
+    data={}
+    triggers={}
+
+    constructor() {}
+
+    setState = (updateObj:{[key:string]:any}) => {
+        Object.assign(this.data, updateObj);
         for (const prop of Object.getOwnPropertyNames(updateObj)) {
-            if (state.triggers[prop]) state.triggers[prop].forEach((obj) => obj.onchange(state.data[prop]));
+            if (this.triggers[prop]) this.triggers[prop].forEach((obj) => obj.onchange(this.data[prop]));
         }
-        return state.data;
-    },
-    subscribeTrigger(key:string,onchange:(res:any)=>void){
+        return this.data;
+    }
+    subscribeTrigger = (key:string,onchange:(res:any)=>void) => {
         if(key) {
-            if(!state.triggers[key]) {
-                state.triggers[key] = [];
+            if(!this.triggers[key]) {
+                this.triggers[key] = [];
             }
-            let l = state.triggers[key].length;
-            state.triggers[key].push({idx:l, onchange});
-            return state.triggers[key].length-1;
+            let l = this.triggers[key].length;
+            this.triggers[key].push({idx:l, onchange});
+            return this.triggers[key].length-1;
         } else return undefined;
-    },
-    unsubscribeTrigger(key:string,sub?:number){
+    }
+    unsubscribeTrigger = (key:string,sub?:number) => {
         let idx = undefined;
-        let triggers = state.triggers[key]
+        let triggers = this.triggers[key]
         if (triggers){
-            if(!sub) delete state.triggers[key];
+            if(!sub) delete this.triggers[key];
             else {
                 let obj = triggers.find((o)=>{
                     if(o.idx===sub) {return true;}
@@ -129,17 +133,20 @@ export const state = {
                 return true;
             }
         }
-    },
-    subscribeTriggerOnce(key:string,onchange:(res:any)=>void) {
+    }
+    subscribeTriggerOnce = (key:string,onchange:(res:any)=>void) => {
         let sub;
         
         let changed = (value) => {
             onchange(value);
-            state.unsubscribeTrigger(key,sub);
+            this.unsubscribeTrigger(key,sub);
         }
-        sub = state.subscribeTrigger(key,changed);
+        sub = this.subscribeTrigger(key,changed);
     }
+
 }
+
+export const state = new EventHandler();
 
 
   /**
@@ -785,6 +792,7 @@ export class GraphNode {
             
     //subscribe an output with an arbitrary callback
     subscribe = (callback:string|GraphNode|((res)=>void),tag:string=this.tag) => {
+        console.log(this.state);
         if(typeof callback === 'string') {
             if(this.graph) callback = this.graph.get(callback);
             else callback = this.nodes.get(callback);
@@ -1124,7 +1132,7 @@ export class GraphNode {
         if(parsed) return this.add(parsed);
     }
 
-    setState = this.state.setState; //little simpler
+    setState = (data:{[key:string]:any}) => { this.state.setState(data); };
 
     DEBUGNODES = (debugging:boolean=true) => {
         this.DEBUGNODE = debugging;
@@ -1142,7 +1150,7 @@ export class Graph {
     nNodes = 0
     tag:string;
     nodes:Map<any,any> = new Map();
-    state=Object.assign(Object.assign({},state),{pushToState:{},data:{},triggers:{}}); //give graphs a unique state
+    state=new EventHandler();
     reactive:boolean|((_state:{[key:string]:any})=>void)
     _initial:any;
     //_state: any = {};
@@ -1458,7 +1466,7 @@ export class Graph {
         return createNode(operator,parentNode,props,this);
     }
 
-    setState = this.state.setState;
+    setState = (data:{[key:string]:any}) => { this.state.setState(data); };
 
     DEBUGNODES = (debugging:boolean=true) => {
         this.nodes.forEach((n:GraphNode) => {

@@ -40,17 +40,19 @@ export declare type GraphNodeProperties = {
     DEBUGNODE?: boolean;
     [key: string]: any;
 };
-export declare const state: {
+export declare class EventHandler {
     pushToState: {};
     data: {};
     triggers: {};
-    setState(updateObj: {
+    constructor();
+    setState: (updateObj: {
         [key: string]: any;
-    }): {};
-    subscribeTrigger(key: string, onchange: (res: any) => void): number;
-    unsubscribeTrigger(key: string, sub?: number): boolean;
-    subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
-};
+    }) => {};
+    subscribeTrigger: (key: string, onchange: (res: any) => void) => number;
+    unsubscribeTrigger: (key: string, sub?: number) => boolean;
+    subscribeTriggerOnce: (key: string, onchange: (res: any) => void) => void;
+}
+export declare const state: EventHandler;
 /**
  * Creates new instance of a GraphNode
  * The methods of this class can be referenced in the operator after setup for more complex functionality
@@ -70,17 +72,7 @@ export declare class GraphNode {
     parent: GraphNode | Graph;
     children: any;
     graph: Graph;
-    state: {
-        pushToState: {};
-        data: {};
-        triggers: {};
-        setState(updateObj: {
-            [key: string]: any;
-        }): {};
-        subscribeTrigger(key: string, onchange: (res: any) => void): number;
-        unsubscribeTrigger(key: string, sub?: number): boolean;
-        subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
-    };
+    state: EventHandler;
     isLooping: boolean;
     isAnimating: boolean;
     looper: any;
@@ -163,30 +155,16 @@ export declare class GraphNode {
     reconstruct: (json: string | {
         [x: string]: any;
     }) => GraphNode | GraphNodeProperties;
-    setState: (updateObj: {
+    setState: (data: {
         [key: string]: any;
-    }) => {};
+    }) => void;
     DEBUGNODES: (debugging?: boolean) => void;
 }
 export declare class Graph {
     nNodes: number;
     tag: string;
     nodes: Map<any, any>;
-    state: {
-        pushToState: {};
-        data: {};
-        triggers: {};
-        setState(updateObj: {
-            [key: string]: any;
-        }): {};
-        subscribeTrigger(key: string, onchange: (res: any) => void): number;
-        unsubscribeTrigger(key: string, sub?: number): boolean;
-        subscribeTriggerOnce(key: string, onchange: (res: any) => void): void;
-    } & {
-        pushToState: {};
-        data: {};
-        triggers: {};
-    };
+    state: EventHandler;
     reactive: boolean | ((_state: {
         [key: string]: any;
     }) => void);
@@ -219,9 +197,9 @@ export declare class Graph {
         [x: string]: any;
     }) => GraphNode | GraphNodeProperties;
     create: (operator: OperatorType, parentNode: GraphNode, props: GraphNodeProperties) => GraphNode;
-    setState: (updateObj: {
+    setState: (data: {
         [key: string]: any;
-    }) => {};
+    }) => void;
     DEBUGNODES: (debugging?: boolean) => void;
 }
 export declare function reconstructNode(json: string | {

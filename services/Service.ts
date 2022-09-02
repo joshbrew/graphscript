@@ -55,6 +55,7 @@ export type ServiceOptions = {
     customChildren?:{ //modify child routes in the tree based on parent conditions
         [key:string]:(child:Route, childRouteKey:string, parent:Route, routes:Routes, checked:Routes)=>Route|any|void
     },
+    sharedState?:boolean, //share state between services? default is true
     [key:string]:any
 };
 
@@ -111,7 +112,8 @@ export class Service extends Graph {
                     options.includeClassName, 
                     options.routeFormat,
                     options.customRoutes,
-                    options.customChildren
+                    options.customChildren,
+                    options.sharedState
                 );
             });
         }
@@ -121,7 +123,8 @@ export class Service extends Graph {
                 options.includeClassName, 
                 options.routeFormat,
                 options.customRoutes,
-                options.customChildren
+                options.customChildren,
+                options.sharedState
             ); //now process the routes for the acyclic graph to load them as graph nodes :-D
     }
     
@@ -130,7 +133,8 @@ export class Service extends Graph {
         includeClassName:boolean=true, //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
         routeFormat:string='.',
         customRoutes?:ServiceOptions["customRoutes"],
-        customChildren?:ServiceOptions["customChildren"]
+        customChildren?:ServiceOptions["customChildren"],
+        sharedState:boolean = true
     ) => { 
         if(!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad)) return;
         if(this.firstLoad) this.firstLoad = false;
@@ -153,6 +157,9 @@ export class Service extends Graph {
                 } else if (typeof routes === 'function') { //it's a service prototype... probably
                     service = new routes({loadDefaultRoutes:this.loadDefaultRoutes});
                     service.load();
+
+                    if(sharedState) service.state = this.state;
+
                     routes = service.routes;
 
                     if(service.customRoutes && !this.customRoutes) this.customRoutes = service.customRoutes;
@@ -165,6 +172,7 @@ export class Service extends Graph {
             else if (routes instanceof Graph || routes.source instanceof Graph || routes.setTree) { //class instance
                 service = routes;
                 routes = {};
+                if(sharedState) service.state = this.state;
                 if(includeClassName) {
                     let name = service.name;
                     if(!name) {
@@ -196,6 +204,7 @@ export class Service extends Graph {
                             else checked[par.tag+routeFormat+nd.tag] = true;
 
                             if(nd instanceof Graph || nd.source instanceof Graph || nd.setTree) {
+                                if(sharedState) nd.state = this.state;
                                 if(includeClassName) {
                                     let nm = nd.name;
                                     if(!nm) {

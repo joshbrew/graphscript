@@ -48,6 +48,7 @@ export declare type ServiceOptions = {
     customChildren?: {
         [key: string]: (child: Route, childRouteKey: string, parent: Route, routes: Routes, checked: Routes) => Route | any | void;
     };
+    sharedState?: boolean;
     [key: string]: any;
 };
 export declare type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
@@ -60,7 +61,7 @@ export declare class Service extends Graph {
     customChildren: any;
     constructor(options?: ServiceOptions);
     init: (options?: ServiceOptions) => void;
-    load: (routes?: any, includeClassName?: boolean, routeFormat?: string, customRoutes?: ServiceOptions["customRoutes"], customChildren?: ServiceOptions["customChildren"]) => Routes;
+    load: (routes?: any, includeClassName?: boolean, routeFormat?: string, customRoutes?: ServiceOptions["customRoutes"], customChildren?: ServiceOptions["customChildren"], sharedState?: boolean) => Routes;
     unload: (routes?: Service | Routes | any) => Routes;
     handleMethod: (route: string, method: string, args?: any) => any;
     handleServiceMessage(message: ServiceMessage): any;
