@@ -142,40 +142,7 @@ export class DOMService extends Service {
         [key:string]:ComponentProps|CanvasElementProps
     } = {}
 
-    resolveNode = (element, options) => {
 
-        let node: GraphNode
-        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
-            node = this.nodes.get(options.id);
-        } else {
-            let parentId = typeof options.parentNode === 'object' ? options.parentNode.id : typeof options.parentNode === 'string' ? options.parentNode : undefined;
-            let parent;
-            if(parentId) parent = this.nodes.get(parentId);
-            node = new GraphNode(
-                options,
-                parent,
-                this
-            );
-        }
-        
-        node.element = element;
-        element.node = node;
-
-        // -------- Bind Functions to GraphNode --------
-        const initialOptions = options._initial ?? options
-        for (let key in initialOptions) {
-            if (typeof initialOptions[key] === 'function') initialOptions[key] = initialOptions[key].bind(node)
-            else if (key === 'attributes') {
-                for (let key2 in initialOptions.attributes) {
-                    if (typeof initialOptions.attributes[key2] === 'function') {
-                        initialOptions.attributes[key2] = initialOptions.attributes[key2].bind(node)
-                    }
-                }
-            }
-        }
-
-        return node;
-    }
 
     addElement=(
         options: ElementProps,
@@ -206,7 +173,7 @@ export class DOMService extends Service {
         }
 
 
-        let node = this.resolveNode(elm, options);
+        let node = this.resolveGraphNode(elm, options);
         
         let divs:any[] = Array.from(elm.querySelectorAll('*'));
         if(generateChildElementNodes) { //convert all child divs to additional nodes
@@ -226,7 +193,7 @@ export class DOMService extends Service {
             window.addEventListener('resize', options.onresize as EventListener);
         }
 
-        this.resolveParentNode(elm, options, oncreate)
+        //this.resolveParentNode(elm, options, oncreate)
 
         return this.elements[options.id] as ElementInfo;
     }
@@ -257,12 +224,20 @@ export class DOMService extends Service {
         if(!options.tag && options.id) options.tag = options.id;
         if(!options.id) options.id = `${options.tagName ?? 'element'}${Math.floor(Math.random()*1000000000000000)}`;
 
-        if(typeof options.parentNode === 'string' && document.getElementById(options.parentNode)) 
-            options.parentNode = document.getElementById(options.parentNode);
-        if(!options.parentNode) {        
-            if(!this.parentNode) this.parentNode = document.body;
-            options.parentNode = this.parentNode;
-        }
+        let p = options.parentNode;
+        delete options.parentNode;
+        Object.defineProperty(options,'parentNode',{
+            get:function () { return element.parentNode; },
+            set:(v) => { 
+                if(element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+                this.resolveParentNode(element, v ? v : this.parentNode, options, options.onrender);
+             },
+             enumerable:true,
+             configurable:true
+        });
+        options.parentNode = p ? p : this.parentNode;
        
         element.id = options.id;
         if(options.style) Object.assign(element.style,options.style);
@@ -281,6 +256,64 @@ export class DOMService extends Service {
         return options;
     }
 
+    resolveParentNode = (elm, parentNode, options, oncreate?) => {
+        if(!elm.parentNode) {
+            setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
+                if(typeof parentNode === 'string') parentNode = document.getElementById(parentNode);
+                if(typeof parentNode === 'object') {
+                    // if(options.parentNode.shadowRoot) {
+                    //     console.log(options.parentNode.shadowRoot)
+                    //     options.parentNode.shadowRoot.appendChild(elm);
+                    // } else 
+                    parentNode.appendChild(elm);
+                }
+
+                if(oncreate) oncreate.call(elm.node, elm, this.elements[options.id]);
+
+                if(elm.node.animation || elm.node.animate) {
+                    elm.node.runAnimation();
+                }
+                if(elm.node.looper || typeof elm.node.loop === 'number' && elm.node.loop) {
+                    elm.node.runLoop()
+                }   
+            },0.01); //small timeout makes sure the elements all load before executing node utilities
+        }
+    }
+    
+    resolveGraphNode = (element, options) => {
+
+        let node: GraphNode
+        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
+            node = this.nodes.get(options.id);
+        } else {
+            let parentId = options.parentNode instanceof HTMLElement ? options.parentNode?.id : typeof options.parentNode === 'string' ? options.parentNode : undefined;
+            let parent;
+            if(parentId) parent = this.nodes.get(parentId);
+            node = new GraphNode(
+                options,
+                parent,
+                this
+            );
+        }
+        
+        node.element = element;
+        element.node = node;
+
+        // -------- Bind Functions to GraphNode --------
+        const initialOptions = options._initial ?? options
+        for (let key in initialOptions) {
+            if (typeof initialOptions[key] === 'function') initialOptions[key] = initialOptions[key].bind(node)
+            else if (key === 'attributes') {
+                for (let key2 in initialOptions.attributes) {
+                    if (typeof initialOptions.attributes[key2] === 'function') {
+                        initialOptions.attributes[key2] = initialOptions.attributes[key2].bind(node)
+                    }
+                }
+            }
+        }
+
+        return node;
+    }
     //create an element that is tied to a specific node, multiple elements can aggregate
     // with the node
     addComponent=(
@@ -361,7 +394,7 @@ export class DOMService extends Service {
         }
 
         
-        let node = this.resolveNode(elm, options);
+        let node = this.resolveGraphNode(elm, options);
 
         if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }
 
@@ -374,8 +407,6 @@ export class DOMService extends Service {
             ...completeOptions
         };
 
-                
-        this.resolveParentNode(elm, options)
 
         return this.components[completeOptions.id] as ComponentInfo;
     }
@@ -463,7 +494,7 @@ export class DOMService extends Service {
             return props;
         }
 
-        let node = this.resolveNode(elm, options);
+        let node = this.resolveGraphNode(elm, options);
 
         if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }
 
@@ -490,36 +521,11 @@ export class DOMService extends Service {
         node.canvas = canvas; //make sure everything is accessible;
         node.context = context;
       
-        this.resolveParentNode(elm, options)
 
         return this.components[completeOptions.id] as CanvasElementInfo;
 
     }
 
-    resolveParentNode = (elm, options, oncreate?) => {
-        if(!elm.parentNode) {
-            setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
-                if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
-                if(typeof options.parentNode === 'object') {
-                    // if(options.parentNode.shadowRoot) {
-                    //     console.log(options.parentNode.shadowRoot)
-                    //     options.parentNode.shadowRoot.appendChild(elm);
-                    // } else 
-                    options.parentNode.appendChild(elm);
-                }
-
-                if(oncreate) oncreate.call(elm.node, elm, this.elements[options.id]);
-
-                if(elm.node.animation || elm.node.animate) {
-                    elm.node.runAnimation();
-                }
-                if(elm.node.looper || typeof elm.node.loop === 'number' && elm.node.loop) {
-                    elm.node.runLoop()
-                }   
-            },0.01); //small timeout makes sure the elements all load before executing node utilities
-        }
-    }
-    
     terminate = (element:string|DOMElement|HTMLElement|ComponentInfo|CanvasElementInfo)=>{
         if(typeof element === 'object') {
             if((element as CanvasElementInfo).animating)

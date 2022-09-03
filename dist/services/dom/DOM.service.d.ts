@@ -38,7 +38,7 @@ export declare class DOMService extends Service {
     updateOptions: (options: any, element: any) => CompleteOptions;
     addComponent: (options: ComponentProps, generateChildElementNodes?: boolean) => ComponentInfo;
     addCanvasComponent: (options: CanvasOptions) => CanvasElementInfo;
-    resolveParentNode: (elm: any, options: any, oncreate?: any) => void;
+    resolveParentNode: (elm: any, parentNode: any, options: any, oncreate?: any) => void;
     terminate: (element: string | DOMElement | HTMLElement | ComponentInfo | CanvasElementInfo) => boolean;
     defaultRoutes: DOMRoutes;
 }
