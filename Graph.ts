@@ -217,7 +217,7 @@ export class GraphNode {
 
     constructor(
         properties:GraphNodeProperties|Graph|OperatorType|((...args:any[])=>any|void)={}, 
-        parentNode?:GraphNode|Graph, 
+        parent?:GraphNode|Graph|string, 
         graph?:Graph
     ) {    
 
@@ -283,7 +283,13 @@ export class GraphNode {
                 } //make sure node references get passed around correctly
             }
 
-            if(properties.tag && (graph || parentNode)) {
+            if( typeof parent === 'string') {
+                if(graph) parent = graph.nodes.get(parent);
+                else parent = undefined;
+            }
+            
+
+            if(properties.tag && (graph || parent)) {
                 let hasnode;
                 if(graph?.nodes) {
                     hasnode = graph.nodes.get(properties.tag);
@@ -291,8 +297,8 @@ export class GraphNode {
                     //     hasnode = new Graph(hasnode.source.tree,`${hasnode.tag}${graph.nNodes+1}`, properties);
                     // }
                 }
-                if(!hasnode && parentNode?.nodes) {
-                    hasnode = parentNode.nodes.get(properties.tag);
+                if(!hasnode && (parent as any)?.nodes) {
+                    hasnode = (parent as any).nodes.get(properties.tag);
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
                 if(hasnode) {
@@ -372,9 +378,9 @@ export class GraphNode {
                 }
             }
 
-            if(parentNode) {
-                this.parent=parentNode;
-                if(parentNode instanceof GraphNode || parentNode instanceof Graph) parentNode.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
+            if(typeof parent === 'object') {
+                this.parent=parent;
+                if(parent instanceof GraphNode || parent instanceof Graph) parent.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
             }
             
             if(typeof properties.tree === 'object') { //can generate node maps from trees in nodes that will be available for use in the main graph, and the main graph will index them by tag

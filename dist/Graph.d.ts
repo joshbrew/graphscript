@@ -88,7 +88,7 @@ export declare class GraphNode {
     source: Graph | GraphNode;
     tree: Tree;
     [key: string]: any;
-    constructor(properties?: GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void), parentNode?: GraphNode | Graph, graph?: Graph);
+    constructor(properties?: GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void), parent?: GraphNode | Graph | string, graph?: Graph);
     addLocalState: typeof addLocalState;
     operator: OperatorType;
     runOp: (...args: any[]) => any;

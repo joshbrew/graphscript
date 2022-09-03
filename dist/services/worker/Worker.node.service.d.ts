@@ -49,7 +49,7 @@ export declare class WorkerService extends Service {
         onerror?: (ev: any) => void;
     }) => WorkerInfo;
     toObjectURL: (scriptTemplate: string) => string;
-    transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: StructuredSerializeOptions) => any;
+    transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: any) => any;
     terminate: (worker: Worker | MessagePort | string) => boolean;
     establishMessageChannel: (worker: Worker | string | MessagePort, worker2?: Worker | string | MessagePort) => string | false;
     request: (message: ServiceMessage | any, workerId: string, transfer?: any, method?: string) => Promise<unknown>;

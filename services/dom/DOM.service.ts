@@ -99,11 +99,11 @@ export class DOMService extends Service {
     }
 
     customChildren:ServiceOptions["customChildren"] = {
-        'dom':(rt:DOMServiceRoute|any, routeKey:string, route:any, routes:DOMRoutes, checked:DOMRoutes) => {
+        'dom':(rt:DOMServiceRoute|any, routeKey:string, parent:any, routes:DOMRoutes, checked:DOMRoutes) => {
             //automatically parent children html routes to parent html routes without needing explicit parentNode definitions
-            if((route.tag || route.id) && (route.template || route.context || route.tagName || route.element) && (rt.template || rt.context || rt.tagName || rt.element) && !rt.parentNode) {
-                if(route.tag) rt.parentNode = route.tag; 
-                if(route.id) rt.parentNode = route.id;
+            if((parent.tag || parent.id) && (parent.template || parent.context || parent.tagName || parent.element) && (rt.template || rt.context || rt.tagName || rt.element) && !rt.parentNode) {
+                if(parent.tag) rt.parentNode = parent.tag; 
+                if(parent.id) rt.parentNode = parent.id;
             }
             return rt;
         }
@@ -148,9 +148,12 @@ export class DOMService extends Service {
         if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
             node = this.nodes.get(options.id);
         } else {
+            let parentId = typeof options.parentNode === 'object' ? options.parentNode.id : typeof options.parentNode === 'string' ? options.parentNode : undefined;
+            let parent;
+            if(parentId) parent = this.nodes.get(parentId);
             node = new GraphNode(
                 options,
-                options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode,
+                parent,
                 this
             );
         }
