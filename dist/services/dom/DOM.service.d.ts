@@ -32,13 +32,13 @@ export declare class DOMService extends Service {
     templates: {
         [key: string]: ComponentProps | CanvasElementProps;
     };
-    resolveNode: (element: any, options: any) => GraphNode;
     addElement: (options: ElementProps, generateChildElementNodes?: boolean) => ElementInfo;
     createElement: (options: ElementProps) => HTMLElement;
     updateOptions: (options: any, element: any) => CompleteOptions;
+    resolveParentNode: (elm: any, parentNode: any, options: any, oncreate?: any) => void;
+    resolveGraphNode: (element: any, options: any) => GraphNode;
     addComponent: (options: ComponentProps, generateChildElementNodes?: boolean) => ComponentInfo;
     addCanvasComponent: (options: CanvasOptions) => CanvasElementInfo;
-    resolveParentNode: (elm: any, parentNode: any, options: any, oncreate?: any) => void;
     terminate: (element: string | DOMElement | HTMLElement | ComponentInfo | CanvasElementInfo) => boolean;
     defaultRoutes: DOMRoutes;
 }

@@ -11,12 +11,12 @@ For happy code!
 </p>
 
 
-`npm i graphscript` ~220kb dist
+`npm i graphscript` ~230kb dist
 
 For node.js
-`npm i graphscript-node` ~270kb dist
+`npm i graphscript-node` ~280 dist
 
-Core only (only core classes plus unsafe and router services which are minimal) ~45kb dist
+Core only (only core classes plus unsafe and router services which are minimal) ~47kb dist
 `npm i graphscript-core`
 
 For additional services (currently gpu.js service and the compiled worker dataurl as `gsworker` (or use `graphscript/dist/Worker`))

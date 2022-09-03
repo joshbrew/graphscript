@@ -5,4 +5,7 @@ export * from './services/gpu/GPU.service' //~500kb
 //e.g. babylonjs service, threejs service
 
 import gsworker from './services/worker/Worker' //compiles the worker in the dist
+
+export { algorithms } from './services/worker/algorithms/index'; //modified algorithms object with presets 
+
 export {gsworker}

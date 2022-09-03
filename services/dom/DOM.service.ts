@@ -80,18 +80,27 @@ export class DOMService extends Service {
         'dom':(r:DOMServiceRoute|any, route:string, routes:DOMRoutes|any) => {
             // console.log(r)
             if(!(r instanceof GraphNode)) {
-                if(r.template) { //assume its a component node
-                    if(!r.tag) r.tag = route;
-                    this.addComponent(r,r.generateChildElementNodes);
+
+                if(r.element?.parentNode?.id && r.graph?.parentNode?.id) {
+                    if(r.graph.parentNode.id === r.element.id) {
+                        r.parentNode = this.parentNode; //triggers the setter to reparent
+                    }
                 }
-                else if(r.context) { //assume its a canvas node
-                    if(!r.tag) r.tag = route;
-                    this.addCanvasComponent(r);
+                else {
+                    if(r.template) { //assume its a component node
+                        if(!r.tag) r.tag = route;
+                        this.addComponent(r,r.generateChildElementNodes);
+                    }
+                    else if(r.context) { //assume its a canvas node
+                        if(!r.tag) r.tag = route;
+                        this.addCanvasComponent(r);
+                    }
+                    else if(r.tagName || r.element) { //assume its an element node
+                        if(!r.tag) r.tag = route;
+                        this.addElement(r,r.generateChildElementNodes);
+                    }
                 }
-                else if(r.tagName || r.element) { //assume its an element node
-                    if(!r.tag) r.tag = route;
-                    this.addElement(r,r.generateChildElementNodes);
-                }
+
             }
 
             return r;
@@ -149,9 +158,7 @@ export class DOMService extends Service {
         generateChildElementNodes=false      
     )=>{
 
-        let elm:HTMLElement = this.createElement(options)
-
-        let oncreate = options.onrender;
+        let elm:HTMLElement = this.createElement(options);
 
         if(!options.element) options.element = elm;
         if(!options.operator) options.operator = function (props:{[key:string]:any}){ 
@@ -295,6 +302,19 @@ export class DOMService extends Service {
                 this
             );
         }
+
+        delete node.parentNode; //give the node a setter as well
+        Object.defineProperty(node,'parentNode',{
+            get:function () { return element.parentNode; },
+            set:(v) => { 
+                if(element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+                this.resolveParentNode(element, v ? v : this.parentNode, options, options.onrender);
+             },
+             enumerable:true,
+             configurable:true
+        });
         
         node.element = element;
         element.node = node;

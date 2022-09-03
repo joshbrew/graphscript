@@ -435,7 +435,10 @@ export class WorkerService extends Service {
 
             if(worker2 instanceof Worker || worker2 instanceof MessagePort) {
                 worker2.postMessage({route:'addWorker',args:{port:channel.port2, _id:portId}},[channel.port2]);
-            } else if(workerId && this.workers[workerId]) this.workers[workerId].port = channel.port2;
+            } else if(workerId && this.workers[workerId]) {
+                channel.port2.onmessage = this.workers[workerId].onmessage;
+                this.workers[workerId].port = channel.port2;
+            }
         
             return portId;
         }
