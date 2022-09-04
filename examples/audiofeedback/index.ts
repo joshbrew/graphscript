@@ -1,8 +1,8 @@
 //@ts-nocheck
 
 //resources
-import { DOMService } from '../../index'//'graphscript'//'../../index';
-import {initDevice, Devices} from 'device-decoder' //'../../../device_debugger/src/device.frontend'//'device-decoder'
+import { DOMService } from 'graphscript'//'../../index'////'../../index';
+import {initDevice, Devices} from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder' ////
 import { Howl, Howler } from 'howler';
 
 
@@ -115,7 +115,7 @@ const webappHtml = {
                                         else if (mode === 'USB') 
                                             selected = (document.getElementById('selectUSB') as HTMLSelectElement).value;
 
-                                        console.log('sps',Devices[mode][selected].sps)
+                                        console.log(selected,',',mode,', sps:',Devices[mode][selected].sps)
 
                                         let info = initDevice(
                                             mode as 'BLE'|'USB', 
@@ -174,14 +174,14 @@ const webappHtml = {
                                                 },
                                                 subprocesses:{
                                                     hr: {
-                                                        init:'createAlgorithmContext',
+                                                        init:'createSubprocess',
                                                         initArgs:[
                                                             'heartrate', //preprogrammed algorithm
                                                             {
                                                                 sps:Devices[mode][selected].sps
                                                             }
                                                         ],
-                                                        route:'runAlgorithm', //the init function will set the _id as an additional argument for runAlgorithm which selects existing contexts by _id 
+                                                        route:'runSubprocess', //the init function will set the _id as an additional argument for runAlgorithm which selects existing contexts by _id 
                                                         callback:(heartbeat:{
                                                             bpm: number,
                                                             change: number, //i.e. HRV
@@ -193,14 +193,14 @@ const webappHtml = {
                                                         }
                                                     },
                                                     breath:{
-                                                        init:'createAlgorithmContext',
+                                                        init:'createSubprocess',
                                                         initArgs:[
                                                             'breath',
                                                             {
                                                                 sps:Devices[mode][selected].sps
                                                             }
                                                         ],
-                                                        route:'runAlgorithm',
+                                                        route:'runSubprocess',
                                                         callback:(breath:{
                                                                 bpm: number,
                                                                 change: number,
@@ -217,7 +217,7 @@ const webappHtml = {
 
                                         if(info) {
                                             info.then((result) => {
-                                                console.log(result);
+                                                //console.log(result);
                                                 let disc = document.createElement('button');
                                                 disc.innerHTML = `Disconnect ${selected} (${mode})`;
                                                 disc.onclick = () => {

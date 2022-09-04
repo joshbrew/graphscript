@@ -50,6 +50,8 @@ export declare class WorkerService extends Service {
     constructor(options?: ServiceOptions);
     customRoutes: ServiceOptions["customRoutes"];
     customChildren: ServiceOptions["customChildren"];
+    addDefaultMessageListener(): void;
+    postMessage: (message: any, target: string, transfer?: Transferable[]) => void;
     addWorker: (options: {
         url?: URL | string | Blob;
         port?: MessagePort;

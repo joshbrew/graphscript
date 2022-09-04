@@ -1,6 +1,6 @@
 import { parseFunctionFromText } from '../../Graph';
 import { WorkerInfo, WorkerService } from './Worker.service';
-import { Routes } from '../Service';
+import { unsafeRoutes } from '../unsafe/Unsafe.service';
 
 export type Subprocess = (context:SubprocessContext,data:{[key:string]:any}|any)=>{[key:string]:any}|undefined
 
@@ -21,6 +21,10 @@ export type SubprocessContext = {
 
 
 export const algorithms:{ [key:string]:SubprocessContextProps } = {}
+
+export const loadAlgorithms = (settings:{ [key:string]:SubprocessContextProps }) => {
+    return Object.assign(algorithms,settings);
+}
 
 export function createSubprocess(
     options:SubprocessContextProps,
@@ -65,7 +69,8 @@ let recursivelyAssign = (target,obj) => {
 
 
 export const subprocessRoutes = {
-    'initSubprocesses':function initsubprocesses(
+    loadAlgorithms:loadAlgorithms,
+    'initSubprocesses':function initsubprocesses( //requires unsafeRoutes
         subprocesses:{ //use secondary workers to run processes and report results back to the main thread or other
             [key:string]:{
                 subprocess:string|{
@@ -76,6 +81,7 @@ export const subprocessRoutes = {
                     props?:{[key:string]:any} //other htings you want on the context
                 }, 
                 subscribeRoute:string, source?:WorkerInfo,
+                route:string, //route to run on our subprocess to pass back to window and/or pipe to another worker in the background
                 init?:string, initArgs?:any[],   otherArgs?:any[],  //do we need to call an init function before running the callbacks? The results of this init will set the otherArgs
                 callback?:string|((data:any)=>any), //do we want to do something with the subprocess output (if any) on the main thread? 
                 pipeTo?:{ //pipe outputs (if any) from the suprocesses to a specific route on main thread or a known route on another thread?
@@ -90,8 +96,18 @@ export const subprocessRoutes = {
         if(!service) service = this.graph;
         if(!service) return undefined;
 
+        if(Array.from(service.nodes.keys()).indexOf('setValue') < -1) service.load(unsafeRoutes)
+
         for(const p in subprocesses) {
             let s = subprocesses[p];
+
+            if(!s.worker && s.url) s.worker = service.addWorker({url:s.url});
+            if(!s.worker) continue;
+
+            let w = s.worker;
+            let wpId;
+            wpId = service.establishMessageChannel(w.worker,s.source?.worker); //will be routed to main thread if source worker not defined
+
             if(typeof s.subprocess === 'object') { //transfer the template for the worker
                 const p = s.subprocess;
                 if(!p.name) continue;
@@ -115,31 +131,25 @@ export const subprocessRoutes = {
                 s.subprocess = p.name;
             }
 
-            if(!s.worker && s.url) s.worker = service.addWorker({url:s.url});
-            if(!s.worker) continue;
-
-            let w = service.worker;
-            let wpId;
-            wpId = service.establishMessageChannel(w.worker,s.source?.worker); //will be routed to main thread if source worker not defined
-
             if(s.init) {
                 w.run(s.init, s.initArgs).then((r) => { //('createAlgorithmContext', [options, inputs])
                     //e.g. returns the algorithm context id
-                    w.run('setValue',['otherArgsProxy',r]);
+                    w.run('setValue',['otherArgsProxy', r]);
                 });
             }
 
             if(s.otherArgs) {
-                w.run('setValue',['otherArgsProxy',s.otherArgs]);
+                w.run('setValue',['otherArgsProxy', s.otherArgs]);
             }
             if(s.pipeTo) {
-                w.run('setValue',['routeProxy',s.subscribeRoute]); //set the route we want to run through our proxy function below
-                w.run('setValue',['pipeRoute',s.pipeTo.route]); //set the route to pipe results to
-                if(s.pipeTo.portId) w.run('setValue',['pipePort',s.pipeTo.portId]); //set the pipe port
-                if(s.pipeTo.otherArgs) w.run('setValue',['otherPipeArgs',s.pipeTo.otherArgs]); //set additional args to pipe with the results
+                w.run('setValue',['routeProxy', s.route]); //set the route we want to run through our proxy function below
+                w.run('setValue',['pipeRoute', s.pipeTo.route]); //set the route to pipe results to
+                if(s.pipeTo.portId) w.run('setValue',['pipePort', s.pipeTo.portId]); //set the pipe port
+                if(s.pipeTo.otherArgs) w.run('setValue',['otherPipeArgs', s.pipeTo.otherArgs]); //set additional args to pipe with the results
                 service.transferFunction(
                     w,
                     function pipeResults(data){
+                        //console.log('piping', data);
                         let inp = data;
                         if(this.graph.otherArgsProxy) inp = [data, ...this.graph.otherArgsProxy]
                         let r = this.graph.run(this.graph.routeProxy, inp);
@@ -160,11 +170,11 @@ export const subprocessRoutes = {
                     'pipeResults'
                 )
 
-                w.run('subscribeToWorker',['decodeAndParseDevice',wpId,'pipeResults']); //pass decode/parse thread results to the subprocess, and then the subprocess can pipe back to main thread or another worker (e.g. the render thread)
+                w.run('subscribeToWorker',[s.subscribeRoute, wpId, 'pipeResults']); //pass decode/parse thread results to the subprocess, and then the subprocess can pipe back to main thread or another worker (e.g. the render thread)
 
             } else {
                 if(s.otherArgs) {
-                    w.run('setValue',['routeProxy',s.subscribeRoute]);
+                    w.run('setValue',['routeProxy',s.route]);
                     service.transferFunction(
                         w,
                         function routeProxy(data:any) {
@@ -180,13 +190,12 @@ export const subprocessRoutes = {
                         },
                         'routeProxy'
                     )
-                    w.run('subscribeToWorker',['decodeAndParseDevice',wpId,'routeProxy']); //pass decode/parse thread results to the subprocess
+                    w.run('subscribeToWorker',[s.subscribeRoute, wpId, 'routeProxy']); //pass decode/parse thread results to the subprocess
                 } 
-                else w.run('subscribeToWorker',['decodeAndParseDevice',wpId, s.subscribeRoute])
+                else w.run('subscribeToWorker',[s.subscribeRoute, wpId, s.route])
             }
 
-            if(s.callback) w.subscribe(s.subscribeRoute,s.callback);
-        
+            if(s.callback) w.subscribe(s.route, s.callback);
         }
 
         return subprocesses;
@@ -221,6 +230,7 @@ export const subprocessRoutes = {
         if(typeof options === 'string') {
             options = algorithms[options];
         }
+
         if(typeof options === 'object') {
             if(typeof options.ondata === 'string') options.ondata = parseFunctionFromText(options.ondata);
 
@@ -228,9 +238,9 @@ export const subprocessRoutes = {
             if(typeof options?.ondata === 'function') ctx = createSubprocess(options,inputs);
             if(ctx) this.graph.ALGORITHMS[ctx._id] = ctx;
 
+
             if(ctx) return ctx._id;
         }
-
         return false;
         
     },
@@ -241,6 +251,7 @@ export const subprocessRoutes = {
 
         let res = this.graph.ALGORITHMS[_id].run(data); 
 
+        //console.log(this.graph.ALGORITHMS[_id]);
         if(res !== undefined) {
             if(Array.isArray(res)) {
                 let pass:any[] = [];
@@ -264,4 +275,4 @@ export const subprocessRoutes = {
         //      behaviors conditionally e.g. on forward pass algorithms that run each sample but only 
         //          report e.g. every 100 samples or when an anomaly is identified
     }
-} as Routes
+};

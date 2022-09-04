@@ -1,10 +1,12 @@
 //AlgorithmContext implementation for a basic low-pass peak finding algorithm with some basic error correction
 import { Math2 } from 'brainsatplay-math';
 import { SubprocessContext, SubprocessContextProps } from '../Subprocess';
+import { Biquad } from './util/BiquadFilters';
 
 export const beat_detect = {
     structs:{ //assign key data structures to the context for reference on each pass
         refdata:[] as any,
+        lowpass:undefined,
         smoothed:[] as any,
         //dsmoothed:[] as any, //slope
         timestamp:[] as any,
@@ -26,26 +28,7 @@ export const beat_detect = {
             if(freq > 1) freq *= 0.5; //helps smooth more on faster sine waves, for low freqs this starts to be too smooth
             
             //lowpass filter constraints
-            //let A = Math.pow(10,1/40);
-            let omega = 2*Math.PI*freq/context.sps;
-            let sn = Math.sin(omega)
-            let cs = Math.cos(omega);
-            let alpha = sn/(2*(1/Math.sqrt(2)));
-            //let beta = Math.sqrt(A+A);
-
-            //scale constants for lowpass filter
-            context.b0 /= context.a0;
-            context.b1 /= context.a0;
-            context.b2 /= context.a0;
-            context.a1 /= context.a0;
-            context.a2 /= context.a0;
-
-            context.b0 = (1-cs)*.5;
-            context.b1 = 1-cs;
-            context.b2 = (1-cs)*.5;
-            context.a0 = 1+alpha;
-            context.a1 = -2*cs;
-            context.a2 = 1-alpha;
+            context.lowpass = new Biquad('lowpass', context.maxFreq, context.sps);
 
             context.peakFinderWindow = Math.floor(context.sps/context.maxFreq)
             if(context.peakFinderWindow%2 === 0) context.peakFinderWindow+=1; 
@@ -100,19 +83,9 @@ export const beat_detect = {
             }
 
 
-            //-----lowpass-----
-            let y = context.b0*context.refdata[context.refdata.length-1] + 
-                context.b1*context.x1 + 
-                context.b2*context.x2 - 
-                context.a1*context.y1 - 
-                context.a2*context.y2;
-            context.x2 = context.x1;
-            context.x1 = context.refdata[context.refdata.length-1];
-            context.y2 = context.y1;
-            context.y1 = y;
-            //------------------
-
-            context.smoothed.push(y);
+            context.smoothed.push(
+                context.lowpass.applyFilter(context.refdata[context.refdata.length - 1])
+            );
 
             if(context.smoothed.length > context.peakFinderWindow) {
                 context.smoothed.shift();

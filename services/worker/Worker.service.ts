@@ -58,12 +58,7 @@ export class WorkerService extends Service {
         this.load(this.routes);
 
         if(typeof WorkerGlobalScope !== 'undefined' && globalThis instanceof WorkerGlobalScope) {
-            globalThis.onmessage = (ev:MessageEvent) => {
-                let result = this.receive(ev.data); //this will handle graph logic and can run requests for the window or messsage ports etc etc.
-                //console.log(JSON.stringify(ev.data), JSON.stringify(result),JSON.stringify(Array.from((self as any).SERVICE.nodes.keys())))
-                //console.log(result);
-                if(this.keepState) this.setState({[this.name]:result}); //subscribe to all outputs
-            }
+            this.addDefaultMessageListener();    
         }
     }
 
@@ -96,7 +91,7 @@ export class WorkerService extends Service {
                 if(worker) {
                     if(!rt.operator) {
                         rt.operator = (...args) => {
-                            console.log('operator', args)
+                            //console.log('operator', args)
                             if(rt.callback) {
                                 if(!this.nodes.get(rt.tag)?.children) worker.post(rt.callback,args);
                                 else return worker.run(rt.callback,args);
@@ -142,7 +137,7 @@ export class WorkerService extends Service {
                 if(worker) {
                     if(!child.operator) {
                         child.operator = (...args) => {
-                            console.log('operator', args)
+                            //console.log('operator', args)
 
                             if(child.callback) {
                                 if(!this.nodes.get(child.tag)?.children) worker.post(child.callback,args);
@@ -166,6 +161,25 @@ export class WorkerService extends Service {
             }
         }
     } //todo, create message ports between workers with parent/child relationships and set up pipes
+
+    //works in window as well (caution)
+    addDefaultMessageListener() {
+        globalThis.onmessage = (ev:MessageEvent) => {
+            let result = this.receive(ev.data); //this will handle graph logic and can run requests for the window or messsage ports etc etc.
+            //console.log(JSON.stringify(ev.data), JSON.stringify(result),JSON.stringify(Array.from((self as any).SERVICE.nodes.keys())))
+            //console.log(result);
+            if(this.keepState) this.setState({[this.name]:result}); //subscribe to all outputs
+        } //this will work for iframes too
+    }
+
+    //post messages to workers or to window (or self as worker)
+    postMessage = (message:any, target:string, transfer?:Transferable[]) => {
+        if(this.workers[target]) {
+            this.workers[target].send(message,transfer);
+        } else {
+            globalThis.postMessage(message, target, transfer)
+        }
+    }
 
     addWorker = (options:{
         url?:URL|string|Blob,

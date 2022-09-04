@@ -1,12 +1,12 @@
 {
-    "name": "graphscript-services",
-    "version": "0.1.26",
-    "description": "Extra services for graphscript.",
-    "main": "dist/index.services.js",
-    "module": "dist/index.services.esm.js",
+    "name": "graphscript",
+    "version": "0.1.29",
+    "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
+    "main": "dist/index.js",
+    "module": "dist/index.esm.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "start": "tinybuild path=tinybuild.node.config.js && tinybuild && tinybuild path=tinybuild.core.config.js",
+        "start": "tinybuild path=tinybuild.node.config.js && tinybuild && tinybuild path=tinybuild.core.config.js && tinybuild path=tinybuild.services.config.js",
         "build": "tinybuild build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",
@@ -23,7 +23,12 @@
     "author": "Joshua Brewster",
     "license": "AGPL-3.0-or-later",
     "dependencies": {
-        "gpujsutils": "^1.0.8"
+        "better-sse": "~0.8.0",
+        "brainsatplay-math": "~0.0.22",
+        "bson-objectid": "~2.0.3",
+        "gpujsutils": "~1.0.10",
+        "web-worker": "~1.2.0",
+        "ws": "~8.8.1"
     },
     "nodemonConfig": {
         "env": {
@@ -35,6 +40,7 @@
         ]
     },
     "devDependencies": {
-        "@types/node": "^17.0.36"
+        "@types/node": "~17.0.36",
+        "@types/ws": "~8.5.3"
     }
 }
