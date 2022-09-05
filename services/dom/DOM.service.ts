@@ -321,7 +321,9 @@ export class DOMService extends Service {
             get: () => element,
             set: (v) => {
                 element = v
-                node.nodes.forEach(n => n.parentNode = element)
+                node.nodes.forEach(n => {
+                    if (node.source?._unique === n.graph?._unique) n.parentNode = element
+                })
             }
         })
 
