@@ -316,6 +316,15 @@ export class DOMService extends Service {
              configurable:true
         });
         
+        // Use Graph Elements as Parent Nodes
+        Object.defineProperty(node, 'element', {
+            get: () => element,
+            set: (v) => {
+                element = v
+                node.nodes.forEach(n => n.parentNode = element)
+            }
+        })
+
         node.element = element;
         element.node = node;
 
