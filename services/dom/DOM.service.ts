@@ -267,7 +267,7 @@ export class DOMService extends Service {
         if(!elm.parentNode) {
             setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
                 if(typeof parentNode === 'string') parentNode = document.getElementById(parentNode);
-                if(typeof parentNode === 'object') {
+                if(parentNode && typeof parentNode === 'object') {
                     // if(options.parentNode.shadowRoot) {
                     //     console.log(options.parentNode.shadowRoot)
                     //     options.parentNode.shadowRoot.appendChild(elm);

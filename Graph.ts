@@ -116,6 +116,7 @@ export class EventHandler {
                 this.triggers[key] = [];
             }
             let l = this.triggers[key].length;
+
             this.triggers[key].push({idx:l, onchange});
             return this.triggers[key].length-1;
         } else return undefined;
@@ -265,10 +266,10 @@ export class GraphNode {
                 if(source.looper) properties.looper = source.looper;
                 if(source.animation) properties.animation = source.animation;
                 if(source.delay) properties.delay = source.delay;
-                if(source.tag) properties.tag = source.tag;
                 if(source.oncreate) properties.oncreate = source.oncreate;
                 if(source.node) if(source.node._initial) Object.assign(properties,source.node._initial);
                 if(source._initial) Object.assign(properties,source._initial);
+                if(source.tag) properties.tag = source.tag; // ensure tag swap
 
                 this.nodes = source.nodes;
                 source.node = this;
@@ -798,7 +799,6 @@ export class GraphNode {
             
     //subscribe an output with an arbitrary callback
     subscribe = (callback:string|GraphNode|((res)=>void),tag:string=this.tag) => {
-        console.log(this.state);
         if(typeof callback === 'string') {
             if(this.graph) callback = this.graph.get(callback);
             else callback = this.nodes.get(callback);
