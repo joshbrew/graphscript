@@ -1,6 +1,6 @@
 {
     "name": "graphscript-services",
-    "version": "0.1.33",
+    "version": "0.1.36",
     "description": "Extra services for graphscript.",
     "main": "dist/index.services.js",
     "module": "dist/index.services.esm.js",
@@ -24,8 +24,8 @@
     "license": "AGPL-3.0-or-later",
     "dependencies": {
         "brainsatplay-math": "~0.0.22",
-        "bson-objectid": "^2.0.3",
-        "gpujsutils": "^1.0.10"
+        "bson-objectid": "~2.0.3",
+        "gpujsutils": "~1.0.10"
     },
     "nodemonConfig": {
         "env": {
@@ -37,6 +37,6 @@
         ]
     },
     "devDependencies": {
-        "@types/node": "^17.0.36"
+        "@types/node": "~18.7.15"
     }
 }

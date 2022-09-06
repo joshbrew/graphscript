@@ -1,5 +1,5 @@
 import { GraphNode } from "../../Graph";
-import { Entity } from "./ECS.service";
+import { Entity } from "../../services/ecs/ECS.service";
 export declare const Systems: {
     collision: {
         tag: string;

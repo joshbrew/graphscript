@@ -11,6 +11,7 @@ export * from './storage/csv'
 export * from './storage/BFSUtils'
 export * from './storage/BFS_CSV'
 
+export * from './ecs/ECS.systems'
 
 import gsworker from '../services/worker/Worker' //compiles the worker in the dist
 

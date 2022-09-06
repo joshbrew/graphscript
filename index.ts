@@ -6,7 +6,6 @@ export * from './services/Service'
 export * from './services/unsafe/Unsafe.service'
 
 export * from './services/ecs/ECS.service'
-export * from './services/ecs/ECS.systems'
 
 export * from './services/dom/DOM.service'
 export { DOMElement, addCustomElement } from './services/dom/DOMElement'
