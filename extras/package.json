@@ -1,6 +1,6 @@
 {
     "name": "graphscript-services",
-    "version": "0.1.32",
+    "version": "0.1.33",
     "description": "Extra services for graphscript.",
     "main": "dist/index.services.js",
     "module": "dist/index.services.esm.js",
@@ -25,7 +25,7 @@
     "dependencies": {
         "brainsatplay-math": "~0.0.22",
         "bson-objectid": "^2.0.3",
-        "gpujsutils": "^1.0.8"
+        "gpujsutils": "^1.0.10"
     },
     "nodemonConfig": {
         "env": {
