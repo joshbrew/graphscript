@@ -1,6 +1,6 @@
 {
     "name": "graphscript-node",
-    "version": "0.1.22",
+    "version": "0.1.36",
     "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
     "main": "dist/index.node.js",
     "types": "dist/index.node.d.ts",
@@ -22,13 +22,11 @@
     "author": "Joshua Brewster",
     "license": "AGPL-3.0-or-later",
     "dependencies": {
-        "better-sse": "^0.7.1",
-        "brainsatplay-data": "^0.0.48",
-        "brainsatplay-math": "^0.0.22",
-        "bson-objectid": "^2.0.3",
-        "gpujsutils": "^1.0.8",
-        "web-worker": "^1.2.0",
-        "ws": "^8.7.0"
+        "better-sse": "~0.8.0",
+        "brainsatplay-math": "~0.0.22",
+        "bson-objectid": "~2.0.3",
+        "web-worker": "~1.2.0",
+        "ws": "~8.8.1"
     },
     "nodemonConfig": {
         "env": {
@@ -40,7 +38,7 @@
         ]
     },
     "devDependencies": {
-        "@types/node": "^17.0.36",
+        "@types/node": "~18.7.15",
         "@types/ws": "^8.5.3"
     }
 }

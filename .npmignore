@@ -1,5 +1,5 @@
 node_modules
-examples/*/dist
-examples/*/*/dist
-examples/*/assets
-examples/*/*/assets
+examples
+extras
+#services
+#docs

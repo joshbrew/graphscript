@@ -3,9 +3,11 @@ import {
     unsafeRoutes, 
     workerCanvasRoutes,
     ECSService,
-    Systems
      //GPUService 
 } from '../../index'/////"../../GraphServiceRouter/index";//from 'graphscript'
+
+import {Systems} from '../../extras/index.services'
+
 import { WorkerCanvasReceiveProps } from '../../services/worker/WorkerCanvas';
 
 import * as THREE from 'three'
