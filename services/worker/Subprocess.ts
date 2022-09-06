@@ -222,6 +222,17 @@ export const subprocessRoutes = {
             return true;
         }
     },
+    'updateSubprocess': function updatesubprocess(
+        structs:{},
+        _id?:string
+    ) {
+        if(!this.graph.ALGORITHMS) this.graph.ALGORITHMS = {};
+
+        if(!_id) _id = Object.keys(this.graph.ALGORITHMS)[0]; //run the first key if none specified
+        if(!_id) return;
+
+        Object.assign(this.graph.ALGORITHMS[_id],structs); //e.g. update sample rate or sensitivity
+    },
     'createSubprocess': function creatsubprocess( //returns id of algorithm for calling it on server
         options:SubprocessContextProps|string,
         inputs?:{[key:string]:any} //e.g. set the sample rate for this run
@@ -238,17 +249,20 @@ export const subprocessRoutes = {
             if(typeof options?.ondata === 'function') ctx = createSubprocess(options,inputs);
             if(ctx) this.graph.ALGORITHMS[ctx._id] = ctx;
 
-
             if(ctx) return ctx._id;
         }
         return false;
         
     },
-    'runSubprocess':function runsubprocess(data:{[key:string]:any}, _id?:string){
+    'runSubprocess':function runsubprocess(
+        data:{[key:string]:any}, 
+        _id?:string
+    ){
         if(!this.graph.ALGORITHMS) this.graph.ALGORITHMS = {};
 
         if(!_id) _id = Object.keys(this.graph.ALGORITHMS)[0]; //run the first key if none specified
 
+        if(!_id) return;
         let res = this.graph.ALGORITHMS[_id].run(data); 
 
         //console.log(this.graph.ALGORITHMS[_id]);
