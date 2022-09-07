@@ -601,7 +601,10 @@ export class WorkerService extends Service {
         establishMessageChannel:this.establishMessageChannel,
         subscribeWorker:this.subscribeWorker,
         subscribeToWorker:this.subscribeToWorker,
-        unsubscribe:(route,sub)=>{console.log('unsubbing',route,sub,this.state.triggers,this.nodes.keys());  this.unsubscribe(route,sub);},
+        unsubscribe:(route,sub)=>{
+            //console.log('unsubbing',route,sub,this.state.triggers,this.nodes.keys());  
+            this.unsubscribe(route,sub);
+        },
         terminate:this.terminate
     }
 
