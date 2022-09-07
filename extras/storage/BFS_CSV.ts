@@ -21,7 +21,7 @@ export const appendCSV = (
     let csv = CSV_REFERENCE[filename];
     if(!csv) {
         CSV_REFERENCE[filename] = {
-            header:[] as string[],
+            header:Array.from(Object.keys(newData)) as string[],
             latest:[] as any[]
         };
         csv = CSV_REFERENCE[filename];
@@ -165,11 +165,11 @@ export const createCSV = (
 
 
 //returns a basic html needed to visualize directory contents 
-const visualizeDirectory = (dir:string, parentNode=document.body) => {
+export const visualizeDirectory = (dir:string, parentNode=document.body) => {
    return new Promise(async (res,rej) => {
-        if(parentNode.querySelector('#' + dir))  parentNode.removeChild(parentNode.querySelector('#' + dir) as Element);
-        parentNode.insertAdjacentHTML('beforeend',`<div class='${dir}'></div>`);
-        let div = parentNode.querySelector('#'+dir);
+        if(parentNode.querySelector('#bfs' + dir))  parentNode.removeChild(parentNode.querySelector('#bfs' + dir) as Element);
+        parentNode.insertAdjacentHTML('beforeend',`<div class='bfs${dir}'></div>`);
+        let div = parentNode.querySelector('#bfs'+dir);
         await listFiles(dir).then((directory) => {
             //returns an array of directory listings
             directory.forEach((listing) => {
@@ -183,10 +183,12 @@ const visualizeDirectory = (dir:string, parentNode=document.body) => {
                     </div>`
                 );
 
-                (document.getElementById(`delete${listing}`) as HTMLButtonElement).onclick = () => {
-                    deleteFile(listing, ()=>{
-                        visualizeDirectory(dir,parentNode); //reload 
-                    });
+                if(document.getElementById(`delete${listing}`)) {
+                    (document.getElementById(`delete${listing}`) as HTMLButtonElement).onclick = () => {
+                        deleteFile(listing, ()=>{
+                            visualizeDirectory(dir,parentNode); //reload 
+                        });
+                    }
                 }
 
                 if(document.getElementById(`download${listing}`)) {

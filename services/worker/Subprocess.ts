@@ -15,9 +15,40 @@ export type SubprocessContext = {
     ondata:Subprocess,
     oncreate?:(context
         :SubprocessContext)=>void,
-    run?:(data:{[key:string]:any}|any)=>any, //quicker macro
+    run?:(data:{[key:string]:any}|any)=>any //quicker macro
     [key:string]:any
 };
+
+
+export type SubprocessWorkerProps = { //use secondary workers to run processes and report results back to the main thread or other
+
+    subprocess:string|{
+        name:string,
+        structs:{},
+        oncreate:string|((ctx:SubprocessContext)=>void),
+        ondata:string|((context,data:{[key:string]:any}|any)=>{[key:string]:any}|undefined),
+        props?:{[key:string]:any}, //other htings you want on the context
+    }, 
+
+    subscribeRoute:string, source?:WorkerInfo,
+    route:string, //route to run on our subprocess to pass back to window and/or pipe to another worker in the background
+    init?:string, initArgs?:any[],   otherArgs?:any[],  //do we need to call an init function before running the callbacks? The results of this init will set the otherArgs
+    callback?:string|((data:any)=>any), //do we want to do something with the subprocess output (if any) on the main thread? 
+    pipeTo?:{ //pipe outputs (if any) from the suprocesses to a specific route on main thread or a known route on another thread?
+        portId:string, 
+        route:string, otherArgs:any[], 
+    }, //can pipe the results to a specific route on main thread or other threads via message ports
+    worker?:WorkerInfo, url?:any, //need one or the other
+    stopped?:boolean //you can subscribe the subprocess later by calling start();
+}
+export type SubprocessWorkerInfo = { //use secondary workers to run processes and report results back to the main thread or other
+    sub:number,
+    stop:()=>void, //unsubscribe subprocess to stop updating it
+    start:()=>void, //subscribe subprocess to continue updating it 
+    terminate:()=>void, //terminate the worker
+    setArgs:(args:any[]|{[key:string]:any})=>void //set additional arguments for the subprocess, this is an array of additional function arguments, first argument is always the subscribed output from the initial process
+} & SubprocessWorkerProps;
+
 
 
 export const algorithms:{ [key:string]:SubprocessContextProps } = {}
@@ -25,6 +56,9 @@ export const algorithms:{ [key:string]:SubprocessContextProps } = {}
 export const loadAlgorithms = (settings:{ [key:string]:SubprocessContextProps }) => {
     return Object.assign(algorithms,settings);
 }
+
+
+
 
 export function createSubprocess(
     options:SubprocessContextProps,
@@ -70,26 +104,9 @@ let recursivelyAssign = (target,obj) => {
 
 export const subprocessRoutes = {
     loadAlgorithms:loadAlgorithms,
-    'initSubprocesses':function initsubprocesses( //requires unsafeRoutes
+    'initSubprocesses':function initSubprocesses( //requires unsafeRoutes
         subprocesses:{ //use secondary workers to run processes and report results back to the main thread or other
-            [key:string]:{
-                subprocess:string|{
-                    name:string,
-                    structs:{},
-                    oncreate:string|((ctx:SubprocessContext)=>void),
-                    ondata:string|((context,data:{[key:string]:any}|any)=>{[key:string]:any}|undefined),
-                    props?:{[key:string]:any} //other htings you want on the context
-                }, 
-                subscribeRoute:string, source?:WorkerInfo,
-                route:string, //route to run on our subprocess to pass back to window and/or pipe to another worker in the background
-                init?:string, initArgs?:any[],   otherArgs?:any[],  //do we need to call an init function before running the callbacks? The results of this init will set the otherArgs
-                callback?:string|((data:any)=>any), //do we want to do something with the subprocess output (if any) on the main thread? 
-                pipeTo?:{ //pipe outputs (if any) from the suprocesses to a specific route on main thread or a known route on another thread?
-                    portId:string, 
-                    route:string, otherArgs:any[], 
-                }, //can pipe the results to a specific route on main thread or other threads via message ports
-                worker?:WorkerInfo, url?:any //need one or the other
-            },
+            [key:string]:SubprocessWorkerProps
         },
         service?:WorkerService //defaults to this.graph (assumed to be workerservice)
     ) {
@@ -99,7 +116,7 @@ export const subprocessRoutes = {
         if(Array.from(service.nodes.keys()).indexOf('setValue') < -1) service.load(unsafeRoutes)
 
         for(const p in subprocesses) {
-            let s = subprocesses[p];
+            let s = subprocesses[p] as SubprocessWorkerInfo;
 
             if(!s.worker && s.url) s.worker = service.addWorker({url:s.url});
             if(!s.worker) continue;
@@ -139,7 +156,7 @@ export const subprocessRoutes = {
             }
 
             if(s.otherArgs) {
-                w.run('setValue',['otherArgsProxy', s.otherArgs]);
+                w.run('setValue',['otherArgsProxy', Array.isArray(s.otherArgs) ? s.otherArgs : [s.otherArgs]]);
             }
             if(s.pipeTo) {
                 w.run('setValue',['routeProxy', s.route]); //set the route we want to run through our proxy function below
@@ -165,12 +182,16 @@ export const subprocessRoutes = {
                             let args = r; if(this.graph.otherPipeArgs) args = [r, ...this.graph.otherPipeArgs];
                             this.transmit({route:this.graph.pipeRoute, args}, this.graph.pipePort);   
                         }
+
+                        return r;
                         
                     },
                     'pipeResults'
                 )
 
-                w.run('subscribeToWorker',[s.subscribeRoute, wpId, 'pipeResults']); //pass decode/parse thread results to the subprocess, and then the subprocess can pipe back to main thread or another worker (e.g. the render thread)
+                s.route = 'pipeResults'; //we are proxying through here
+                //pass decode/parse thread results to the subprocess, and then the subprocess can pipe 
+                //  back to main thread or another worker (e.g. the render thread)
 
             } else {
                 if(s.otherArgs) {
@@ -181,24 +202,70 @@ export const subprocessRoutes = {
                             let inp = data;
                             if(this.graph.otherArgsProxy) inp = [data, ...this.graph.otherArgsProxy]
                             let r = this.graph.nodes.get(this.graph.routeProxy).operator(inp);
-                            if(r instanceof Promise) {
-                                r.then((rr) => {
-                                    this.setState({[this.graph.routeProxy]:rr});
-                                })
+                            
+                            if(this.graph.state.triggers[this.graph.routeProxy]) {
+                                if(r instanceof Promise) {
+                                    r.then((rr) => {
+                                        this.setState({[this.graph.routeProxy]:rr});
+                                    })
+                                }
+                                else this.setState({[this.graph.routeProxy]:r}); //so we can subscribe to the original route
                             }
-                            else this.setState({[this.graph.routeProxy]:r}); //so we can subscribe to the original route if a callback is defined
+                            return r;
                         },
                         'routeProxy'
                     )
-                    w.run('subscribeToWorker',[s.subscribeRoute, wpId, 'routeProxy']); //pass decode/parse thread results to the subprocess
+
+                    s.route = 'routeProxy'; //proxying through here 
                 } 
-                else w.run('subscribeToWorker',[s.subscribeRoute, wpId, s.route])
+
+                if(!s.stopped) w.run('subscribeToWorker', [s.subscribeRoute, wpId, s.route]).then((sub) => {
+                    s.sub = sub;
+                }); 
             }
 
-            if(s.callback) w.subscribe(s.route, s.callback);
+            s.stop = async () => {
+                if(typeof s.sub === 'number') return w.run('unsubscribe', [s.subscribeRoute,s.sub]);
+                s.sub = undefined;
+            }
+
+            s.start = async () => {
+                if(typeof s.sub !== 'number') return w.run('subscribeToWorker', [s.subscribeRoute, wpId, s.route]).then((sub) => {
+                    s.sub = sub;
+                }); 
+            }
+
+            s.setArgs = async (args:any[]|{[key:string]:any}) => { 
+                //set additional arguments (subscription outputs are the first argument to the subprocess route, 
+                //  for now this is not configurable unless you do something yourself). Need otherArgs set on init (just use a blank array) to be able to use these 
+                if(Array.isArray(args)) await w.run('setValue', ['otherArgsProxy', args]);
+                else if (typeof args === 'object') {
+                    for(const key in args) {
+                        await w.run('setValue',[key,args[key]]);
+                    }
+                }
+
+                return true;
+            }
+
+            s.terminate = () => {
+                
+                w.terminate();
+                if(s.source && typeof s.sub === 'number') {
+                    s.source.post('unsubscribe',s.sub);
+                }
+            }
+
+            if(s.callback) w.subscribe(s.route, (res) => { //we can change thisfrom the initial definition too
+                if(typeof s.callback === 'string') this.graph.run(s.callback,res);
+                else s.callback(res);
+            });
+
         }
 
-        return subprocesses;
+        return subprocesses as {
+            [key: string]: SubprocessWorkerInfo;
+        };
     },
     'addSubprocessTemplate': function subprocesstempalte(
         name:string,

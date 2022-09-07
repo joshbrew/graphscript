@@ -239,6 +239,7 @@ export class DOMService extends Service {
                 if(element.parentNode) {
                     element.parentNode.removeChild(element);
                 }
+                //console.log('setting parentnode',v, element);
                 this.resolveParentNode(element, v ? v : this.parentNode, options, options.onrender);
              },
              enumerable:true,
@@ -289,6 +290,7 @@ export class DOMService extends Service {
     
     resolveGraphNode = (element, options) => {
 
+
         let node: GraphNode
         if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
             node = this.nodes.get(options.id);
@@ -297,7 +299,7 @@ export class DOMService extends Service {
             let parent;
             if(parentId) parent = this.nodes.get(parentId);
             node = new GraphNode(
-                options,
+                Object.assign({},options),
                 parent,
                 this
             );
@@ -315,7 +317,7 @@ export class DOMService extends Service {
              enumerable:true,
              configurable:true
         });
-        
+
         // Use Graph Elements as Parent Nodes
         Object.defineProperty(node, 'element', {
             get: () => element,

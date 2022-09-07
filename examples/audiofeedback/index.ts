@@ -1,9 +1,10 @@
 //@ts-nocheck
 
 //resources
-import { DOMService } from 'graphscript'//'../../index'////'../../index';
-import {initDevice, Devices} from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder' ////
+import { DOMService, SubprocessWorkerInfo } from '../../index'//'graphscript'//'../../index'////'../../index';
+import {initDevice, Devices} from '../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//
 import { Howl, Howler } from 'howler';
+import { visualizeDirectory } from '../../extras/storage/BFS_CSV'
 
 
 import './index.css'
@@ -24,7 +25,6 @@ const selectable = {
         hegduino:'HEGduino (USB)'
     }
 }
-
 
 const soundFilePaths = [
     './src/assets/kalimba.wav',
@@ -98,6 +98,14 @@ const webappHtml = {
                                     for(const key in selectable.BLE) {
                                         self.innerHTML += `<option value='${key}'>${selectable.BLE[key]}</option>`
                                     }
+                                }
+                            } as ElementProps,
+                            'csvmenu':{
+                                tagName:'div',
+                                innerHTML:'CSVs',
+                                onrender:(self) => {
+                                    //console.log('rendering html')
+                                    visualizeDirectory('data', self);
                                 }
                             } as ElementProps,
                             'connectDevice':{
@@ -210,22 +218,56 @@ const webappHtml = {
                                                         })=>{
                                                             console.log('breath detect result', breath); //this algorithm only returns when it detects a beat
                                                         }
+                                                    },
+                                                    csv:{
+                                                        route:'appendCSV',
+                                                        otherArgs:[`data/${new Date().toISOString()}_${selected}_${mode}`], //filename
+                                                        stopped:true //we will press a button to stop/start the csv collection conditionally
                                                     }
                                                 }
+                                                
                                             }
                                         );
 
                                         if(info) {
                                             info.then((result) => {
+                                                console.log('session', result);
+                                                let cap;
+                                                let csvmenu;
+                                                if(typeof result.subprocesses === 'object') {
+                                                    if(result.subprocesses.csv as SubprocessWorkerInfo) {
+                                                        
+                                                        csvmenu = document.getElementById('csvmenu');
+                                                        
+                                                        cap = document.createElement('button');
+                                                        cap.innerHTML = `Record ${selected} (${mode})`;
+                                                        cap.onclick = () => {
+                                                            (result.subprocesses.csv as SubprocessWorkerInfo).setArgs([`data/${new Date().toISOString()}_${selected}_${mode}`]);
+                                                            (result.subprocesses.csv as SubprocessWorkerInfo).start();
+                                                            cap.innerHTML = `Stop recording ${selected} (${mode})`;
+                                                            cap.onclick = () => {
+                                                                (result.subprocesses.csv as SubprocessWorkerInfo).stop();
+                                                                visualizeDirectory('data', csvmenu);
+                                                                cap.innerHTML = `Record ${selected} (${mode})`;
+                                                            }
+                                                        }
+        
+                                                        ev.target.parentNode.appendChild(cap);
+                                                    }
+                                                }
+
+                                                result.options.ondisconnect = () => { visualizeDirectory('data',csvmenu); }
+
                                                 //console.log(result);
                                                 let disc = document.createElement('button');
                                                 disc.innerHTML = `Disconnect ${selected} (${mode})`;
                                                 disc.onclick = () => {
                                                     result.disconnect();
                                                     disc.remove();
+                                                    if(cap) cap.remove();
                                                 }
                                                 ev.target.parentNode.appendChild(disc);
-                                            })
+                                            });
                                         }
                                     }
                                 }

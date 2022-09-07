@@ -1,50 +1,58 @@
 import {CSV} from './csv'
 
-let fsInited = false
+export let fsInited = false
 import * as BrowserFS from './browserfs.min.js'
 export const fs = BrowserFS.BFSRequire('fs');
 const BFSBuffer = BrowserFS.BFSRequire('buffer').Buffer;
 
 //TODO:
+// generalize the fs initialization to support multiple file systems, probably should use a class to track those
 //Generic reimplementation of reading/writing buffered objects from/to CSVs and IndexedDB
 
 
 // ----------------------------- Generic Functions for BrowserFS -----------------------------
 export const initFS = async (
-    dirs = ['data','projects','extensions','settings','plugins'],
+    dirs = ['data'],
     oninit=(exists=[])=>{}, 
     onerror=(e)=>{},
     filesystem='IndexedDB' //default is IndexedDB //https://github.com/jvilk/BrowserFS see all
 ) => {
     if (fsInited) return true
     else {
-    return new Promise (resolve => {
-        let oldmfs = fs.getRootFS();
-        BrowserFS.FileSystem[filesystem].Create({}, (e, rootForMfs) => {
-            if (e) throw e;
-            if (!rootForMfs) {
-                onerror(e);
-                throw new Error(`Error creating BrowserFS`);
-            }
-            BrowserFS.initialize(rootForMfs); //fs now usable with imports after this
+        fsInited = true;
+        return new Promise (resolve => {
+            let oldmfs = fs.getRootFS();
+            BrowserFS.FileSystem[filesystem].Create({}, (e, mountableFileSystem) => {
+                if (e) throw e;
+                if (!mountableFileSystem) {
+                    onerror(e);
+                    throw new Error(`Error creating BrowserFS`);
+                }
+                BrowserFS.initialize(mountableFileSystem); //fs now usable with imports after this
 
-        let promises = [];
+                let promises = [];
 
-        dirs.forEach(async (dir) => {
-            promises.push(dirExists(fs,dir));
+                //new Promise((res,rej) => { fs.mkdir('/hellow',()=>{res()}) }).then(() => {
+
+                    dirs.forEach( async (dir) => {
+                        promises.push(dirExists(fs, dir));
+                    });
+
+                    Promise.all(promises).then((values) => {
+                        oninit(values);
+                        fsInited = true
+                        resolve(true)
+                    })
+                //});
+            })
         })
-
-        Promise.all(promises).then((values) => {
-            oninit(values);
-            fsInited = true
-            resolve(true)
-        })
-    })
-})
     }
 }
 
 export const exists = async (path='') => {
+    if(!fsInited) await initFS([path.split('/')[0]]);
+    else await dirExists(fs,path.split('/')[0]);
+
     return new Promise(resolve => {
         fs.exists('/'+path, function (exists) {
             resolve(exists);
@@ -54,7 +62,9 @@ export const exists = async (path='') => {
 
 
 export const readFile = async (path='data') => {
-    if (!fsInited) await initFS()
+    if(!fsInited) await initFS([path.split('/')[0]]);
+    else await dirExists(fs,path.split('/')[0]);
+
     return new Promise(resolve => {
         fs.readFile('/'+path, function(e, output) {
             resolve(output)
@@ -65,6 +75,9 @@ export const readFile = async (path='data') => {
 
 export async function readFileChunk (path='data', begin = 0, end = 5120, onread=(data)=>{}) {
     
+    if(!fsInited) await initFS([path.split('/')[0]]);
+    else await dirExists(fs,path.split('/')[0]);
+
     if (filename != ''){
         return new Promise(async resolve => { 
             fs.open('/'+path, 'r', (e, fd) => {
@@ -90,7 +103,10 @@ export async function readFileChunk (path='data', begin = 0, end = 5120, onread=
 }
 
 
-export const getFilenames = (directory = 'data', onload=(directory)=>{}) => {
+export const getFilenames = async (directory = 'data', onload=(directory)=>{}) => {
+    if(!fsInited) await initFS([directory]);
+    else await dirExists(fs,directory);
+
     return new Promise(resolve => {
         fs.readdir('/'+directory, (e, dir) => {
             if (e) throw e;
@@ -105,6 +121,9 @@ export const getFilenames = (directory = 'data', onload=(directory)=>{}) => {
 }
 
 export const writeFile = async (path, data, onwrite=(data)=>{}) => {
+    if(!fsInited) await initFS([path.split('/')[0]]);
+    else await dirExists(fs,path.split('/')[0]);
+
     return new Promise(resolve => {
         fs.writeFile('/'+path, data, (err) => {
             if (err) throw err;
@@ -115,6 +134,9 @@ export const writeFile = async (path, data, onwrite=(data)=>{}) => {
 }
 
 export const appendFile = async (path, data, onwrite=(data)=>{}) => {
+    if(!fsInited) await initFS([path.split('/')[0]]);
+    else await dirExists(fs,path.split('/')[0]);
+    
     return new Promise(resolve => {
         fs.appendFile('/'+path, data, (err) => {
             if (err) throw err;
@@ -124,7 +146,10 @@ export const appendFile = async (path, data, onwrite=(data)=>{}) => {
     });
 }
 
-export const deleteFile = (path='data', ondelete=()=>{})  => {
+export const deleteFile = async (path='data', ondelete=()=>{})  => {
+    if(!fsInited) await initFS([path.split('/')[0]]);
+    else await dirExists(fs,path.split('/')[0]);
+
     return new Promise(resolve => {
         if (filename != ''){
             fs.unlink('/'+path, (e) => {
@@ -147,6 +172,8 @@ export const readFileAsText = async (
     onread=(data,filename)=>{
         //console.log(filename,data);
     }) => {
+    if(!fsInited) await initFS([path.split('/')[0]]);
+    else await dirExists(fs,path.split('/')[0]);
     
     return new Promise(async resolve => {
 
@@ -177,44 +204,13 @@ export const readFileAsText = async (
 
 
 
-
-export const getFileSize = async (path='data',onread=(size)=>{console.log(size);}) => {
-    return new Promise(resolve => {
-        fs.stat('/'+path,(e,stats) => {
-            if(e) throw e;
-            let filesize = stats.size;
-            onread(filesize);
-            resolve(filesize);
-        });
-    });
-}
-
-
-export const getCSVHeader = async (path='data', onopen=(header, filename)=>{console.log(header,filename);}) => {
-    
-    return new Promise(resolve => {
-        fs.open('/'+path,'r',(e,fd) => {
-            if(e) throw e;
-            fs.read(fd,65535,0,'utf-8',(er,output,bytesRead) => {  //could be a really long header for all we know
-                if (er) throw er;
-                if(bytesRead !== 0) {
-                    let data = output.toString();
-                    let lines = data.split('\n');
-                    let header = lines[0];
-                    //Now parse the data back into the buffers.
-                    fs.close(fd,()=>{   
-                        onopen(header, filename);
-                        resolve(header);
-                    });
-                }
-                else resolve(undefined);
-            }); 
-        });
-    });
-}
-
 //
 export const listFiles = async (dir='data', onload=(directory)=>{}) => {
+
+    console.log('check init', fsInited, dir)
+    if(!fsInited) await initFS([dir]);
+    else await dirExists(fs,dir);
+
     return new Promise(resolve => {
         fs.readdir('/'+dir, (e, directory) => {
             if (e) throw e;
@@ -247,8 +243,53 @@ export const listFiles = async (dir='data', onload=(directory)=>{}) => {
     });
     }
 
+
+
+export const getFileSize = async (path='data',onread=(size)=>{console.log(size);}) => {
+    if(!fsInited) await initFS([path.split('/')[0]]);
+    else await dirExists(fs,path.split('/')[0]);
+
+    return new Promise(resolve => {
+        fs.stat('/'+path,(e,stats) => {
+            if(e) throw e;
+            let filesize = stats.size;
+            onread(filesize);
+            resolve(filesize);
+        });
+    });
+}
+
+
+export const getCSVHeader = async (path='data', onopen=(header, filename)=>{console.log(header,filename);}) => {
+    
+    if(!fsInited) await initFS([path.split('/')[0]]);
+    else await dirExists(fs,path.split('/')[0]);
+
+    return new Promise(resolve => {
+        fs.open('/'+path,'r',(e,fd) => {
+            if(e) throw e;
+            fs.read(fd,65535,0,'utf-8',(er,output,bytesRead) => {  //could be a really long header for all we know
+                if (er) throw er;
+                if(bytesRead !== 0) {
+                    let data = output.toString();
+                    let lines = data.split('\n');
+                    let header = lines[0];
+                    //Now parse the data back into the buffers.
+                    fs.close(fd,()=>{   
+                        onopen(header, filename);
+                        resolve(header);
+                    });
+                }
+                else resolve(undefined);
+            }); 
+        });
+    });
+}
     //Write db data (preprocessed) into a CSV, in chunks to not overwhelm memory. This is for pre-processed data
     export const writeToCSVFromDB = async (path='data', fileSizeLimitMb=10) => {
+        if(!fsInited) await initFS([path.split('/')[0]]);
+        else await dirExists(fs,path.split('/')[0]);
+    
         return new Promise(resolve => {
         if (filename != ''){
             fs.stat('/' + path, (e, stats) => {
@@ -302,6 +343,9 @@ export const listFiles = async (dir='data', onload=(directory)=>{}) => {
 
 //returns an object with the headers and correctly sized outputs (e.g. single values or arrays pushed in columns)
 export async function readCSVChunkFromDB(path='data', start=0, end='end') {
+    if(!fsInited) await initFS([path.split('/')[0]]);
+    else await dirExists(fs,path.split('/')[0]);
+
 
     let head = await getCSVHeader(path);
 
@@ -353,6 +397,7 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end') {
 
 let directories = {};
 export const dirExists = async (fs, directory) => {
+
     return new Promise(resolve => {
         if (directories[directory] === 'exists' || directories[directory] === 'created'){
             resolve()
@@ -368,9 +413,9 @@ export const dirExists = async (fs, directory) => {
                     resolve();
                 }
                 else {
-                    console.log('creating ' + directory)
-                    directories[directory] = 'creating'
-                    fs.mkdir(directory, (err) => {
+                    console.log('creating ' + `/${directory}`, fs);
+                    directories[directory] = 'creating';
+                    fs.mkdir(`/${directory}`, 1, (err) => {
                         if (err) throw err;
                         directories[directory] = 'created'
                         setTimeout(resolve, 500)

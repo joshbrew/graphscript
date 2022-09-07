@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { Graph, GraphNode, GraphNodeProperties, OperatorType } from "../Graph";
 /**
  *
