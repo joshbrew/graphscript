@@ -334,13 +334,13 @@ export class DOMElement extends HTMLElement {
             } else return undefined;
         },
         unsubscribeTrigger(key,sub){
-            let idx = undefined;
             let triggers = this.triggers[key]
             if (triggers){
                 if(!sub) delete this.triggers[key];
                 else {
-                    let obj = triggers.find((o)=>{
-                        if(o.idx===sub) {return true;}
+                    let idx = undefined;
+                    let obj = triggers.find((o,i)=>{
+                        if(o.idx===sub) {idx = i; return true;}
                     });
                     if(obj) triggers.splice(idx,1);
                     return true;
