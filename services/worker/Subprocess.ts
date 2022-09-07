@@ -58,8 +58,6 @@ export const loadAlgorithms = (settings:{ [key:string]:SubprocessContextProps })
 }
 
 
-
-
 export function createSubprocess(
     options:SubprocessContextProps,
     inputs?:{[key:string]:any} //e.g. set the sample rate for this run
@@ -184,38 +182,36 @@ export const subprocessRoutes = {
                         return r;
                         
                     },
-                    'pipeResults'
+                    s.route+'_pipeResults'
                 )
 
-                s.route = 'pipeResults'; //we are proxying through here
+                s.route = s.route+'_pipeResults'; //we are proxying through here
                 //pass decode/parse thread results to the subprocess, and then the subprocess can pipe 
                 //  back to main thread or another worker (e.g. the render thread)
 
             } else {
-                if(s.otherArgs) {
-                    w.run('setValue',['routeProxy',s.route]);
-                    service.transferFunction(
-                        w,
-                        function routeProxy(data:any) {
-                            let r;
-                            if(this.graph.otherArgsProxy) r = this.graph.nodes.get(this.graph.routeProxy).operator(data, ...this.graph.otherArgsProxy);
-                            else r = this.graph.nodes.get(this.graph.routeProxy).operator(data);
-                            
-                            if(this.graph.state.triggers[this.graph.routeProxy]) {
-                                if(r instanceof Promise) {
-                                    r.then((rr) => {
-                                        this.setState({[this.graph.routeProxy]:rr});
-                                    })
-                                }
-                                else this.setState({[this.graph.routeProxy]:r}); //so we can subscribe to the original route
+                w.run('setValue',['routeProxy',s.route]);
+                service.transferFunction(
+                    w,
+                    function routeProxy(data:any) {
+                        let r;
+                        if(this.graph.otherArgsProxy) r = this.graph.nodes.get(this.graph.routeProxy).operator(data, ...this.graph.otherArgsProxy);
+                        else r = this.graph.nodes.get(this.graph.routeProxy).operator(data);
+                        
+                        if(this.graph.state.triggers[this.graph.routeProxy]) {
+                            if(r instanceof Promise) {
+                                r.then((rr) => {
+                                    this.setState({[this.graph.routeProxy]:rr});
+                                })
                             }
-                            return r;
-                        },
-                        'routeProxy'
-                    )
+                            else this.setState({[this.graph.routeProxy]:r}); //so we can subscribe to the original route
+                        }
+                        return r;
+                    },
+                    s.route+'_routeProxy'
+                )
 
-                    s.route = 'routeProxy'; //proxying through here 
-                } 
+                s.route = s.route+'_routeProxy'; //proxying through here 
 
                 if(!s.stopped) w.run('subscribeToWorker', [s.subscribeRoute, wpId, s.route]).then((sub) => {
                     s.sub = sub;
@@ -223,7 +219,7 @@ export const subprocessRoutes = {
             }
 
             s.stop = async () => {
-                console.log(s.source, s.sub);
+                //console.log(s.source, s.sub);
                 if(s.source && typeof s.sub === 'number') {
                     s.source.unsubscribe(s.subscribeRoute,s.sub);
                     return true;
