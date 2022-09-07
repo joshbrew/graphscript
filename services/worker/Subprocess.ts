@@ -1,4 +1,4 @@
-import { parseFunctionFromText } from '../../Graph';
+import { Graph, parseFunctionFromText } from '../../Graph';
 import { WorkerInfo, WorkerService } from './Worker.service';
 import { unsafeRoutes } from '../unsafe/Unsafe.service';
 
@@ -30,7 +30,7 @@ export type SubprocessWorkerProps = { //use secondary workers to run processes a
         props?:{[key:string]:any}, //other htings you want on the context
     }, 
 
-    subscribeRoute:string, source?:WorkerInfo,
+    subscribeRoute:string, source?:WorkerInfo, //source worker and the route we want to subscribe to on that worker, if no source it subscribes to a main thread route
     route:string, //route to run on our subprocess to pass back to window and/or pipe to another worker in the background
     init?:string, initArgs?:any[],   otherArgs?:any[],  //do we need to call an init function before running the callbacks? The results of this init will set the otherArgs
     callback?:string|((data:any)=>any), //do we want to do something with the subprocess output (if any) on the main thread? 
@@ -103,8 +103,9 @@ let recursivelyAssign = (target,obj) => {
 
 
 export const subprocessRoutes = {
+    ...unsafeRoutes,
     loadAlgorithms:loadAlgorithms,
-    'initSubprocesses':function initSubprocesses( //requires unsafeRoutes
+    'initSubprocesses':async function initSubprocesses( //requires unsafeRoutes
         subprocesses:{ //use secondary workers to run processes and report results back to the main thread or other
             [key:string]:SubprocessWorkerProps
         },
@@ -112,8 +113,6 @@ export const subprocessRoutes = {
     ) {
         if(!service) service = this.graph;
         if(!service) return undefined;
-
-        if(Array.from(service.nodes.keys()).indexOf('setValue') < -1) service.load(unsafeRoutes)
 
         for(const p in subprocesses) {
             let s = subprocesses[p] as SubprocessWorkerInfo;
@@ -124,6 +123,7 @@ export const subprocessRoutes = {
             let w = s.worker;
             let wpId;
             wpId = service.establishMessageChannel(w.worker,s.source?.worker); //will be routed to main thread if source worker not defined
+            if(!s.source) s.source = service as any;
 
             if(typeof s.subprocess === 'object') { //transfer the template for the worker
                 const p = s.subprocess;
@@ -149,10 +149,8 @@ export const subprocessRoutes = {
             }
 
             if(s.init) {
-                w.run(s.init, s.initArgs).then((r) => { //('createAlgorithmContext', [options, inputs])
-                    //e.g. returns the algorithm context id
-                    w.run('setValue',['otherArgsProxy', r]);
-                });
+                let r = await w.run(s.init, s.initArgs);
+                s.otherArgs = r;
             }
 
             if(s.otherArgs) {
@@ -199,9 +197,9 @@ export const subprocessRoutes = {
                     service.transferFunction(
                         w,
                         function routeProxy(data:any) {
-                            let inp = data;
-                            if(this.graph.otherArgsProxy) inp = [data, ...this.graph.otherArgsProxy]
-                            let r = this.graph.nodes.get(this.graph.routeProxy).operator(inp);
+                            let r;
+                            if(this.graph.otherArgsProxy) r = this.graph.nodes.get(this.graph.routeProxy).operator(data, ...this.graph.otherArgsProxy);
+                            else r = this.graph.nodes.get(this.graph.routeProxy).operator(data);
                             
                             if(this.graph.state.triggers[this.graph.routeProxy]) {
                                 if(r instanceof Promise) {
@@ -225,8 +223,12 @@ export const subprocessRoutes = {
             }
 
             s.stop = async () => {
-                if(typeof s.sub === 'number') return w.run('unsubscribe', [s.subscribeRoute,s.sub]);
-                s.sub = undefined;
+                console.log(s.source, s.sub);
+                if(s.source && typeof s.sub === 'number') {
+                    s.source.unsubscribe(s.subscribeRoute,s.sub);
+                    return true;
+                }
+                return undefined;
             }
 
             s.start = async () => {
@@ -249,9 +251,8 @@ export const subprocessRoutes = {
             }
 
             s.terminate = () => {
-                
                 w.terminate();
-                if(s.source && typeof s.sub === 'number') {
+                if(s.source?.worker && typeof s.sub === 'number') {
                     s.source.post('unsubscribe',s.sub);
                 }
             }

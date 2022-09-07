@@ -1,7 +1,7 @@
 import {CSV} from './csv'
 
 export let fsInited = false
-import * as BrowserFS from './browserfs.min.js'
+import * as BrowserFS from 'browserfs'
 export const fs = BrowserFS.BFSRequire('fs');
 const BFSBuffer = BrowserFS.BFSRequire('buffer').Buffer;
 
@@ -29,21 +29,19 @@ export const initFS = async (
                     throw new Error(`Error creating BrowserFS`);
                 }
                 BrowserFS.initialize(mountableFileSystem); //fs now usable with imports after this
-
+                //console.log(mountableFileSystem,filesystem);
                 let promises = [];
 
-                //new Promise((res,rej) => { fs.mkdir('/hellow',()=>{res()}) }).then(() => {
 
-                    dirs.forEach( async (dir) => {
-                        promises.push(dirExists(fs, dir));
-                    });
+                dirs.forEach( async (dir) => {
+                    promises.push(dirExists(fs, dir));
+                });
 
-                    Promise.all(promises).then((values) => {
-                        oninit(values);
-                        fsInited = true
-                        resolve(true)
-                    })
-                //});
+                Promise.all(promises).then((values) => {
+                    oninit(values);
+                    fsInited = true
+                    resolve(true)
+                })
             })
         })
     }
@@ -78,7 +76,7 @@ export async function readFileChunk (path='data', begin = 0, end = 5120, onread=
     if(!fsInited) await initFS([path.split('/')[0]]);
     else await dirExists(fs,path.split('/')[0]);
 
-    if (filename != ''){
+    if (path != ''){
         return new Promise(async resolve => { 
             fs.open('/'+path, 'r', (e, fd) => {
                 if (e) throw e;
@@ -89,7 +87,7 @@ export async function readFileChunk (path='data', begin = 0, end = 5120, onread=
                         let data = output.toString();
                     //Now parse the data back into the buffers.
                         fs.close(fd, () => {
-                            onread(data,filename);
+                            onread(data,path);
                             resolve(data);
                         });
                     } else resolve(undefined);
@@ -111,7 +109,7 @@ export const getFilenames = async (directory = 'data', onload=(directory)=>{}) =
         fs.readdir('/'+directory, (e, dir) => {
             if (e) throw e;
             if (dir) {
-                console.log("files", dir);
+                //console.log("files", dir);
                 onload(dir);
                 resolve(dir);
             }
@@ -151,7 +149,7 @@ export const deleteFile = async (path='data', ondelete=()=>{})  => {
     else await dirExists(fs,path.split('/')[0]);
 
     return new Promise(resolve => {
-        if (filename != ''){
+        if (path != ''){
             fs.unlink('/'+path, (e) => {
                 if (e) console.error(e);
                 ondelete();
@@ -177,7 +175,7 @@ export const readFileAsText = async (
     
     return new Promise(async resolve => {
 
-        let size = await getFileSize(filename,dir)
+        let size = await getFileSize(path,dir)
         
         if(end === 'end') {
             end = size;
@@ -193,7 +191,7 @@ export const readFileAsText = async (
                     let data = output.toString();
                     //Now parse the data back into the buffers.
                     fs.close(fd, () => {
-                        onread(data,filename);
+                        onread(data,path);
                         resolve(data);
                     });
                 } else resolve(undefined);
@@ -207,7 +205,7 @@ export const readFileAsText = async (
 //
 export const listFiles = async (dir='data', onload=(directory)=>{}) => {
 
-    console.log('check init', fsInited, dir)
+    //console.log('check init', fsInited, dir)
     if(!fsInited) await initFS([dir]);
     else await dirExists(fs,dir);
 
@@ -215,7 +213,6 @@ export const listFiles = async (dir='data', onload=(directory)=>{}) => {
         fs.readdir('/'+dir, (e, directory) => {
             if (e) throw e;
             if (directory) {
-                console.log("files", directory);
                 onload(directory);
                 // if(fs_html_id){
                 //     let filediv = document.getElementById(fs_html_id);
@@ -276,7 +273,7 @@ export const getCSVHeader = async (path='data', onopen=(header, filename)=>{cons
                     let header = lines[0];
                     //Now parse the data back into the buffers.
                     fs.close(fd,()=>{   
-                        onopen(header, filename);
+                        onopen(header, path);
                         resolve(header);
                     });
                 }
@@ -291,7 +288,7 @@ export const getCSVHeader = async (path='data', onopen=(header, filename)=>{cons
         else await dirExists(fs,path.split('/')[0]);
     
         return new Promise(resolve => {
-        if (filename != ''){
+        if (path != ''){
             fs.stat('/' + path, (e, stats) => {
                 if (e) throw e;
                 let filesize = stats.size;
@@ -305,7 +302,7 @@ export const getCSVHeader = async (path='data', onopen=(header, filename)=>{cons
                         end = filesize;
                         fs.read(fd, end, 0, 'utf-8', (e, output, bytesRead) => {
                             if (e) throw e;
-                            if (bytesRead !== 0) CSV.saveCSV(output.toString(), filename);
+                            if (bytesRead !== 0) CSV.saveCSV(output.toString(), path);
                             fs.close(fd);
                             resolve(true);
                         });
@@ -318,7 +315,7 @@ export const getCSVHeader = async (path='data', onopen=(header, filename)=>{cons
                                 fs.read(fd, end, i, 'utf-8', (e, output, bytesRead) => {
                                     if (e) throw e;
                                     if (bytesRead !== 0) {
-                                        CSV.saveCSV(output.toString(), filename + "_" + chunk);
+                                        CSV.saveCSV(output.toString(), path + "_" + chunk);
                                         i += maxFileSize;
                                         chunk++;
                                         writeChunkToFile();
@@ -398,7 +395,7 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end') {
 let directories = {};
 export const dirExists = async (fs, directory) => {
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
         if (directories[directory] === 'exists' || directories[directory] === 'created'){
             resolve()
         } else {
@@ -416,7 +413,9 @@ export const dirExists = async (fs, directory) => {
                     console.log('creating ' + `/${directory}`, fs);
                     directories[directory] = 'creating';
                     fs.mkdir(`/${directory}`, 1, (err) => {
-                        if (err) throw err;
+                        if (err) {
+                            throw err;
+                        }
                         directories[directory] = 'created'
                         setTimeout(resolve, 500)
                     });

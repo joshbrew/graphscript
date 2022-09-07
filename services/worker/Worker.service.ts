@@ -544,6 +544,27 @@ export class WorkerService extends Service {
         }
     }
 
+    pipeWorkers = ( //worker a listens to worker b, be sure to unsubscribe on the source when terminating
+        sourceWorker:WorkerInfo,
+        listenerWorker:WorkerInfo, 
+        sourceRoute:string, 
+        listenerRoute:string, 
+        portId?:string
+    ) => {
+        if(!portId) {
+            portId = this.establishMessageChannel(sourceWorker.worker,listenerWorker.worker) as string;
+        }
+        return listenerWorker.run('subscribeToWorker',[sourceRoute,portId,listenerRoute]) as Promise<number>; //just run .unsubscribe on worker2.
+    }
+
+    unpipeWorkers = (
+        sourceWorker:WorkerInfo,
+        sourceRoute:string,
+        sub:number
+    ) => {
+        return sourceWorker.run('unsubscribe',[sourceRoute,sub]);
+    }
+
     //requires unsafe service to load on other end
     transferFunction(worker:WorkerInfo, fn:Function, fnName?:string) {
         if(!fnName) fnName = fn.name;
@@ -580,7 +601,7 @@ export class WorkerService extends Service {
         establishMessageChannel:this.establishMessageChannel,
         subscribeWorker:this.subscribeWorker,
         subscribeToWorker:this.subscribeToWorker,
-        unsubscribe:this.unsubscribe,
+        unsubscribe:(route,sub)=>{console.log('unsubbing',route,sub,this.state.triggers,this.nodes.keys());  this.unsubscribe(route,sub);},
         terminate:this.terminate
     }
 

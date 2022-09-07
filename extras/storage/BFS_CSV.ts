@@ -18,10 +18,13 @@ export const appendCSV = (
     newData:{[key:string]:number|number[]}, //assume uniformly sized data is passed in, so pass separate timestamp intervals separately
     filename:string
 ) => {
+
+    //console.log('append',filename);
+
     let csv = CSV_REFERENCE[filename];
     if(!csv) {
         CSV_REFERENCE[filename] = {
-            header:Array.from(Object.keys(newData)) as string[],
+            header:['timestamp','localized',...Array.from(Object.keys(newData))] as string[],
             latest:[] as any[]
         };
         csv = CSV_REFERENCE[filename];
@@ -168,11 +171,12 @@ export const createCSV = (
 export const visualizeDirectory = (dir:string, parentNode=document.body) => {
    return new Promise(async (res,rej) => {
         if(parentNode.querySelector('#bfs' + dir))  parentNode.removeChild(parentNode.querySelector('#bfs' + dir) as Element);
-        parentNode.insertAdjacentHTML('beforeend',`<div class='bfs${dir}'></div>`);
+        parentNode.insertAdjacentHTML('beforeend',`<div id='bfs${dir}' class='bfs${dir}'></div>`);
         let div = parentNode.querySelector('#bfs'+dir);
         await listFiles(dir).then((directory) => {
             //returns an array of directory listings
-            directory.forEach((listing) => {
+            if(directory.length === 0) div.innerHTML = 'No Files!';
+            else directory.forEach((listing) => {
                 div?.insertAdjacentHTML(
                     'beforeend',
                     `<div id='${listing}' class='bfsfilediv'>
@@ -185,7 +189,7 @@ export const visualizeDirectory = (dir:string, parentNode=document.body) => {
 
                 if(document.getElementById(`delete${listing}`)) {
                     (document.getElementById(`delete${listing}`) as HTMLButtonElement).onclick = () => {
-                        deleteFile(listing, ()=>{
+                        deleteFile(dir+'/'+listing, ()=>{
                             visualizeDirectory(dir,parentNode); //reload 
                         });
                     }
@@ -193,7 +197,7 @@ export const visualizeDirectory = (dir:string, parentNode=document.body) => {
 
                 if(document.getElementById(`download${listing}`)) {
                     (document.getElementById(`download${listing}`) as HTMLButtonElement).onclick = () => {
-                        writeToCSVFromDB(listing,10); //will save data in chunks if exceeding maximum limit (for speed, else the screen locks)
+                        writeToCSVFromDB(dir+'/'+listing,10); //will save data in chunks if exceeding maximum limit (for speed, else the screen locks)
                     }
                 }
             })

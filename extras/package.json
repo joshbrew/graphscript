@@ -24,6 +24,7 @@
     "license": "AGPL-3.0-or-later",
     "dependencies": {
         "brainsatplay-math": "~0.0.22",
+        "browserfs": "^1.4.3",
         "bson-objectid": "~2.0.3",
         "gpujsutils": "~1.0.10"
     },

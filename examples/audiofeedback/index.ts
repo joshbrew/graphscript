@@ -221,7 +221,7 @@ const webappHtml = {
                                                     },
                                                     csv:{
                                                         route:'appendCSV',
-                                                        otherArgs:[`data/${new Date().toISOString()}_${selected}_${mode}`], //filename
+                                                        otherArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`], //filename
                                                         stopped:true //we will press a button to stop/start the csv collection conditionally
                                                     }
                                                 }
@@ -242,7 +242,7 @@ const webappHtml = {
                                                         cap = document.createElement('button');
                                                         cap.innerHTML = `Record ${selected} (${mode})`;
                                                         cap.onclick = () => {
-                                                            (result.subprocesses.csv as SubprocessWorkerInfo).setArgs([`data/${new Date().toISOString()}_${selected}_${mode}`]);
+                                                            (result.subprocesses.csv as SubprocessWorkerInfo).setArgs([`data/${new Date().toISOString()}_${selected}_${mode}.csv`]);
                                                             (result.subprocesses.csv as SubprocessWorkerInfo).start();
                                                             cap.innerHTML = `Stop recording ${selected} (${mode})`;
                                                             cap.onclick = () => {
