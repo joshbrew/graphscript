@@ -299,7 +299,7 @@ export class DOMService extends Service {
             let parent;
             if(parentId) parent = this.nodes.get(parentId);
             node = new GraphNode(
-                Object.assign({},options),
+                options instanceof Graph ? options : Object.assign({},options),
                 parent,
                 this
             );
