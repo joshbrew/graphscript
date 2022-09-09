@@ -150,6 +150,7 @@ export const parseCSVData = (
 }
 
 export function toISOLocal(d) {
+    d = new Date(d);
     var z  = n =>  ('0' + n).slice(-2);
     var zz = n => ('00' + n).slice(-3);
     var off = d.getTimezoneOffset();

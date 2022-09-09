@@ -380,7 +380,7 @@ const webappHtml = {
 
                             ctx.clearRect(0, 0, canvas.width, canvas.height);
                         },
-                        animation:function(){
+                        animation:function() {
                             //this = node, this.element = element
 
                             this.ctx.fillStyle = '#000';

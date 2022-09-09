@@ -1,4 +1,3 @@
-import { Math2 } from 'brainsatplay-math';
 import { appendFile, deleteFile, exists, getCSVHeader, listFiles, readCSVChunkFromDB, writeFile, writeToCSVFromDB } from './BFSUtils';
 import { CSV, parseCSVData, toISOLocal } from './csv';
 //We have object formats coming in like {x,y,z}, tied to devices with USB data or BLE data with specifiers 
@@ -9,9 +8,26 @@ import { CSV, parseCSVData, toISOLocal } from './csv';
 const CSV_REFERENCE:{
     [filename:string]:{ //key is filename
         header:string[],
-        latest:any[], //latest line, unjoined
+        lastX:number, //latest line, unjoined
     }
 } = {}
+
+function lerp(v0, v1, t) {
+    return ((1 - t) * v0) + (t * v1);
+}
+
+function interpolerp(v0,v1,fit, floor=true) {
+    if(fit <= 2) return [v0, v1];
+    let a = 1/fit;
+    let result = new Array(fit);
+    result[0] = v0;
+    for(let i = 1; i <= fit; i++) {
+        result[i] = lerp(v0,v1,a*i);
+        if(floor) result[i] = Math.floor(result[i]);
+    }
+    return result;
+}
+
 
 //in our case we are receiving data in a uniform format 
 export const appendCSV = (
@@ -23,92 +39,110 @@ export const appendCSV = (
 
     let csv = CSV_REFERENCE[filename];
     if(!csv) {
+        let keys = Array.from(Object.keys(newData)); if (keys.indexOf('timestamp') > -1) keys.splice(keys.indexOf('timestamp'), 1);
         CSV_REFERENCE[filename] = {
-            header:['timestamp','localized',...Array.from(Object.keys(newData))] as string[],
-            latest:[] as any[]
+            header:['timestamp','localized',...keys] as string[],
+            lastX:undefined
         };
         csv = CSV_REFERENCE[filename];
     }
 
     
-    let toAppend = [] as any;
-    let x = newData[csv.header[0]]; //
-    let keys = Object.keys(newData);
+    let maxLen = 1; //max length of new arrays being appended, if any
+    for(const key in newData) {
+        if((newData[key] as any)?.length > maxLen) {
+            maxLen = (newData[key] as any)?.length;
+        }
+    }
+    
+
+    let x = newData[csv.header[0]]; //first csv value treated as x for reference for growing the csv, mainly to generate timestamps if being used but not defined
+    if(csv.lastX === undefined) csv.lastX = Array.isArray(x) ? x[0] : x;
     if(!x) {
-        x = newData[keys[0]];
-        let lastTime;
-        if(
-            csv.header[0]?.toLowerCase().includes('time') || 
-            csv.header[0]?.toLowerCase().includes('unix')
-        ) {
-            if(Array.isArray(x)) {
-                toAppend = x.map((v) => toAppend.push([]));
-                lastTime = csv.latest[0];
-                if(!lastTime) {
-                    lastTime = Date.now();            
-                    toAppend[toAppend.length-1][0] = lastTime;
-                    toAppend[toAppend.length-1][1] = toISOLocal(lastTime);
-                } else {
-                    let nextTime = Date.now();
-                    let interp = Math2.upsample([lastTime,nextTime],x.length);
-                    let iso = interp.map((v) => toISOLocal(v));
-                    toAppend.map((a,i) => { a[0] = interp[i]; a[1] = iso[i];  });
-                }
-            } else {
-                let now = Date.now();
-                toAppend.push([now,toISOLocal(now)])
-            }
-        }
-        else {
-            if(Array.isArray(x)) {
-                toAppend = x.map((v) => toAppend.push([v]));
-            } else {
-                toAppend.push([x]);
-            }
-        }
-    } else {
-        if(Array.isArray(x)) {
-            if(
-                csv.header[0]?.toLowerCase().includes('time') || 
-                csv.header[0]?.toLowerCase().includes('unix')
-            ) {
-                if(Array.isArray(x)) {
-                    toAppend = x.map((v) => toAppend.push([]));
-                    toAppend.map((a,i) => { a[0] = x[i]; a[1] = toISOLocal(x[i]);  });
-                } else {
-                    toAppend.push([x,toISOLocal(x)])
-                }
+        if(csv.header[0].includes('time')) {
+            let now = Date.now();
+            if(maxLen === 1) x = Date.now();
+            else {
+                x = interpolerp(csv.lastX,now,maxLen); //we are gonna upsample x to the maximum size array that's been passed in
+                x.shift();
             }
         } else {
-            if(
-                csv.header[0]?.toLowerCase().includes('time') || 
-                csv.header[0]?.toLowerCase().includes('unix')
-            ) {
-                toAppend.push([x,toISOLocal(x)]);
-            } else {
-                toAppend.push([x]);
+            let newX = csv.lastX+1; //just an assumption to spit something into the x column
+            if(maxLen > 1) {
+                x = new Array(maxLen).fill('');
+                x[maxLen-1] = newX;
             }
+            else x = newX;
+        }
+    } else if (maxLen > 1 && (x as any)?.length !== maxLen) {
+        if(!Array.isArray(x) || x.length === 1) {
+            x = interpolerp(csv.lastX,x,maxLen); //we are gonna upsample x to the maximum size array that's been passed in
+            x.shift();
+        } else {
+            x = interpolerp(x[0],x[x.length-1],maxLen); //upsample using new timestamps 
+            x.shift();
         }
     }
 
-    //we've assembled the new arrays to append and included the first index
-    for(let i = 1; i < csv.header.length; i++) {
-        if(csv.header[i] === 'localized') continue;
-        if(newData[csv.header[i]]) {
-            if(Array.isArray(newData[csv.header[i]])) {
-                toAppend.map((arr,j) => arr[i] = newData[csv.header[i]][j]);
+    let toAppend = [] as any[][];
+
+    if(Array.isArray(x)) {
+        let curIdcs = {};
+        for(let i = 0; i < x.length; i++) {
+            toAppend.push([]);
+            for(let j = 0; j < csv.header.length; j++) {
+                let d = newData[csv.header[j]];
+                if(j === 0) {
+                    toAppend[i][0] = x[i];
+                    continue;
+                }
+                
+                if (csv.header[j] === 'localized') { toAppend[i][j] = toISOLocal(x[i]); }
+                else if(d === undefined) {
+                    toAppend[i][j] = '';
+                } else if (Array.isArray(d)) {
+                    if(d.length === x.length) toAppend[i][j] = d[i];
+                    else {
+                        if(!(csv.header[j] in curIdcs)) {
+                            curIdcs[csv.header[j]] = i;
+                            if(d.length !== 1) toAppend[i][j] = d[i]; //0
+                        } else {
+                            if(d.length === 1 && i === x.length-1) {
+                                toAppend[i][j] = d[curIdcs[csv.header[j]]];
+                            } else if(Math.floor(d.length * i/x.length) > curIdcs[csv.header[j]]) {
+                                curIdcs[csv.header[j]]++;
+                                toAppend[i][j] = d[curIdcs[csv.header[j]]];
+                            } else {
+                                toAppend[i][j] = ''; //include a blank to preserve the header order
+                            }
+                        } 
+                    }   
+                } else {
+                    if(i === x.length-1) {
+                        toAppend[i][j] = d;
+                    } else {
+                        toAppend[i][j] = '';
+                    }
+                }
             }
-        } else {
-            toAppend[0][i] = newData[csv.header[i]];
         }
-    } 
+    } else {
+        toAppend.push([]);
+        for(let j = 0; j < csv.header.length; j++) {
+            if((csv.header[j] in newData)) toAppend[0][j] = newData[csv.header[j]];
+            else if (csv.header[j] === 'localized') { toAppend[0][j] === toISOLocal(x); }
+            else toAppend[0][j] = '';
+        }
+    }
+
 
     let csvProcessed = '';
+
     toAppend.forEach((arr) => {
         csvProcessed += arr.join(',') + '\n';    
-    })
+    });
 
-    csv.latest = toAppend[toAppend.length-1]; //reference the last array written as the latest data for if we don't pass timestamps
+    csv.lastX = toAppend[toAppend.length-1][0]; //reference the last array written as the latest data for if we don't pass timestamps
 
     //okay we are ready to append arrays to the file
     return new Promise((res,rej) => {
@@ -150,7 +184,7 @@ export const createCSV = (
 
     CSV_REFERENCE[filename] = {
         header,
-        latest:[] as any
+        lastX:header[1] === 'localized' ? Date.now() : 0
     };
 
     //overwrite existing files
