@@ -32,7 +32,8 @@ function interpolerp(v0,v1,fit, floor=true) {
 //in our case we are receiving data in a uniform format 
 export const appendCSV = (
     newData:{[key:string]:number|number[]}, //assume uniformly sized data is passed in, so pass separate timestamp intervals separately
-    filename:string
+    filename:string,
+    header?:string[]
 ) => {
 
     //console.log('append',filename);
@@ -46,13 +47,14 @@ export const appendCSV = (
         };
         csv = CSV_REFERENCE[filename];
     }
+    if(header) csv.header = header; //set the header? File needs to be rewritten if so, but this works if you make a new file (just change the input file name)
 
     
     let maxLen = 1; //max length of new arrays being appended, if any
     for(const key in newData) {
-        if((newData[key] as any)?.length > maxLen) {
+        if(csv.header.indexOf(key) > -1 && (newData[key] as any)?.length > maxLen) {
             maxLen = (newData[key] as any)?.length;
-        }
+        } 
     }
     
 
@@ -168,6 +170,7 @@ export const appendCSV = (
     }) as Promise<boolean>
 }
 
+//todo: rewrite saved file with the new header (which requires fully rewriting a file chunk to shift the bytes in IndexedDB)
 export const updateCSVHeader = (header:any[],filename:string) => {
     if(CSV_REFERENCE[filename]) {
         CSV_REFERENCE[filename].header = header;
