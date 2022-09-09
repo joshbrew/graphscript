@@ -1,8 +1,8 @@
 //@ts-nocheck
 
 //resources
-import { DOMService, SubprocessWorkerInfo } from '../../index'//'graphscript'//'../../index'////'../../index';
-import {initDevice, Devices} from '../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//
+import { DOMService, SubprocessWorkerInfo } from 'graphscript'//'../../index'////'../../index';
+import {initDevice, Devices} from 'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
 import { Howl, Howler } from 'howler';
 import { visualizeDirectory } from '../../extras/storage/BFS_CSV'
 
@@ -98,14 +98,6 @@ const webappHtml = {
                                     for(const key in selectable.BLE) {
                                         self.innerHTML += `<option value='${key}'>${selectable.BLE[key]}</option>`
                                     }
-                                }
-                            } as ElementProps,
-                            'csvmenu':{
-                                tagName:'div',
-                                innerHTML:'CSVs',
-                                onrender:(self) => {
-                                    //console.log('rendering html')
-                                    visualizeDirectory('data', self);
                                 }
                             } as ElementProps,
                             'connectDevice':{
@@ -365,7 +357,7 @@ const webappHtml = {
                             },
                             innerText:'Reset stats'
                         }
-                    },
+                    } as ElementProps,
                     'waveform':{
                         tagName:'canvas',
                         style:{width:'100vw', height:'300px'},
@@ -437,7 +429,15 @@ const webappHtml = {
                                
                             }
                         }
-                    }
+                    } as ElementProps,
+                    'csvmenu':{
+                        tagName:'div',
+                        innerHTML:'CSVs',
+                        onrender:(self) => {
+                            //console.log('rendering html')
+                            visualizeDirectory('data', self);
+                        }
+                    } as ElementProps,
                 }
             } as ElementProps
         }
