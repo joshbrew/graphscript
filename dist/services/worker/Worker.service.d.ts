@@ -68,6 +68,8 @@ export declare class WorkerService extends Service {
     runRequest: (message: ServiceMessage | any, worker: undefined | string | Worker | MessagePort, callbackId: string | number) => any;
     subscribeWorker: (route: string, worker: Worker | string | MessagePort) => number;
     subscribeToWorker: (route: string, workerId: string, callback?: string | ((res: any) => void)) => Promise<any>;
+    pipeWorkers: (sourceWorker: WorkerInfo, listenerWorker: WorkerInfo, sourceRoute: string, listenerRoute: string, portId?: string) => Promise<number>;
+    unpipeWorkers: (sourceWorker: WorkerInfo, sourceRoute: string, sub: number) => Promise<any>;
     transferFunction(worker: WorkerInfo, fn: Function, fnName?: string): Promise<any>;
     transferClass(worker: WorkerInfo, cls: Function, className?: string): Promise<any>;
     routes: Routes;

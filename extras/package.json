@@ -1,6 +1,6 @@
 {
     "name": "graphscript-services",
-    "version": "0.1.37",
+    "version": "0.1.38",
     "description": "Extra services for graphscript.",
     "main": "dist/index.services.js",
     "module": "dist/index.services.esm.js",
@@ -23,7 +23,7 @@
     "author": "Joshua Brewster",
     "license": "AGPL-3.0-or-later",
     "dependencies": {
-        "brainsatplay-math": "~0.0.22",
+        "brainsatplay-math": "~0.0.23",
         "browserfs": "^1.4.3",
         "bson-objectid": "~2.0.3",
         "gpujsutils": "~1.0.10"

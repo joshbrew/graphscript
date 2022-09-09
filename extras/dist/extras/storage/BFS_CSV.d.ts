@@ -5,6 +5,7 @@ export declare const appendCSV: (newData: {
 }, filename: string) => Promise<boolean>;
 export declare const updateCSVHeader: (header: any[], filename: string) => void;
 export declare const createCSV: (filename: string, header: string[]) => Promise<unknown>;
+export declare const visualizeDirectory: (dir: string, parentNode?: HTMLElement) => Promise<unknown>;
 export declare const csvRoutes: {
     appendCSV: (newData: {
         [key: string]: number | number[];
