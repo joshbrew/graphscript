@@ -42,12 +42,13 @@ export const appendCSV = (
     if(!csv) {
         let keys = Array.from(Object.keys(newData)); if (keys.indexOf('timestamp') > -1) keys.splice(keys.indexOf('timestamp'), 1);
         CSV_REFERENCE[filename] = {
-            header:['timestamp','localized',...keys] as string[],
+            header:header ? header : ['timestamp','localized',...keys] as string[],
             lastX:undefined
         };
         csv = CSV_REFERENCE[filename];
+        header = csv.header;
     }
-    if(header) csv.header = header; //set the header? File needs to be rewritten if so, but this works if you make a new file (just change the input file name)
+    if(header) csv.header = header; //set a new header? File needs to be rewritten if so, but this works if you make a new file (just change the input file name)
 
     
     let maxLen = 1; //max length of new arrays being appended, if any
@@ -140,6 +141,7 @@ export const appendCSV = (
 
     let csvProcessed = '';
 
+    if(header) csvProcessed += header.join(',') + '\n'; //append new headers when they show up
     toAppend.forEach((arr) => {
         csvProcessed += arr.join(',') + '\n';    
     });
@@ -152,7 +154,7 @@ export const appendCSV = (
             if(!fileExists) {
                 writeFile(
                     filename,
-                    csv.header.join(',')+'\n' + csvProcessed,
+                    csvProcessed,
                     (written:boolean) => {
                         res(written);
                     }
