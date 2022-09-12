@@ -11,7 +11,7 @@
 For happy code!
 </p>
 
-> **Note:** **graphscript** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay/README.md)
+> **Note:** **graphscript** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
 
 
 
