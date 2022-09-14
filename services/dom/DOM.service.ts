@@ -157,6 +157,7 @@ export class DOMService extends Service {
         options: ElementProps,
         generateChildElementNodes=false      
     )=>{
+        
 
         let elm:HTMLElement = this.createElement(options);
 
@@ -333,10 +334,13 @@ export class DOMService extends Service {
         element.node = node;
 
         // -------- Bind Functions to GraphNode --------
-        const initialOptions = options._initial ?? options
+        let initialOptions = options._initial ?? options
         for (let key in initialOptions) {
-            if (typeof initialOptions[key] === 'function') initialOptions[key] = initialOptions[key].bind(node)
-            else if (key === 'attributes') {
+            if (typeof initialOptions[key] === 'function') {
+                const desc = Object.getOwnPropertyDescriptor(initialOptions, key)
+                if (desc && desc.get && !desc.set) initialOptions = Object.assign({}, initialOptions) // Support ESM Modules: Only make a copy if a problem
+                initialOptions[key] = initialOptions[key].bind(node)
+            } else if (key === 'attributes') {
                 for (let key2 in initialOptions.attributes) {
                     if (typeof initialOptions.attributes[key2] === 'function') {
                         initialOptions.attributes[key2] = initialOptions.attributes[key2].bind(node)

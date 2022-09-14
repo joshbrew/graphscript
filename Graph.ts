@@ -226,11 +226,15 @@ export class GraphNode {
     ) {    
 
 
+        
+
+
         if(typeof properties === 'function') { //pass a function instead of properties to set up a functional graph quickly
             properties = { operator:properties as any };
         }
 
         if(typeof properties === 'object') {
+            
 
             //can pass graphs and wrap Graphs with GraphNodes to enable nesting in trees
             if(properties instanceof GraphNode && properties._initial) Object.assign(properties, properties._initial);
@@ -317,7 +321,11 @@ export class GraphNode {
                     delete props.graph;
                     delete props.parent;
 
-                    for (let k in props)  properties[k] = props[k];
+                    for (let k in props) {
+                        const desc = Object.getOwnPropertyDescriptor(properties, k)
+                        if (desc && desc.get && !desc.set) properties = Object.assign({}, properties) // Support ESM Modules: Only make a copy if a problem
+                        else properties[k] = props[k];
+                    }
                 }
             }
 
@@ -353,7 +361,7 @@ export class GraphNode {
             }
             if(properties.children) this._initial.children = Object.assign({},properties.children); //preserve the prototypes
             
-            Object.assign(this,properties);
+            Object.assign(this, properties);
 
 
             if(!this.tag) {
@@ -1174,9 +1182,13 @@ export class Graph {
         this.tag = tag ? tag : `graph${Math.floor(Math.random()*100000000000)}`;
 
         if(props) {
+
+            console.log(props, props.constructor.name)
+
             if(props.reactive) {
                 this.addLocalState(props);
             } else Object.assign(this,props);
+
             this._initial = props;
         }
         if(tree || Object.keys(this.tree).length > 0) this.setTree(tree);
@@ -1251,7 +1263,6 @@ export class Graph {
                         if(source.tag) properties.tag = source.tag;
                         if(source.oncreate) properties.oncreate = source.oncreate;
                         if(source.node?._initial) Object.assign(properties,source.node._initial);
-
                         properties.nodes = source.nodes;
                         properties.source = source;
                         n.setProps(properties);

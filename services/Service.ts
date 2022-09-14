@@ -352,6 +352,7 @@ export class Service extends Graph {
 
                     if(customRoutes) { //mutate routes or run custom node creation functions
                         for(const key in customRoutes) {
+                            console.log(r, r.constructor.name)
                             r = customRoutes[key](r,route,allRoutes);
                             if(!r) continue top; //nothing returned so continue
                         }
