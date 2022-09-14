@@ -26,3 +26,5 @@
         },
         innerText:'Play'
     }
+
+    export default (...input) => input

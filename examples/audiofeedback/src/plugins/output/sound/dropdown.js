@@ -7,3 +7,5 @@ const soundFilePaths = [
 
 export const tagName = 'select'
 export const innerHTML = soundFilePaths.map((p) => `<option value='${p}'>${p}</option>`)
+
+export default (...input) => input

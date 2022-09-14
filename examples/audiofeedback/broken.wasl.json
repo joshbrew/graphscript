@@ -1,0 +1,74 @@
+{
+    "graph": {
+        "tagName": "div",
+            "nodes": {
+                "devices": {
+                    "tagName": "div",
+                    "graph": {
+                        "nodes": {
+                            "devicediv": {
+                                "tagName": "div",
+                                "graph": {
+                                    "nodes": {
+                                        "connectheader": {
+                                            "src": "./src/plugins/connect/header.js"
+                                        },
+                                        "connectmode": {
+                                            "src": "./src/plugins/connect/mode.js"
+                                        },
+                                        "selectUSB": {
+                                            "src": "./src/plugins/select/usb.js"
+                                        },
+                                        "selectBLE": {
+                                            "src": "./src/plugins/select/ble.js"
+                                        },
+                                        "connectDevice": {
+                                            "src": "./src/plugins/connect/device.js"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "output": {
+                    "tagName": "div",
+                    "graph": {
+                        "nodes": {
+                            "playsounds": {
+                                "tagName": "div",
+                                "graph": {
+                                    "nodes": {
+                                        "soundheader": {
+                                            "src": "./src/plugins/output/sound/header.js"
+                                        },
+                                        "soundDropdown": {
+                                            "src": "./src/plugins/output/sound/dropdown.js"
+                                        },
+                                        "play": {
+                                            "src": "./src/plugins/output/sound/play.js"
+                                        },
+                                        "stop": {
+                                            "src": "./src/plugins/output/sound/stop.js"
+                                        }
+                                    }
+                                }
+                            },
+                            "stats": {
+                                "src": "./src/plugins/output/stats/start.js"
+                            },
+                            "resetstats": {
+                                "src": "./src/plugins/output/stats/reset.js"
+                            },
+                            "waveform": {
+                                "src": "./src/plugins/output/waveform.js"
+                            },
+                            "csvmenu": {
+                                "src": "./src/plugins/output/csv/menu.js"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+}

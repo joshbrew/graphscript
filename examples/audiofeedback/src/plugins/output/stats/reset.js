@@ -18,3 +18,5 @@ export const attributes = {
     },
     innerText:'Reset stats'
 }
+
+export default (...input) => input

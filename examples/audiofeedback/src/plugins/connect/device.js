@@ -1,6 +1,6 @@
 import { initDevice, Devices } from 'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
 import GameState from "../gameState.js"
-import { visualizeDirectory } from '../../../../../extras/storage/BFS_CSV.js'
+import { visualizeDirectory } from '../../../extras/storage/BFS_CSV.js'
 
 export const tagName = 'button'
 export const attributes = {
@@ -147,3 +147,5 @@ export const attributes = {
         }
     }
 }
+
+export default (...input) => input
