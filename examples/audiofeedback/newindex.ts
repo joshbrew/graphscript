@@ -2,7 +2,7 @@
 
 //resources
 // import { DOMService, SubprocessWorkerInfo } from 'graphscript'//'../../index'////'../../index';
-import { DOMService, SubprocessWorkerInfo } from '../../index'//'../../index'////'../../index';
+import { DOMService } from '../../index'//'../../index'////'../../index';
 
 // plugins
 import * as select from './src/plugins/select/index.js'

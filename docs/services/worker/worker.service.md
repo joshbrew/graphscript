@@ -27,7 +27,7 @@ import {WorkerService, canvasWorkerRoutes} from 'graphscript'
 import gsworker from 'graphscript/dist/Worker' //This is the default worker which is set up with a worker service to send/receive messages, plus unsafeservice to write data and functions arbitrarily to build single file pipelines
 
 
-export type WorkerProps = {
+type WorkerProps = {
     worker:WorkerInfo,
     workerUrl?: string|URL|Blob,
     url?:URL|string|Blob,
@@ -38,18 +38,39 @@ export type WorkerProps = {
     onclose?:(worker:Worker|MessagePort)=>void
 } 
 
-export type WorkerInfo = {
+type WorkerInfo = {
     worker:Worker|MessagePort,
     send:(message:any,transfer?:any)=>void,
     request:(message:any, transfer?:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any, transfer?:any)=>void,
     run:(route:any, args?:any, transfer?:any, method?:string)=>Promise<any>
-    subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
+    subscribe:(route:any, callback?:((res:any)=>void)|string, blocking?:boolean)=>Promise<any>,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
+    start:(route?:any, portId?:string, callback?:((res:any)=>void)|string, blocking?:boolean)=>Promise<boolean>, //subscribe the worker to another worker via a message port (or undefined to subscribe the worker to a main thread process) or start existing subscriptions again
+    stop:(route?:string, portId?:string)=>Promise<boolean>, //unsubscribe the worker to the other worker (or main thread)
+    workerSubs:{[key:string]:{sub:number|false, route:string, portId:string, callback?:((res:any)=>void)|string, blocking?:boolean}},
     terminate:()=>boolean,
     graph:WorkerService,
     _id:string
 } & WorkerProps & WorkerRoute
+
+//and also a custom route you can load with properties for quick setup within the node tree
+type WorkerRoute = {
+    worker?:WorkerInfo
+    workerUrl?: string|URL|Blob,
+    workerId?: string,
+    transferFunctions?:{[key:string]:Function},
+    transferClasses?:{[key:string]:Function},
+    parentRoute?:string, //if a child of a worker node, subscribe to a route on a parent worker?
+    portId?:string, //port to subscribe to for the parent route? will establish new one if parent has a worker defined, there is no limit on MessagePorts so they can be useful for organizing 
+    callback?:string, //Run this route on the worker when the operator is called. If this route is a child of another node, run this node on the child worker when it receives a message. 
+    stopped?:boolean, // Don't run the callback until we call the thread to start? E.g. for recording data periodically.
+    blocking?:boolean, //should the subscribed worker wait for the subscriber to resolve before sending a new result? Prevents backup and makes async processing easier
+    init?:string, //run a callback on the worker on worker init?
+    initArgs?:any[] //arguments to go with the worker init?
+    initTransfer?:any[] //transferrable stuff with the init?
+} & GraphNodeProperties & WorkerProps
+
 
 
 //import worker from 'graphscript' //default worker
