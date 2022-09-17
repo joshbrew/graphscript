@@ -12,7 +12,13 @@ export declare type WorkerRoute = {
         [key: string]: Function;
     };
     parentRoute?: string;
+    portId?: string;
     callback?: string;
+    stopped?: boolean;
+    blocking?: boolean;
+    init?: string;
+    initArgs?: any[];
+    initTransfer?: any[];
 } & GraphNodeProperties & WorkerProps;
 export declare type WorkerProps = {
     worker: WorkerInfo;
@@ -30,8 +36,19 @@ export declare type WorkerInfo = {
     request: (message: any, transfer?: any, method?: string) => Promise<any>;
     post: (route: any, args?: any, transfer?: any) => void;
     run: (route: any, args?: any, transfer?: any, method?: string) => Promise<any>;
-    subscribe: (route: any, callback?: ((res: any) => void) | string) => any;
+    subscribe: (route: any, callback?: ((res: any) => void) | string, blocking?: boolean) => Promise<any>;
     unsubscribe: (route: any, sub: number) => Promise<boolean>;
+    start: (route?: any, portId?: string, callback?: ((res: any) => void) | string, blocking?: boolean) => Promise<boolean>;
+    stop: () => Promise<boolean>;
+    workerSubs: {
+        [key: string]: {
+            sub: number | false;
+            route: string;
+            portId: string;
+            callback?: ((res: any) => void) | string;
+            blocking?: boolean;
+        };
+    };
     terminate: () => boolean;
     graph: WorkerService;
     _id: string;
@@ -48,6 +65,7 @@ export declare class WorkerService extends Service {
         };
     };
     constructor(options?: ServiceOptions);
+    loadWorkerRoute(rt: WorkerRoute, routeKey: string): WorkerInfo;
     customRoutes: ServiceOptions["customRoutes"];
     customChildren: ServiceOptions["customChildren"];
     addDefaultMessageListener(): void;
@@ -63,13 +81,13 @@ export declare class WorkerService extends Service {
     getTransferable(message: any): any;
     transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: any) => any;
     terminate: (worker: Worker | MessagePort | string) => boolean;
-    establishMessageChannel: (worker: Worker | string | MessagePort, worker2?: Worker | string | MessagePort) => string | false;
+    establishMessageChannel: (worker: Worker | string | MessagePort | WorkerInfo, worker2?: Worker | string | MessagePort | WorkerInfo) => string | false;
     request: (message: ServiceMessage | any, workerId: string, transfer?: any, method?: string) => Promise<unknown>;
     runRequest: (message: ServiceMessage | any, worker: undefined | string | Worker | MessagePort, callbackId: string | number) => any;
-    subscribeWorker: (route: string, worker: Worker | string | MessagePort) => number;
-    subscribeToWorker: (route: string, workerId: string, callback?: string | ((res: any) => void)) => Promise<any>;
-    pipeWorkers: (sourceWorker: WorkerInfo, listenerWorker: WorkerInfo, sourceRoute: string, listenerRoute: string, portId?: string) => Promise<number>;
-    unpipeWorkers: (sourceWorker: WorkerInfo, sourceRoute: string, sub: number) => Promise<any>;
+    subscribeWorker: (route: string, worker: WorkerInfo | Worker | string | MessagePort, blocking?: boolean) => number;
+    subscribeToWorker: (route: string, workerId: string, callback?: string | ((res: any) => void), blocking?: boolean) => Promise<any>;
+    pipeWorkers: (sourceWorker: WorkerInfo | string, listenerWorker: WorkerInfo | string, sourceRoute: string, listenerRoute: string, portId?: string, blocking?: boolean) => Promise<number>;
+    unpipeWorkers: (sourceRoute: string, sourceWorker: WorkerInfo | string, sub?: number) => Promise<any>;
     transferFunction(worker: WorkerInfo, fn: Function, fnName?: string): Promise<any>;
     transferClass(worker: WorkerInfo, cls: Function, className?: string): Promise<any>;
     routes: Routes;

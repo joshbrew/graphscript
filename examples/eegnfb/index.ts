@@ -159,7 +159,15 @@ const webappHtml = {
                                                                         watch:['0','1','2','3']
                                                                     }
                                                                 ],
-                                                                callback:'runSubprocess'
+                                                                callback:'runSubprocess',
+                                                                blocking:true,
+                                                                children:{
+                                                                    coherence_main:{
+                                                                        operator:(result:any)=>{
+                                                                            console.log('breath detect result', breath); //this algorithm only returns when it detects a beat
+                                                                        }
+                                                                    }
+                                                                }
                                                             },
                                                             vrms:{
                                                                 workerUrl:gsworker,
@@ -171,14 +179,25 @@ const webappHtml = {
                                                                         watch:['0','1','2','3']
                                                                     }
                                                                 ],
-                                                                callback:'runSubprocess'
+                                                                callback:'runSubprocess',
+                                                                blocking:true,
+                                                                children:{
+                                                                    vrms_main:{
+                                                                        operator:(
+                                                                            result:any
+                                                                        )=>{
+                                                                            console.log('breath detect result', breath); //this algorithm only returns when it detects a beat
+                                                                        }
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     },
                                                     csv:{
+                                                        workerUrl:gsworker,
+                                                        // init:'createCSV',
+                                                        // initArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`],
                                                         callback:'appendCSV',
-                                                        init:'createCSV',
-                                                        initArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`], //filename
                                                         stopped:true //we will press a button to stop/start the csv collection conditionally
                                                     }
                                                 },

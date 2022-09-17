@@ -16,7 +16,7 @@ export declare type GraphNodeProperties = {
     children?: {
         [key: string]: string | boolean | undefined | GraphNodeProperties | GraphNode | Graph;
     };
-    parent?: GraphNode | Graph;
+    parent?: GraphNode | Graph | string;
     branch?: {
         [label: string]: {
             if: any | ((output: any) => boolean);

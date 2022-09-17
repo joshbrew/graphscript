@@ -41,7 +41,7 @@ export type WorkerInfo = {
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
     start:(route?:any, portId?:string, callback?:((res:any)=>void)|string, blocking?:boolean)=>Promise<boolean>,
     stop:()=>Promise<boolean>,
-
+    workerSubs:{[key:string]:{sub:number|false, route:string, portId:string, callback?:((res:any)=>void)|string, blocking?:boolean}},
     terminate:()=>boolean,
     graph:WorkerService,
     _id:string
@@ -80,7 +80,21 @@ export class WorkerService extends Service {
         let worker:WorkerInfo;
         if(this.workers[rt._id]) worker = this.workers[rt._id];
         else if (rt.worker) worker = rt.worker;
-        if(!worker) worker = this.addWorker(rt);
+        if(!worker) {
+            worker = this.addWorker(rt);
+
+            let ondelete = (rt) => { //removing the original route will trigger ondelete
+                rt.worker?.terminate();
+            }
+            let oldondelete;
+            if(rt.ondelete) oldondelete = rt.ondelete;  
+            
+            rt.ondelete = (n) => {
+                if(oldondelete) oldondelete(n);
+                ondelete(n);
+            }
+        }
+        
         rt.worker = worker;
 
         //requires unsafeservice on the worker (enabled on the default worker)
@@ -171,16 +185,6 @@ export class WorkerService extends Service {
                         }
                     }
 
-                    let ondelete = (rt) => {
-                        rt.worker?.terminate();
-                    }
-                    let oldondelete;
-                    if(rt.ondelete) oldondelete = rt.ondelete;  
-                    
-                    rt.ondelete = (n) => {
-                        if(oldondelete) oldondelete(n);
-                        ondelete(n);
-                    }
                 }
             } else if(rt.parent && rt.parentRoute) {
                 if(typeof rt.parent === 'string' && (routes[rt.parent] as any)?.worker) {
@@ -311,7 +315,7 @@ export class WorkerService extends Service {
             return run('unsubscribe',[route,sub]);
         }
 
-        //start a subscription
+        //start a subscription to another worker/main thread on this worker
         let start = async (route?:string, portId?:string, callback?:string, blocking?:boolean) => {
             if(route)
                 await run('subscribeToWorker',[route, portId, callback, blocking]).then((sub) => { 
@@ -326,6 +330,7 @@ export class WorkerService extends Service {
             return true;
         }
 
+        //stop a subscription to another worker/main thread on this worker
         let stop = async (route?:string, portId?:string) => {
             if(route && portId && workerSubs[route+portId]) {
                 await run('unsubscribe',[route,workerSubs[route+portId].sub]);
@@ -333,7 +338,7 @@ export class WorkerService extends Service {
             } else {
                 for(const key in workerSubs) {
                     if(typeof workerSubs[key].sub === 'number') {
-                        await run('unpipeWorkers',[workerSubs[key].portId, workerSubs[key].route, workerSubs[key].sub])
+                        await run('unpipeWorkers',[workerSubs[key].route, workerSubs[key].portId, workerSubs[key].sub])
                     } workerSubs[key].sub = false;
                 }
             }
@@ -616,6 +621,7 @@ export class WorkerService extends Service {
                             if((worker as WorkerInfo)?.run) 
                                 (worker as any).run({args:r,callbackId:route}).then((ret)=>{
                                     blocked = false;
+                                    //if(ret !== undefined) this.setState({[worker._id]:ret});
                                     //console.log(ret)
                                 });
                         });
@@ -623,6 +629,7 @@ export class WorkerService extends Service {
                         if((worker as WorkerInfo)?.run) 
                             (worker as any).run({args:res,callbackId:route}).then((ret)=>{
                                 blocked = false;
+                                //if(ret !== undefined) this.setState({[worker._id]:ret});
                                 //console.log(ret)
                             });
                     }
@@ -700,8 +707,8 @@ export class WorkerService extends Service {
     }
 
     unpipeWorkers = (
-        sourceWorker:WorkerInfo|string,
         sourceRoute:string,
+        sourceWorker:WorkerInfo|string,
         sub?:number
     ) => {
         if(typeof sourceWorker === 'string') sourceWorker = this.workers[sourceWorker];

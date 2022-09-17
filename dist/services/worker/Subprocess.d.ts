@@ -42,9 +42,12 @@ export declare type SubprocessWorkerProps = {
     otherArgs?: any[];
     callback?: string | ((data: any) => any);
     pipeTo?: {
-        portId: string;
+        worker?: WorkerInfo;
+        portId?: string;
         route: string;
-        otherArgs: any[];
+        otherArgs?: any[];
+        init?: string;
+        initArgs?: any[];
     };
     worker?: WorkerInfo;
     url?: any;
@@ -52,6 +55,7 @@ export declare type SubprocessWorkerProps = {
 };
 export declare type SubprocessWorkerInfo = {
     sub: number;
+    blocking?: boolean;
     stop: () => void;
     start: () => void;
     terminate: () => void;

@@ -52,29 +52,35 @@
   "resolved" "https://registry.npmjs.org/bson-objectid/-/bson-objectid-2.0.3.tgz"
   "version" "2.0.3"
 
-"device-decoder@~0.1.34":
-  "integrity" "sha512-dqlOQnfJPPmUhtS9Gz6e0zNbrpqhb+wzcMOOusmhnlIWy3l5KuADWRQ5EN2Uy8aXi8en4lAg3X6EsRWqciMMKw=="
-  "resolved" "https://registry.npmjs.org/device-decoder/-/device-decoder-0.1.34.tgz"
-  "version" "0.1.34"
+"device-decoder@~0.1.35":
+  "integrity" "sha512-jU54u2Pu2OMl5jXg7qx/fKwaCTRHVIIJB95I89qP84qpgQjxK3MiZlnCKZfu/HPABKa7VeqdCQkai06Tr3LbyA=="
+  "resolved" "https://registry.npmjs.org/device-decoder/-/device-decoder-0.1.35.tgz"
+  "version" "0.1.35"
   dependencies:
     "@capacitor-community/bluetooth-le" "~2.0.0"
     "brainsatplay-math" "~0.0.23"
-    "graphscript" "~0.1.37"
-    "graphscript-services" "~0.1.38"
+    "graphscript" "~0.1.38"
+    "graphscript-services" "~0.1.39"
 
-"graphscript-services@~0.1.38", "graphscript-services@file:../../extras":
-  "resolved" "file:../../extras"
-  "version" "0.1.38"
+"gpujsutils@~1.0.10":
+  "integrity" "sha512-hn74yMSZrT4pf4nlS3SRZvUe7UaGCs3KYoi/dqhTJk3Gho2M9SScj7BHewTcNI1M2UonTkcaR/CA1KgXxekfVQ=="
+  "resolved" "https://registry.npmjs.org/gpujsutils/-/gpujsutils-1.0.10.tgz"
+  "version" "1.0.10"
+
+"graphscript-services@~0.1.39":
+  "integrity" "sha512-PaFMs4UCwZ6oXHMneCksanlaSM49pPJz+3Zx7UimPpetoRubiSm8NWU5wmw+S5MHmzYqffMdYmFDWIh3pagQaQ=="
+  "resolved" "https://registry.npmjs.org/graphscript-services/-/graphscript-services-0.1.39.tgz"
+  "version" "0.1.39"
   dependencies:
     "brainsatplay-math" "~0.0.23"
     "browserfs" "^1.4.3"
     "bson-objectid" "~2.0.3"
     "gpujsutils" "~1.0.10"
 
-"graphscript@~0.1.37":
-  "integrity" "sha512-xduRmYlZtVJr3Z55NU/xy41p34h9o+kM3DNHTN1ctIplfiCizPVVZKLVPhVcyMPlVgZmyUemaMegyf+aWwQ1sg=="
-  "resolved" "https://registry.npmjs.org/graphscript/-/graphscript-0.1.37.tgz"
-  "version" "0.1.37"
+"graphscript@~0.1.38":
+  "integrity" "sha512-gIElzk56kzjNNEOLpkouOrUc6bDQYa5low76kQeOLkQXBaiFPknldfjysrYzFGgxpygYiYnd9mqQclnUcb2z2A=="
+  "resolved" "https://registry.npmjs.org/graphscript/-/graphscript-0.1.38.tgz"
+  "version" "0.1.38"
   dependencies:
     "better-sse" "~0.8.0"
     "brainsatplay-math" "~0.0.22"
@@ -102,9 +108,9 @@
   "resolved" "https://registry.npmjs.org/throat/-/throat-6.0.1.tgz"
   "version" "6.0.1"
 
-"tinybuild@file:../../../tinybuild":
-  "resolved" "file:../../../tinybuild"
-  "version" "0.3.179"
+"tinybuild@file:../../../../../AppData/Roaming/npm/node_modules/tinybuild":
+  "resolved" "file:../../../../../AppData/Roaming/npm/node_modules/tinybuild"
+  "version" "0.3.181"
   dependencies:
     "chokidar" "~3.5.3"
     "esbuild" "~0.14.49"

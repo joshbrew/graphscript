@@ -26,8 +26,8 @@ export * from './services/cmd/CMD.node'
 
 // export * from './services/webrtc/WebRTC.browser'
 
-export * from './services/worker/Worker.node.service'
-export * from './services/worker/Subprocess'
+//export * from './services/worker/Worker.service'
+//export * from './services/worker/Subprocess'
 
 export * from './services/sessions/sessions.service'
 
