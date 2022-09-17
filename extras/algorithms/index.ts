@@ -2,6 +2,9 @@ import { algorithms, SubprocessContextProps } from "../../services/worker/Subpro
 import { accel_gyro } from "./accel_gyro";
 import { beat_detect } from "./beat_detect";
 import { blink_detect } from './blink';
+import { rms } from './rms';
+import { dft } from './dft';
+import { coherence } from './coherence';
 
 //data in, interpretation out (with unique key:value pairs)
 Object.assign(algorithms,{
@@ -9,7 +12,10 @@ Object.assign(algorithms,{
     accel_gyro, //get absolute angle and position change from starting point (need magnetometer for global position, the gyro is relative)
     heartrate:beat_detect, //alias
     breath:Object.assign({},beat_detect),
-    blink_detect
+    blink_detect,
+    rms,
+    dft,
+    coherence
 } as {
     [key:string]:SubprocessContextProps
 });

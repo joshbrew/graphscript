@@ -156,27 +156,33 @@ export class ArrayManip {
     }
 
     //push new entries to end of array and roll over starting entries with a set array length
-    static circularBuffer(arr:any[],newEntries:any[]) {
-        if(newEntries.length < arr.length) {
-            let slice = arr.slice(newEntries.length);
-            let len = arr.length;
-            arr.splice(
-                0,
-                len,
-                ...slice,...newEntries
-            );
+    static circularBuffer(arr:any[],newEntries:any[]|any) {
+        if(Array.isArray(newEntries)) {
+            if(newEntries.length < arr.length) {
+                let slice = arr.slice(newEntries.length);
+                let len = arr.length;
+                arr.splice(
+                    0,
+                    len,
+                    ...slice,...newEntries
+                );
+            }
+            else if (newEntries.length > arr.length) {
+                let len = arr.length;
+                arr.splice(
+                    0,
+                    len,
+                    newEntries.slice(len-newEntries.length)
+                );
+            }
+            else { 
+                arr.splice(0,arr.length,...newEntries);
+            }
+        } else {
+            arr.push(newEntries); 
+            arr.shift();
         }
-        else if (newEntries.length > arr.length) {
-            let len = arr.length;
-            arr.splice(
-                0,
-                len,
-                newEntries.slice(len-newEntries.length)
-            );
-        }
-        else { 
-            arr.splice(0,arr.length,...newEntries);
-        }
+        
         return arr;
     }
 

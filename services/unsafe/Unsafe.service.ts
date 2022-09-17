@@ -94,7 +94,7 @@ export const unsafeRoutes = {
         if(typeof source === 'object') Object.assign(globalThis[target],source);
         return true;
     },
-    setValue:function(key:string, value:any) { //set a value on the globalThis scope
+    setValue:function(key:string, value:any) { //set a value on the graph scope
         this.graph[key] = value;
         return true;
     },

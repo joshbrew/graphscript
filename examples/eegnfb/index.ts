@@ -1,8 +1,8 @@
 //@ts-nocheck
 
 //resources
-import { DOMService, SubprocessWorkerInfo } from '../../index'//'graphscript'//'../../index'////'../../index';
-import {initDevice, Devices, gsworker} from '../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
+import { DOMService, SubprocessWorkerInfo } from 'graphscript'//'../../index'////'../../index';
+import { initDevice, Devices, gsworker } from '../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
 import { Howl, Howler } from 'howler';
 import { visualizeDirectory } from '../../extras/storage/BFS_CSV'
 
@@ -16,13 +16,19 @@ import { ElementProps, ElementInfo } from 'graphscript/services/dom/types/elemen
 //Selectable devices and labels
 const selectable = {
     BLE:{
-        hegduino:'HEGduino (BLE)',
-        blueberry2:'Blueberry (BLE)',
-        blueberry:'Blueberry_Legacy (BLE)'
+        nrf5x:'nRF5x board',
+    },
+    BLE_OTHER:{
+        muse:'Muse',
+        ganglion:'Ganglion'
     },
     USB:{
-        peanut:'Biocomp Peanut HEG (USB)',
-        hegduino:'HEGduino (USB)'
+        cyton:'Open BCI Cyton',
+        cyton_daisy:'Open BCI Cyton x2 (daisy chain mode)',
+        freeeeg32:'FreeEEG32',
+        freeeeg32_optical:'FreeEEG32 optical cable',
+        freeeeg128:'FreeEEG128',
+        nrf5x:'nRF5x board'
     }
 }
 
@@ -97,6 +103,9 @@ const webappHtml = {
                                 onrender:(self)=>{                      
                                     for(const key in selectable.BLE) {
                                         self.innerHTML += `<option value='${key}'>${selectable.BLE[key]}</option>`
+                                    }                  
+                                    for(const key in selectable.BLE_OTHER) { //include both sets
+                                        self.innerHTML += `<option value='${key}'>${selectable.BLE_OTHER[key]}</option>`
                                     }
                                 }
                             } as ElementProps,
@@ -121,118 +130,117 @@ const webappHtml = {
                                             mode as 'BLE'|'USB', 
                                             selected, 
                                             {
-                                                ondecoded:
-                                                    (data:{
-                                                        red:number|number[], 
-                                                        ir:number|number[], 
-                                                        heg:number|number[], 
-                                                        timestamp:number|number[]
-                                                    }) => { //data returned from decoder thread, ready for 
+                                                ondecoded: (data:{[key:number]:number|number[]}) => { 
+                                                        //data returned from decoder thread, ready for 
                                                         //outputelm.innerText = JSON.stringify(data);
                                                         //console.log(data)
-        
-                                                        GameState.raw = data;
-        
-                                                        if(data.heg) {
-                                                            let heg = Array.isArray(data.heg) ? data.heg[data.heg.length-1] : data.heg;
-                                                            GameState.currentHEG = heg;
-                                                            GameState.lastTimestamp = GameState.currentTimestamp;
-        
-                                                            GameState.currentTimestamp = Array.isArray(data.timestamp) ? data.timestamp[data.timestamp.length-1] : data.timestamp;
-                                                            
-                                                            GameState.dataFrameTime = GameState.currentTimestamp - GameState.lastTimestamp; 
-        
-                                                            if(!GameState.baselineHEG) 
-                                                                GameState.baselineHEG = heg; //first HEG sample
-                                                            else {
-                                                                GameState.shortChange = (GameState.baselineHEG * 0.10 + heg*0.9) - GameState.baselineHEG;
-                                                                GameState.longChange = (GameState.baselineHEG * 0.99 +heg*0.01) - GameState.baselineHEG; 
-                                                                GameState.baselineHEG = GameState.baselineHEG * 0.9999 + heg*0.0001; //have the baseline shift slowly (10000 samples)
-        
-                                                                let newLocalMax = false;
-                                                                if(heg > GameState.localMax) {
-                                                                    GameState.localMax = heg;
-                                                                    newLocalMax = true;
-                                                                }
-                                                                let shifted = GameState.hegDataBuffer.shift(); 
-                                                                GameState.hegDataBuffer.push(heg);
-                                                                if(GameState.localMax === shifted && !newLocalMax) {
-                                                                    GameState.localMax = Math.max(...GameState.hegDataBuffer);
-                                                                }
-        
-                                                                if(GameState.playing) {
-                                                                    let newVol = GameState.playing.volume() + GameState.longChange/GameState.baselineHEG;
-                                                                    if(newVol < 0) newVol = 0;
-                                                                    if(newVol > 1) newVol = 1;
-                                                                    GameState.playing.volume(newVol);
-                                                                }
-                                                            }
-                                                            //if(data.red)
-                                                            //if(data.ir)
-                                                            //if(data.timestamp)
-                                                        }
                                                 },
+
                                                 routes:{
-                                                    hr: {
+                                                    buffering: {
                                                         workerUrl:gsworker,
                                                         init:'createSubprocess',
                                                         initArgs:[
-                                                            'heartrate', //preprogrammed algorithm
+                                                            'buffering',
                                                             {
-                                                                sps:Devices[mode][selected].sps
-                                                            }
-                                                        ],
-                                                        callback:'runSubprocess', //the init function will set the _id as an additional argument for runSubprocess which selects existing contexts by _id 
-                                                        children:{
-                                                            hr_main:{
-                                                                operator:(
-                                                                    heartbeat:{
-                                                                        bpm: number,
-                                                                        change: number, //i.e. HRV
-                                                                        height0: number,
-                                                                        height1: number,
-                                                                        timestamp: number
-                                                                    }
-                                                                )=>{
-                                                                    console.log('heartrate result', heartbeat); //this algorithm only returns when it detects a beat
-                                                                }
-                                                            }
-                                                        }
-                                                    },
-                                                    breath:{
-                                                        workerUrl:gsworker,
-                                                        init:'createSubprocess',
-                                                        initArgs:[
-                                                            'breath',
-                                                            {
-                                                                sps:Devices[mode][selected].sps
+                                                                bufferSize:Devices[mode][selected].sps,
+                                                                watch:['0','1','2','3']
                                                             }
                                                         ],
                                                         callback:'runSubprocess',
                                                         children:{
-                                                            breath_main:{
-                                                                operator:(
-                                                                    breath:{
-                                                                        bpm: number,
-                                                                        change: number,
-                                                                        height0: number,
-                                                                        height1: number,
-                                                                        timestamp: number
+                                                            coherence:{
+                                                                workerUrl:gsworker,
+                                                                init:'createSubprocess',
+                                                                initArgs:[
+                                                                    'coherence',
+                                                                    {
+                                                                        sps:Devices[mode][selected].sps,
+                                                                        watch:['0','1','2','3']
                                                                     }
-                                                                )=>{
-                                                                    console.log('breath detect result', breath); //this algorithm only returns when it detects a beat
-                                                                }
+                                                                ],
+                                                                callback:'runSubprocess'
+                                                            },
+                                                            vrms:{
+                                                                workerUrl:gsworker,
+                                                                init:'createSubprocess',
+                                                                initArgs:[
+                                                                    'rms',
+                                                                    {
+                                                                        sps:Devices[mode][selected].sps,
+                                                                        watch:['0','1','2','3']
+                                                                    }
+                                                                ],
+                                                                callback:'runSubprocess'
                                                             }
                                                         }
                                                     },
                                                     csv:{
-                                                        workerUrl:gsworker,
-                                                        // init:'createCSV',
-                                                        // initArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`],
                                                         callback:'appendCSV',
+                                                        init:'createCSV',
+                                                        initArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`], //filename
                                                         stopped:true //we will press a button to stop/start the csv collection conditionally
                                                     }
-                                                }
+                                                },
+                                                
+                                                // subprocesses:{
+                                                //     coherence: {
+                                                //         init:'createSubprocess',
+                                                //         initArgs:[
+                                                //             'buffering', //preprogrammed algorithm
+                                                //             {
+                                                //                 bufferSize:Devices[mode][selected].sps,
+                                                //                 watch:['0','1','2','3']
+                                                //             }
+                                                //         ],
+                                                //         route:'runSubprocess', //the init function will set the _id as an additional argument for runAlgorithm which selects existing contexts by _id 
+                                                //         pipeTo:{ //tertiary worker which can run blocking processes while the main subprocess runs separately
+                                                //             route:'runSubprocess',
+                                                //             init:'createSubprocess',
+                                                //             initArgs:[
+                                                //                 'coherence',
+                                                //                 {
+                                                //                     sps:Devices[mode][selected].sps,
+                                                //                     watch:['0','1','2','3']
+                                                //                 }
+                                                //             ]
+                                                //         },
+                                                //         callback:(output:[number[],number[][],number[][]])=>{
+                                                //             console.log('coherence result', output); //this algorithm only returns when it detects a beat
+                                                //         }
+                                                //         //pipeTo coherence
+                                                //     },
+                                                //     noise:{ //https://www.electronics-tutorials.ws/accircuits/rms-voltage.html
+                                                //         init:'createSubprocess',
+                                                //         initArgs:[
+                                                //             'buffering', //preprogrammed algorithm
+                                                //             {
+                                                //                 bufferSize:Devices[mode][selected].sps,
+                                                //                 watch:['0','1','2','3']
+                                                //             }
+                                                //         ],
+                                                //         route:'runSubprocess', //the init function will set the _id as an additional argument for runAlgorithm which selects existing contexts by _id 
+                                                //         pipeTo:{ //tertiary worker which can run blocking processes while the main subprocess runs separately
+                                                //             route:'runSubprocess',
+                                                //             init:'createSubprocess',
+                                                //             initArgs:[
+                                                //                 'vrms',
+                                                //                 {
+                                                //                     sps:Devices[mode][selected].sps,
+                                                //                     watch:['0','1','2','3']
+                                                //                 }
+                                                //             ]
+                                                //         },
+                                                //         callback:(output:{[key:string]:number})=>{
+                                                //             console.log('vrms result', output); //this algorithm only returns when it detects a beat
+                                                //         }
+                                                //     },
+                                                //     csv:{
+                                                //         route:'appendCSV',
+                                                //         otherArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`], //filename
+                                                //         stopped:true //we will press a button to stop/start the csv collection conditionally
+                                                //     }
+                                                // }
                                             }
                                         );
 
@@ -241,31 +249,23 @@ const webappHtml = {
                                                 console.log('session', result);
                                                 let cap;
                                                 let csvmenu;
-                                                if(typeof result.routes === 'object') {
-                                                    if(result.routes.csv) {
+                                                if(typeof result.subprocesses === 'object') {
+                                                    if(result.subprocesses.csv as SubprocessWorkerInfo) {
                                                         
                                                         csvmenu = document.getElementById('csvmenu');
                                                         
                                                         cap = document.createElement('button');
                                                         cap.innerHTML = `Record ${selected} (${mode})`;
-                                                        let onclick = () => {
-                                                            result.routes.csv.worker.post(
-                                                                'createCSV',
-                                                                [
-                                                                    `data/${new Date().toISOString()}_${selected}_${mode}.csv`,
-                                                                    ['timestamp','heg','red','ir']
-                                                                ]);
-                                                            result.routes.csv.worker.start();
+                                                        cap.onclick = () => {
+                                                            //(result.subprocesses.csv as SubprocessWorkerInfo).setArgs([`data/${new Date().toISOString()}_${selected}_${mode}.csv`]);
+                                                            (result.subprocesses.csv as SubprocessWorkerInfo).start();
                                                             cap.innerHTML = `Stop recording ${selected} (${mode})`;
                                                             cap.onclick = () => {
-                                                                result.routes.csv.worker.stop();
+                                                                (result.subprocesses.csv as SubprocessWorkerInfo).stop();
                                                                 visualizeDirectory('data', csvmenu);
                                                                 cap.innerHTML = `Record ${selected} (${mode})`;
-                                                                cap.onclick = onclick;
                                                             }
                                                         }
-
-                                                        cap.onclick = onclick;
         
                                                         ev.target.parentNode.appendChild(cap);
                                                     }
@@ -279,7 +279,7 @@ const webappHtml = {
                                                 disc.onclick = () => {
                                                     result.disconnect();
                                                     disc.remove();
-                                                    //if(cap) cap.remove();
+                                                    if(cap) cap.remove();
                                                 }
                                                 ev.target.parentNode.appendChild(disc);
                                             });

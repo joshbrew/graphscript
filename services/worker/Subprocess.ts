@@ -35,14 +35,16 @@ export type SubprocessWorkerProps = { //use secondary workers to run processes a
     init?:string, initArgs?:any[],   otherArgs?:any[],  //do we need to call an init function before running the callbacks? The results of this init will set the otherArgs
     callback?:string|((data:any)=>any), //do we want to do something with the subprocess output (if any) on the main thread? 
     pipeTo?:{ //pipe outputs (if any) from the suprocesses to a specific route on main thread or a known route on another thread?
-        portId:string, 
-        route:string, otherArgs:any[], 
+        worker?:WorkerInfo, portId?:string, 
+        route:string, otherArgs?:any[], 
+        init?:string, initArgs?:any[], 
     }, //can pipe the results to a specific route on main thread or other threads via message ports
     worker?:WorkerInfo, url?:any, //need one or the other
     stopped?:boolean //you can subscribe the subprocess later by calling start();
 }
 export type SubprocessWorkerInfo = { //use secondary workers to run processes and report results back to the main thread or other
     sub:number,
+    blocking?:boolean, //if piping, is the pipe blocking?
     stop:()=>void, //unsubscribe subprocess to stop updating it
     start:()=>void, //subscribe subprocess to continue updating it 
     terminate:()=>void, //terminate the worker
@@ -157,7 +159,19 @@ export const subprocessRoutes = {
             if(s.pipeTo) {
                 w.run('setValue',['routeProxy', s.route]); //set the route we want to run through our proxy function below
                 w.run('setValue',['pipeRoute', s.pipeTo.route]); //set the route to pipe results to
-                if(s.pipeTo.portId) w.run('setValue',['pipePort', s.pipeTo.portId]); //set the pipe port
+                
+                //create dedicated worker if not specified
+                if(s.url && !s.pipeTo.worker) {
+                    let w2 = service.addWorker({url:s.url});
+                    s.pipeTo.portId = service.establishMessageChannel(w.worker,w2.worker) as string;
+                    s.pipeTo.worker = w2;
+                }
+
+                if(s.pipeTo.init) {
+                    s.pipeTo.otherArgs = await s.pipeTo.worker.run(s.pipeTo.init, s.pipeTo.initArgs);
+                }
+                
+                w.run('setValue',['pipePort', s.pipeTo.portId]); //set the pipe port
                 if(s.pipeTo.otherArgs) w.run('setValue',['otherPipeArgs', s.pipeTo.otherArgs]); //set additional args to pipe with the results
                 service.transferFunction(
                     w,
@@ -167,19 +181,34 @@ export const subprocessRoutes = {
                         if(this.graph.otherArgsProxy) inp = [data, ...this.graph.otherArgsProxy]
                         let r = this.graph.run(this.graph.routeProxy, inp);
 
-                        if(r instanceof Promise) {
-                            r.then((rr) => {
-                                if(rr !== undefined) {
-                                    let args = rr; if(this.graph.otherPipeArgs) args = [rr, ...this.graph.otherPipeArgs];
-                                    this.transmit({route:this.graph.pipeRoute, args}, this.graph.pipePort); //will report to main thread if pipePort undefined (if not set in this init)
-                                }
-                            });
-                        } else if(r !== undefined) {
-                            let args = r; if(this.graph.otherPipeArgs) args = [r, ...this.graph.otherPipeArgs];
-                            this.transmit({route:this.graph.pipeRoute, args}, this.graph.pipePort);   
-                        }
+                        if(!s.blocking) return new Promise((res) => {
+                            if(r instanceof Promise) {
+                                r.then((rr) => {
+                                    if(rr !== undefined) {
+                                        let args = rr; if(this.graph.otherPipeArgs) args = [rr, ...this.graph.otherPipeArgs];
+                                        if(this.workers[this.graph.pipePort]) {
+                                            s.blocking = true;
+                                            (this.workers[this.graph.pipePort] as WorkerInfo).run(this.graph.pipeRoute,args).then((result)=>{
+                                                s.blocking = false;
+                                                res(result);
+                                            }); //will report to main thread if pipePort undefined (if not set in this init)
+                                        }
+                                            
+                                    }
+                                });
+                            } else if(r !== undefined) {
+                                let args = r; if(this.graph.otherPipeArgs) args = [r, ...this.graph.otherPipeArgs];
+                                if(this.workers[this.graph.pipePort]){
+                                    s.blocking = true;
+                                    (this.workers[this.graph.pipePort] as WorkerInfo).run(this.graph.pipeRoute,args).then((result)=>{
+                                        s.blocking = false;
+                                        res(result); //this really isn't that efficient since the tertiary thread will report back to main thread through this thread. Better would be to proxy the third thread as well
+                                    }); //will report to main thread if pipePort undefined (if not set in this init)
+                                }//this.transmit({route:this.graph.pipeRoute, args}, this.graph.pipePort);   
+                            }
+                        });
 
-                        return r;
+                        return undefined;
                         
                     },
                     s.route+'_pipeResults'
@@ -228,7 +257,7 @@ export const subprocessRoutes = {
             }
 
             s.start = async () => {
-                if(typeof s.sub !== 'number') return w.run('subscribeToWorker', [s.subscribeRoute, wpId, s.route]).then((sub) => {
+                if(typeof s.sub !== 'number') return w.run('subscribeToWorker', [s.subscribeRoute, wpId, s.route, s.blocking]).then((sub) => {
                     s.sub = sub;
                 }); 
             }
@@ -250,6 +279,9 @@ export const subprocessRoutes = {
                 w.terminate();
                 if(s.source?.worker && typeof s.sub === 'number') {
                     s.source.post('unsubscribe',s.sub);
+                }
+                if(s.pipeTo?.worker) {
+                    s.pipeTo.worker.terminate();
                 }
             }
 

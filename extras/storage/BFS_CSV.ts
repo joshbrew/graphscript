@@ -37,6 +37,13 @@ export const appendCSV = (
 ) => {
 
     //console.log('append',filename);
+    if(!filename) {
+        let keys = Object.keys(CSV_REFERENCE);
+        if(keys.length > 0) filename = keys[keys.length - 1];
+        else filename = `csv${new Date().toISOString()}`;
+    }
+
+    //console.log(filename);
 
     let csv = CSV_REFERENCE[filename];
     if(!csv) {
@@ -47,8 +54,12 @@ export const appendCSV = (
         };
         csv = CSV_REFERENCE[filename];
         header = csv.header;
+    } 
+    if (!csv.header) {
+        let keys = Array.from(Object.keys(newData)); if (keys.indexOf('timestamp') > -1) keys.splice(keys.indexOf('timestamp'), 1);
+        csv.header = header ? header : ['timestamp','localized',...keys] as string[];
     }
-    if(header) csv.header = header; //set a new header? File needs to be rewritten if so, but this works if you make a new file (just change the input file name)
+    else if(header) csv.header = header; //set a new header? File needs to be rewritten if so, but this works if you make a new file (just change the input file name)
 
     
     let maxLen = 1; //max length of new arrays being appended, if any
@@ -183,7 +194,9 @@ export const createCSV = (
     filename:string,
     header:string[]
 ) => {
-    if(header[0].toLowerCase().includes('time') || header[0].toLowerCase().includes('unix')) {
+
+    if(header.indexOf('timestamp') > 1) {header.splice(header.indexOf('timestamp'),1); header.unshift('timestamp')}
+    if((header?.[0].toLowerCase().includes('time') || header?.[0].toLowerCase().includes('unix')) && header[1] !== 'localized') {
         header.splice(1,0,'localized') //toISOLocal
     }
 
@@ -196,7 +209,7 @@ export const createCSV = (
     return new Promise((res,rej) => {
         writeFile(
             filename,
-            CSV_REFERENCE[filename].header.join(',')+'\n',
+            CSV_REFERENCE[filename].header? CSV_REFERENCE[filename].header.join(',')+'\n' : '',
             (written:boolean) => {
                 res(written);
             }
@@ -209,7 +222,7 @@ export const createCSV = (
 //returns a basic html needed to visualize directory contents 
 export const visualizeDirectory = (dir:string, parentNode=document.body) => {
    return new Promise(async (res,rej) => {
-        if(parentNode.querySelector('#bfs' + dir))  parentNode.removeChild(parentNode.querySelector('#bfs' + dir) as Element);
+        if(parentNode.querySelector('#bfs' + dir)) parentNode.querySelector('#bfs' + dir).remove();
         parentNode.insertAdjacentHTML('beforeend',`<div id='bfs${dir}' class='bfs${dir}'></div>`);
         let div = parentNode.querySelector('#bfs'+dir);
         await listFiles(dir).then((directory) => {

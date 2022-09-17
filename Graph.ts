@@ -66,7 +66,7 @@ export type GraphNodeProperties = {
     forward?:boolean, //pass output to child nodes
     backward?:boolean, //pass output to parent node
     children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph}//string|GraphNodeProperties|GraphNode|(GraphNodeProperties|GraphNode|string)[], //child node(s), can be tags of other nodes, properties objects like this, or GraphNodes, or null
-    parent?:GraphNode|Graph, //parent graph node
+    parent?:GraphNode|Graph|string, //parent graph node
     branch?:{ //based on the operator result, automatically do something
         [label:string]:{ //apply any label for your own indexing
             if:any|((output:any)=>boolean), //if this value, or pass a callback that returns true/false
@@ -224,9 +224,6 @@ export class GraphNode {
         parent?:GraphNode|Graph|string, 
         graph?:Graph
     ) {    
-
-
-        
 
 
         if(typeof properties === 'function') { //pass a function instead of properties to set up a functional graph quickly

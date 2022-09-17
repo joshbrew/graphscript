@@ -33,14 +33,15 @@ export class GPUService extends Service {
         if (scalar == undefined) scalar = 1;
         return this.gpu.gpuDFT(signalBuffer,nSeconds,scalar);
     }
-    multidft=(signalBuffer: number[][], nSeconds: any, scalar?: number)=>{
+    multidft=(signalBuffer: number[], nSeconds: any, scalar?: number)=>{
         if (scalar == undefined) scalar = 1;
         return this.gpu.MultiChannelDFT(signalBuffer,nSeconds,scalar);
     }
-    multidftbandpass=(buffered:number[][],nSeconds:number,freqStart:number,freqEnd:number, scalar:number) => {
+    multidftbandpass=(buffered:number[][],nSeconds:number,freqStart:number,freqEnd:number, scalar?:number) => {
         if (scalar == undefined) scalar = 1;
         return this.gpu.MultiChannelDFT_Bandpass(buffered, nSeconds, freqStart, freqEnd, scalar);
     }
+    //need to fix the ffts
     coherence=(buffered:number[][],nSeconds:number,freqStart:number,freqEnd:number) => {
         const correlograms = Math2.correlograms(buffered); //should get this onto the GPU also, an untested function exists
         const buffer = [...buffered, ...correlograms];
