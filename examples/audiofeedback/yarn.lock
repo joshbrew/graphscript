@@ -52,10 +52,10 @@
   "resolved" "https://registry.npmjs.org/bson-objectid/-/bson-objectid-2.0.3.tgz"
   "version" "2.0.3"
 
-"device-decoder@~0.1.36":
-  "integrity" "sha512-1LVRwgCEXXqJk3BxDafF2KZ5OdCRBg02VYDZg8iw1/QILPeHIrgt0NGJhMiG4sKubavOCqshU3gd0TH2PVsqyg=="
-  "resolved" "https://registry.npmjs.org/device-decoder/-/device-decoder-0.1.36.tgz"
-  "version" "0.1.36"
+"device-decoder@~0.1.38":
+  "integrity" "sha512-RbN6KSSGnLienySKrxfDLXe5D6BmVOtJOOxmnVszGFrrEq19czBWCJdtlybV0wyEqzcGPMGFxOKyb3t+JXq05g=="
+  "resolved" "https://registry.npmjs.org/device-decoder/-/device-decoder-0.1.38.tgz"
+  "version" "0.1.38"
   dependencies:
     "@capacitor-community/bluetooth-le" "~2.0.0"
     "brainsatplay-math" "~0.0.23"
