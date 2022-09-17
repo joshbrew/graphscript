@@ -163,25 +163,51 @@ export class WorkerService extends Service {
                 if(worker) {
                     if(!rt.parentRoute && (rt.parent as any)?.callback) rt.parentRoute = (rt.parent as any).callback;
                     if(rt.parent && !rt.portId){ 
-                        if(typeof rt.parent === 'string') rt.portId = this.establishMessageChannel(worker, rt.parent) as string; 
-                        else rt.portId = this.establishMessageChannel(worker, (rt.parent as any).worker) as string; 
+                        if(typeof rt.parent === 'string') {
+                            if(rt.tag !== rt.parent && worker._id !== rt.parent)
+                                rt.portId = this.establishMessageChannel(worker, rt.parent) as string; 
+                        }
+                        else if(rt.tag !== rt.parent.tag && worker._id !== rt.parent.tag) {
+                            rt.portId = this.establishMessageChannel(worker, (rt.parent as any).worker) as string; 
+                        }
                     };
                     if(rt.parentRoute) {
-                        if(!rt.stopped) worker.run('subscribeToWorker', [rt.parentRoute, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
-                            worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
-                        });
-                        worker.workerSubs[rt.parentRoute+rt.portId] = {sub:null, route:rt.parentRoute, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
+                        if(!rt.stopped) {
+                            if(typeof rt.parent === 'string' && rt.parent === worker._id) {
+                                worker.run('subscribe', [rt.parentRoute, rt.callback]);
+                            }
+                            else if(rt.tag === (rt.parent as any)?.tag || worker._id === (rt.parent as any)?.tag) {
+                                worker.run('subscribe', [rt.parentRoute, rt.callback]);
+                            }
+                            else worker.run('subscribeToWorker', [rt.parentRoute, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
+                                worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
+                            });
+                        }
+                        if(!(typeof rt.parent === 'string' && rt.parent === worker._id) && !(rt.tag === (rt.parent as any)?.tag || worker._id === (rt.parent as any)?.tag)) 
+                            worker.workerSubs[rt.parentRoute+rt.portId] = {sub:null, route:rt.parentRoute, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
                     } else if (rt.parent) {
                         if(typeof rt.parent === 'string') {
-                            if(!rt.stopped) worker.run('subscribeToWorker', [rt.parent, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
-                                worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
-                            });
-                            worker.workerSubs[rt.parentRoute+rt.portId] = {sub:null, route:rt.parentRoute, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
+                            if(!rt.stopped) {
+                                if(rt.parent === worker._id) {
+                                    worker.run('subscribe', [rt.parent, rt.callback]);
+                                }
+                                else worker.run('subscribeToWorker', [rt.parent, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
+                                    worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
+                                });
+                            }
+                            if(!(typeof rt.parent === 'string' && rt.parent === worker._id)) 
+                                worker.workerSubs[rt.parentRoute+rt.portId] = {sub:null, route:rt.parentRoute, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
                         } else if(rt.parent?.tag) {
-                            if(!rt.stopped) worker.run('subscribeToWorker', [rt.parent.tag, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
-                                worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
-                            });
-                            worker.workerSubs[rt.parentRoute+rt.portId] = {sub:null, route:rt.parentRoute, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
+                            if(!rt.stopped) {
+                                if(rt.tag === (rt.parent as any)?.tag || worker._id === (rt.parent as any)?.tag) {
+                                    worker.run('subscribe', [rt.parent.tag, rt.callback]);
+                                }
+                                else worker.run('subscribeToWorker', [rt.parent.tag, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
+                                    worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
+                                });
+                            }
+                            if(!(rt.tag === (rt.parent as any)?.tag || worker._id === (rt.parent as any)?.tag)) 
+                                worker.workerSubs[rt.parentRoute+rt.portId] = {sub:null, route:rt.parentRoute, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
                         }
                     }
 
@@ -752,6 +778,7 @@ export class WorkerService extends Service {
         establishMessageChannel:this.establishMessageChannel,
         subscribeWorker:this.subscribeWorker,
         subscribeToWorker:this.subscribeToWorker,
+        subscribe:this.subscribe,
         pipeWorkers:this.pipeWorkers,
         unpipeWorkers:this.unpipeWorkers,
         unsubscribe:(route,sub)=>{

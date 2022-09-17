@@ -39,7 +39,7 @@ export declare type WorkerInfo = {
     subscribe: (route: any, callback?: ((res: any) => void) | string, blocking?: boolean) => Promise<any>;
     unsubscribe: (route: any, sub: number) => Promise<boolean>;
     start: (route?: any, portId?: string, callback?: ((res: any) => void) | string, blocking?: boolean) => Promise<boolean>;
-    stop: () => Promise<boolean>;
+    stop: (route?: string, portId?: string) => Promise<boolean>;
     workerSubs: {
         [key: string]: {
             sub: number | false;

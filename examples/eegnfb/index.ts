@@ -164,7 +164,7 @@ const webappHtml = {
                                                                 children:{
                                                                     coherence_main:{
                                                                         operator:(result:any)=>{
-                                                                            console.log('breath detect result', breath); //this algorithm only returns when it detects a beat
+                                                                            console.log('coherence result', result); //this algorithm only returns when it detects a beat
                                                                         }
                                                                     }
                                                                 }
@@ -186,7 +186,7 @@ const webappHtml = {
                                                                         operator:(
                                                                             result:any
                                                                         )=>{
-                                                                            console.log('breath detect result', breath); //this algorithm only returns when it detects a beat
+                                                                            console.log('vrms result', result); //this algorithm only returns when it detects a beat
                                                                         }
                                                                     }
                                                                 }
@@ -202,64 +202,6 @@ const webappHtml = {
                                                     }
                                                 },
                                                 
-                                                // subprocesses:{
-                                                //     coherence: {
-                                                //         init:'createSubprocess',
-                                                //         initArgs:[
-                                                //             'buffering', //preprogrammed algorithm
-                                                //             {
-                                                //                 bufferSize:Devices[mode][selected].sps,
-                                                //                 watch:['0','1','2','3']
-                                                //             }
-                                                //         ],
-                                                //         route:'runSubprocess', //the init function will set the _id as an additional argument for runAlgorithm which selects existing contexts by _id 
-                                                //         pipeTo:{ //tertiary worker which can run blocking processes while the main subprocess runs separately
-                                                //             route:'runSubprocess',
-                                                //             init:'createSubprocess',
-                                                //             initArgs:[
-                                                //                 'coherence',
-                                                //                 {
-                                                //                     sps:Devices[mode][selected].sps,
-                                                //                     watch:['0','1','2','3']
-                                                //                 }
-                                                //             ]
-                                                //         },
-                                                //         callback:(output:[number[],number[][],number[][]])=>{
-                                                //             console.log('coherence result', output); //this algorithm only returns when it detects a beat
-                                                //         }
-                                                //         //pipeTo coherence
-                                                //     },
-                                                //     noise:{ //https://www.electronics-tutorials.ws/accircuits/rms-voltage.html
-                                                //         init:'createSubprocess',
-                                                //         initArgs:[
-                                                //             'buffering', //preprogrammed algorithm
-                                                //             {
-                                                //                 bufferSize:Devices[mode][selected].sps,
-                                                //                 watch:['0','1','2','3']
-                                                //             }
-                                                //         ],
-                                                //         route:'runSubprocess', //the init function will set the _id as an additional argument for runAlgorithm which selects existing contexts by _id 
-                                                //         pipeTo:{ //tertiary worker which can run blocking processes while the main subprocess runs separately
-                                                //             route:'runSubprocess',
-                                                //             init:'createSubprocess',
-                                                //             initArgs:[
-                                                //                 'vrms',
-                                                //                 {
-                                                //                     sps:Devices[mode][selected].sps,
-                                                //                     watch:['0','1','2','3']
-                                                //                 }
-                                                //             ]
-                                                //         },
-                                                //         callback:(output:{[key:string]:number})=>{
-                                                //             console.log('vrms result', output); //this algorithm only returns when it detects a beat
-                                                //         }
-                                                //     },
-                                                //     csv:{
-                                                //         route:'appendCSV',
-                                                //         otherArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`], //filename
-                                                //         stopped:true //we will press a button to stop/start the csv collection conditionally
-                                                //     }
-                                                // }
                                             }
                                         );
 
@@ -268,28 +210,35 @@ const webappHtml = {
                                                 console.log('session', result);
                                                 let cap;
                                                 let csvmenu;
-                                                if(typeof result.subprocesses === 'object') {
-                                                    if(result.subprocesses.csv as SubprocessWorkerInfo) {
+                                                if(typeof result.routes === 'object') {
+                                                    if(result.routes.csv) {
                                                         
                                                         csvmenu = document.getElementById('csvmenu');
                                                         
                                                         cap = document.createElement('button');
                                                         cap.innerHTML = `Record ${selected} (${mode})`;
-                                                        cap.onclick = () => {
-                                                            //(result.subprocesses.csv as SubprocessWorkerInfo).setArgs([`data/${new Date().toISOString()}_${selected}_${mode}.csv`]);
-                                                            (result.subprocesses.csv as SubprocessWorkerInfo).start();
+                                                        let onclick = () => {
+                                                            result.routes.csv.worker.post(
+                                                                'createCSV',
+                                                                [
+                                                                    `data/${new Date().toISOString()}_${selected}_${mode}.csv`,
+                                                                    ['timestamp','0','1','2','3','4','5','6','7']
+                                                                ]);
+                                                            result.routes.csv.worker.start();
                                                             cap.innerHTML = `Stop recording ${selected} (${mode})`;
                                                             cap.onclick = () => {
-                                                                (result.subprocesses.csv as SubprocessWorkerInfo).stop();
+                                                                result.routes.csv.worker.stop();
                                                                 visualizeDirectory('data', csvmenu);
                                                                 cap.innerHTML = `Record ${selected} (${mode})`;
+                                                                cap.onclick = onclick;
                                                             }
                                                         }
+
+                                                        cap.onclick = onclick;
         
                                                         ev.target.parentNode.appendChild(cap);
                                                     }
                                                 }
-
                                                 result.options.ondisconnect = () => { visualizeDirectory('data',csvmenu); }
 
                                                 //console.log(result);

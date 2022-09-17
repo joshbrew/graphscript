@@ -52,35 +52,35 @@
   "resolved" "https://registry.npmjs.org/bson-objectid/-/bson-objectid-2.0.3.tgz"
   "version" "2.0.3"
 
-"device-decoder@~0.1.35":
-  "integrity" "sha512-jU54u2Pu2OMl5jXg7qx/fKwaCTRHVIIJB95I89qP84qpgQjxK3MiZlnCKZfu/HPABKa7VeqdCQkai06Tr3LbyA=="
-  "resolved" "https://registry.npmjs.org/device-decoder/-/device-decoder-0.1.35.tgz"
-  "version" "0.1.35"
+"device-decoder@~0.1.36":
+  "integrity" "sha512-1LVRwgCEXXqJk3BxDafF2KZ5OdCRBg02VYDZg8iw1/QILPeHIrgt0NGJhMiG4sKubavOCqshU3gd0TH2PVsqyg=="
+  "resolved" "https://registry.npmjs.org/device-decoder/-/device-decoder-0.1.36.tgz"
+  "version" "0.1.36"
   dependencies:
     "@capacitor-community/bluetooth-le" "~2.0.0"
     "brainsatplay-math" "~0.0.23"
-    "graphscript" "~0.1.38"
-    "graphscript-services" "~0.1.39"
+    "graphscript" "~0.1.39"
+    "graphscript-services" "~0.1.40"
 
 "gpujsutils@~1.0.10":
   "integrity" "sha512-hn74yMSZrT4pf4nlS3SRZvUe7UaGCs3KYoi/dqhTJk3Gho2M9SScj7BHewTcNI1M2UonTkcaR/CA1KgXxekfVQ=="
   "resolved" "https://registry.npmjs.org/gpujsutils/-/gpujsutils-1.0.10.tgz"
   "version" "1.0.10"
 
-"graphscript-services@~0.1.39":
-  "integrity" "sha512-PaFMs4UCwZ6oXHMneCksanlaSM49pPJz+3Zx7UimPpetoRubiSm8NWU5wmw+S5MHmzYqffMdYmFDWIh3pagQaQ=="
-  "resolved" "https://registry.npmjs.org/graphscript-services/-/graphscript-services-0.1.39.tgz"
-  "version" "0.1.39"
+"graphscript-services@~0.1.40":
+  "integrity" "sha512-M3urmNr2AV9xXOzR+ChMWODKvF/DPxXBHw/YSobGYpLyqSGVjwJeUuzveZkTKf2hrLPknQZFxiiAaX7qaEzweQ=="
+  "resolved" "https://registry.npmjs.org/graphscript-services/-/graphscript-services-0.1.40.tgz"
+  "version" "0.1.40"
   dependencies:
     "brainsatplay-math" "~0.0.23"
     "browserfs" "^1.4.3"
     "bson-objectid" "~2.0.3"
     "gpujsutils" "~1.0.10"
 
-"graphscript@~0.1.38":
-  "integrity" "sha512-gIElzk56kzjNNEOLpkouOrUc6bDQYa5low76kQeOLkQXBaiFPknldfjysrYzFGgxpygYiYnd9mqQclnUcb2z2A=="
-  "resolved" "https://registry.npmjs.org/graphscript/-/graphscript-0.1.38.tgz"
-  "version" "0.1.38"
+"graphscript@~0.1.39":
+  "integrity" "sha512-nVfVGC1deYTygKm8wY4A9oKwpG5cI9ZbqTpz1NrmoqWzqO2inbjeoD9ZL3BgDCAS70G4ldquK1/8R2f886zpWw=="
+  "resolved" "https://registry.npmjs.org/graphscript/-/graphscript-0.1.39.tgz"
+  "version" "0.1.39"
   dependencies:
     "better-sse" "~0.8.0"
     "brainsatplay-math" "~0.0.22"

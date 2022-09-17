@@ -55,7 +55,7 @@ export const appendCSV = (
         csv = CSV_REFERENCE[filename];
         header = csv.header;
     } 
-    if (!csv.header) {
+    if (!csv.header || csv.header?.length === 0) {
         let keys = Array.from(Object.keys(newData)); if (keys.indexOf('timestamp') > -1) keys.splice(keys.indexOf('timestamp'), 1);
         csv.header = header ? header : ['timestamp','localized',...keys] as string[];
     }
@@ -195,7 +195,7 @@ export const createCSV = (
     header:string[]
 ) => {
 
-    if(header.indexOf('timestamp') > 1) {header.splice(header.indexOf('timestamp'),1); header.unshift('timestamp')}
+    if(header?.indexOf('timestamp') > 1) {header.splice(header.indexOf('timestamp'),1); header.unshift('timestamp')}
     if((header?.[0].toLowerCase().includes('time') || header?.[0].toLowerCase().includes('unix')) && header[1] !== 'localized') {
         header.splice(1,0,'localized') //toISOLocal
     }
