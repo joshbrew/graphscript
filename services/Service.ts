@@ -404,16 +404,14 @@ export class Service extends Graph {
         }
         else this.setTree(this.routes);
 
-        for(const prop in this.routes) { //now set the aliases on the routes, the aliases share the same node otherwise
+        for(const prop in routes) { //now set the aliases on the routes, the aliases share the same node otherwise
             if((this.routes[prop] as any)?.aliases) {
                 let aliases = (this.routes[prop] as any).aliases;
                 aliases.forEach((a:string) => {
                     if(service?.name && includeClassName) routes[service.name+routeFormat+a] = this.routes[prop]; //we're just gonna copy the routes to the aliases for simplicity 
                     else routes[a] = this.routes[prop];
                 });
-
             }
-            
         }
 
         //console.log(this.name,this.routes);

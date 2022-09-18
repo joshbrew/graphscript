@@ -948,6 +948,7 @@ export class GraphNode {
                     for(const key in node.children) {
                         if(node.children[key].stopNode) 
                             node.children[key].stopNode();
+                            
                         if(node.children[key].tag) {
                             if(this.nodes.get(node.children[key].tag)) 
                                 this.nodes.delete(node.children[key].tag);
@@ -955,9 +956,14 @@ export class GraphNode {
                             this.nodes.forEach((n) => {
                                 if(n.nodes.get(node.children[key].tag)) 
                                     n.nodes.delete(node.children[key].tag);
-                                if(n.children[key] instanceof GraphNode) 
+                                if(n.children?.[key] instanceof GraphNode) 
                                     delete n.children[key];
                             });
+
+                            
+                            if((node.children[key] as GraphNode).ondelete && !this.graph) //the graph removeTree will call this 
+                                (node.children[key] as GraphNode).ondelete(node.children[key]);
+
                             recursivelyRemove(node.children[key]);
                         }
                     }
@@ -967,7 +973,7 @@ export class GraphNode {
                 (n as GraphNode).stopNode();
             if((n as GraphNode).tag) {
                 this.nodes.delete((n as GraphNode).tag);
-                if(this.children[(n as GraphNode).tag]) 
+                if(this.children?.[(n as GraphNode).tag]) 
                     delete this.children[(n as GraphNode).tag];
                 if(this.parent?.tag === (n as GraphNode).tag) 
                     delete this.parent;
@@ -976,7 +982,7 @@ export class GraphNode {
                 this.nodes.forEach((n) => {
                     if((n as GraphNode)?.tag) {
                         if(n.nodes.get((n as GraphNode).tag)) n.nodes.delete((n as GraphNode).tag);
-                        if(n.children[(n as GraphNode).tag] instanceof GraphNode) 
+                        if(n.children?.[(n as GraphNode).tag] instanceof GraphNode) 
                             delete n.children[(n as GraphNode).tag];
                     }
                 });
@@ -1323,48 +1329,54 @@ export class Graph {
     }
 
     removeTree = (n:string|GraphNode, checked?:any) => {
-        if(typeof n === 'string') n = this.nodes.get(n);
+        if(n)if(typeof n === 'string') n = this.nodes.get(n);
         if((n as GraphNode)?.nodes) {
-            if(!checked) checked = {};
-            const recursivelyRemove = (node:GraphNode) => {
-                if(node.children && !checked[node.tag]) {
+            let checked = {};
+            const recursivelyRemove = (node) => {
+                if(typeof node.children === 'object' && !checked[node.tag]) {
                     checked[node.tag] = true;
-                    if(Array.isArray(node.children)) {
-                        node.children.forEach((c)=>{
-                            if(c.stopNode) c.stopNode();
-                            if(c.tag) {
-                                if(this.nodes.get(c.tag)) this.nodes.delete(c.tag);
-                            }
+                    for(const key in node.children) {
+                        if(node.children[key]?.stopNode) 
+                            node.children[key].stopNode();
+                        if(node.children[key]?.tag) {
+                            if(this.nodes.get(node.children[key].tag)) 
+                                this.nodes.delete(node.children[key].tag);
+
                             this.nodes.forEach((n) => {
-                                if(n.nodes.get(c.tag)) n.nodes.delete(c.tag);
+                                if(n.nodes.get(node.children[key].tag)) 
+                                    n.nodes.delete(node.children[key].tag);
+                                if(n.children?.[key] instanceof GraphNode) 
+                                    delete n.children[key];
                             });
-                            recursivelyRemove(c);
-                        })
-                    }
-                    else if(typeof node.children === 'object') {
-                        if(node.stopNode) node.stopNode();
-                        if(node.tag) {
-                            if(this.nodes.get(node.tag)) this.nodes.delete(node.tag);
+
+                            if((node.children[key] as GraphNode).ondelete) 
+                                (node.children[key] as GraphNode).ondelete(node.children[key]);
+
+                            recursivelyRemove(node.children[key]);
                         }
-                        this.nodes.forEach((n) => {
-                            if(n.nodes.get(node.tag)) n.nodes.delete(node.tag);
-                        });
-                        recursivelyRemove(node);
                     }
                 }
             }
-            if((n as GraphNode).stopNode) (n as GraphNode).stopNode();
+            if((n as GraphNode).stopNode) 
+                (n as GraphNode).stopNode();
             if((n as GraphNode).tag) {
                 this.nodes.delete((n as GraphNode).tag);
+                if(this.parent?.tag === (n as GraphNode).tag) 
+                    delete this.parent;
+                if(this[(n as GraphNode).tag] instanceof GraphNode) 
+                    delete this[(n as GraphNode).tag];
                 this.nodes.forEach((n) => {
-                    if(n.nodes.get((n as GraphNode).tag)) n.nodes.delete((n as GraphNode).tag);
+                    if((n as GraphNode)?.tag) {
+                        if(n.nodes.get((n as GraphNode).tag)) n.nodes.delete((n as GraphNode).tag);
+                        if(n.children?.[(n as GraphNode).tag] instanceof GraphNode) 
+                            delete n.children[(n as GraphNode).tag];
+                    }
                 });
-                this.nNodes = this.nodes.size;
-                recursivelyRemove(n as GraphNode);
+                recursivelyRemove(n);
+                if((n as GraphNode).ondelete) 
+                    (n as GraphNode).ondelete(n);
             }
-            if((n as GraphNode).ondelete) (n as GraphNode).ondelete(n);
         }
-        return n;
     }
 
     remove = (n:string|GraphNode) => {

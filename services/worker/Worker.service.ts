@@ -274,6 +274,8 @@ export class WorkerService extends Service {
             else worker = this.workers[options._id].worker;
         }
 
+        //console.log('adding worker', options._id);
+
         if(!worker) return;
 
         let send = (message:any,transfer?:any) => {

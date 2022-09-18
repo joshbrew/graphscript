@@ -15,7 +15,7 @@ export const coherence:SubprocessContextProps = {
     oncreate:(ctx) => {},
     ondata:(ctx,arraybuffer) => {
 
-        console.log('buffer', arraybuffer)
+        //console.log('buffer', arraybuffer)
 
         return (globalThis.gpu as GPUService).coherence(
                     arraybuffer, 

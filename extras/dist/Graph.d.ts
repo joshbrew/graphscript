@@ -182,7 +182,7 @@ export declare class Graph {
     set: (n: GraphNode) => Map<any, any>;
     run: (n: string | GraphNode, ...args: any[]) => any;
     runAsync: (n: string | GraphNode, ...args: any[]) => Promise<unknown>;
-    removeTree: (n: string | GraphNode, checked?: any) => string | GraphNode;
+    removeTree: (n: string | GraphNode, checked?: any) => void;
     remove: (n: string | GraphNode) => string | GraphNode;
     append: (n: GraphNode, parentNode: GraphNode) => void;
     callParent: (n: GraphNode, ...args: any[]) => Promise<any>;

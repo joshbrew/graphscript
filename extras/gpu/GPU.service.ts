@@ -1,7 +1,7 @@
-//gpujs implementation
+//gpujs implementation. all of this can and should be optimized and built upon but it's just functional
 
 import { Routes, Service, ServiceOptions } from "../../services/Service";
-import {gpuUtils} from 'gpujsutils'
+import {gpuUtils} from 'gpujsutils'//'../node_modules/gpujsutils/src/gpuUtils'
 import {Math2} from 'brainsatplay-math'
 import { parseFunctionFromText } from "../../Graph";
 
@@ -43,7 +43,7 @@ export class GPUService extends Service {
     }
     //need to fix the ffts
     coherence=(buffered:number[][],nSeconds:number,freqStart:number,freqEnd:number) => {
-        const correlograms = Math2.correlograms(buffered); //should get this onto the GPU also, an untested function exists
+        const correlograms = Math2.correlograms(buffered as any); //should get this onto the GPU also, an untested function exists
         const buffer = [...buffered, ...correlograms];
         //console.log(buffer)
         var dfts:any;

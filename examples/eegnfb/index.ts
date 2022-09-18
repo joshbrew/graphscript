@@ -1,8 +1,8 @@
 //@ts-nocheck
 
 //resources
-import { DOMService, SubprocessWorkerInfo } from 'graphscript'//'../../index'////'../../index';
-import { initDevice, Devices, gsworker } from '../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
+import { DOMService } from 'graphscript'//'../../index'////'../../index';
+import { initDevice, Devices, gsworker } from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
 import { Howl, Howler } from 'howler';
 import { visualizeDirectory } from '../../extras/storage/BFS_CSV'
 
