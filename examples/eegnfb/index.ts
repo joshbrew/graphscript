@@ -136,7 +136,7 @@ const webappHtml = {
                                                     //console.log(data)
                                                 },
 
-                                                routes:{
+                                                routes:{ //top level routes subscribe to device output thread directly (and workers in top level routes will not use main thread)
                                                     buffering: {
                                                         workerUrl:gsworker,
                                                         init:'createSubprocess',
