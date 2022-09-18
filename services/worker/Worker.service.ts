@@ -721,14 +721,15 @@ export class WorkerService extends Service {
         }
     }
 
-    triggerSubscription = (
+    triggerSubscription = async (
         route:string,
         workerId:string,
         result:any
     ) => {
-        this.state.triggers[workerId]?.forEach((t) => {
-            t.onchange({args:result, callbackId:route});
-        })
+        if(this.state.triggers[workerId]) for(let i = 0; i < this.state.triggers[workerId].length; i++) {
+            let r = this.state.triggers[workerId][i].onchange({args:result, callbackId:route});
+            if(r instanceof Promise) await r; //make sure async stuff resolves too
+        }
         return true;
     }
 
