@@ -131,9 +131,9 @@ const webappHtml = {
                                             selected, 
                                             {
                                                 ondecoded: (data:{[key:number]:number|number[]}) => { 
-                                                        //data returned from decoder thread, ready for 
-                                                        //outputelm.innerText = JSON.stringify(data);
-                                                        //console.log(data)
+                                                    //data returned from decoder thread, ready for 
+                                                    //outputelm.innerText = JSON.stringify(data);
+                                                    //console.log(data)
                                                 },
 
                                                 routes:{
@@ -141,7 +141,7 @@ const webappHtml = {
                                                         workerUrl:gsworker,
                                                         init:'createSubprocess',
                                                         initArgs:[
-                                                            'buffering',
+                                                            'circularBuffer2d',
                                                             {
                                                                 bufferSize:Devices[mode][selected].sps,
                                                                 watch:['0','1','2','3']
@@ -155,8 +155,7 @@ const webappHtml = {
                                                                 initArgs:[
                                                                     'coherence',
                                                                     {
-                                                                        sps:Devices[mode][selected].sps,
-                                                                        watch:['0','1','2','3']
+                                                                        sps:Devices[mode][selected].sps
                                                                     }
                                                                 ],
                                                                 callback:'runSubprocess',
@@ -169,26 +168,26 @@ const webappHtml = {
                                                                     }
                                                                 }
                                                             },
-                                                            vrms:{
-                                                                workerUrl:gsworker,
-                                                                init:'createSubprocess',
-                                                                initArgs:[
-                                                                    'rms',
-                                                                    {
-                                                                        sps:Devices[mode][selected].sps,
-                                                                        watch:['0','1','2','3']
-                                                                    }
-                                                                ],
-                                                                callback:'runSubprocess',
-                                                                blocking:true,
-                                                                children:{
-                                                                    vrms_main:{
-                                                                        operator:(
-                                                                            result:any
-                                                                        )=>{
-                                                                            console.log('vrms result', result); //this algorithm only returns when it detects a beat
-                                                                        }
-                                                                    }
+                                                        }
+                                                    },
+                                                    vrms:{
+                                                        workerUrl:gsworker,
+                                                        init:'createSubprocess',
+                                                        initArgs:[
+                                                            'rms',
+                                                            {
+                                                                sps:Devices[mode][selected].sps,
+                                                                watch:['0','1','2','3']
+                                                            }
+                                                        ],
+                                                        callback:'runSubprocess',
+                                                        blocking:true,
+                                                        children:{
+                                                            vrms_main:{
+                                                                operator:(
+                                                                    result:any
+                                                                )=>{
+                                                                    console.log('vrms result', result); //this algorithm only returns when it detects a beat
                                                                 }
                                                             }
                                                         }

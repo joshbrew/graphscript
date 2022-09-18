@@ -630,22 +630,24 @@ export class WorkerService extends Service {
         worker:WorkerInfo|Worker|string|MessagePort, 
         blocking?:boolean //requires a WorkerInfo object 
     ) => {
-        //console.log('subscribed!',worker, this.workers, WorkerGlobalScope);
 
         let callback:(res:any) => void;
+
+        //console.log(route,worker);
 
         if(blocking) {
 
             let blocked = false;
 
             callback = (res:any) => {
+                //console.log(worker,res,route,blocked)
                 if(!blocked) {
                     blocked = true;
                 
                     if(res instanceof Promise) {
                         res.then((r) => {
                             if((worker as WorkerInfo)?.run) 
-                                (worker as any).run({args:r,callbackId:route}).then((ret)=>{
+                                (worker as WorkerInfo).run('triggerSubscription',[route,(worker as WorkerInfo)._id,r]).then((ret)=>{
                                     blocked = false;
                                     //if(ret !== undefined) this.setState({[worker._id]:ret});
                                     //console.log(ret)
@@ -653,7 +655,7 @@ export class WorkerService extends Service {
                         });
                     } else {
                         if((worker as WorkerInfo)?.run) 
-                            (worker as any).run({args:res,callbackId:route}).then((ret)=>{
+                            (worker as WorkerInfo).run('triggerSubscription',[route,(worker as WorkerInfo)._id,res]).then((ret)=>{
                                 blocked = false;
                                 //if(ret !== undefined) this.setState({[worker._id]:ret});
                                 //console.log(ret)
@@ -682,14 +684,15 @@ export class WorkerService extends Service {
             }
         }
 
-        if((worker as WorkerInfo)?.port) {
+        if(!blocking && (worker as WorkerInfo)?.port) {
             worker = (worker as WorkerInfo).port;
         }
-        else if((worker as WorkerInfo)?.worker) {
+        else if(!blocking && (worker as WorkerInfo)?.worker) {
             worker = (worker as WorkerInfo).worker;
         } 
         else if(typeof worker === 'string' && this.workers[worker]) {
-            if(this.workers[worker].port) worker = this.workers[worker].port;
+            if(blocking) worker = this.workers[worker];
+            else if(this.workers[worker].port) worker = this.workers[worker].port;
             else worker = this.workers[worker].worker;
         } //else we are subscribing to window
 
@@ -702,8 +705,10 @@ export class WorkerService extends Service {
         callback?:((res:any)=>void)|string,
         blocking?:boolean
     ) => {
+        //console.log(route, workerId, callback, this.workers[workerId]);
         if(typeof workerId === 'string' && this.workers[workerId]) {
             this.subscribe(workerId, (res) => {
+                //console.log('res',res);
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[workerId]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node
@@ -714,6 +719,17 @@ export class WorkerService extends Service {
             });
             return this.workers[workerId].run('subscribeWorker', [route, workerId, blocking]);
         }
+    }
+
+    triggerSubscription = (
+        route:string,
+        workerId:string,
+        result:any
+    ) => {
+        this.state.triggers[workerId]?.forEach((t) => {
+            t.onchange({args:result, callbackId:route});
+        })
+        return true;
     }
 
     pipeWorkers = ( //worker a listens to worker b, be sure to unsubscribe on the source when terminating
@@ -778,6 +794,7 @@ export class WorkerService extends Service {
         establishMessageChannel:this.establishMessageChannel,
         subscribeWorker:this.subscribeWorker,
         subscribeToWorker:this.subscribeToWorker,
+        triggerSubscription:this.triggerSubscription,
         subscribe:this.subscribe,
         pipeWorkers:this.pipeWorkers,
         unpipeWorkers:this.unpipeWorkers,

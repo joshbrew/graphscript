@@ -4,7 +4,7 @@ import { SubprocessContextProps } from '../../services/worker/Subprocess';
 import { ByteParser } from './util/ByteParser';
 
 
-const circularBuffer:SubprocessContextProps = {
+export const circularBuffer2d:SubprocessContextProps = {
     structs:{
         bufferSize:250, //e.g. sps * nsec of data to buffer
         watch:['0','1','2','3'],
@@ -23,9 +23,11 @@ const circularBuffer:SubprocessContextProps = {
         ctx.watch.forEach((key) => {
             if(data[key]) {
                 ByteParser.circularBuffer(ctx.data[key], data[key])
-                buffer2d.push(data[key])
+                buffer2d.push(ctx.data[key])
             }
         });
+
+        //console.log('buffered', buffer2d)
 
         return buffer2d;
     }

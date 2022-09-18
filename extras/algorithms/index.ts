@@ -5,17 +5,19 @@ import { blink_detect } from './blink';
 import { rms } from './rms';
 import { dft } from './dft';
 import { coherence } from './coherence';
+import { circularBuffer2d } from './buffering';
 
 //data in, interpretation out (with unique key:value pairs)
 Object.assign(algorithms,{
     beat_detect, //beat detection, set sps and maxFreq detection (for low passing)
     accel_gyro, //get absolute angle and position change from starting point (need magnetometer for global position, the gyro is relative)
     heartrate:beat_detect, //alias
-    breath:Object.assign({},beat_detect),
+    breath:Object.assign({}, beat_detect),
     blink_detect,
     rms,
     dft,
-    coherence
+    coherence,
+    circularBuffer2d
 } as {
     [key:string]:SubprocessContextProps
 });

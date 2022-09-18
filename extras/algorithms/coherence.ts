@@ -9,16 +9,13 @@ export const coherence:SubprocessContextProps = {
         nSec:1, //number of seconds of data to buffer
         freqStart:0,
         freqEnd:125, //default full nyquist range 
-        watch:['0','1','2','3'],
         data:{},
         blocking:false
     },
-    oncreate:(ctx) => {
-        for(const key in ctx.watch) {
-            ctx.watch[key] = new Array(Math.floor(ctx.sps*ctx.nSec)).fill(0);
-        }
-    },
+    oncreate:(ctx) => {},
     ondata:(ctx,arraybuffer) => {
+
+        console.log('buffer', arraybuffer)
 
         return (globalThis.gpu as GPUService).coherence(
                     arraybuffer, 
