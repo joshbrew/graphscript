@@ -3,7 +3,7 @@
 //resources
 import { DOMService } from 'graphscript';//'../../index'////'../../index';
 import { initDevice } from 'device-decoder';//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
-import gsworker from 'device-decoder/stream.gpu.worker';
+import gsworker from 'device-decoder/stream.big.worker';
 import { Devices } from 'device-decoder.third-party'
 
 import { Howl, Howler } from 'howler';
