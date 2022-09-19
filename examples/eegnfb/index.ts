@@ -75,16 +75,24 @@ const webappHtml = {
                                 attributes:{
                                     innerHTML:`
                                         <option value='BLE' selected>BLE</option>
+                                        <option value='BLE_OTHER'>BLE (Third Party Drivers)</option>
                                         <option value='USB'>USB</option>
                                     `,
                                     onchange:(ev)=>{
                                         if(ev.target.value === 'BLE') {
                                             ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
                                             ev.target.parentNode.querySelector('#selectBLE').style.display = '';
+                                            ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
                                         }
                                         else if(ev.target.value === 'USB') {
                                             ev.target.parentNode.querySelector('#selectUSB').style.display = '';
                                             ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
+                                            ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
+                                        }
+                                        else if(ev.target.value === 'BLE_OTHER') {
+                                            ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
+                                            ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
+                                            ev.target.parentNode.querySelector('#selectBLEOther').style.display = '';
                                         }
                                     }
                                 }
@@ -103,7 +111,13 @@ const webappHtml = {
                                 onrender:(self)=>{                      
                                     for(const key in selectable.BLE) {
                                         self.innerHTML += `<option value='${key}'>${selectable.BLE[key]}</option>`
-                                    }                  
+                                    }   
+                                }
+                            } as ElementProps,
+                            'selectBLEOther':{
+                                tagName:'select',
+                                style:{display:'none'},
+                                onrender:(self)=>{                    
                                     for(const key in selectable.BLE_OTHER) { //include both sets
                                         self.innerHTML += `<option value='${key}'>${selectable.BLE_OTHER[key]}</option>`
                                     }
