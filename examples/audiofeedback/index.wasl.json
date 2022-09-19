@@ -1,15 +1,13 @@
 {
-    "graph": {
+    "components": {
         "tagName": "div",
-            "nodes": {
+            "components": {
                 "devices": {
                     "tagName": "div",
-                    "graph": {
-                        "nodes": {
+                        "components": {
                             "devicediv": {
                                 "tagName": "div",
-                                "graph": {
-                                    "nodes": {
+                                "components": {
                                         "connectheader": {
                                             "src": "./src/plugins/connect/header.js"
                                         },
@@ -25,20 +23,16 @@
                                         "connectDevice": {
                                             "src": "./src/plugins/connect/device.js"
                                         }
-                                    }
                                 }
                             }
-                        }
                     }
                 },
                 "output": {
                     "tagName": "div",
-                    "graph": {
-                        "nodes": {
+                        "components": {
                             "playsounds": {
                                 "tagName": "div",
-                                "graph": {
-                                    "nodes": {
+                                "components": {
                                         "soundheader": {
                                             "src": "./src/plugins/output/sound/header.js"
                                         },
@@ -52,12 +46,10 @@
                                             "src": "./src/plugins/output/sound/stop.js"
                                         }
                                     }
-                                }
                             },
                             "other": {
                                 "tagName": "div",
-                                "graph": {
-                                    "nodes": {
+                                "components": {
                                         "stats": {
                                             "src": "./src/plugins/output/stats/start.js"
                                         },
@@ -70,11 +62,9 @@
                                         "csvmenu": {
                                             "src": "./src/plugins/output/csv/menu.js"
                                         }
-                                    }
                                 }
                             }
                         }
-                    }
                 }
             }
         }
