@@ -149,6 +149,7 @@ const webappHtml = {
                                             mode as 'BLE'|'USB'|'BLE_OTHER'|'USB_OTHER'|'OTHER', 
                                             selected, 
                                             {
+                                                workerUrl:gsworker,
                                                 ondecoded: (data:{[key:number]:number|number[]}) => { 
                                                     //data returned from decoder thread, ready for 
                                                     //outputelm.innerText = JSON.stringify(data);
