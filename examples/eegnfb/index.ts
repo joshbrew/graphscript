@@ -137,6 +137,8 @@ const webappHtml = {
                                             selected = (document.getElementById('selectBLE') as HTMLSelectElement).value;
                                         else if (mode === 'USB') 
                                             selected = (document.getElementById('selectUSB') as HTMLSelectElement).value;
+                                        else if (mode === 'BLE_OTHER') 
+                                            selected = (document.getElementById('selectBLEOther') as HTMLSelectElement).value;
 
                                         console.log(selected,',',mode,', sps:',Devices[mode][selected].sps)
 
