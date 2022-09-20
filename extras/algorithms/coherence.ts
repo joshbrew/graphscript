@@ -15,7 +15,7 @@ export const coherence:SubprocessContextProps = {
     oncreate:(ctx) => {
         ctx.tags.forEach((tag,i) => {
             if(i !== ctx.tags.length-1){
-                for(let j = i; j < ctx.tags.length; j++) {
+                for(let j = i+1; j < ctx.tags.length; j++) {
                     ctx.coherenceTags.push(ctx.tags[i]+'_'+ctx.tags[j]);
                 }
             }

@@ -89,17 +89,21 @@ export class GPUService extends Service {
         }
         else { //now multiply cross correlogram ffts and divide by autocorrelogram ffts (magnitude squared coherence)
             dft.forEach((amp, j) => {
-            newdft[j] = amp * amp / (autoFFTproducts[k][j] * autoFFTproducts[k + l][j]);//Magnitude squared coherence;
-            if (newdft[j] > 1) { newdft[j] = 1; } //caps the values at 1
-            //newdft[j] = Math.pow(newdft[j],.125)
-            });
-            l++;
-            if ((l + k) === nChannels) {
-            k++;
-            l = 1;
+                let denom = (autoFFTproducts[k][j] * autoFFTproducts[k + l][j]);
+                if(denom !== 0)
+                    newdft[j] = amp * amp / denom;//Magnitude squared coherence;
+                else newdft[j] = 0;
+
+                if (newdft[j] > 1) { newdft[j] = 1; } //caps the values at 1
+                //newdft[j] = Math.pow(newdft[j],.125)
+                });
+                l++;
+                if ((l + k) === nChannels) {
+                k++;
+                l = 1;
+                }
+                coherenceResults.push(newdft);
             }
-            coherenceResults.push(newdft);
-        }
         });
         return [dfts[0], dfts[1], coherenceResults];
     }

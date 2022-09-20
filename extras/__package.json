@@ -1,12 +1,12 @@
 {
-    "name": "graphscript-services.gpu",
+    "name": "graphscript-services",
     "version": "0.1.46",
     "description": "Extra services for graphscript.",
-    "main": "dist/index.gpu.services.js",
-    "module": "dist/index.gpu.services.esm.js",
-    "types": "dist/extras/index.gpu.services.d.ts",
+    "main": "dist/index.services.js",
+    "module": "dist/index.services.esm.js",
+    "types": "dist/extras/index.services.d.ts",
     "scripts": {
-        "start": "tinybuild path=tinybuild.config.js",
+        "start": "tinybuild path=tinybuild.config.js && tinybuild path=tinybuild.gpu.config.js && tinybuild path=tinybuild.storage.config.js",
         "build": "tinybuild build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",

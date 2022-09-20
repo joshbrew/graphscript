@@ -6,7 +6,7 @@
     "module": "dist/index.storage.services.esm.js",
     "types": "dist/index.storage.services.d.ts",
     "scripts": {
-        "start": "tinybuild path=tinybuild.config.js",
+        "start": "tinybuild path=tinybuild.config.js && tinybuild path=tinybuild.gpu.config.js && tinybuild path=tinybuild.storage.config.js",
         "build": "tinybuild build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",

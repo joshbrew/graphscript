@@ -267,7 +267,8 @@ const webappHtml = {
                                                                 initArgs:[
                                                                     'coherence',
                                                                     {
-                                                                        sps:Devices[mode][selected].sps
+                                                                        sps:Devices[mode][selected].sps,
+                                                                        tags:['0','1','2','3'] //we can name the fft tags coming in from the watched buffer
                                                                     }
                                                                 ],
                                                                 callback:'runSubprocess',
@@ -275,7 +276,7 @@ const webappHtml = {
                                                                 children:{
                                                                     coherence_main:{
                                                                         operator:(result:any)=>{
-                                                                            //console.log('coherence result', result); //this algorithm only returns when it detects a beat
+                                                                            console.log('coherence result', result); //this algorithm only returns when it detects a beat
                                                                         }
                                                                     }
                                                                 }
