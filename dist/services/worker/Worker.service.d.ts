@@ -50,6 +50,7 @@ export declare type WorkerInfo = {
         };
     };
     terminate: () => boolean;
+    postMessage: (message: any, transfer: any[]) => void;
     graph: WorkerService;
     _id: string;
 } & WorkerProps & WorkerRoute;

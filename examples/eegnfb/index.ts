@@ -1,13 +1,17 @@
 //@ts-nocheck
 
 //resources
-import { DOMService } from 'graphscript';//'../../index'////'../../index';
-import { initDevice } from 'device-decoder';//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
-import gsworker from 'device-decoder/stream.big.worker';
+import { DOMService, WorkerCanvas } from 'graphscript/';//'../../index'////'../../index';
+import { initDevice, workers, filterPresets, FilterSettings, chartSettings } from 'device-decoder';//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
+
+
+import { setSignalControls } from 'device-decoder/webglplot.routes'
+
+import gsworker from 'device-decoder/stream.big.worker' //device-decoder/stream.big.worker';
 import { Devices } from 'device-decoder.third-party'
 
 import { Howl, Howler } from 'howler';
-import { visualizeDirectory } from '../../extras/storage/BFS_CSV';
+import { visualizeDirectory } from 'graphscript-services/storage/BFS_CSV';
 
 
 import './index.css'
@@ -42,21 +46,20 @@ const soundFilePaths = [
 ];
 
 const GameState = {
-    baselineHEG:0,
-    currentHEG:0,
-    shortChange:0,
-    longChange:0,
     currentTimestamp:Date.now(),
     lastTimestamp:Date.now(),
-    dataFrameTime:0,
-    raw:undefined,
-    hegDataBuffer:new Array(512).fill(0),
-    localMax:0,
+    eegDataBuffers:{},
 
     playing:undefined as Howl,
     analyser:undefined,
     audioFFTBuffer:new Uint8Array(2048), //default fft size
 }
+
+
+const webapp = new DOMService();
+webapp.load(workers); //merge the worker service provided by device-decoder for convenience
+
+let transferred = false; //did we transfer a canvas already
 
 //start of your web page
 const webappHtml = {
@@ -71,7 +74,7 @@ const webappHtml = {
                         children:{
                             'connectheader':{
                                 tagName:'h4',
-                                innerHTML:'Connect to an HEG device'
+                                innerHTML:'Connect to an EEG device'
                             } as ElementProps,
                             'connectmode':{
                                 tagName:'select',
@@ -143,7 +146,7 @@ const webappHtml = {
                                         else if (mode === 'BLE_OTHER') 
                                             selected = (document.getElementById('selectBLEOther') as HTMLSelectElement).value;
 
-                                        console.log(selected,',',mode,', sps:',Devices[mode][selected].sps)
+                                        console.log(selected,',',mode,', sps:', Devices[mode][selected].sps)
 
                                         let info = initDevice(
                                             mode as 'BLE'|'USB'|'BLE_OTHER'|'USB_OTHER'|'OTHER', 
@@ -157,6 +160,95 @@ const webappHtml = {
                                                 },
 
                                                 routes:{ //top level routes subscribe to device output thread directly (and workers in top level routes will not use main thread)
+                                                    renderer: {
+                                                        workerUrl:gsworker,
+                                                        callback:'updateCanvas', //will pipe data to the canvas animation living alone on this thread
+                                                        oncreate:(self) => {
+                                                            //console.log(self,webapp);
+                                                            if(transferred) {
+                                                                let newCanvas = document.createElement('canvas');
+                                                                newCanvas.id = 'waveform';
+                                                                newCanvas.style.width = '100%';
+                                                                newCanvas.style.height = '300px';
+                                                                let node = document.getElementById('waveform');
+                                                                let newOCanvas = document.createElement('canvas');
+                                                                newOCanvas.id = 'waveformoverlay';
+                                                                newOCanvas.style.width = '100%';
+                                                                newOCanvas.style.height = '300px';
+                                                                newOCanvas.style.transform = 'translateY(-300px)';
+                                                                let node2 = document.getElementById('waveformoverlay');
+                                                                let parentNode;
+                                                                if(node) {
+                                                                    parentNode = node.parentNode;
+                                                                    node.remove();
+                                                                    node2?.remove();
+                                                                }
+                                                                else parentNode = document.getElementById('output');
+                                                                parentNode.appendChild(newCanvas); //now transferrable again
+                                                                parentNode.appendChild(newOCanvas);
+                                                            }
+
+                                                            let canvas = document.getElementById('waveform');
+                                                            let overlay = document.getElementById('waveformoverlay').transferControlToOffscreen();
+
+                                                            if(chartSettings[selected]) {
+                                                                console.log(chartSettings[selected])
+                                                                self.worker.post('setValue',['chartSettings',chartSettings[selected]])
+                                                            } 
+
+                                                            webapp.run(
+                                                                'worker.transferCanvas', 
+                                                                self.worker.worker,
+                                                                {
+                                                                    canvas,
+                                                                    context:undefined,
+                                                                    _id:'waveform',
+                                                                    overlay,
+                                                                    transfer:[overlay],
+                                                                    init:(self:WorkerCanvas, canvas, context) => {
+                                                                        //console.log('init', globalThis.Devices);
+
+                                                                        let settings = {
+                                                                            canvas,
+                                                                            _id:self._id,
+                                                                            overlay:self.overlay,
+                                                                            width:canvas.clientWidth,
+                                                                            height:canvas.clientHeight,
+                                                                            lines:{
+                                                                                '0':{nSec:10, sps: 250}, //{nPoints:1000}
+                                                                                '1':{nSec:10, sps: 250},
+                                                                                '2':{nSec:10, sps: 250},
+                                                                                '3':{nSec:10, sps: 250}
+                                                                            },
+                                                                            useOverlay:true,
+                                                                        };
+
+                                                                        if(self.graph.chartSettings) Object.assign(settings,self.graph.chartSettings);
+
+                                                                        let r = self.graph.run('setupChart', settings);
+                                                                    },
+                                                                    update:(
+                                                                        self:WorkerCanvas,
+                                                                        canvas,
+                                                                        context,
+                                                                        data:{[key:string]:number|number[]}
+                                                                    )=>{
+                                                                        self.graph.run('updateChartData', 'waveform', data);
+                                                                    },
+                                                                    //draw:()=>{},
+                                                                    clear:(
+                                                                        self:WorkerCanvas,
+                                                                        canvas,
+                                                                        context
+                                                                    ) => {
+                                                                        self.graph.run('clearChart','waveform');
+                                                                    }
+                                                            });
+                                                            transferred = true;
+                                                        }
+
+                                                        //webapp.run('worker.updateChartData')
+                                                    },
                                                     buffering: {
                                                         workerUrl:gsworker,
                                                         init:'createSubprocess',
@@ -183,7 +275,7 @@ const webappHtml = {
                                                                 children:{
                                                                     coherence_main:{
                                                                         operator:(result:any)=>{
-                                                                            console.log('coherence result', result); //this algorithm only returns when it detects a beat
+                                                                            //console.log('coherence result', result); //this algorithm only returns when it detects a beat
                                                                         }
                                                                     }
                                                                 }
@@ -207,7 +299,7 @@ const webappHtml = {
                                                                 operator:(
                                                                     result:any
                                                                 )=>{
-                                                                    console.log('vrms result', result); //this algorithm only returns when it detects a beat
+                                                                    //console.log('vrms result', result); //this algorithm only returns when it detects a beat
                                                                 }
                                                             }
                                                         }
@@ -227,6 +319,15 @@ const webappHtml = {
                                         if(info) {
                                             info.then((result) => {
                                                 console.log('session', result);
+
+                                                if(filterPresets[selected]) { //enable filters, which are customizable biquad filters
+                                                    //console.log(filterPresets[selected]);
+                                                    result.workers.streamworker.post(
+                                                        'setFilters', 
+                                                        filterPresets[selected] as {[key:string]:FilterSettings}
+                                                    );
+                                                }
+
                                                 let cap;
                                                 let csvmenu;
                                                 if(typeof result.routes === 'object') {
@@ -256,6 +357,19 @@ const webappHtml = {
                                                         cap.onclick = onclick;
         
                                                         ev.target.parentNode.appendChild(cap);
+
+                                                        
+                                                        document.getElementById('waveformoverlay').onmouseover = async (ev) => {
+                                                            await setSignalControls(
+                                                                document.getElementById('waveformcontrols'),
+                                                                'waveform',
+                                                                result.workers.streamworker,
+                                                                result.routes.renderer.worker 
+                                                            )
+                                                            document.getElementById('waveformcontrols').style.display = '';
+                                                        }
+
+
                                                     }
                                                 }
                                                 result.options.ondisconnect = () => { visualizeDirectory('data',csvmenu); }
@@ -286,7 +400,7 @@ const webappHtml = {
                         children:{
                             'soundheader':{
                                 tagName:'h4',
-                                innerHTML:'Play a sound to modulate with the HEG'
+                                innerHTML:'Play a sound to modulate with the EEG'
                             } as ElementProps,
                             'soundDropdown':{
                                 tagName:'select',
@@ -333,112 +447,23 @@ const webappHtml = {
                             } as ElementProps
                         }
                     } as ElementProps,
-                    'stats':{
-                        tagName:'table',
-                        animation:function(){
-                            if(!this.element.innerHTML || GameState.currentTimestamp !== GameState.lastTimestamp){
-                                this.element.innerHTML = `
-                                STATS:
-                                <tr> <th>Timestamp: </th><td>${new Date(GameState.currentTimestamp).toISOString()}</td> </tr>
-                                <tr> <th>Current: </th><td>${GameState.currentHEG?.toFixed(2)}</td> </tr>
-                                <tr> <th>Baseline: </th><td>${GameState.baselineHEG?.toFixed(2)}</td> </tr>
-                                <tr> <th>Fast Change: </th><td>${GameState.baselineHEG ? (100*GameState.shortChange/GameState.baselineHEG)?.toFixed(2) : 0}%</td> </tr>
-                                <tr> <th>Slow Change: </th><td>${GameState.baselineHEG ? (100*GameState.longChange/GameState.baselineHEG)?.toFixed(2): 0}%</td> </tr>
-                                `
-                            }
-                        },
-                    } as ElementProps,
-                    'resetstats':{
-                        tagName:'button',
-                        attributes:{
-                            onclick:() => {
-                                Object.assign(GameState,{
-                                    baselineHEG:0,
-                                    currentHEG:0,
-                                    shortChange:0,
-                                    longChange:0,
-                                    currentTimestamp:Date.now(),
-                                    lastTimestamp:Date.now(),
-                                    dataFrameTime:0,
-                                    raw:undefined,
-                                    hegDataBuffer:new Array(512).fill(0),
-                                    localMax:0,
-                                })
-                            },
-                            innerText:'Reset stats'
-                        }
-                    } as ElementProps,
                     'waveform':{
                         tagName:'canvas',
-                        style:{width:'100vw', height:'300px'},
-                        onrender:function (canvas:HTMLCanvasElement,info:ElementInfo) { 
-                            canvas.width = canvas.clientWidth;
-                            canvas.height = canvas.clientHeight;
-
-                            let ctx = canvas.getContext('2d');
-
-                            this.canvas = canvas;
-                            this.ctx = ctx;
-
-                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        style:{width:'100%', height:'300px'},
+                    } as ElementProps,
+                    'waveformoverlay':{
+                        tagName:'canvas',
+                        style:{width:'100%', height:'300px', transform:'translateY(-300px)'},
+                    } as ElementProps,
+                    'waveformcontrols':{
+                        tagName:'table',
+                        style:{display:'none', width:'100%', height:'300px', transform:'translateY(-600px)'},
+                        attributes: {
+                            className:'chartcontrols',
+                            onmouseleave:(ev) => {
+                                document.getElementById('waveformcontrols').style.display = 'none';
+                            }
                         },
-                        animation:function() {
-                            //this = node, this.element = element
-
-                            this.ctx.fillStyle = '#000';
-                            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-                            this.ctx.lineWidth = 2;
-                                
-                            this.ctx.strokeStyle = 'limegreen'
-                            this.ctx.beginPath();
-
-                            let sliceWidth = (this.canvas.width * 1.0) / 512;
-                            let x = 0;
-    
-                            for (let i = 0; i < 512; i++) {
-                                let v = 1 - GameState.hegDataBuffer[i] / GameState.localMax;
-                                let y = (v * this.canvas.height + this.canvas.height)*0.5;
-
-                                if (i === 0) {
-                                    this.ctx.moveTo(x, y)
-                                } else {
-                                    this.ctx.lineTo(x, y)
-                                }
-
-                                x += sliceWidth;
-                            }
-
-                            this.ctx.lineTo(this.canvas.width, this.canvas.height )
-                            this.ctx.stroke()
-
-                            if(GameState.analyser) {
-                                GameState.analyser.getByteFrequencyData(GameState.audioFFTBuffer);
-                                //console.log(GameState.audioFFTBuffer);
-                               
-                                this.ctx.strokeStyle = 'royalblue'
-                                this.ctx.beginPath()
-    
-                                x = 0
-    
-                                for (let i = 0; i < 512; i++) {
-                                    let v = GameState.audioFFTBuffer[i] / 255.0
-                                    let y = (this.canvas.height - v * this.canvas.height) 
-    
-                                    if (i === 0) {
-                                        this.ctx.moveTo(x, y)
-                                    } else {
-                                        this.ctx.lineTo(x, y)
-                                    }
-    
-                                    x += sliceWidth;
-                                }
-    
-                                this.ctx.lineTo(this.canvas.width, this.canvas.height )
-                                this.ctx.stroke();
-
-                               
-                            }
-                        }
                     } as ElementProps,
                     'csvmenu':{
                         tagName:'div',
@@ -454,7 +479,4 @@ const webappHtml = {
     } as ElementProps
 }
 
-
-const webapp = new DOMService({
-    routes:webappHtml
-});
+webapp.load(webappHtml);

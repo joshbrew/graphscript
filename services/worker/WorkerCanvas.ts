@@ -11,6 +11,7 @@ export type WorkerCanvasTransferProps = { //defined in main thread to send to wo
     update?:string|((self:any,canvas:any,context:any,input:any)=>void),
     init?:string|((self,canvas:any,context:any)=>void),
     clear?:string|((self,canvas:any,context:any)=>void),
+    transfer?:any[],
     animating?:boolean, //animation will start automatically, else you can call draw conditionally
     [key:string]:any //any transferrable props you want to use in your animation
 }
@@ -62,14 +63,15 @@ export const workerCanvasRoutes = {
         options:WorkerCanvasTransferProps,
         route?:string //we can reroute from the default 'receiveCanvas' e.g. for other rendering init processes like in threejs
     ){
-
-
         if(!options) return undefined;
         if(!options._id) options._id = `canvas${Math.floor(Math.random()*1000000000000000)}`;
 
         let offscreen = (options.canvas as any).transferControlToOffscreen();
 
-        let message:any = {route:route ? route : 'receiveCanvas',args:{canvas:offscreen, context: options.context, _id:options._id}};
+        let message:any = {route:route ? route : 'receiveCanvas',args:{
+            ...options,
+            canvas:offscreen, 
+        }};
 
         this.graph.run('initProxyElement', options.canvas, worker, options._id); //initiate an element proxy
 
@@ -90,11 +92,19 @@ export const workerCanvasRoutes = {
             else message.args.clear = options.clear;
         }
 
-        worker.postMessage(message,[offscreen]);
+        let transfer = [offscreen];
+        if(options.transfer) {
+            transfer.push(...options.transfer);
+            delete options.transfer;
+        }
+
+        worker.postMessage(message,transfer);
 
         //lets add some utilities to make it easy to update the thread
         const workercontrols = {
             _id:options._id,
+            width:options.width,
+            height:options.height,
             worker,
             draw:(props?:any)=>{
                 worker.postMessage({route:'drawFrame',args:[options._id,props]});
@@ -106,7 +116,7 @@ export const workerCanvasRoutes = {
                 worker.postMessage({route:'clearCanvas',args:options._id})
             },
             init:()=>{
-                console.log('Posting init')
+                //console.log('Posting init')
                 worker.postMessage({route:'initCanvas',args:options._id});
             },
             stop:()=>{
@@ -129,6 +139,7 @@ export const workerCanvasRoutes = {
         if(!this.graph.CANVASES) this.graph.CANVASES = {} as {[key:string]:WorkerCanvas};
 
         let canvasOptions = options;
+
 
         options._id ? canvasOptions._id = options._id : canvasOptions._id = `canvas${Math.floor(Math.random()*1000000000000000)}`;
         typeof options.context === 'string' ? canvasOptions.context = options.canvas.getContext(options.context) : canvasOptions.context = options.context; //get the rendering context based on string passed
@@ -179,7 +190,7 @@ export const workerCanvasRoutes = {
             
             }
         }
-   
+
         return canvasOptions._id;
     },
     setDraw:function(

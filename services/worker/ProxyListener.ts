@@ -275,7 +275,7 @@ export class ProxyManager {
           addTo.proxy = proxy;
           proxy.proxied = addTo;
 
-          console.log(proxy, addTo);
+          //console.log(proxy, addTo);
 
           addTo.style = proxy.style;
           if(proxy.width) {

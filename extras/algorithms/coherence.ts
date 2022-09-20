@@ -9,19 +9,45 @@ export const coherence:SubprocessContextProps = {
         nSec:1, //number of seconds of data to buffer
         freqStart:0,
         freqEnd:125, //default full nyquist range 
-        data:{},
-        blocking:false
+        tags:['0','1','2','3'],
+        coherenceTags:[] as any[]
     },
-    oncreate:(ctx) => {},
+    oncreate:(ctx) => {
+        ctx.tags.forEach((tag,i) => {
+            if(i !== ctx.tags.length-1){
+                for(let j = i; j < ctx.tags.length; j++) {
+                    ctx.coherenceTags.push(ctx.tags[i]+'_'+ctx.tags[j]);
+                }
+            }
+        })
+    },
     ondata:(ctx,arraybuffer) => {
 
         //console.log('buffer', arraybuffer)
+        let results = (globalThis.gpu as GPUService).coherence(
+            arraybuffer, 
+            ctx.nSec, 
+            ctx.freqStart, 
+            ctx.freqEnd
+        ) as [number[],number[][],number[][]] //frequency (x), power spectrums (y), coherence per channel (in order of channels)
 
-        return (globalThis.gpu as GPUService).coherence(
-                    arraybuffer, 
-                    ctx.nSec, 
-                    ctx.freqStart, 
-                    ctx.freqEnd
-                ) as [number[],number[][],number[][]] //frequency (x), power spectrums (y)
+        let dft = {};
+
+        ctx.tags.forEach((tag,i) => {
+            dft[tag] = results[1][i];
+        });
+
+        let coherence = {};
+
+        ctx.coherenceTags.forEach((tag,i) => {
+            coherence[tag] = results[2][i];
+        });
+
+
+        return {
+            frequencies:results[0],
+            dft,
+            coherence
+        };
     }
 }

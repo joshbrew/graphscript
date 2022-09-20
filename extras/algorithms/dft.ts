@@ -10,22 +10,31 @@ export const dft:SubprocessContextProps = {
         freqStart:0,
         freqEnd:125, //default full nyquist range 
         watch:['0','1','2','3'],
-        data:{},
         blocking:false
     },
     oncreate:(ctx) => {
-        for(const key in ctx.watch) {
-            ctx.watch[key] = new Array(Math.floor(ctx.sps*ctx.nSec)).fill(0);
-        }
     },
     ondata:(ctx,arraybuffer) => {
 
-        return (globalThis.gpu as GPUService).multidftbandpass(
-                    arraybuffer, 
-                    ctx.nSec, 
-                    ctx.freqStart, 
-                    ctx.freqEnd, 
-                    1
-                ) as [number[],number[][]] //frequency (x), power spectrums (y)
+        //console.log('buffer', arraybuffer)
+        let results = (globalThis.gpu as GPUService).multidftbandpass(
+            arraybuffer, 
+            ctx.nSec, 
+            ctx.freqStart, 
+            ctx.freqEnd,
+            1
+        ) as [number[],number[][],number[][]] //frequency (x), power spectrums (y), coherence per channel (in order of channels)
+
+        let dft = {};
+
+        ctx.watch.forEach((tag,i) => {
+            dft[tag] = results[1][i];
+        });
+
+
+        return {
+            frequencies: results[0],
+            dft
+        }
     }
 }

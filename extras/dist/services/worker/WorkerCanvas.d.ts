@@ -7,6 +7,7 @@ export declare type WorkerCanvasTransferProps = {
     update?: string | ((self: any, canvas: any, context: any, input: any) => void);
     init?: string | ((self: any, canvas: any, context: any) => void);
     clear?: string | ((self: any, canvas: any, context: any) => void);
+    transfer?: any[];
     animating?: boolean;
     [key: string]: any;
 };

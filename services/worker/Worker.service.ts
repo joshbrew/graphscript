@@ -43,6 +43,7 @@ export type WorkerInfo = {
     stop:(route?:string, portId?:string)=>Promise<boolean>,
     workerSubs:{[key:string]:{sub:number|false, route:string, portId:string, callback?:((res:any)=>void)|string, blocking?:boolean}},
     terminate:()=>boolean,
+    postMessage:(message:any,transfer:any[])=>void, //original worker post message
     graph:WorkerService,
     _id:string
 } & WorkerProps & WorkerRoute
@@ -97,7 +98,7 @@ export class WorkerService extends Service {
 
         rt.worker = worker;
 
-        //requires unsafeservice on the worker (enabled on the default worker)
+        //requires unsafeRoutes on the worker (enabled on the default worker)
         if(rt.transferFunctions) {
             for(const prop in rt.transferFunctions) {
                 this.transferFunction(worker,rt.transferFunctions[prop],prop)
@@ -123,7 +124,7 @@ export class WorkerService extends Service {
                 }
             }
 
-            if(rt.init) { //requires unsaferoutes
+            if(rt.init) { //requires unsafeRoutes
                 worker.run(rt.init,rt.initArgs,rt.initTransfer);
             } 
 
@@ -407,6 +408,7 @@ export class WorkerService extends Service {
             terminate,
             start,
             stop,
+            postMessage:worker.postMessage,
             workerSubs,
             graph:this,
             ...options

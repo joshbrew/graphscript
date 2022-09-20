@@ -1,12 +1,12 @@
 {
     "name": "graphscript",
-    "version": "0.1.40",
+    "version": "0.1.41",
     "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
     "main": "dist/index.js",
     "module": "dist/index.esm.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "start": "tinybuild && tinybuild path=tinybuild.node.config.js && tinybuild path=tinybuild.core.config.js && cd extras && tinybuild path=tinybuild.config.js",
+        "start": "tinybuild && tinybuild path=tinybuild.node.config.js && tinybuild path=tinybuild.core.config.js && cd extras && npm start",
         "build": "tinybuild build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",
