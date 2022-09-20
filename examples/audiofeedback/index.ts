@@ -2,7 +2,7 @@
 
 //resources
 import { DOMService } from 'graphscript'//'graphscript'//'../../index'////'../../index';
-import {initDevice, Devices, gsworker} from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
+import {initDevice, Devices, gsworker, filterPresets} from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
 import { Howl, Howler } from 'howler';
 import { visualizeDirectory } from 'graphscript-services'//'../../extras/storage/BFS_CSV'
 
@@ -237,10 +237,20 @@ const webappHtml = {
                                                 }
                                             }
                                         );
+                                        
 
                                         if(info) {
                                             info.then((result) => {
                                                 console.log('session', result);
+
+                                                if(filterPresets[selected]) { //enable filters, which are customizable biquad filters and other
+                                                    //console.log(filterPresets[selected]);
+                                                    result.workers.streamworker.post(
+                                                        'setFilters', 
+                                                        filterPresets[selected] as {[key:string]:FilterSettings}
+                                                    );
+                                                }
+
                                                 let cap;
                                                 let csvmenu;
                                                 if(typeof result.routes === 'object') {
