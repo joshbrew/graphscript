@@ -278,7 +278,98 @@ const webappHtml = {
                                                                         operator:(result:any)=>{
                                                                             console.log('coherence result', result); //this algorithm only returns when it detects a beat
                                                                         }
-                                                                    }
+                                                                    },
+                                                                    crenderer: {
+                                                                        workerUrl:gsworker,
+                                                                        callback:'updateCanvas', //will pipe data to the canvas animation living alone on this thread
+                                                                        oncreate:(self) => {
+                                                                            //console.log(self,webapp);
+                                                                            if(transferred) {
+                                                                                let newCanvas = document.createElement('canvas');
+                                                                                newCanvas.id = 'dftwaveform';
+                                                                                newCanvas.style.width = '100%';
+                                                                                newCanvas.style.height = '300px';
+                                                                                let node = document.getElementById('dftwaveform');
+                                                                                let newOCanvas = document.createElement('canvas');
+                                                                                newOCanvas.id = 'dftwaveformoverlay';
+                                                                                newOCanvas.style.width = '100%';
+                                                                                newOCanvas.style.height = '300px';
+                                                                                newOCanvas.style.transform = 'translateY(-300px)';
+                                                                                let node2 = document.getElementById('dftwaveformoverlay');
+                                                                                let parentNode;
+                                                                                if(node) {
+                                                                                    parentNode = node.parentNode;
+                                                                                    node.remove();
+                                                                                    node2?.remove();
+                                                                                }
+                                                                                else parentNode = document.getElementById('output');
+                                                                                parentNode.appendChild(newCanvas); //now transferrable again
+                                                                                parentNode.appendChild(newOCanvas);
+                                                                            }
+                
+                                                                            let canvas = document.getElementById('dftwaveform');
+                                                                            let overlay = document.getElementById('dftwaveformoverlay').transferControlToOffscreen();
+                
+                                                                            // if(chartSettings[selected]) {
+                                                                            //     console.log(chartSettings[selected])
+                                                                            //     self.worker.post('setValue',['chartSettings',chartSettings[selected]])
+                                                                            // } 
+                
+                                                                            webapp.run(
+                                                                                'worker.transferCanvas', 
+                                                                                self.worker.worker,
+                                                                                {
+                                                                                    canvas,
+                                                                                    context:undefined,
+                                                                                    _id:'dftwaveform',
+                                                                                    overlay,
+                                                                                    transfer:[overlay],
+                                                                                    init:(self:WorkerCanvas, canvas, context) => {
+                                                                                        //console.log('init', globalThis.Devices);
+                
+                                                                                        let settings = {
+                                                                                            canvas,
+                                                                                            _id:self._id,
+                                                                                            overlay:self.overlay,
+                                                                                            width:canvas.clientWidth,
+                                                                                            height:canvas.clientHeight,
+                                                                                            lines:{
+                                                                                                '0_1':{nPoints: 250}, //{nPoints:1000}
+                                                                                                '0_2':{nPoints: 250},
+                                                                                                '0_3':{nPoints: 250},
+                                                                                                '1_2':{nPoints: 250},
+                                                                                                '1_3':{nPoints: 250},
+                                                                                                '2_3':{nPoints: 250}
+                                                                                            },
+                                                                                            useOverlay:true,
+                                                                                        };
+                
+                                                                                        if(self.graph.chartSettings) Object.assign(settings,self.graph.chartSettings);
+                
+                                                                                        let r = self.graph.run('setupChart', settings);
+                                                                                    },
+                                                                                    update:(
+                                                                                        self:WorkerCanvas,
+                                                                                        canvas,
+                                                                                        context,
+                                                                                        data:{[key:string]:number|number[]}
+                                                                                    )=>{
+                                                                                        self.graph.run('updateChartData', 'dftwaveform', data.coherence);
+                                                                                    },
+                                                                                    //draw:()=>{},
+                                                                                    clear:(
+                                                                                        self:WorkerCanvas,
+                                                                                        canvas,
+                                                                                        context
+                                                                                    ) => {
+                                                                                        self.graph.run('clearChart','dftwaveform');
+                                                                                    }
+                                                                            });
+                                                                            transferred = true;
+                                                                        }
+                
+                                                                        //webapp.run('worker.updateChartData')
+                                                                    },
                                                                 }
                                                             },
                                                         }
@@ -358,7 +449,6 @@ const webappHtml = {
                                                         cap.onclick = onclick;
         
                                                         ev.target.parentNode.appendChild(cap);
-
                                                         
                                                         document.getElementById('waveformoverlay').onmouseover = async (ev) => {
                                                             await setSignalControls(
@@ -465,6 +555,14 @@ const webappHtml = {
                                 document.getElementById('waveformcontrols').style.display = 'none';
                             }
                         },
+                    } as ElementProps,
+                    'dftwaveform':{
+                        tagName:'canvas',
+                        style:{width:'100%', height:'300px'},
+                    } as ElementProps,
+                    'dftwaveformoverlay':{
+                        tagName:'canvas',
+                        style:{width:'100%', height:'300px', transform:'translateY(-300px)'},
                     } as ElementProps,
                     'csvmenu':{
                         tagName:'div',

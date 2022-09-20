@@ -7,6 +7,8 @@ export * from './struct/Struct.backend'
 
 export * from './ecs/ECS.systems'
 
+export * from './webgl-plot/webglplot.routes'
+
 import gsworker from '../services/worker/Worker' //compiles the worker in the dist
 
 export { algorithms } from './algorithms/index'; //modified algorithms object with presets 

@@ -54,3 +54,15 @@
     "chokidar" "~3.5.3"
     "esbuild" "~0.14.49"
     "ws" "^8.5.0"
+
+"webgl-plot-utils@~0.2.4":
+  "integrity" "sha512-8clytey2D4sTov0oBN3mPMBdhgpHa4MrfJyOZa9fTZ10Eh/bLmK3ZO7JoA+hFtSMBbV7ap/drZJc57YpkZdQ6w=="
+  "resolved" "https://registry.npmjs.org/webgl-plot-utils/-/webgl-plot-utils-0.2.4.tgz"
+  "version" "0.2.4"
+  dependencies:
+    "webgl-plot" "~0.7.0"
+
+"webgl-plot@~0.7.0":
+  "integrity" "sha512-/prs3XMFKlXcov3qvx3LxqMws0Dg68kmmHmO82Qm6FFGpeKME7c3nuVqSe9CG47BvG9mGVPxDMjRc0DP/jTc2A=="
+  "resolved" "https://registry.npmjs.org/webgl-plot/-/webgl-plot-0.7.0.tgz"
+  "version" "0.7.0"
