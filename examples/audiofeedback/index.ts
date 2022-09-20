@@ -17,12 +17,14 @@ import { ElementProps, ElementInfo } from 'graphscript/services/dom/types/elemen
 const selectable = {
     BLE:{
         hegduino:'HEGduino (BLE)',
+        hegduinoV1:'HEGduino V1 (USB)',
         blueberry2:'Blueberry (BLE)',
         blueberry:'Blueberry_Legacy (BLE)'
     },
     USB:{
         peanut:'Biocomp Peanut HEG (USB)',
-        hegduino:'HEGduino (USB)'
+        hegduino:'HEGduino (USB)',
+        hegduinoV1:'HEGduino V1 (USB)'
     }
 }
 
