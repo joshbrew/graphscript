@@ -23,6 +23,8 @@ export const coherence:SubprocessContextProps = {
     },
     ondata:(ctx,arraybuffer) => {
 
+        let ts = Date.now();
+
         //console.log('buffer', arraybuffer)
         let results = (globalThis.gpu as GPUService).coherence(
             arraybuffer, 
@@ -43,8 +45,8 @@ export const coherence:SubprocessContextProps = {
             coherence[tag] = results[2][i];
         });
 
-
         return {
+            timestamp:ts,
             frequencies:results[0],
             dft,
             coherence

@@ -22,11 +22,15 @@ export const rms:SubprocessContextProps = {
                         ctx.data[key] = new Array(Math.floor(ctx.sps*ctx.nSec)).fill(data[key][0]);
                     } else ctx.data[key] = new Array(Math.floor(ctx.sps*ctx.nSec)).fill(data[key]);
                 }
-                ByteParser.circularBuffer(ctx.data[key],ctx.watch[key]);
+                ByteParser.circularBuffer(ctx.data[key],data[key]);
             }
-
-            
         });
+
+        if(data.timestamp) {
+            if(Array.isArray(data.timestamp)) {
+                ctx.rms.timestamp = data.timestamp[data.timestamp.length - 1];
+            } else ctx.rms.timestamp = data.timestamp;
+        } else ctx.rms.timestamp = Date.now();
 
         if(!ctx.blocking) {
             ctx.blocking = true;

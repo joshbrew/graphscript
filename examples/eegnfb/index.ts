@@ -17,8 +17,10 @@ import { visualizeDirectory } from 'graphscript-services/storage/BFS_CSV';
 import './index.css'
 
 //types
-import { ElementProps, ElementInfo } from 'graphscript/services/dom/types/element';
+import { ElementProps } from 'graphscript/services/dom/types/element';
 //import { ComponentProps } from 'graphscript/services/dom/types/component';
+import { GraphNodeProperties } from '../../Graph';
+import { WorkerRoute } from 'graphscript/services/worker/Worker.service';
 
 //Selectable devices and labels
 const selectable = {
@@ -48,7 +50,9 @@ const soundFilePaths = [
 const GameState = {
     currentTimestamp:Date.now(),
     lastTimestamp:Date.now(),
-    eegDataBuffers:{},
+    latestRaw:{},
+    latestRMS:{},
+    sampleError:{},
 
     playing:undefined as Howl,
     analyser:undefined,
@@ -60,6 +64,7 @@ const webapp = new DOMService();
 webapp.load(workers); //merge the worker service provided by device-decoder for convenience
 
 let transferred = false; //did we transfer a canvas already
+let ctransferred = false;
 
 //start of your web page
 const webappHtml = {
@@ -133,7 +138,7 @@ const webappHtml = {
                                 tagName:'button',
                                 attributes:{
                                     innerHTML:'Connect Device',
-                                    onclick:(ev)=>{
+                                    onclick:async (ev)=>{
 
                                         //let outputelm = document.getElementById('raw') as HTMLDivElement;
 
@@ -148,7 +153,14 @@ const webappHtml = {
 
                                         console.log(selected,',',mode,', sps:', Devices[mode][selected].sps)
 
-                                        let info = initDevice(
+                                        
+                                        let rmsetemplate = ``;
+                                        let rmseanim = () => {
+                                            document.getElementById('rmse').innerHTML = rmsetemplate;
+                                        }
+                                        let recording = false;
+
+                                        let info = await initDevice(
                                             mode as 'BLE'|'USB'|'BLE_OTHER'|'USB_OTHER'|'OTHER', 
                                             selected, 
                                             {
@@ -157,6 +169,32 @@ const webappHtml = {
                                                     //data returned from decoder thread, ready for 
                                                     //outputelm.innerText = JSON.stringify(data);
                                                     //console.log(data)
+                                                    GameState.latestRaw = data;
+
+                                                    let rmskeys = Object.keys(GameState.latestRMS); //1 second RMS average used as predicted value for getting the error
+
+                                                    if(rmskeys.length > 0) { 
+                                                        rmsetemplate = ``;
+                                                        rmskeys.forEach((key) => {
+                                                            if(GameState.latestRaw[key] && key !== 'timestamp') {
+                                                                if(Array.isArray(GameState.latestRaw[key])) {
+                                                                    GameState.sampleError[key] = GameState.latestRaw[key].map((v) => {
+                                                                        return Math.abs(GameState.latestRMS[key] - v);
+                                                                    });
+                                                                    rmsetemplate += `<div>${key}: ${GameState.sampleError[key][GameState.sampleError[key].length - 1]}</div>`;
+                                                                }
+                                                                else {
+                                                                    GameState.sampleError[key] = Math.abs(GameState.latestRMS[key] - v);
+                                                                    rmsetemplate += `<div>${key}: ${GameState.sampleError[key]}</div>`;
+                                                                }
+                                                            }
+                                                        });
+                                                        GameState.sampleError.timestamp = GameState.latestRaw.timestamp;
+                                                        if(recording) {
+                                                            info.routes.csv2.worker.post('appendCSV',GameState.sampleError)
+                                                        }
+                                                        requestAnimationFrame(rmseanim);
+                                                    }
                                                 },
 
                                                 routes:{ //top level routes subscribe to device output thread directly (and workers in top level routes will not use main thread)
@@ -170,12 +208,16 @@ const webappHtml = {
                                                                 newCanvas.id = 'waveform';
                                                                 newCanvas.style.width = '100%';
                                                                 newCanvas.style.height = '300px';
+                                                                newOCanvas.style.position = 'absolute';
+                                                                newOCanvas.style.zIndex = '1';
                                                                 let node = document.getElementById('waveform');
                                                                 let newOCanvas = document.createElement('canvas');
                                                                 newOCanvas.id = 'waveformoverlay';
                                                                 newOCanvas.style.width = '100%';
                                                                 newOCanvas.style.height = '300px';
-                                                                newOCanvas.style.transform = 'translateY(-300px)';
+                                                                newOCanvas.style.position = 'absolute';
+                                                                newOCanvas.style.zIndex = '2';
+
                                                                 let node2 = document.getElementById('waveformoverlay');
                                                                 let parentNode;
                                                                 if(node) {
@@ -183,7 +225,7 @@ const webappHtml = {
                                                                     node.remove();
                                                                     node2?.remove();
                                                                 }
-                                                                else parentNode = document.getElementById('output');
+                                                                else parentNode = document.getElementById('waveformdiv');
                                                                 parentNode.appendChild(newCanvas); //now transferrable again
                                                                 parentNode.appendChild(newOCanvas);
                                                             }
@@ -248,7 +290,7 @@ const webappHtml = {
                                                         }
 
                                                         //webapp.run('worker.updateChartData')
-                                                    },
+                                                    } as WorkerRoute,
                                                     buffering: {
                                                         workerUrl:gsworker,
                                                         init:'createSubprocess',
@@ -272,29 +314,52 @@ const webappHtml = {
                                                                     }
                                                                 ],
                                                                 callback:'runSubprocess',
-                                                                blocking:true,
+                                                                blocking:true, //runs async without backing up on bulk dispatches
                                                                 children:{
                                                                     coherence_main:{
                                                                         operator:(result:any)=>{
-                                                                            console.log('coherence result', result); //this algorithm only returns when it detects a beat
+                                                                            //console.log('coherence result', result); //this algorithm only returns when it detects a beat
+                                                                            if(result?.frequencies) 
+                                                                                document.getElementById('dftxaxis').innerHTML = `<span>${result.frequencies[0]}</span><span>${result.frequencies[Math.floor(result.frequencies.length*0.5)]}</span><span>${result.frequencies[result.frequencies.length-1]}</span>`;
+                                                                        
+                                                                            let alphaCoherence = 0;
+                                                                            let ct = 0;
+                                                                            //our frequency distribution has round numbers so we can do this
+                                                                            for(let i = result.frequencies.indexOf(8); i < result.frequencies.indexOf(12); i++) {
+                                                                                alphaCoherence += result.coherence['0_1'][i];
+                                                                                ct++;
+                                                                            }
+                                                                            if(ct) alphaCoherence /= ct;
+                                                                            if(isNaN(alphaCoherence)) alphaCoherence = 0;
+                                                                            if(GameState.playing) {
+                                                                                let newVol = alphaCoherence;
+                                                                                if(newVol < 0) newVol = 0;
+                                                                                if(newVol > 1) newVol = 1;
+                                                                                GameState.playing.volume(newVol);
+                                                                            }
+                                                                        
                                                                         }
-                                                                    },
+                                                                    } as GraphNodeProperties,
                                                                     crenderer: {
                                                                         workerUrl:gsworker,
                                                                         callback:'updateCanvas', //will pipe data to the canvas animation living alone on this thread
                                                                         oncreate:(self) => {
                                                                             //console.log(self,webapp);
-                                                                            if(transferred) {
+                                                                            if(ctransferred) {
                                                                                 let newCanvas = document.createElement('canvas');
                                                                                 newCanvas.id = 'dftwaveform';
                                                                                 newCanvas.style.width = '100%';
                                                                                 newCanvas.style.height = '300px';
+                                                                                newOCanvas.style.position = 'absolute';
+                                                                                newOCanvas.style.zIndex = '1';
                                                                                 let node = document.getElementById('dftwaveform');
                                                                                 let newOCanvas = document.createElement('canvas');
                                                                                 newOCanvas.id = 'dftwaveformoverlay';
                                                                                 newOCanvas.style.width = '100%';
                                                                                 newOCanvas.style.height = '300px';
-                                                                                newOCanvas.style.transform = 'translateY(-300px)';
+                                                                                newOCanvas.style.position = 'absolute';
+                                                                                newOCanvas.style.zIndex = '2';
+                
                                                                                 let node2 = document.getElementById('dftwaveformoverlay');
                                                                                 let parentNode;
                                                                                 if(node) {
@@ -302,7 +367,7 @@ const webappHtml = {
                                                                                     node.remove();
                                                                                     node2?.remove();
                                                                                 }
-                                                                                else parentNode = document.getElementById('output');
+                                                                                else parentNode = document.getElementById('dftdiv');
                                                                                 parentNode.appendChild(newCanvas); //now transferrable again
                                                                                 parentNode.appendChild(newOCanvas);
                                                                             }
@@ -334,19 +399,24 @@ const webappHtml = {
                                                                                             width:canvas.clientWidth,
                                                                                             height:canvas.clientHeight,
                                                                                             lines:{
-                                                                                                '0_1':{nPoints: 250}, //{nPoints:1000}
-                                                                                                '0_2':{nPoints: 250},
-                                                                                                '0_3':{nPoints: 250},
-                                                                                                '1_2':{nPoints: 250},
-                                                                                                '1_3':{nPoints: 250},
-                                                                                                '2_3':{nPoints: 250}
+                                                                                                '0_1':{nPoints: 125, ymin:0, ymax:1}, //{nPoints:1000}
+                                                                                                '0_2':{nPoints: 125, ymin:0, ymax:1},
+                                                                                                '0_3':{nPoints: 125, ymin:0, ymax:1},
+                                                                                                '1_2':{nPoints: 125, ymin:0, ymax:1},
+                                                                                                '1_3':{nPoints: 125, ymin:0, ymax:1},
+                                                                                                '2_3':{nPoints: 125, ymin:0, ymax:1}
                                                                                             },
                                                                                             useOverlay:true,
                                                                                         };
                 
-                                                                                        if(self.graph.chartSettings) Object.assign(settings,self.graph.chartSettings);
+                                                                                        //if(self.graph.chartSettings) Object.assign(settings,self.graph.chartSettings);
                 
                                                                                         let r = self.graph.run('setupChart', settings);
+
+                                                                                        canvas.addEventListener('resize',() => {
+                                                                                            self.graph.run('u')
+                                                                                        });
+
                                                                                     },
                                                                                     update:(
                                                                                         self:WorkerCanvas,
@@ -365,15 +435,15 @@ const webappHtml = {
                                                                                         self.graph.run('clearChart','dftwaveform');
                                                                                     }
                                                                             });
-                                                                            transferred = true;
+                                                                            ctransferred = true;
                                                                         }
                 
                                                                         //webapp.run('worker.updateChartData')
-                                                                    },
+                                                                    } as WorkerRoute,
                                                                 }
-                                                            },
+                                                            } as WorkerRoute,
                                                         }
-                                                    },
+                                                    } as WorkerRoute,
                                                     vrms:{
                                                         workerUrl:gsworker,
                                                         init:'createSubprocess',
@@ -381,108 +451,123 @@ const webappHtml = {
                                                             'rms',
                                                             {
                                                                 sps:Devices[mode][selected].sps,
+                                                                nSec:1,
                                                                 watch:['0','1','2','3']
                                                             }
                                                         ],
                                                         callback:'runSubprocess',
-                                                        blocking:true,
+                                                        blocking:true, //runs async without backing up on bulk dispatches
                                                         children:{
                                                             vrms_main:{
                                                                 operator:(
                                                                     result:any
                                                                 )=>{
-                                                                    //console.log('vrms result', result); //this algorithm only returns when it detects a beat
+                                                                    GameState.latestRMS = result;
+                                                                    //console.log('vrms result', result); 
                                                                 }
                                                             }
                                                         }
-                                                    },
+                                                    } as WorkerRoute,
                                                     csv:{
                                                         workerUrl:gsworker,
                                                         // init:'createCSV',
                                                         // initArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`],
                                                         callback:'appendCSV',
                                                         stopped:true //we will press a button to stop/start the csv collection conditionally
-                                                    }
+                                                    } as WorkerRoute,
+                                                    csv2:{
+                                                        workerUrl:gsworker,
+                                                        // init:'createCSV',
+                                                        // initArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`],
+                                                        callback:'appendCSV',
+                                                        stopped:true //we will press a button to stop/start the csv collection conditionally
+                                                    } as WorkerRoute
                                                 },
                                                 
                                             }
                                         );
 
                                         if(info) {
-                                            info.then((result) => {
-                                                console.log('session', result);
+                                            console.log('session', info);
 
-                                                if(filterPresets[selected]) { //enable filters, which are customizable biquad filters
-                                                    //console.log(filterPresets[selected]);
-                                                    result.workers.streamworker.post(
-                                                        'setFilters', 
-                                                        filterPresets[selected] as {[key:string]:FilterSettings}
-                                                    );
-                                                }
+                                            if(filterPresets[selected]) { //enable filters, which are customizable biquad filters
+                                                //console.log(filterPresets[selected]);
+                                                info.workers.streamworker.post(
+                                                    'setFilters', 
+                                                    filterPresets[selected] as {[key:string]:FilterSettings}
+                                                );
+                                            }
 
-                                                let cap;
-                                                let csvmenu;
-                                                if(typeof result.routes === 'object') {
-                                                    if(result.routes.csv) {
-                                                        
-                                                        csvmenu = document.getElementById('csvmenu');
-                                                        
-                                                        cap = document.createElement('button');
-                                                        cap.innerHTML = `Record ${selected} (${mode})`;
-                                                        let onclick = () => {
-                                                            result.routes.csv.worker.post(
-                                                                'createCSV',
-                                                                [
-                                                                    `data/${new Date().toISOString()}_${selected}_${mode}.csv`,
-                                                                    ['timestamp','0','1','2','3','4','5','6','7']
-                                                                ]);
-                                                            result.routes.csv.worker.start();
-                                                            cap.innerHTML = `Stop recording ${selected} (${mode})`;
-                                                            cap.onclick = () => {
-                                                                result.routes.csv.worker.stop();
-                                                                visualizeDirectory('data', csvmenu);
-                                                                cap.innerHTML = `Record ${selected} (${mode})`;
-                                                                cap.onclick = onclick;
-                                                            }
+                                            let cap;
+                                            let csvmenu;
+                                            if(typeof info.routes === 'object') {
+                                                if(info.routes.csv) {
+                                                    
+                                                    csvmenu = document.getElementById('csvmenu');
+                                                    
+                                                    cap = document.createElement('button');
+                                                    cap.innerHTML = `Record ${selected} (${mode})`;
+                                                    let onclick = () => {
+                                                        recording = true;
+                                                        info.routes.csv.worker.post(
+                                                            'createCSV',
+                                                            [
+                                                                `data/${new Date().toISOString()}_${selected}_${mode}.csv`,
+                                                                ['timestamp','0','1','2','3','4','5','6','7']
+                                                            ]
+                                                        );
+                                                        info.routes.csv2.worker.post(
+                                                            'createCSV',
+                                                            [
+                                                                `data/${new Date().toISOString()}_RMS_${selected}_${mode}.csv`,
+                                                                ['timestamp','0','1','2','3']
+                                                            ]
+                                                        );
+                                                        info.routes.csv.worker.start();
+                                                        cap.innerHTML = `Stop recording ${selected} (${mode})`;
+                                                        cap.onclick = () => {
+                                                            recording = false;
+                                                            info.routes.csv.worker.stop();
+                                                            visualizeDirectory('data', csvmenu);
+                                                            cap.innerHTML = `Record ${selected} (${mode})`;
+                                                            cap.onclick = onclick;
                                                         }
+                                                    }
 
-                                                        cap.onclick = onclick;
-        
-                                                        ev.target.parentNode.appendChild(cap);
-                                                        
-                                                        document.getElementById('waveformoverlay').onmouseover = async (ev) => {
-                                                            await setSignalControls(
-                                                                document.getElementById('waveformcontrols'),
-                                                                'waveform',
-                                                                result.workers.streamworker,
-                                                                result.routes.renderer.worker 
-                                                            )
-                                                            document.getElementById('waveformcontrols').style.display = '';
-                                                        }
-
-
+                                                    cap.onclick = onclick;
+    
+                                                    ev.target.parentNode.appendChild(cap);
+                                                    
+                                                    document.getElementById('waveformoverlay').onmouseover = async (ev) => {
+                                                        await setSignalControls(
+                                                            document.getElementById('waveformcontrols'),
+                                                            'waveform',
+                                                            info.workers.streamworker,
+                                                            info.routes.renderer.worker 
+                                                        )
+                                                        document.getElementById('waveformcontrols').style.display = '';
                                                     }
                                                 }
-                                                result.options.ondisconnect = () => { visualizeDirectory('data',csvmenu); }
+                                            }
+                                            info.options.ondisconnect = () => { visualizeDirectory('data',csvmenu); }
 
-                                                //console.log(result);
-                                                let disc = document.createElement('button');
-                                                disc.innerHTML = `Disconnect ${selected} (${mode})`;
-                                                disc.onclick = () => {
-                                                    result.disconnect();
-                                                    disc.remove();
-                                                    if(cap) cap.remove();
-                                                }
-                                                ev.target.parentNode.appendChild(disc);
-                                            });
+                                            //console.log(result);
+                                            let disc = document.createElement('button');
+                                            disc.innerHTML = `Disconnect ${selected} (${mode})`;
+                                            disc.onclick = () => {
+                                                info.disconnect();
+                                                disc.remove();
+                                                if(cap) cap.remove();
+                                            }
+                                            ev.target.parentNode.appendChild(disc);
                                         }
                                     }
                                 }
                             } as ElementProps
                         }
-                    }
+                    } as ElementProps
                 }
-            },
+            } as ElementProps,
             'output':{
                 tagName:'div',
                 children:{
@@ -491,7 +576,7 @@ const webappHtml = {
                         children:{
                             'soundheader':{
                                 tagName:'h4',
-                                innerHTML:'Play a sound to modulate with the EEG'
+                                innerHTML:'Play a sound to modulate volume with the EEG using the mean Alpha Coherence between channels 0 and 1'
                             } as ElementProps,
                             'soundDropdown':{
                                 tagName:'select',
@@ -538,32 +623,80 @@ const webappHtml = {
                             } as ElementProps
                         }
                     } as ElementProps,
-                    'waveform':{
-                        tagName:'canvas',
-                        style:{width:'100%', height:'300px'},
+                    'ln0':{
+                        tagName:'hr'
+                    },
+                    'waveformtitle':{
+                        tagName:'div',
+                        innerHTML:'Raw Data'
                     } as ElementProps,
-                    'waveformoverlay':{
-                        tagName:'canvas',
-                        style:{width:'100%', height:'300px', transform:'translateY(-300px)'},
+                    'waveformdiv':{
+                        tagName:'div',
+                        style:{height:'300px'},
+                        children:{
+                            'waveform':{
+                                tagName:'canvas',
+                                style:{width:'100%', height:'300px', position:'absolute', zIndex:'1'}
+                            } as ElementProps,
+                            'waveformoverlay':{
+                                tagName:'canvas',
+                                style:{width:'100%', height:'300px', position:'absolute', zIndex:'2'},
+                            } as ElementProps,
+                            'waveformcontrols':{
+                                tagName:'table',
+                                style:{display:'none', width:'100%', height:'300px', position:'absolute',  zIndex:'3'},
+                                attributes: {
+                                    className:'chartcontrols',
+                                    onmouseleave:(ev) => {
+                                        document.getElementById('waveformcontrols').style.display = 'none';
+                                    }
+                                },
+                            } as ElementProps,
+                        }
+                    },
+                    'ln':{
+                        tagName:'hr'
+                    },
+                    'dfttitle':{
+                        tagName:'div',
+                        innerHTML:'Coherence'
                     } as ElementProps,
-                    'waveformcontrols':{
-                        tagName:'table',
-                        style:{display:'none', width:'100%', height:'300px', transform:'translateY(-600px)'},
-                        attributes: {
-                            className:'chartcontrols',
-                            onmouseleave:(ev) => {
-                                document.getElementById('waveformcontrols').style.display = 'none';
-                            }
-                        },
+                    'dftdiv':{
+                        tagName:'div',
+                        style:{height:'300px'},
+                        children:{
+                            'dftwaveform':{
+                                tagName:'canvas',
+                                style:{width:'100%', height:'300px', position:'absolute', zIndex:'1'},
+                            } as ElementProps,
+                            'dftwaveformoverlay':{
+                                tagName:'canvas',
+                                style:{width:'100%', height:'300px',  position:'absolute', zIndex:'2'},
+                            } as ElementProps,
+                        }
+                    },
+                    'ln2':{
+                        tagName:'hr'
+                    },
+                    'dftxaxis':{
+                        tagName:'div',
+                        style:{display:'flex', justifyContent:'space-between'}
                     } as ElementProps,
-                    'dftwaveform':{
-                        tagName:'canvas',
-                        style:{width:'100%', height:'300px'},
-                    } as ElementProps,
-                    'dftwaveformoverlay':{
-                        tagName:'canvas',
-                        style:{width:'100%', height:'300px', transform:'translateY(-300px)'},
-                    } as ElementProps,
+                    'ln3':{
+                        tagName:'hr'
+                    },
+                    'rmsediv':{
+                        tagName:'div',
+                        innerHTML:`RMSE (mV)`,
+                        children:{
+                            'rmse':{
+                                tagName:'div'
+                            } as ElementProps
+                        }
+                    },
+                    'ln4':{
+                        tagName:'hr'
+                    },
                     'csvmenu':{
                         tagName:'div',
                         innerHTML:'CSVs',

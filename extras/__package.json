@@ -1,10 +1,10 @@
 {
-    "name": "graphscript-services.storage",
-    "version": "0.1.46",
+    "name": "graphscript-services",
+    "version": "0.1.49",
     "description": "Extra services for graphscript.",
-    "main": "dist/index.storage.services.js",
-    "module": "dist/index.storage.services.esm.js",
-    "types": "dist/index.storage.services.d.ts",
+    "main": "dist/index.services.js",
+    "module": "dist/index.services.esm.js",
+    "types": "dist/extras/index.services.d.ts",
     "scripts": {
         "start": "tinybuild path=tinybuild.config.js && tinybuild path=tinybuild.gpu.config.js && tinybuild path=tinybuild.storage.config.js",
         "build": "tinybuild build",
