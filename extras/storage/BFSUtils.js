@@ -1,4 +1,4 @@
-import {CSV} from './csv'
+import {CSV} from './csv.js'
 
 export let fsInited = false
 import * as BrowserFS from 'browserfs'
