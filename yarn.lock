@@ -24,10 +24,10 @@ better-sse@~0.8.0:
   resolved "https://registry.npmjs.org/better-sse/-/better-sse-0.8.0.tgz"
   integrity sha512-ymOse8R0L+R2S1W85yOGkkc+yTzAmo52S4erjxPyBVwpqjpS+X228BG7hDwgKsGV/D51YhCYd+eaDwJ+sL5JhA==
 
-brainsatplay-math@~0.0.22:
-  version "0.0.22"
-  resolved "https://registry.npmjs.org/brainsatplay-math/-/brainsatplay-math-0.0.22.tgz"
-  integrity sha512-er+7fobi+bgtuiaN5Pcg0cpOfl/d5hrM8W8sF5lnX9VWhcs2TvyG3J0UV+pozGYSBvtqij7Evs4HhhFIh3cfbQ==
+brainsatplay-math@~0.0.23:
+  version "0.0.23"
+  resolved "https://registry.yarnpkg.com/brainsatplay-math/-/brainsatplay-math-0.0.23.tgz#fcb0ce9b27e49aadfd9d5ca0c5a9c83a1d9a43a2"
+  integrity sha512-zoAaKTwFsclvkvlaFaOzHMAlPBQ5hK0Q5KpwadaamWlqqSRgR9zS9NX16SI8B1GetPWaOLwySfGMeZFz1QnoBw==
 
 bson-objectid@~2.0.3:
   version "2.0.3"

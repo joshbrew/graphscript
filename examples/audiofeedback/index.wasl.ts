@@ -8,9 +8,6 @@ import * as select from './src/plugins/select/index.js'
 import * as connect from './src/plugins/connect/index.js'
 import * as output from './src/plugins/output/index.js'
 
-import './index.css'
-
-
 const soundDropdown = Object.assign({}, output.sound.dropdown)
 
 soundDropdown.soundFilePaths = [
