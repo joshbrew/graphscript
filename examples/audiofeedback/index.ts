@@ -17,42 +17,6 @@ import { ElementProps, ElementInfo } from 'graphscript/services/dom/types/elemen
 const selectable = {
     BLE:{
         hegduino:'HEGduino (BLE)',
-        blueberry2:'Blueberry (BLE)',
-        blueberry:'Blueberry_Legacy (BLE)'
-    },
-    USB:{
-        peanut:'Biocomp Peanut HEG (USB)',
-        hegduino:'HEGduino (USB)'
-    }
-}
-
-const soundFilePaths = [
-    './src/assets/kalimba.wav',
-    './src/assets/phonk.wav',
-    './src/assets/synthflute.wav'
-];
-
-const GameState = {
-    baselineHEG:0,
-    currentHEG:0,
-    shortChange:0,
-    longChange:0,
-    currentTimestamp:Date.now(),
-    lastTimestamp:Date.now(),
-    dataFrameTime:0,
-    raw:undefined,
-    hegDataBuffer:new Array(512).fill(0),
-    localMax:0,
-
-    playing:undefined as Howl,
-    analyser:undefined,
-    audioFFTBuffer:new Uint8Array(2048), //default fft size
-}
-
-//Selectable devices and labels
-const selectable = {
-    BLE:{
-        hegduino:'HEGduino (BLE)',
         hegduinoV1:'HEGduino V1 (USB)',
         blueberry2:'Blueberry (BLE)',
         blueberry:'Blueberry_Legacy (BLE)'
