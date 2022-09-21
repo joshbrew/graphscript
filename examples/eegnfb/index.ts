@@ -16,7 +16,6 @@ import { visualizeDirectory } from 'graphscript-services/storage/BFS_CSV';
 
 import './index.css'
 
-console.log(Devices);
 //types
 import { ElementProps } from 'graphscript/services/dom/types/element';
 import { WorkerRoute } from 'graphscript/services/worker/Worker.service';
