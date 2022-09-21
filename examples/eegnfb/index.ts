@@ -1,14 +1,14 @@
 //@ts-nocheck
 
 //resources
-import { DOMService, WorkerCanvas } from 'graphscript/';//'../../index'////'../../index';
-import { initDevice, workers, filterPresets, FilterSettings, chartSettings } from 'device-decoder';//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
+import { DOMService, WorkerCanvas, GraphNodeProperties } from 'graphscript/';//'../../index'////'../../index';
+import { initDevice, workers, filterPresets, FilterSettings, chartSettings } from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder';//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
 
 
-import { setSignalControls } from 'device-decoder/webglplot.routes'
+import { setSignalControls } from 'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
 
-import gsworker from 'device-decoder/stream.big.worker' //device-decoder/stream.big.worker';
-import { Devices } from 'device-decoder.third-party'
+import gsworker from 'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
+import { Devices } from 'device-decoder.third-party'//'../../../device_debugger/src/devices/third_party/index'//'device-decoder.third-party'
 
 import { Howl, Howler } from 'howler';
 import { visualizeDirectory } from 'graphscript-services/storage/BFS_CSV';
@@ -18,9 +18,8 @@ import './index.css'
 
 //types
 import { ElementProps } from 'graphscript/services/dom/types/element';
-//import { ComponentProps } from 'graphscript/services/dom/types/component';
-import { GraphNodeProperties } from '../../Graph';
 import { WorkerRoute } from 'graphscript/services/worker/Worker.service';
+//import { ComponentProps } from 'graphscript/services/dom/types/component';
 
 //Selectable devices and labels
 const selectable = {
@@ -38,6 +37,9 @@ const selectable = {
         freeeeg32_optical:'FreeEEG32 optical cable',
         freeeeg128:'FreeEEG128',
         nrf5x:'nRF5x board'
+    },
+    OTHER: {
+        simulator:'Simulator'
     }
 }
 
@@ -88,22 +90,32 @@ const webappHtml = {
                                         <option value='BLE' selected>BLE</option>
                                         <option value='BLE_OTHER'>BLE (Third Party Drivers)</option>
                                         <option value='USB'>USB</option>
+                                        <option value='OTHER'>Other</option>
                                     `,
-                                    onchange:(ev)=>{
+                                    onchange:(ev)=>{ // this is a terrible solution :P
                                         if(ev.target.value === 'BLE') {
                                             ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
                                             ev.target.parentNode.querySelector('#selectBLE').style.display = '';
                                             ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
+                                            ev.target.parentNode.querySelector('#selectOther').style.display = 'none';
                                         }
                                         else if(ev.target.value === 'USB') {
                                             ev.target.parentNode.querySelector('#selectUSB').style.display = '';
                                             ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
                                             ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
+                                            ev.target.parentNode.querySelector('#selectOther').style.display = 'none';
                                         }
                                         else if(ev.target.value === 'BLE_OTHER') {
                                             ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
                                             ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
                                             ev.target.parentNode.querySelector('#selectBLEOther').style.display = '';
+                                            ev.target.parentNode.querySelector('#selectOther').style.display = 'none';
+                                        }
+                                        else if(ev.target.value === 'OTHER') {
+                                            ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
+                                            ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
+                                            ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
+                                            ev.target.parentNode.querySelector('#selectOther').style.display = '';
                                         }
                                     }
                                 }
@@ -134,6 +146,15 @@ const webappHtml = {
                                     }
                                 }
                             } as ElementProps,
+                            'selectOther':{
+                                tagName:'select',
+                                style:{display:'none'},
+                                onrender:(self)=>{                    
+                                    for(const key in selectable.OTHER) { //include both sets
+                                        self.innerHTML += `<option value='${key}'>${selectable.OTHER[key]}</option>`
+                                    }
+                                }
+                            } as ElementProps,
                             'connectDevice':{
                                 tagName:'button',
                                 attributes:{
@@ -150,6 +171,8 @@ const webappHtml = {
                                             selected = (document.getElementById('selectUSB') as HTMLSelectElement).value;
                                         else if (mode === 'BLE_OTHER') 
                                             selected = (document.getElementById('selectBLEOther') as HTMLSelectElement).value;
+                                        else if (mode === 'OTHER') 
+                                            selected = (document.getElementById('selectOther') as HTMLSelectElement).value;
 
                                         console.log(selected,',',mode,', sps:', Devices[mode][selected].sps)
 
@@ -208,8 +231,8 @@ const webappHtml = {
                                                                 newCanvas.id = 'waveform';
                                                                 newCanvas.style.width = '100%';
                                                                 newCanvas.style.height = '300px';
-                                                                newOCanvas.style.position = 'absolute';
-                                                                newOCanvas.style.zIndex = '1';
+                                                                newCanvas.style.position = 'absolute';
+                                                                newCanvas.style.zIndex = '1';
                                                                 let node = document.getElementById('waveform');
                                                                 let newOCanvas = document.createElement('canvas');
                                                                 newOCanvas.id = 'waveformoverlay';
@@ -350,8 +373,8 @@ const webappHtml = {
                                                                                 newCanvas.id = 'dftwaveform';
                                                                                 newCanvas.style.width = '100%';
                                                                                 newCanvas.style.height = '300px';
-                                                                                newOCanvas.style.position = 'absolute';
-                                                                                newOCanvas.style.zIndex = '1';
+                                                                                newCanvas.style.position = 'absolute';
+                                                                                newCanvas.style.zIndex = '1';
                                                                                 let node = document.getElementById('dftwaveform');
                                                                                 let newOCanvas = document.createElement('canvas');
                                                                                 newOCanvas.id = 'dftwaveformoverlay';

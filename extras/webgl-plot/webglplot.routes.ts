@@ -1,5 +1,5 @@
 import { WorkerInfo } from '../../services/worker/Worker.service'//"graphscript";
-import { WebglLinePlotInfo,WebglLinePlotProps,WebglLinePlotUtil, WebglLineProps } from "webgl-plot-utils"//'../../BrainsAtPlay_Libraries/webgl-plot-utils/webgl-plot-utils'//"webgl-plot-utils";
+import { WebglLinePlotInfo,WebglLinePlotProps,WebglLinePlotUtil, WebglLineProps } from "webgl-plot-utils"//'../../../BrainsAtPlay_Libraries/webgl-plot-utils/webgl-plot-utils'//"webgl-plot-utils"//'../../BrainsAtPlay_Libraries/webgl-plot-utils/webgl-plot-utils'//"webgl-plot-utils";
 import { FilterSettings } from "../algorithms/util/BiquadFilters";
 
 export { WebglLineProps, WebglLinePlotProps, WebglLinePlotInfo } //re-export types for reference
@@ -206,8 +206,8 @@ export async function setSignalControls(
                         useBandpass: useBandpass.checked,
                         bandpassLower:  bandpassLower.value ? parseFloat(bandpassLower.value) : 3,
                         bandpassUpper:  bandpassUpper.value ? parseFloat(bandpassUpper.value) : 45,
-                        trimOutliers: filterSettings[prop].trimOutliers,
-                        outlierTolerance: filterSettings[prop].outlierTolerance
+                        trimOutliers: filterSettings[prop]?.trimOutliers,
+                        outlierTolerance: filterSettings[prop]?.outlierTolerance
                     } as FilterSettings
                 }
 
@@ -218,6 +218,11 @@ export async function setSignalControls(
 
             sps.onchange = () => {
                 filteronchange();
+                (chartSettings.lines?.[prop] as WebglLineProps).sps = parseFloat(sps.value);
+                (chartSettings.lines?.[prop] as WebglLineProps).nSec = parseFloat(nSec.value);
+                delete (chartSettings.lines?.[prop] as WebglLineProps).points;
+                delete (chartSettings.lines?.[prop] as WebglLineProps).nPoints;
+                chartworker.run('resetChart', [plotId,chartSettings]);
             }
 
             units.onchange = () => {
@@ -241,6 +246,16 @@ export async function setSignalControls(
                 }
             }
 
+            nSec.onchange = () => {
+                if((!Array.isArray(chartSettings.lines?.[prop] as WebglLineProps))) {
+                    (chartSettings.lines?.[prop] as WebglLineProps).sps = parseFloat(sps.value);
+                    (chartSettings.lines?.[prop] as WebglLineProps).nSec = parseFloat(nSec.value);
+                    delete (chartSettings.lines?.[prop] as WebglLineProps).points;
+                    delete (chartSettings.lines?.[prop] as WebglLineProps).nPoints;
+                    chartworker.run('resetChart', [plotId,chartSettings]);
+                }
+            }
+
             useScaling.onchange = filteronchange;
             useNotch50.onchange = filteronchange;
             useNotch60.onchange = filteronchange;
@@ -251,13 +266,6 @@ export async function setSignalControls(
             scalar.onchange = filteronchange;
             bandpassLower.onchange = filteronchange;
             bandpassUpper.onchange = filteronchange;
-
-            nSec.onchange = () => {
-                if((!Array.isArray(chartSettings.lines?.[prop] as WebglLineProps))) {
-                    (chartSettings.lines?.[prop] as WebglLineProps).nSec = nSec.value;
-                    chartworker.run('resetChart', [plotId,chartSettings]);
-                }
-            }
         }
     }
 }
