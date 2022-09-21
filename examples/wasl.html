@@ -22,7 +22,6 @@
 
     </style>
     <script src='./audiofeedback/node_modules/browserfs/dist/browserfs.js'></script>
-    <link rel="stylesheet" href="./audiofeedback/index.css">
 </head>
 <body>
     <div id="container"></div>
@@ -32,16 +31,14 @@ import wasl from "../external/wasl/dist/index.esm.js";
 import validate from "../external/wasl-validate/dist/index.esm.js";
 // import validate from "https://cdn.jsdelivr.net/npm/wasl-validate/dist/index.esm.js";
 
-import * as csv from "./audiofeedback/extras/storage/BFS_CSV.js";
-
-    const path = './audiofeedback/index.wasl.json' // create a myproject directory next to this html file
+    const path = 'audiofeedback/index.wasl.json' // create a myproject directory next to this html file
 
     const options = {
         relativeTo: import.meta.url, // allows you to resolve the project,
         nodeModules: 'audiofeedback/node_modules',
         filesystem: {
             _fallbacks: {
-                'audiofeedback/extras/storage/BFS_CSV.js': csv
+                'browserfs': window.BrowserFS
             }
         }
     }

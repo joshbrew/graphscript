@@ -1,8 +1,7 @@
 import {CSV} from './csv.js'
 
 export let fsInited = false
-// import * as BrowserFS from '../../node_modules/browserfs/dist/browserfs.js' // 'browserfs'
-const BrowserFS = window.BrowserFS
+import * as BrowserFS from 'browserfs' // 'browserfs'
 
 export const fs = BrowserFS.BFSRequire('fs');
 const BFSBuffer = BrowserFS.BFSRequire('buffer').Buffer;

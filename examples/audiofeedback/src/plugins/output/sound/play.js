@@ -3,7 +3,7 @@
 
     export const tagName = 'button'
     export const attributes = {
-        onclick:(ev)=>{
+        onclick:async (ev)=>{
             //ev.target.parentNode.querySelector('#soundDropdown')
             if(GameState.playing) {
                 GameState.playing.stop()
@@ -11,7 +11,7 @@
             }
 
             GameState.playing = new Howl({
-                src:(document.getElementById('soundDropdown')).value,
+                src: (document.getElementById('soundDropdown')).value,
                 loop:true,
                 autoplay:true,
                 volume:0.5,

@@ -1,4 +1,3 @@
-
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -301,12 +300,12 @@ var require_Blob = __commonJS({
             }
             return b;
           }
-          function Blob4(chunks, opts) {
+          function Blob3(chunks, opts) {
             chunks = chunks || [];
             opts = opts == null ? {} : opts;
             for (var i = 0, len = chunks.length; i < len; i++) {
               var chunk = chunks[i];
-              if (chunk instanceof Blob4) {
+              if (chunk instanceof Blob3) {
                 chunks[i] = chunk._buffer;
               } else if (typeof chunk === "string") {
                 chunks[i] = textEncode(chunk);
@@ -327,34 +326,34 @@ var require_Blob = __commonJS({
               this.type = this.type.toLowerCase();
             }
           }
-          Blob4.prototype.arrayBuffer = function() {
+          Blob3.prototype.arrayBuffer = function() {
             return Promise.resolve(this._buffer.buffer || this._buffer);
           };
-          Blob4.prototype.text = function() {
+          Blob3.prototype.text = function() {
             return Promise.resolve(textDecode(this._buffer));
           };
-          Blob4.prototype.slice = function(start, end, type) {
+          Blob3.prototype.slice = function(start, end, type) {
             var slice = this._buffer.slice(start || 0, end || this._buffer.length);
-            return new Blob4([slice], { type });
+            return new Blob3([slice], { type });
           };
-          Blob4.prototype.toString = function() {
+          Blob3.prototype.toString = function() {
             return "[object Blob]";
           };
           function File2(chunks, name2, opts) {
             opts = opts || {};
-            var a = Blob4.call(this, chunks, opts) || this;
+            var a = Blob3.call(this, chunks, opts) || this;
             a.name = name2.replace(/\//g, ":");
             a.lastModifiedDate = opts.lastModified ? new Date(opts.lastModified) : new Date();
             a.lastModified = +a.lastModifiedDate;
             return a;
           }
-          File2.prototype = create(Blob4.prototype);
+          File2.prototype = create(Blob3.prototype);
           File2.prototype.constructor = File2;
           if (Object.setPrototypeOf) {
-            Object.setPrototypeOf(File2, Blob4);
+            Object.setPrototypeOf(File2, Blob3);
           } else {
             try {
-              File2.__proto__ = Blob4;
+              File2.__proto__ = Blob3;
             } catch (e) {
             }
           }
@@ -376,7 +375,7 @@ var require_Blob = __commonJS({
             this.removeEventListener = delegate.removeEventListener;
           }
           function _read(fr, blob2, kind) {
-            if (!(blob2 instanceof Blob4)) {
+            if (!(blob2 instanceof Blob3)) {
               throw new TypeError("Failed to execute '" + kind + "' on 'FileReader': parameter 1 is not of type 'Blob'.");
             }
             fr.result = "";
@@ -411,7 +410,7 @@ var require_Blob = __commonJS({
           FileReader2.prototype.abort = function() {
           };
           URL2.createObjectURL = function(blob2) {
-            return blob2 instanceof Blob4 ? "data:" + blob2.type + ";base64," + array2base64(blob2._buffer) : createObjectURL.call(URL2, blob2);
+            return blob2 instanceof Blob3 ? "data:" + blob2.type + ";base64," + array2base64(blob2._buffer) : createObjectURL.call(URL2, blob2);
           };
           URL2.revokeObjectURL = function(url) {
             revokeObjectURL && revokeObjectURL.call(URL2, url);
@@ -419,7 +418,7 @@ var require_Blob = __commonJS({
           var _send = global2.XMLHttpRequest && global2.XMLHttpRequest.prototype.send;
           if (_send) {
             XMLHttpRequest.prototype.send = function(data) {
-              if (data instanceof Blob4) {
+              if (data instanceof Blob3) {
                 this.setRequestHeader("Content-Type", data.type);
                 _send.call(this, textDecode(data._buffer));
               } else {
@@ -427,7 +426,7 @@ var require_Blob = __commonJS({
               }
             };
           }
-          exports2.Blob = Blob4;
+          exports2.Blob = Blob3;
           exports2.File = File2;
           exports2.FileReader = FileReader2;
           exports2.URL = URL2;
@@ -544,10 +543,10 @@ var require_Blob = __commonJS({
           }
         }
         function promisify(obj) {
-          return new Promise(function(resolve3, reject) {
+          return new Promise(function(resolve2, reject) {
             obj.onload = obj.onerror = function(evt) {
               obj.onload = obj.onerror = null;
-              evt.type === "load" ? resolve3(obj.result || obj) : reject(new Error("Failed to read the blob/file"));
+              evt.type === "load" ? resolve2(obj.result || obj) : reject(new Error("Failed to read the blob/file"));
             };
           });
         }
@@ -583,549 +582,6 @@ var init_browser = __esm({
   "../../node_modules/cross-blob/browser.js"() {
     import_blob_polyfill = __toESM(require_Blob(), 1);
     browser_default = import_blob_polyfill.Blob;
-  }
-});
-
-// node_modules/blob-polyfill/Blob.js
-var require_Blob2 = __commonJS({
-  "node_modules/blob-polyfill/Blob.js"(exports) {
-    (function(global2) {
-      (function(factory) {
-        if (typeof define === "function" && define.amd) {
-          define(["exports"], factory);
-        } else if (typeof exports === "object" && typeof exports.nodeName !== "string") {
-          factory(exports);
-        } else {
-          factory(global2);
-        }
-      })(function(exports2) {
-        "use strict";
-        var BlobBuilder = global2.BlobBuilder || global2.WebKitBlobBuilder || global2.MSBlobBuilder || global2.MozBlobBuilder;
-        var URL2 = global2.URL || global2.webkitURL || function(href, a) {
-          a = document.createElement("a");
-          a.href = href;
-          return a;
-        };
-        var origBlob = global2.Blob;
-        var createObjectURL = URL2.createObjectURL;
-        var revokeObjectURL = URL2.revokeObjectURL;
-        var strTag = global2.Symbol && global2.Symbol.toStringTag;
-        var blobSupported = false;
-        var blobSupportsArrayBufferView = false;
-        var blobBuilderSupported = BlobBuilder && BlobBuilder.prototype.append && BlobBuilder.prototype.getBlob;
-        try {
-          blobSupported = new Blob(["\xE4"]).size === 2;
-          blobSupportsArrayBufferView = new Blob([new Uint8Array([1, 2])]).size === 2;
-        } catch (e) {
-        }
-        function mapArrayBufferViews(ary) {
-          return ary.map(function(chunk) {
-            if (chunk.buffer instanceof ArrayBuffer) {
-              var buf = chunk.buffer;
-              if (chunk.byteLength !== buf.byteLength) {
-                var copy = new Uint8Array(chunk.byteLength);
-                copy.set(new Uint8Array(buf, chunk.byteOffset, chunk.byteLength));
-                buf = copy.buffer;
-              }
-              return buf;
-            }
-            return chunk;
-          });
-        }
-        function BlobBuilderConstructor(ary, options) {
-          options = options || {};
-          var bb = new BlobBuilder();
-          mapArrayBufferViews(ary).forEach(function(part) {
-            bb.append(part);
-          });
-          return options.type ? bb.getBlob(options.type) : bb.getBlob();
-        }
-        function BlobConstructor(ary, options) {
-          return new origBlob(mapArrayBufferViews(ary), options || {});
-        }
-        if (global2.Blob) {
-          BlobBuilderConstructor.prototype = Blob.prototype;
-          BlobConstructor.prototype = Blob.prototype;
-        }
-        function stringEncode(string) {
-          var pos = 0;
-          var len = string.length;
-          var Arr = global2.Uint8Array || Array;
-          var at = 0;
-          var tlen = Math.max(32, len + (len >> 1) + 7);
-          var target = new Arr(tlen >> 3 << 3);
-          while (pos < len) {
-            var value = string.charCodeAt(pos++);
-            if (value >= 55296 && value <= 56319) {
-              if (pos < len) {
-                var extra = string.charCodeAt(pos);
-                if ((extra & 64512) === 56320) {
-                  ++pos;
-                  value = ((value & 1023) << 10) + (extra & 1023) + 65536;
-                }
-              }
-              if (value >= 55296 && value <= 56319) {
-                continue;
-              }
-            }
-            if (at + 4 > target.length) {
-              tlen += 8;
-              tlen *= 1 + pos / string.length * 2;
-              tlen = tlen >> 3 << 3;
-              var update = new Uint8Array(tlen);
-              update.set(target);
-              target = update;
-            }
-            if ((value & 4294967168) === 0) {
-              target[at++] = value;
-              continue;
-            } else if ((value & 4294965248) === 0) {
-              target[at++] = value >> 6 & 31 | 192;
-            } else if ((value & 4294901760) === 0) {
-              target[at++] = value >> 12 & 15 | 224;
-              target[at++] = value >> 6 & 63 | 128;
-            } else if ((value & 4292870144) === 0) {
-              target[at++] = value >> 18 & 7 | 240;
-              target[at++] = value >> 12 & 63 | 128;
-              target[at++] = value >> 6 & 63 | 128;
-            } else {
-              continue;
-            }
-            target[at++] = value & 63 | 128;
-          }
-          return target.slice(0, at);
-        }
-        function stringDecode(buf) {
-          var end = buf.length;
-          var res = [];
-          var i = 0;
-          while (i < end) {
-            var firstByte = buf[i];
-            var codePoint = null;
-            var bytesPerSequence = firstByte > 239 ? 4 : firstByte > 223 ? 3 : firstByte > 191 ? 2 : 1;
-            if (i + bytesPerSequence <= end) {
-              var secondByte, thirdByte, fourthByte, tempCodePoint;
-              switch (bytesPerSequence) {
-                case 1:
-                  if (firstByte < 128) {
-                    codePoint = firstByte;
-                  }
-                  break;
-                case 2:
-                  secondByte = buf[i + 1];
-                  if ((secondByte & 192) === 128) {
-                    tempCodePoint = (firstByte & 31) << 6 | secondByte & 63;
-                    if (tempCodePoint > 127) {
-                      codePoint = tempCodePoint;
-                    }
-                  }
-                  break;
-                case 3:
-                  secondByte = buf[i + 1];
-                  thirdByte = buf[i + 2];
-                  if ((secondByte & 192) === 128 && (thirdByte & 192) === 128) {
-                    tempCodePoint = (firstByte & 15) << 12 | (secondByte & 63) << 6 | thirdByte & 63;
-                    if (tempCodePoint > 2047 && (tempCodePoint < 55296 || tempCodePoint > 57343)) {
-                      codePoint = tempCodePoint;
-                    }
-                  }
-                  break;
-                case 4:
-                  secondByte = buf[i + 1];
-                  thirdByte = buf[i + 2];
-                  fourthByte = buf[i + 3];
-                  if ((secondByte & 192) === 128 && (thirdByte & 192) === 128 && (fourthByte & 192) === 128) {
-                    tempCodePoint = (firstByte & 15) << 18 | (secondByte & 63) << 12 | (thirdByte & 63) << 6 | fourthByte & 63;
-                    if (tempCodePoint > 65535 && tempCodePoint < 1114112) {
-                      codePoint = tempCodePoint;
-                    }
-                  }
-              }
-            }
-            if (codePoint === null) {
-              codePoint = 65533;
-              bytesPerSequence = 1;
-            } else if (codePoint > 65535) {
-              codePoint -= 65536;
-              res.push(codePoint >>> 10 & 1023 | 55296);
-              codePoint = 56320 | codePoint & 1023;
-            }
-            res.push(codePoint);
-            i += bytesPerSequence;
-          }
-          var len = res.length;
-          var str = "";
-          var j = 0;
-          while (j < len) {
-            str += String.fromCharCode.apply(String, res.slice(j, j += 4096));
-          }
-          return str;
-        }
-        var textEncode = typeof TextEncoder === "function" ? TextEncoder.prototype.encode.bind(new TextEncoder()) : stringEncode;
-        var textDecode = typeof TextDecoder === "function" ? TextDecoder.prototype.decode.bind(new TextDecoder()) : stringDecode;
-        function FakeBlobBuilder() {
-          function bufferClone(buf) {
-            var view = new Array(buf.byteLength);
-            var array = new Uint8Array(buf);
-            var i = view.length;
-            while (i--) {
-              view[i] = array[i];
-            }
-            return view;
-          }
-          function array2base64(input) {
-            var byteToCharMap = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-            var output = [];
-            for (var i = 0; i < input.length; i += 3) {
-              var byte1 = input[i];
-              var haveByte2 = i + 1 < input.length;
-              var byte2 = haveByte2 ? input[i + 1] : 0;
-              var haveByte3 = i + 2 < input.length;
-              var byte3 = haveByte3 ? input[i + 2] : 0;
-              var outByte1 = byte1 >> 2;
-              var outByte2 = (byte1 & 3) << 4 | byte2 >> 4;
-              var outByte3 = (byte2 & 15) << 2 | byte3 >> 6;
-              var outByte4 = byte3 & 63;
-              if (!haveByte3) {
-                outByte4 = 64;
-                if (!haveByte2) {
-                  outByte3 = 64;
-                }
-              }
-              output.push(byteToCharMap[outByte1], byteToCharMap[outByte2], byteToCharMap[outByte3], byteToCharMap[outByte4]);
-            }
-            return output.join("");
-          }
-          var create = Object.create || function(a) {
-            function c() {
-            }
-            c.prototype = a;
-            return new c();
-          };
-          function getObjectTypeName(o) {
-            return Object.prototype.toString.call(o).slice(8, -1);
-          }
-          function isPrototypeOf(c, o) {
-            return typeof c === "object" && Object.prototype.isPrototypeOf.call(c.prototype, o);
-          }
-          function isDataView(o) {
-            return getObjectTypeName(o) === "DataView" || isPrototypeOf(global2.DataView, o);
-          }
-          var arrayBufferClassNames = [
-            "Int8Array",
-            "Uint8Array",
-            "Uint8ClampedArray",
-            "Int16Array",
-            "Uint16Array",
-            "Int32Array",
-            "Uint32Array",
-            "Float32Array",
-            "Float64Array",
-            "ArrayBuffer"
-          ];
-          function includes(a, v) {
-            return a.indexOf(v) !== -1;
-          }
-          function isArrayBuffer(o) {
-            return includes(arrayBufferClassNames, getObjectTypeName(o)) || isPrototypeOf(global2.ArrayBuffer, o);
-          }
-          function concatTypedarrays(chunks) {
-            var size = 0;
-            var j = chunks.length;
-            while (j--) {
-              size += chunks[j].length;
-            }
-            var b = new Uint8Array(size);
-            var offset = 0;
-            for (var i = 0; i < chunks.length; i++) {
-              var chunk = chunks[i];
-              b.set(chunk, offset);
-              offset += chunk.byteLength || chunk.length;
-            }
-            return b;
-          }
-          function Blob4(chunks, opts) {
-            chunks = chunks || [];
-            opts = opts == null ? {} : opts;
-            for (var i = 0, len = chunks.length; i < len; i++) {
-              var chunk = chunks[i];
-              if (chunk instanceof Blob4) {
-                chunks[i] = chunk._buffer;
-              } else if (typeof chunk === "string") {
-                chunks[i] = textEncode(chunk);
-              } else if (isDataView(chunk)) {
-                chunks[i] = bufferClone(chunk.buffer);
-              } else if (isArrayBuffer(chunk)) {
-                chunks[i] = bufferClone(chunk);
-              } else {
-                chunks[i] = textEncode(String(chunk));
-              }
-            }
-            this._buffer = global2.Uint8Array ? concatTypedarrays(chunks) : [].concat.apply([], chunks);
-            this.size = this._buffer.length;
-            this.type = opts.type || "";
-            if (/[^\u0020-\u007E]/.test(this.type)) {
-              this.type = "";
-            } else {
-              this.type = this.type.toLowerCase();
-            }
-          }
-          Blob4.prototype.arrayBuffer = function() {
-            return Promise.resolve(this._buffer.buffer || this._buffer);
-          };
-          Blob4.prototype.text = function() {
-            return Promise.resolve(textDecode(this._buffer));
-          };
-          Blob4.prototype.slice = function(start, end, type) {
-            var slice = this._buffer.slice(start || 0, end || this._buffer.length);
-            return new Blob4([slice], { type });
-          };
-          Blob4.prototype.toString = function() {
-            return "[object Blob]";
-          };
-          function File2(chunks, name2, opts) {
-            opts = opts || {};
-            var a = Blob4.call(this, chunks, opts) || this;
-            a.name = name2.replace(/\//g, ":");
-            a.lastModifiedDate = opts.lastModified ? new Date(opts.lastModified) : new Date();
-            a.lastModified = +a.lastModifiedDate;
-            return a;
-          }
-          File2.prototype = create(Blob4.prototype);
-          File2.prototype.constructor = File2;
-          if (Object.setPrototypeOf) {
-            Object.setPrototypeOf(File2, Blob4);
-          } else {
-            try {
-              File2.__proto__ = Blob4;
-            } catch (e) {
-            }
-          }
-          File2.prototype.toString = function() {
-            return "[object File]";
-          };
-          function FileReader2() {
-            if (!(this instanceof FileReader2)) {
-              throw new TypeError("Failed to construct 'FileReader': Please use the 'new' operator, this DOM object constructor cannot be called as a function.");
-            }
-            var delegate = document.createDocumentFragment();
-            this.addEventListener = delegate.addEventListener;
-            this.dispatchEvent = function(evt) {
-              var local = this["on" + evt.type];
-              if (typeof local === "function")
-                local(evt);
-              delegate.dispatchEvent(evt);
-            };
-            this.removeEventListener = delegate.removeEventListener;
-          }
-          function _read(fr, blob2, kind) {
-            if (!(blob2 instanceof Blob4)) {
-              throw new TypeError("Failed to execute '" + kind + "' on 'FileReader': parameter 1 is not of type 'Blob'.");
-            }
-            fr.result = "";
-            setTimeout(function() {
-              this.readyState = FileReader2.LOADING;
-              fr.dispatchEvent(new Event("load"));
-              fr.dispatchEvent(new Event("loadend"));
-            });
-          }
-          FileReader2.EMPTY = 0;
-          FileReader2.LOADING = 1;
-          FileReader2.DONE = 2;
-          FileReader2.prototype.error = null;
-          FileReader2.prototype.onabort = null;
-          FileReader2.prototype.onerror = null;
-          FileReader2.prototype.onload = null;
-          FileReader2.prototype.onloadend = null;
-          FileReader2.prototype.onloadstart = null;
-          FileReader2.prototype.onprogress = null;
-          FileReader2.prototype.readAsDataURL = function(blob2) {
-            _read(this, blob2, "readAsDataURL");
-            this.result = "data:" + blob2.type + ";base64," + array2base64(blob2._buffer);
-          };
-          FileReader2.prototype.readAsText = function(blob2) {
-            _read(this, blob2, "readAsText");
-            this.result = textDecode(blob2._buffer);
-          };
-          FileReader2.prototype.readAsArrayBuffer = function(blob2) {
-            _read(this, blob2, "readAsText");
-            this.result = (blob2._buffer.buffer || blob2._buffer).slice();
-          };
-          FileReader2.prototype.abort = function() {
-          };
-          URL2.createObjectURL = function(blob2) {
-            return blob2 instanceof Blob4 ? "data:" + blob2.type + ";base64," + array2base64(blob2._buffer) : createObjectURL.call(URL2, blob2);
-          };
-          URL2.revokeObjectURL = function(url) {
-            revokeObjectURL && revokeObjectURL.call(URL2, url);
-          };
-          var _send = global2.XMLHttpRequest && global2.XMLHttpRequest.prototype.send;
-          if (_send) {
-            XMLHttpRequest.prototype.send = function(data) {
-              if (data instanceof Blob4) {
-                this.setRequestHeader("Content-Type", data.type);
-                _send.call(this, textDecode(data._buffer));
-              } else {
-                _send.call(this, data);
-              }
-            };
-          }
-          exports2.Blob = Blob4;
-          exports2.File = File2;
-          exports2.FileReader = FileReader2;
-          exports2.URL = URL2;
-        }
-        function fixFileAndXHR() {
-          var isIE = !!global2.ActiveXObject || "-ms-scroll-limit" in document.documentElement.style && "-ms-ime-align" in document.documentElement.style;
-          var _send = global2.XMLHttpRequest && global2.XMLHttpRequest.prototype.send;
-          if (isIE && _send) {
-            XMLHttpRequest.prototype.send = function(data) {
-              if (data instanceof Blob) {
-                this.setRequestHeader("Content-Type", data.type);
-                _send.call(this, data);
-              } else {
-                _send.call(this, data);
-              }
-            };
-          }
-          try {
-            new File([], "");
-            exports2.File = global2.File;
-            exports2.FileReader = global2.FileReader;
-          } catch (e) {
-            try {
-              exports2.File = new Function('class File extends Blob {constructor(chunks, name, opts) {opts = opts || {};super(chunks, opts || {});this.name = name.replace(/\\//g, ":");this.lastModifiedDate = opts.lastModified ? new Date(opts.lastModified) : new Date();this.lastModified = +this.lastModifiedDate;}};return new File([], ""), File')();
-            } catch (e2) {
-              exports2.File = function(b, d, c) {
-                var blob2 = new Blob(b, c);
-                var t = c && void 0 !== c.lastModified ? new Date(c.lastModified) : new Date();
-                blob2.name = d.replace(/\//g, ":");
-                blob2.lastModifiedDate = t;
-                blob2.lastModified = +t;
-                blob2.toString = function() {
-                  return "[object File]";
-                };
-                if (strTag) {
-                  blob2[strTag] = "File";
-                }
-                return blob2;
-              };
-            }
-          }
-        }
-        if (blobSupported) {
-          fixFileAndXHR();
-          exports2.Blob = blobSupportsArrayBufferView ? global2.Blob : BlobConstructor;
-        } else if (blobBuilderSupported) {
-          fixFileAndXHR();
-          exports2.Blob = BlobBuilderConstructor;
-        } else {
-          FakeBlobBuilder();
-        }
-        if (strTag) {
-          if (!exports2.File.prototype[strTag])
-            exports2.File.prototype[strTag] = "File";
-          if (!exports2.Blob.prototype[strTag])
-            exports2.Blob.prototype[strTag] = "Blob";
-          if (!exports2.FileReader.prototype[strTag])
-            exports2.FileReader.prototype[strTag] = "FileReader";
-        }
-        var blob = exports2.Blob.prototype;
-        var stream;
-        try {
-          new ReadableStream({ type: "bytes" });
-          stream = function stream2() {
-            var position = 0;
-            var blob2 = this;
-            return new ReadableStream({
-              type: "bytes",
-              autoAllocateChunkSize: 524288,
-              pull: function(controller) {
-                var v = controller.byobRequest.view;
-                var chunk = blob2.slice(position, position + v.byteLength);
-                return chunk.arrayBuffer().then(function(buffer) {
-                  var uint8array = new Uint8Array(buffer);
-                  var bytesRead = uint8array.byteLength;
-                  position += bytesRead;
-                  v.set(uint8array);
-                  controller.byobRequest.respond(bytesRead);
-                  if (position >= blob2.size)
-                    controller.close();
-                });
-              }
-            });
-          };
-        } catch (e) {
-          try {
-            new ReadableStream({});
-            stream = function stream2(blob2) {
-              var position = 0;
-              return new ReadableStream({
-                pull: function(controller) {
-                  var chunk = blob2.slice(position, position + 524288);
-                  return chunk.arrayBuffer().then(function(buffer) {
-                    position += buffer.byteLength;
-                    var uint8array = new Uint8Array(buffer);
-                    controller.enqueue(uint8array);
-                    if (position == blob2.size)
-                      controller.close();
-                  });
-                }
-              });
-            };
-          } catch (e2) {
-            try {
-              new Response("").body.getReader().read();
-              stream = function stream2() {
-                return new Response(this).body;
-              };
-            } catch (e3) {
-              stream = function stream2() {
-                throw new Error("Include https://github.com/MattiasBuelens/web-streams-polyfill");
-              };
-            }
-          }
-        }
-        function promisify(obj) {
-          return new Promise(function(resolve3, reject) {
-            obj.onload = obj.onerror = function(evt) {
-              obj.onload = obj.onerror = null;
-              evt.type === "load" ? resolve3(obj.result || obj) : reject(new Error("Failed to read the blob/file"));
-            };
-          });
-        }
-        if (!blob.arrayBuffer) {
-          blob.arrayBuffer = function arrayBuffer() {
-            var fr = new FileReader();
-            fr.readAsArrayBuffer(this);
-            return promisify(fr);
-          };
-        }
-        if (!blob.text) {
-          blob.text = function text() {
-            var fr = new FileReader();
-            fr.readAsText(this);
-            return promisify(fr);
-          };
-        }
-        if (!blob.stream) {
-          blob.stream = stream;
-        }
-      });
-    })(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global || exports);
-  }
-});
-
-// node_modules/cross-blob/browser.js
-var browser_exports2 = {};
-__export(browser_exports2, {
-  default: () => browser_default2
-});
-var import_blob_polyfill2, browser_default2;
-var init_browser2 = __esm({
-  "node_modules/cross-blob/browser.js"() {
-    import_blob_polyfill2 = __toESM(require_Blob2(), 1);
-    browser_default2 = import_blob_polyfill2.Blob;
   }
 });
 
@@ -1217,12 +673,12 @@ var handleFetch = async (path, options = {}, progressCallback) => {
 };
 var fetchRemote = async (url, options = {}, progressCallback) => {
   const response = await globalThis.fetch(url, options);
-  return new Promise(async (resolve3) => {
+  return new Promise(async (resolve2) => {
     if (response) {
       const type = response.headers.get("Content-Type");
       if (globalThis.REMOTEESM_NODE) {
         const buffer = await response.arrayBuffer();
-        resolve3({ buffer, type });
+        resolve2({ buffer, type });
       } else {
         const reader = response.body.getReader();
         const bytes = parseInt(response.headers.get("Content-Length"), 10);
@@ -1235,7 +691,7 @@ var fetchRemote = async (url, options = {}, progressCallback) => {
               config.type = type;
             const blob = new Blob(buffer, config);
             const ab = await blob.arrayBuffer();
-            resolve3({ buffer: new Uint8Array(ab), type });
+            resolve2({ buffer: new Uint8Array(ab), type });
             return;
           }
           bytesReceived += value.length;
@@ -1249,97 +705,131 @@ var fetchRemote = async (url, options = {}, progressCallback) => {
       }
     } else {
       console.warn("Response not received!", options.headers);
-      resolve3(void 0);
+      resolve2(void 0);
     }
   });
 };
 
 // ../../node_modules/remote-esm/index.js
 var datauri = {};
-var ready = new Promise(async (resolve3, reject) => {
+var ready = new Promise(async (resolve2, reject) => {
   try {
     if (typeof process === "object") {
       globalThis.fetch = (await import("node-fetch")).default;
       if (typeof globalThis.fetch !== "function")
         globalThis.fetch = fetch;
-      const Blob4 = (await Promise.resolve().then(() => (init_browser(), browser_exports))).default;
-      globalThis.Blob = Blob4;
+      const Blob3 = (await Promise.resolve().then(() => (init_browser(), browser_exports))).default;
+      globalThis.Blob = Blob3;
       if (typeof globalThis.Blob !== "function")
-        globalThis.Blob = Blob4;
-      resolve3(true);
+        globalThis.Blob = Blob3;
+      resolve2(true);
     } else
-      resolve3(true);
+      resolve2(true);
   } catch (err) {
     console.log(err);
     reject(err);
   }
 });
+var jsType = "application/javascript";
+var mimeTypeMap = {
+  "js": jsType,
+  "mjs": jsType,
+  "cjs": jsType,
+  "json": "application/json",
+  "html": "text/html",
+  "css": "text/css",
+  "txt": "text/plain",
+  "svg": "image/svg+xml",
+  "png": "image/png",
+  "jpg": "image/jpeg",
+  "jpeg": "image/jpeg",
+  "gif": "image/gif",
+  "webp": "image/webp",
+  "mp3": "audio/mpeg",
+  "mp4": "video/mp4",
+  "webm": "video/webm",
+  "ogg": "application/ogg",
+  "wav": "audio/wav"
+};
+var getMimeType = (extension) => mimeTypeMap[extension];
 var re = /import([ \n\t]*(?:(?:\* (?:as .+))|(?:[^ \n\t\{\}]+[ \n\t]*,?)|(?:[ \n\t]*\{(?:[ \n\t]*[^ \n\t"'\{\}]+[ \n\t]*,?)+\}))[ \n\t]*)from[ \n\t]*(['"])([^'"\n]+)(?:['"])([ \n\t]*assert[ \n\t]*{type:[ \n\t]*(['"])([^'"\n]+)(?:['"])})?/g;
-var moduleDataURI = (text, mimeType = "text/javascript") => `data:${mimeType};base64,` + btoa(text);
-
-const catchFailedModule = async (e, text, mimeType) => {
-  if (e.message.includes('The string to be encoded contains characters outside of the Latin1 range.')) {
-
-    const uri = moduleDataURI(unescape(encodeURIComponent(text, mimeType)))
-    return await new Promise(((resolve, reject) => {
-
-      const script = document.createElement('script')
-
-        let r = false
-        script.onload = script.onreadystatechange = function() {
-          if ( !r && (!this.readyState || this.readyState == 'complete') ) {
-            r = true
-            resolve(window)
-          }
-      }
-
-        script.onerror = reject
-
-
-          script.src=uri;
-          document.body.insertAdjacentElement('beforeend', script)
-    }))
+function _arrayBufferToBase64(buffer) {
+  var binary = "";
+  var bytes = new Uint8Array(buffer);
+  var len = bytes.byteLength;
+  for (var i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
 }
-}
-
-var importFromText = async (text, path, collection = {}) => {
+var moduleDataURI = (o, mimeType = "text/javascript", method, safe = false) => {
+  const base64 = method === "buffer" ? _arrayBufferToBase64(o) : btoa(safe ? unescape(encodeURIComponent(o)) : o);
+  return `data:${mimeType};base64,` + base64;
+};
+var catchFailedModule = async (uri, e) => {
+  if (e.message.includes("The string to be encoded contains characters outside of the Latin1 range.")) {
+    return await new Promise((resolve2, reject) => {
+      const script = document.createElement("script");
+      let r = false;
+      script.onload = script.onreadystatechange = function() {
+        if (!r && (!this.readyState || this.readyState == "complete")) {
+          r = true;
+          resolve2(window);
+        }
+      };
+      script.onerror = reject;
+      script.src = uri;
+      document.body.insertAdjacentElement("beforeend", script);
+    });
+  } else
+    throw e;
+};
+var importResponse = async (info, path, collection = {}, type = "buffer") => {
   const extension = path.split(".").slice(-1)[0];
   const isJSON = extension === "json";
-  let mimeType = isJSON ? "application/json" : "application/javascript";
-
-  
-   let reference = null
-    let imported = null
-
+  let mimeType = getMimeType(extension);
+  let reference = null;
+  let imported = null;
+  const importURI = async (uri) => await (isJSON ? import(uri, { assert: { type: "json" } }) : import(uri)).catch((e) => {
+    throw e;
+  });
   try {
-    reference = moduleDataURI(text, mimeType)
-} catch (e) {
-      imported = reference = await catchFailedModule(e, text, mimeType)
-}
-
-    // Handle Generic Import
-    if (imported === null) {
-      imported = await (isJSON ? import(reference, { assert: { type: "json" } }) : import(reference)).catch((e) => {
-        throw e;
+    reference = moduleDataURI(info, mimeType, type);
+    imported = await importURI(reference).catch((e) => {
+      throw e;
+    });
+  } catch (e) {
+    reference = moduleDataURI(info, mimeType, type, true);
+    if (mimeType === jsType)
+      imported = reference = await catchFailedModule(reference, e).catch((e2) => {
+        throw e2;
       });
+    else
+      imported = reference;
   }
-
   collection[path] = reference;
   return imported;
 };
 var resolve = get;
-var getText = async (uri) => await globalThis.fetch(uri).then((res) => res.text());
+var enc = new TextDecoder("utf-8");
+var getResponse = async (uri) => {
+  const response = await globalThis.fetch(uri);
+  const buffer = await response.arrayBuffer();
+  return {
+    response,
+    buffer,
+    text: enc.decode(buffer)
+  };
+};
 var safeImport = async (uri, opts = {}) => {
-
-  console.log('Importing', uri)
   const {
     root,
     onImport = () => {
     },
     outputText,
     forceImportFromText,
-    nodeModules = 'node_modules',
-    rootRelativeTo = './'
+    nodeModules = "node_modules",
+    rootRelativeTo = "./"
   } = opts;
   const uriCollection = opts.datauri || datauri;
   await ready;
@@ -1347,25 +837,15 @@ var safeImport = async (uri, opts = {}) => {
     opts.dependencies[uri] = {};
   const extension = uri.split(".").slice(-1)[0];
   const isJSON = extension === "json";
-
   let module = !forceImportFromText ? await (isJSON ? import(uri, { assert: { type: "json" } }) : import(uri)).catch(() => {
   }) : void 0;
   let text, originalText;
-
-  console.log('Got', module)
-
   if (!module || outputText) {
-    text = originalText = await getText(uri);
+    const response = await getResponse(uri);
+    text = originalText = response.text;
     try {
-      console.log('trying', uri)
-
-      module = await importFromText(text, uri, uriCollection);
-      console.log('got', module)
-
+      module = await importResponse(response.buffer, uri, uriCollection);
     } catch (e) {
-
-      const base = get("", uri);
-      let childBase = base;
       const importInfo = [];
       let m;
       do {
@@ -1385,95 +865,77 @@ var safeImport = async (uri, opts = {}) => {
       } while (m);
       for (let i in importInfo) {
         const { variables, wildcard, path } = importInfo[i];
-
-        const isAbsolute = path[0] !== '.'
-
-        let correctPath = get(path, childBase);
-
-
-        // Assume node_modules is at the base
+        const isAbsolute = path[0] !== ".";
+        let correctPath = get(path, uri);
         if (isAbsolute) {
-
-          const base = get(path, nodeModules)
-          const getPath = (path) => get(get(path, base), rootRelativeTo, true)
+          const base = get(path, nodeModules);
+          const getPath = (path2) => get(get(path2, base), rootRelativeTo, true);
+          const pkgPath = getPath("package.json", base);
           try {
-            const pkgPath =  getPath('package.json')
-
-            try {
-              const pkg = (await import(pkgPath, {assert: {type: 'json'}})).default
-              const destination = pkg.module || pkg.main || 'index.js'
-              correctPath = getPath(destination)
-            } catch (e) {
-              console.warn(`${base} does not exist or is not at the root of the project.`)
-            }
-          } catch (e) {
-            console.log('error', e)
+            const pkg = (await import(pkgPath, { assert: { type: "json" } })).default;
+            const destination = pkg.module || pkg.main || "index.js";
+            correctPath = getPath(destination);
+          } catch (e2) {
+            console.warn(`${base} does not exist or is not at the root of the project.`);
           }
-      }
-
-
-
+        }
         const dependentFilePath = get(correctPath);
         const dependentFileWithoutRoot = get(dependentFilePath.replace(root ?? "", ""));
         if (opts.dependencies)
           opts.dependencies[uri][dependentFileWithoutRoot] = importInfo[i];
+        let filesystemFallback = false;
         let ref = uriCollection[dependentFilePath];
         if (!ref) {
           const extension2 = correctPath.split(".").slice(-1)[0];
-          const info = await handleFetch(correctPath);
+          const info = await handleFetch(correctPath, opts?.callbacks?.progress);
           let blob = new Blob([info.buffer], { type: info.type });
           const isJS = extension2.includes("js");
           const newURI = dependentFileWithoutRoot;
           const newText = await blob.text();
-
-          let filesystemFallback = false
-
-          let importedText = isJS ? await new Promise(async (resolve3, reject3) => {
+          let importedText = isJS ? await new Promise(async (resolve2, reject) => {
             await safeImport(newURI, {
+              ...opts,
               root: uri,
               onImport: (path2, info2) => {
                 onImport(path2, info2);
                 if (path2 == newURI)
-                  resolve3(info2.text);
+                  resolve2(info2.text);
               },
               outputText: true,
-              forceImportFromText
-            }).catch((e) => {
-
-              const noDir = rootRelativeTo.split('/').slice(0, -1).join('/')
-              const urlNoBase = correctPath.replace(`${noDir}/`, '')
-              // if (e.message.includes('Failed to fetch')) {
-                filesystemFallback = opts.filesystem?._fallbacks?.[urlNoBase]
-                console.warn(`Failed to fetch ${newURI}. Checking filesystem references...`)
-
-                if(filesystemFallback) {
-                  console.warn(`Got fallback reference for ${newURI}.`, )
-                  resolve3();
-                } {
-                  reject3(new Error(`${newURI} is not available locally. You can provide a direct reference to use in options.filesystem._fallbacks['${urlNoBase}'].`));
-                }
-              // } else reject3(e);
+              datauri: uriCollection
+            }).catch((e2) => {
+              const urlNoBase = isAbsolute ? path : correctPath.replace(`${rootRelativeTo.split("/").slice(0, -1).join("/")}/`, "");
+              console.warn(`Failed to fetch ${newURI}. Checking filesystem references...`);
+              filesystemFallback = opts.filesystem?._fallbacks?.[urlNoBase];
+              if (filesystemFallback) {
+                console.warn(`Got fallback reference for ${newURI}.`);
+                resolve2();
+              } else {
+                const middle = "was not resolved locally. You can provide a direct reference to use in";
+                if (e2.message.includes(middle))
+                  reject(e2);
+                else
+                  reject(new Error(`${newURI} ${middle} options.filesystem._fallbacks['${urlNoBase}'].`));
+              }
             });
           }) : newText;
-
-
-          if (filesystemFallback) uriCollection[correctPath] = filesystemFallback
-          else {
-              await importFromText(importedText, correctPath, uriCollection)
-          }
+          if (filesystemFallback)
+            uriCollection[correctPath] = filesystemFallback;
+          else
+            await importResponse(importedText, correctPath, uriCollection, "text");
         }
-
-        if (typeof uriCollection[correctPath] === 'string') {
-                  text =  `import ${wildcard ? "* as " : ""}${variables} from "${uriCollection[correctPath]}";
-          ${text}`;
+        if (typeof uriCollection[correctPath] === "string") {
+          text = `import ${wildcard ? "* as " : ""}${variables} from "${uriCollection[correctPath]}";
+                ${text}`;
         } else {
-          if (!window.GLOBAL_REMOTEESM_COLLECTION) window.GLOBAL_REMOTEESM_COLLECTION = {}
-          window.GLOBAL_REMOTEESM_COLLECTION[correctPath] = uriCollection[correctPath]
-          text =  `const ${variables} = window.GLOBAL_REMOTEESM_COLLECTION["${correctPath}"];
-          ${text}`;
+          if (!window.GLOBAL_REMOTEESM_COLLECTION)
+            window.GLOBAL_REMOTEESM_COLLECTION = {};
+          window.GLOBAL_REMOTEESM_COLLECTION[correctPath] = uriCollection[correctPath];
+          text = `const ${variables} = window.GLOBAL_REMOTEESM_COLLECTION["${correctPath}"];
+                ${text}`;
         }
       }
-      module = await importFromText(text, uri, uriCollection);
+      module = await importResponse(text, uri, uriCollection, "text");
     }
   }
   onImport(uri, {
@@ -1487,10 +949,10 @@ var remote_esm_default = safeImport;
 
 // ../common/get.ts
 var cache = {};
-var get2 = async (relPath, relativeTo = "", onImport, options) => {
+var get2 = async (relPath, relativeTo = "", onImport, options = {}) => {
   let type = suffix(relPath);
   const isJSON = !type || type.includes("json");
-  const fullPath = resolve(relPath, relativeTo);
+  const fullPath = relPath[0] === "." ? resolve(relPath, relativeTo) : relPath;
   const isFunc = typeof onImport === "function";
   const imported = cache[fullPath]?.imported ?? [];
   if (!cache[fullPath]) {
@@ -1502,12 +964,13 @@ var get2 = async (relPath, relativeTo = "", onImport, options) => {
           onImport(...args);
         }
       },
-      rootRelativeTo: options.relativeTo,
-      nodeModules: options.nodeModules,
       outputText: true,
-      filesystem: options.filesystem
+      filesystem: options.filesystem,
+      nodeModules: options.nodeModules,
+      rootRelativeTo: options.relativeTo,
+      forceImportFromText: true
     }).catch((e) => {
-      throw e
+      throw e;
     });
     cache[fullPath].imported = imported2;
     const res = await cache[fullPath];
@@ -1554,22 +1017,21 @@ var valid = (input, options, location) => {
 var isSrc = (str) => {
   return typeof str === "string" && Object.values(languages_exports).find((arr) => arr.includes(str.split(".").slice(-1)[0]));
 };
-var merge = (main, override, deleteSrc = false) => {
+var merge = (main, override) => {
   const copy = Object.assign({}, main);
   if (override) {
-    if (deleteSrc) {
-      const ogSrc = override.src ?? override;
-      delete override.src;
-      if ("default" in ogSrc)
-        return ogSrc.default;
-    }
     const keys = Object.keys(copy);
     const newKeys = new Set(Object.keys(override));
     keys.forEach((k) => {
+      if (k === "channels")
+        copy[k] = Object.assign({}, copy[k]);
       newKeys.delete(k);
-      if (typeof override[k] === "object" && !Array.isArray(override[k]))
-        copy[k] = merge(copy[k], override[k]);
-      else if (k in override)
+      if (typeof override[k] === "object" && !Array.isArray(override[k])) {
+        if (typeof copy[k] === "object")
+          copy[k] = merge(copy[k], override[k]);
+        else
+          copy[k] = override[k];
+      } else if (k in override)
         copy[k] = override[k];
     });
     newKeys.forEach((k) => {
@@ -1584,102 +1046,15 @@ var checkFiles = (key, filesystem) => {
   return output;
 };
 var remove = (original, search, key = original, o, message) => {
-  if (message) console.error(message)
-  else console.error(`Source was not ${original ? `resolved for ${original}` : `specified for ${key}`}. ${search ? `If available, refer to this object directly as options.filesystem["${search}"]. ` : ""}${o ? `Automatically removing ${key} from the WASL file.` : ""}`);
+  if (message)
+    console.error(message);
+  else
+    console.error(`Source was not ${original ? `resolved for ${original}` : `specified for ${key}`}. ${search ? `If available, refer to this object directly as options.filesystem["${search}"]. ` : ""}${o ? `Automatically removing ${key} from the WASL file.` : ""}`);
   if (o)
     delete o[key];
 };
 
-// node_modules/remote-esm/utils/path.js
-var urlSep2 = "://";
-var get3 = (path, rel = "", keepRelativeImports = false) => {
-  let prefix = "";
-  const getPrefix = (str) => {
-    prefix = str.includes(urlSep2) ? str.split(urlSep2).splice(0, 1) : void 0;
-    if (prefix)
-      return str.replace(`${prefix}${urlSep2}`, "");
-    else
-      return str;
-  };
-  if (path.includes(urlSep2))
-    path = getPrefix(path);
-  if (rel.includes(urlSep2))
-    rel = getPrefix(rel);
-  if (!keepRelativeImports)
-    rel = rel.split("/").filter((v) => v != "..").join("/");
-  if (rel[rel.length - 1] === "/")
-    rel = rel.slice(0, -1);
-  let dirTokens = rel.split("/");
-  if (dirTokens.length === 1 && dirTokens[0] === "")
-    dirTokens = [];
-  const potentialFile = dirTokens.pop();
-  if (potentialFile) {
-    const splitPath2 = potentialFile.split(".");
-    if (splitPath2.length == 1 || splitPath2.length > 1 && splitPath2.includes(""))
-      dirTokens.push(potentialFile);
-  }
-  const splitPath = path.split("/");
-  const pathTokens = splitPath.filter((str, i) => !!str);
-  const extensionTokens = pathTokens.filter((str, i) => {
-    if (str === "..") {
-      dirTokens.pop();
-      return false;
-    } else if (str === ".")
-      return false;
-    else
-      return true;
-  });
-  const newPath = [...dirTokens, ...extensionTokens].join("/");
-  if (prefix)
-    return prefix + "://" + newPath;
-  else
-    return newPath;
-};
-
-// node_modules/remote-esm/index.js
-var ready2 = new Promise(async (resolve3, reject) => {
-  try {
-    if (typeof process === "object") {
-      globalThis.fetch = (await import("node-fetch")).default;
-      if (typeof globalThis.fetch !== "function")
-        globalThis.fetch = fetch;
-      const Blob4 = (await Promise.resolve().then(() => (init_browser2(), browser_exports2))).default;
-      globalThis.Blob = Blob4;
-      if (typeof globalThis.Blob !== "function")
-        globalThis.Blob = Blob4;
-      resolve3(true);
-    } else
-      resolve3(true);
-  } catch (err) {
-    console.log(err);
-    reject(err);
-  }
-});
-var moduleDataURI2 = (text, mimeType = "text/javascript") => `data:${mimeType};base64,` + btoa(text);
-var importFromText2 = async (text, path, collection = {}) => {
-  const extension = path.split(".").slice(-1)[0];
-  const isJSON = extension === "json";
-  let mimeType = isJSON ? "application/json" : "application/javascript";
-  const uri = moduleDataURI2(text, mimeType);
-  let imported = await (isJSON ? import(uri, { assert: { type: "json" } }) : import(uri)).catch((e) => {
-    if (e.message.includes("Unexpected token"))
-      throw new Error("Failed to fetch");
-    else
-      throw e;
-  });
-  const ref = {};
-  for (let key in imported) {
-    Object.defineProperty(ref, key, {
-      get: () => imported[key],
-      enumerable: true
-    });
-  }
-  collection[path] = uri;
-  return imported;
-};
-var resolve2 = get3;
-
-// node_modules/es-plugins/dist/index.esm.js
+// ../../node_modules/es-plugins/dist/index.esm.js
 function parseFunctionFromText(method = "") {
   let getFunctionBody = (methodString) => {
     return methodString.replace(/^\W*(function[^{]+\{([\s\S]*)\}|[^=]+=>[^{]*\{([\s\S]*)\}|[^=]+=>(.+))/i, "$2$3$4");
@@ -1875,7 +1250,7 @@ var GraphNode = class {
         let res = this.runOp(...args);
         return res;
       }
-      return new Promise(async (resolve3) => {
+      return new Promise(async (resolve2) => {
         if (this) {
           let run = (node, tick = 0, ...input) => {
             return new Promise(async (r) => {
@@ -1950,17 +1325,17 @@ var GraphNode = class {
           };
           if (this.delay) {
             setTimeout(async () => {
-              resolve3(await runnode());
+              resolve2(await runnode());
             }, this.delay);
           } else if (this.frame && window?.requestAnimationFrame) {
             requestAnimationFrame(async () => {
-              resolve3(await runnode());
+              resolve2(await runnode());
             });
           } else {
-            resolve3(await runnode());
+            resolve2(await runnode());
           }
         } else
-          resolve3(void 0);
+          resolve2(void 0);
       });
     };
     this.runParent = async (n, ...args) => {
@@ -2347,9 +1722,11 @@ var GraphNode = class {
                 this.nodes.forEach((n2) => {
                   if (n2.nodes.get(node.children[key].tag))
                     n2.nodes.delete(node.children[key].tag);
-                  if (n2.children[key] instanceof GraphNode)
+                  if (n2.children?.[key] instanceof GraphNode)
                     delete n2.children[key];
                 });
+                if (node.children[key].ondelete && !this.graph)
+                  node.children[key].ondelete(node.children[key]);
                 recursivelyRemove(node.children[key]);
               }
             }
@@ -2359,7 +1736,7 @@ var GraphNode = class {
           n.stopNode();
         if (n.tag) {
           this.nodes.delete(n.tag);
-          if (this.children[n.tag])
+          if (this.children?.[n.tag])
             delete this.children[n.tag];
           if (this.parent?.tag === n.tag)
             delete this.parent;
@@ -2369,7 +1746,7 @@ var GraphNode = class {
             if (n2?.tag) {
               if (n2.nodes.get(n2.tag))
                 n2.nodes.delete(n2.tag);
-              if (n2.children[n2.tag] instanceof GraphNode)
+              if (n2.children?.[n2.tag] instanceof GraphNode)
                 delete n2.children[n2.tag];
             }
           });
@@ -2631,8 +2008,13 @@ var GraphNode = class {
           let props = hasnode.getProps();
           delete props.graph;
           delete props.parent;
-          for (let k in props)
-            properties[k] = props[k];
+          for (let k in props) {
+            const desc = Object.getOwnPropertyDescriptor(properties, k);
+            if (desc && desc.get && !desc.set)
+              properties = Object.assign({}, properties);
+            else
+              properties[k] = props[k];
+          }
         }
       }
       if (properties?.operator) {
@@ -2650,9 +2032,6 @@ var GraphNode = class {
       }
       if (properties.children)
         this._initial.children = Object.assign({}, properties.children);
-      if (properties.run) {
-        console.log("Transferring", properties, "to", this);
-      }
       Object.assign(this, properties);
       if (!this.tag) {
         if (graph) {
@@ -2849,40 +2228,31 @@ var Graph = class {
         });
     };
     this.removeTree = (n, checked) => {
-      if (typeof n === "string")
-        n = this.nodes.get(n);
+      if (n) {
+        if (typeof n === "string")
+          n = this.nodes.get(n);
+      }
       if (n?.nodes) {
-        if (!checked)
-          checked = {};
+        let checked2 = {};
         const recursivelyRemove = (node) => {
-          if (node.children && !checked[node.tag]) {
-            checked[node.tag] = true;
-            if (Array.isArray(node.children)) {
-              node.children.forEach((c) => {
-                if (c.stopNode)
-                  c.stopNode();
-                if (c.tag) {
-                  if (this.nodes.get(c.tag))
-                    this.nodes.delete(c.tag);
-                }
+          if (typeof node.children === "object" && !checked2[node.tag]) {
+            checked2[node.tag] = true;
+            for (const key in node.children) {
+              if (node.children[key]?.stopNode)
+                node.children[key].stopNode();
+              if (node.children[key]?.tag) {
+                if (this.nodes.get(node.children[key].tag))
+                  this.nodes.delete(node.children[key].tag);
                 this.nodes.forEach((n2) => {
-                  if (n2.nodes.get(c.tag))
-                    n2.nodes.delete(c.tag);
+                  if (n2.nodes.get(node.children[key].tag))
+                    n2.nodes.delete(node.children[key].tag);
+                  if (n2.children?.[key] instanceof GraphNode)
+                    delete n2.children[key];
                 });
-                recursivelyRemove(c);
-              });
-            } else if (typeof node.children === "object") {
-              if (node.stopNode)
-                node.stopNode();
-              if (node.tag) {
-                if (this.nodes.get(node.tag))
-                  this.nodes.delete(node.tag);
+                if (node.children[key].ondelete)
+                  node.children[key].ondelete(node.children[key]);
+                recursivelyRemove(node.children[key]);
               }
-              this.nodes.forEach((n2) => {
-                if (n2.nodes.get(node.tag))
-                  n2.nodes.delete(node.tag);
-              });
-              recursivelyRemove(node);
             }
           }
         };
@@ -2890,17 +2260,23 @@ var Graph = class {
           n.stopNode();
         if (n.tag) {
           this.nodes.delete(n.tag);
+          if (this.parent?.tag === n.tag)
+            delete this.parent;
+          if (this[n.tag] instanceof GraphNode)
+            delete this[n.tag];
           this.nodes.forEach((n2) => {
-            if (n2.nodes.get(n2.tag))
-              n2.nodes.delete(n2.tag);
+            if (n2?.tag) {
+              if (n2.nodes.get(n2.tag))
+                n2.nodes.delete(n2.tag);
+              if (n2.children?.[n2.tag] instanceof GraphNode)
+                delete n2.children[n2.tag];
+            }
           });
-          this.nNodes = this.nodes.size;
           recursivelyRemove(n);
+          if (n.ondelete)
+            n.ondelete(n);
         }
-        if (n.ondelete)
-          n.ondelete(n);
       }
-      return n;
     };
     this.remove = (n) => {
       if (typeof n === "string")
@@ -3730,7 +3106,7 @@ var Service = class extends Graph {
       } else if (options2.routes || (Object.keys(this.routes).length > 0 || this.loadDefaultRoutes) && this.firstLoad)
         this.load(options2.routes, options2.includeClassName, options2.routeFormat, options2.customRoutes, options2.customChildren, options2.sharedState);
     };
-    this.load = (routes, includeClassName = true, routeFormat = ".", customRoutes, customChildren, sharedState = true) => {
+    this.load = (routes, includeClassName = true, routeFormat = ".", customRoutes = this.customRoutes, customChildren = this.customChildren, sharedState = true) => {
       if (!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad))
         return;
       if (this.firstLoad)
@@ -3998,7 +3374,7 @@ var Service = class extends Graph {
         }
       } else
         this.setTree(this.routes);
-      for (const prop in this.routes) {
+      for (const prop in routes) {
         if (this.routes[prop]?.aliases) {
           let aliases = this.routes[prop].aliases;
           aliases.forEach((a) => {
@@ -4514,11 +3890,14 @@ var DOMService = class extends Service {
       });
       node.element = element;
       element.node = node;
-      const initialOptions = options2._initial ?? options2;
+      let initialOptions = options2._initial ?? options2;
       for (let key in initialOptions) {
-        if (typeof initialOptions[key] === "function")
+        if (typeof initialOptions[key] === "function") {
+          const desc = Object.getOwnPropertyDescriptor(initialOptions, key);
+          if (desc && desc.get && !desc.set)
+            initialOptions = Object.assign({}, initialOptions);
           initialOptions[key] = initialOptions[key].bind(node);
-        else if (key === "attributes") {
+        } else if (key === "attributes") {
           for (let key2 in initialOptions.attributes) {
             if (typeof initialOptions.attributes[key2] === "function") {
               initialOptions.attributes[key2] = initialOptions.attributes[key2].bind(node);
@@ -5646,6 +5025,14 @@ var ESPlugin = class {
   #cache = {};
   #plugins = {};
   #active = false;
+  listeners = {
+    pool: {
+      in: {},
+      out: {}
+    },
+    active: {},
+    includeParent: {}
+  };
   plugins = {};
   #toRun = false;
   #runProps = true;
@@ -5673,23 +5060,22 @@ var ESPlugin = class {
     } while (this.initial instanceof ESPlugin);
     const isFunction = typeof this.initial === "function";
     const hasDefault = "default" in this.initial;
-    let hasGraph = !!node.graph;
-    if (!hasDefault && !hasGraph) {
-      let newNode = { graph: { nodes: {} } };
+    let hasComponents = !!node.components;
+    if (!hasDefault && !hasComponents) {
+      let newNode = { components: {} };
       for (let namedExport in node)
-        newNode.graph.nodes[namedExport] = { default: node[namedExport] };
+        newNode.components[namedExport] = { default: node[namedExport] };
       this.#initial = newNode;
-      hasGraph = true;
+      hasComponents = true;
       this.#runProps = false;
     }
-    if (hasDefault || isFunction) {
+    if (hasDefault || isFunction)
       this.graph = this.#create(options.tag ?? "defaultESPluginTag", this.initial);
-    }
-    if (hasGraph) {
+    if (hasComponents) {
       const toNotify = [];
-      const nodes = this.initial.graph.nodes;
-      for (let tag in nodes) {
-        const node2 = nodes[tag];
+      const components = this.initial.components;
+      for (let tag in components) {
+        const node2 = components[tag];
         if (!(node2 instanceof ESPlugin)) {
           const clonedOptions = Object.assign({}, Object.assign(options));
           const plugin = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
@@ -5728,67 +5114,10 @@ var ESPlugin = class {
       }
       tree[tag] = this.#create(tag, thisNode);
     }
-    let listeningFor = {};
-    let quickLookup = {};
-    let resolve3 = (path) => {
-      if (quickLookup[path] === void 0) {
-        const splitEdge = path.split(".");
-        const first = splitEdge.shift();
-        const lastKey = splitEdge.pop();
-        let last = tree[first];
-        if (last) {
-          splitEdge.forEach((str) => last = last.nodes.get(str));
-          const resolved = lastKey ? last.nodes.get(lastKey) : last;
-          quickLookup[path] = { resolved, last, lastKey };
-        } else
-          console.error(`Target associated with ${path} was not found`);
-      }
-      return quickLookup[path];
-    };
-    let activate = async (edges2, data) => {
-      for (let input in edges2) {
-        let { resolved, last, lastKey } = resolve3(input);
-        if (resolved) {
-          const target = resolved.node ?? resolved;
-          if (Array.isArray(data))
-            target.run(...data);
-          else
-            target.run(data);
-        } else {
-          const target = last.node ?? last;
-          let res;
-          if (typeof target[lastKey] === "function") {
-            if (Array.isArray(data))
-              res = await target[lastKey](...data);
-            else
-              res = await target[lastKey](data);
-          } else
-            res = target[lastKey] = data;
-          if (listeningFor[input])
-            activate(listeningFor[input], res);
-        }
-      }
-    };
-    const edges = this.initial.graph.edges;
-    for (let output in edges) {
-      let { resolved } = resolve3(output);
-      if (resolved) {
-        if (!resolved.children)
-          resolved.children = {};
-        const callback = (data) => {
-          activate(edges[output], data);
-        };
-        if (resolved instanceof GraphNode)
-          resolved.subscribe(callback);
-        else
-          this.#router.state.subscribeTrigger(resolved.tag, callback);
-      } else
-        listeningFor[output] = edges[output];
-    }
     return tree;
   };
   #activate = () => {
-    if (this.initial.graph) {
+    if (this.initial.components) {
       let tree = this.#createTree();
       const props = this.#instance ?? this.initial;
       this.graph = isNode ? new Graph(tree, this.#options.tag, props) : new DOMService({ routes: tree, name: this.#options.tag, props: this.#runProps ? props : void 0 }, this.#options.parentNode);
@@ -5811,13 +5140,98 @@ var ESPlugin = class {
         });
       }
       this.#activate();
-      const f = async () => {
+      const f = async (top) => {
+        const toRun = [];
         for (let f2 of activateFuncs)
-          await f2();
+          toRun.push(...await f2(top));
+        const listeners = [{ reference: {} }, { reference: {} }];
+        let toListenTo = {
+          ...this.initial.listeners
+        };
+        let listenTo = false;
+        for (let key in this.initial.children) {
+          if (!(this.initial.children[key] instanceof GraphNode))
+            listenTo = true;
+        }
+        const basePath = this.getPath();
+        if (listenTo) {
+          toListenTo[basePath] = true;
+        }
+        Object.entries(toListenTo).forEach(([key, value]) => {
+          for (let target in value)
+            listeners[1].reference[target] = true;
+          listeners[0].reference[key] = true;
+        });
+        const targets = [
+          {
+            reference: this.initial.children,
+            condition: (child) => child === void 0
+          },
+          ...listeners
+        ];
+        targets.forEach((o) => {
+          for (let path in o.reference) {
+            if (!o.condition || o.condition(o.reference[path])) {
+              const updated = `${top.graph.name}.${path}`;
+              let split = updated.split(".");
+              const lastKey = split.pop();
+              let absolute, relative;
+              let last = top.graph;
+              let resolved = this.#router.nodes.get(updated);
+              if (resolved)
+                last = this.#router.nodes.get(split.join(".")) ?? top.graph;
+              else {
+                const get3 = (str, target) => target.nodes.get(str) ?? target[str];
+                absolute = path.split(".").slice(0, -1);
+                relative = [...basePath ? basePath.split(".") : [], ...absolute];
+                split = relative;
+                try {
+                  split.forEach((str) => last = get3(str, last));
+                  resolved = lastKey ? get3(lastKey, last) : last;
+                } catch {
+                  last = top.graph;
+                  split = absolute;
+                  absolute.forEach((str) => last = get3(str, last));
+                  resolved = lastKey ? get3(lastKey, last) : last;
+                }
+              }
+              o.reference[path] = { resolved, last, lastKey, path: {
+                used: split.join("."),
+                absolute: absolute ? absolute.join(".") : null,
+                relative: relative ? relative.join(".") : null
+              } };
+            }
+          }
+        });
+        let listenerPool = {
+          in: listeners[1].reference,
+          out: listeners[0].reference
+        };
+        for (let key in toListenTo)
+          top.listeners.active[key] = toListenTo[key];
+        for (let key in this.listeners.includeParent)
+          top.listeners.includeParent[key] = this.listeners.includeParent[key];
+        for (let type in listenerPool) {
+          top.listeners.pool[type] = {
+            ...listenerPool[type],
+            ...top.listeners.pool[type]
+          };
+        }
+        this.listeners = top.listeners;
+        for (let key in listenerPool.out) {
+          const node = listenerPool.out[key].resolved;
+          if (node instanceof GraphNode) {
+            const path = this.getPath(node, true);
+            if (this.listeners.includeParent[path])
+              this.listeners.includeParent[path] = true;
+            this.subscribe(node);
+          }
+        }
         if (this.#toRun)
-          await this.run();
+          toRun.push(this.run);
+        return toRun;
       };
-      const graph = this.initial.graph;
+      const graph = this.initial.components;
       if (graph) {
         const ports = graph.ports;
         let firstNode, lastNode;
@@ -5829,11 +5243,10 @@ var ESPlugin = class {
           firstNode = nodes[0];
           lastNode = nodes.slice(-1)[0];
         }
-        if (lastNode)
-          lastNode.subscribe((...args) => {
-            for (let tag in lastNode.graph.children)
-              this.#runGraph(lastNode.graph.children[tag], ...args);
-          });
+        if (lastNode) {
+          const path = this.getPath(lastNode, true);
+          this.listeners.includeParent[path] = lastNode;
+        }
         if (firstNode)
           this.#initial.operator = async function(...args) {
             await firstNode.run(...args);
@@ -5841,8 +5254,101 @@ var ESPlugin = class {
       }
       if (typeof defer === "function")
         defer(f);
+      else {
+        const toRun = await f(this);
+        for (let key in this.listeners.includeParent) {
+          const toResolve = this.listeners.includeParent[key];
+          if (toResolve !== true) {
+            this.subscribe(toResolve);
+            this.listeners.includeParent[key] = true;
+          }
+        }
+        await Promise.all(toRun.map((f2) => f2()));
+      }
+    }
+  };
+  getPath = (graph = this.graph, includeTag = false) => {
+    const basePath = [];
+    let target = graph;
+    do {
+      if (target instanceof GraphNode)
+        target = { node: target };
+      if (target.node) {
+        basePath.push(target.node.name);
+        target = target.node.graph;
+      }
+    } while (target.node);
+    if (includeTag)
+      return [...basePath.reverse(), graph.tag].join(".");
+    else
+      return basePath.reverse().join(".");
+  };
+  subscribe = (node) => {
+    const path = this.getPath(node) || node.tag;
+    const targets = [node.children];
+    for (let key in this.listeners.active[path]) {
+      const res = this.listeners.pool.in[key];
+      if (res)
+        this.listeners.active[path][key] = res;
       else
-        await f();
+        delete this.listeners.active[path][key];
+    }
+    targets.push(this.listeners.active[path]);
+    let aggregatedParent = false;
+    const aggregate = (arr) => {
+      const aggregate2 = {};
+      arr.forEach((o) => {
+        for (let key in o) {
+          if (!(key in aggregate2))
+            aggregate2[key] = [o[key]];
+          else {
+            const ref1 = aggregate2[key];
+            const ref2 = o[key];
+            const message = `Both children and listeners are declared for ${key}`;
+            const getId = (o2) => o2._unique ?? o2.resolved._unique ?? o2.last._unique;
+            const aggregateIds = ref1.map(getId);
+            if (!aggregateIds.includes(getId(ref2))) {
+              console.warn(`${message}. Aggregating`, ref1, ref2);
+              ref1.push(ref2);
+            } else
+              console.warn(`${message}. Removing`, ref2);
+          }
+        }
+      });
+      return aggregate2;
+    };
+    let aggregated = aggregate(targets);
+    node.subscribe((args) => {
+      if (path in this.listeners.includeParent && !aggregatedParent) {
+        aggregated = aggregate([aggregated, node.graph.children]);
+        aggregatedParent = true;
+      }
+      for (let tag in aggregated)
+        aggregated[tag].forEach((info) => this.resolve(args, info, aggregated));
+    });
+  };
+  resolve = (args, info) => {
+    if (info.resolved instanceof GraphNode)
+      info = info.resolved;
+    if (info instanceof GraphNode) {
+      if (Array.isArray(args))
+        this.#runGraph(info, ...args);
+      else
+        this.#runGraph(info, args);
+    } else {
+      let res;
+      if (typeof info.resolved === "function") {
+        if (Array.isArray(args))
+          res = info.resolved.call(info.last, ...args);
+        else
+          res = info.resolved.call(info.last, args);
+      } else
+        res = info.resolved = info.last[info.lastKey] = args;
+      let resolved = this.listeners.active[`${info.path.used}.${info.lastKey}`];
+      if (!resolved)
+        resolved = this.listeners.active[info.lastKey];
+      for (let key in resolved)
+        this.resolve(res, this.listeners.pool.in[key]);
     }
   };
   stop = () => {
@@ -5935,7 +5441,7 @@ var src_default = ESPlugin;
 
 // index.ts
 var basePkgPath = "./package.json";
-var startTime = Date.now();
+var moduleStringTag = "[object Module]";
 var _filesystem, _input, _options, _url, _cache, _main, _mode, _onImport, _throw;
 var WASL = class {
   constructor(urlOrObject, options = {}, url) {
@@ -5943,6 +5449,7 @@ var WASL = class {
     this.warnings = [];
     this.files = {};
     this.original = {};
+    this.resolved = {};
     this.debug = void 0;
     __privateAdd(this, _filesystem, void 0);
     __privateAdd(this, _input, {});
@@ -5953,7 +5460,6 @@ var WASL = class {
     __privateAdd(this, _mode, "import");
     __privateAdd(this, _onImport, (path, info) => this.files[path] = info);
     __privateAdd(this, _throw, (e) => {
-      console.error('Error', e)
       const item = {
         message: e.message,
         file: e.file,
@@ -5962,10 +5468,7 @@ var WASL = class {
       const arr = e.type === "warning" ? this.warnings : this.errors;
       arr.push(item);
     });
-    this.get = async (...args) => {
-      const path = args[0];
-      return await get_default(args[0], args[1], __privateGet(this, _onImport), __privateGet(this, _options)).catch((e) => e);
-    };
+    this.get = async (...args) => await get_default(args[0], args[1], __privateGet(this, _onImport), __privateGet(this, _options)).catch((e) => e);
     this.load = async (node, info, options, id, symbols, counter) => {
       if (node.plugins) {
         for (let nestedName in node.plugins) {
@@ -5983,7 +5486,7 @@ var WASL = class {
                   optsCopy._deleteSrc = false;
                 else
                   optsCopy._deleteSrc = true;
-                newInfoForNode = await this.resolve({ [key]: newInfo }, info, optsCopy, {
+                newInfoForNode = await this.resolveOld({ [key]: newInfo }, info, optsCopy, {
                   nodes: newInfo
                 }, symbols, counter);
                 if (id) {
@@ -6016,7 +5519,7 @@ var WASL = class {
         }
       }
     };
-    this.resolve = async (target, info, options, graph = {}, symbols = [], counter) => {
+    this.resolveOld = async (target, info, options, graph = {}, symbols = [], counter) => {
       const nodes = graph.nodes;
       const edges = graph.edges;
       counter++;
@@ -6045,42 +5548,26 @@ var WASL = class {
                 fullPath = `${ogSrc.split("://").slice(1).join("/")}`;
             } catch {
               if (ogSrc)
-                fullPath = mainPath ? resolve2(ogSrc, mainPath) : resolve2(ogSrc);
+                fullPath = mainPath ? resolve(ogSrc, mainPath) : resolve(ogSrc);
             }
             let mode = options._modeOverride ?? __privateGet(this, _mode);
             if (ogSrc) {
-              if (this.debug) {
-                let target2 = this.debug.flow;
-                symbolsCopy.forEach((str) => {
-                  if (str) {
-                    if (!target2[str])
-                      target2[str] = {};
-                    target2 = target2[str];
-                  }
-                });
-                if (!this.debug.resolutions[name2])
-                  this.debug.resolutions[name2] = {};
-                let nameRes = this.debug.resolutions[name2];
-                if (!nameRes[fullPath])
-                  nameRes[fullPath] = { _resolutions: 0, _depth: [], _time: [] };
-                nameRes[fullPath]._resolutions++;
-                nameRes[fullPath]._depth.push(counter);
-                nameRes[fullPath]._time.push(Date.now() - startTime);
-                if (target2)
-                  target2[fullPath] = {};
-              }
               if (_internal || mode === "import") {
                 let res = await this.get(fullPath, void 0);
                 const isError = res instanceof Error;
                 if (res && !isError)
                   node.src = res;
-                if (!node.src && !node.graph)
+                if (!node.src && !node.graph) {
                   remove(ogSrc, fullPath, name2, target, res);
+                  if (res)
+                    __privateGet(this, _throw).call(this, { message: res.message, file: fullPath, type: "warning" });
+                }
               } else {
                 if (__privateGet(this, _filesystem)) {
                   let res;
                   res = checkFiles(fullPath, __privateGet(this, _filesystem));
-                  if (res) {
+                  const isError = res instanceof Error;
+                  if (res && !isError) {
                     if (res.default || fullPath.includes(".json"))
                       node.src = res;
                     else {
@@ -6092,8 +5579,11 @@ var WASL = class {
                       node.src = { default: res };
                     }
                     _internal = fullPath;
-                  } else if (ogSrc)
-                    remove(ogSrc, fullPath, name2, target);
+                  } else if (ogSrc) {
+                    remove(ogSrc, fullPath, name2, target, res);
+                    if (res)
+                      __privateGet(this, _throw).call(this, { message: res.message, file: fullPath, type: "warning" });
+                  }
                 } else {
                   __privateGet(this, _throw).call(this, {
                     message: "No options.filesystem field to get JavaScript objects",
@@ -6103,7 +5593,7 @@ var WASL = class {
               }
             }
             if (!_internal)
-              _internal = ogSrc ? resolve2(ogSrc, url, true) : true;
+              _internal = ogSrc ? resolve(ogSrc, url, true) : true;
             let _top = false;
             if (node.graph) {
               _top = true;
@@ -6119,7 +5609,7 @@ var WASL = class {
                 _top,
                 _modeOverride,
                 _overrideRemote: options._overrideRemote
-              }, void 0, symbolsCopy, counter);
+              }, void 0);
             } else
               symbolsCopy.push(fullPath);
           }
@@ -6130,7 +5620,7 @@ var WASL = class {
                 if (node.src.text) {
                   const esmImport = async (text) => {
                     try {
-                      let imported = await importFromText2(text);
+                      let imported = await (void 0)(text);
                       if (imported.default && Object.keys(imported).length === 1)
                         imported = imported.default;
                       return imported;
@@ -6180,7 +5670,7 @@ var WASL = class {
               if (typeof node[key] === "object" && !Array.isArray(node[key])) {
                 const optsCopy = Object.assign({}, options);
                 optsCopy._deleteSrc = key !== "nodes" && name2 !== "graph";
-                await this.resolve(node[key], info, optsCopy, { nodes: node[key] }, symbolsCopy, counter);
+                await this.resolveOld(node[key], info, optsCopy, { nodes: node[key] }, symbolsCopy, counter);
               }
             }
           }
@@ -6199,18 +5689,315 @@ var WASL = class {
               });
             }
           }
-          nodes[name2] = merge(node.src, node, options._deleteSrc);
+          nodes[name2] = merge(node.src, node);
           if (nodes[name2].src?.graph)
             nodes[name2].src.graph = JSON.parse(JSON.stringify(nodes[name2].graph));
         }
       }
       return target;
     };
-    this.init = async (urlOrObject = __privateGet(this, _input), options = __privateGet(this, _options), url = "", symbols = [], counter = 0) => {
-      if (options.debug)
-        this.debug = { flow: {}, resolutions: {} };
-      else
-        this.debug = void 0;
+    this.resolveSource = async (path, modeOverride, {
+      useCache = true,
+      mode = "reference"
+    } = {}) => {
+      const activeMode = modeOverride ?? mode;
+      let res = null;
+      if (activeMode === "import") {
+        if (__privateGet(this, _cache)[path] && useCache) {
+          console.warn("Found cached component", path);
+          res = __privateGet(this, _cache)[path];
+        } else
+          res = await this.get(path, void 0);
+      } else if (__privateGet(this, _filesystem))
+        res = checkFiles(path, __privateGet(this, _filesystem));
+      else {
+        __privateGet(this, _throw).call(this, {
+          message: "No options.filesystem field to get JavaScript objects",
+          file: path
+        });
+      }
+      return res;
+    };
+    this.search = async (input, searchKey = "src", {
+      condition = (value) => typeof value === "string",
+      onFound = async (o, acc = []) => acc.push(o),
+      mainPath,
+      nestedKey,
+      mode
+    }) => {
+      const top = input;
+      let found;
+      const pathMap = {};
+      const drill = async (input2, tree = []) => {
+        const parentInfo = tree[tree.length - 1];
+        const path = tree.map((o) => o.key);
+        const graphSlice = path.slice(-3);
+        const get3 = (pathInfo = path) => {
+          let target = top;
+          pathInfo.forEach((str, i) => target = target[str]);
+          return target;
+        };
+        const set = (input3, key = searchKey, pathInfo = path) => {
+          let target = top;
+          pathInfo.forEach((str, i) => target = target[str]);
+          target[key] = input3;
+        };
+        if (condition(input2[searchKey])) {
+          const isComponent = graphSlice.slice(-2)[0] === "components";
+          let target = pathMap;
+          path.forEach((str, i) => target = target[str] ?? target);
+          const pathArray = Array.isArray(target) ? path.map((str, i) => target[i] ?? str) : path;
+          let o = {
+            mainPath,
+            mode,
+            isComponent,
+            paths: {
+              original: path,
+              remapped: pathArray
+            },
+            get: get3,
+            set,
+            key: searchKey,
+            value: input2[searchKey],
+            setParent: function(input3, path2 = this.paths.remapped, fallbackKey) {
+              let target2 = top;
+              path2.forEach((str, i) => {
+                if (i === path2.length - 1) {
+                  if (fallbackKey && Object.keys(target2[str]).length > 1) {
+                    console.warn(`Setting ${fallbackKey} instead of replacing parent for ${path2.join(".")}`);
+                    target2[str][fallbackKey] = input3;
+                  } else
+                    target2[str] = input3;
+                } else
+                  target2 = target2[str];
+              });
+            },
+            parent: parentInfo?.reference,
+            name: parentInfo?.key
+          };
+          input2[searchKey] = null;
+          if (onFound) {
+            const got = await onFound(o, found);
+            if (got && typeof got === "object")
+              found = got;
+          }
+        }
+        if (nestedKey) {
+          const offset = path.length - graphSlice.length;
+          for (let key in nestedKey) {
+            let i = 0;
+            const pattern = nestedKey[key].pattern;
+            const match = pattern ? pattern.reduce((a, o) => {
+              let str = o?.key ?? o;
+              let adjacencies = o?.adjacencies;
+              if (typeof str === "string")
+                a *= graphSlice[i] === str ? 1 : 0;
+              if (adjacencies)
+                a *= adjacencies.reduce((a2, str2) => {
+                  a2 *= str2 in get3(path.slice(0, offset + i)) ? 1 : 0;
+                  return a2;
+                }, 1);
+              i++;
+              return a;
+            }, 1) : 1;
+            const projection = nestedKey[key].projection ?? pattern;
+            if (match) {
+              await nestedKey[key].function(input2, {
+                get: (key2) => get3([...path, key2]),
+                set: (key2, name2, value) => {
+                  const base = [...path.slice(0, offset), ...projection.map((str, i2) => !str ? graphSlice[i2] : str)];
+                  const passed = [...base, name2];
+                  set(value, key2, passed);
+                  let targets = [
+                    {
+                      target: pathMap,
+                      update: passed,
+                      array: graphSlice
+                    }
+                  ];
+                  const create = (target, array) => {
+                    array.forEach((str) => {
+                      if (!target[str])
+                        target[str] = {};
+                      target = target[str];
+                    });
+                    return target;
+                  };
+                  targets.forEach((o) => {
+                    const target = create(o.target, o.array);
+                    if (o.update)
+                      target[name2] = o.update;
+                    o.target = target;
+                  });
+                },
+                delete: () => delete get3([...path])[key]
+              });
+            }
+          }
+        }
+        for (let key in input2) {
+          if (input2[key] && typeof input2[key] === "object")
+            await drill(input2[key], [...tree, { reference: input2, key }]);
+        }
+      };
+      await drill(input);
+      return found;
+    };
+    this.findSources = async (graph, events, opts) => {
+      return await this.search(graph, void 0, {
+        mode: opts.mode,
+        nestedKey: events.nested,
+        onFound: async (o, acc = {}) => {
+          o.type = "local";
+          try {
+            new URL(o.value);
+            o.type = "remote";
+          } catch {
+          }
+          const isRemote = o.type === "remote";
+          const main = o.mainPath || __privateGet(this, _main);
+          o.path = isRemote ? o.value : main ? resolve(o.value, main) : resolve(o.value);
+          if (isRemote)
+            o.mode = "import";
+          const ext = o.value.split("/").pop().split(".").slice(1).join(".");
+          if (ext === "wasl.json") {
+            if (events.components)
+              await events.components(o);
+            return null;
+          } else {
+            if (!acc[ext])
+              acc[ext] = {};
+            if (!acc[ext][o.path])
+              acc[ext][o.path] = [];
+            acc[ext][o.path].push(o);
+            return acc;
+          }
+        },
+        mainPath: opts.mainPath
+      });
+    };
+    this.resolve = async (graph, context, opts = {}) => {
+      const remote = [];
+      const nested = [];
+      const foundInternal = {};
+      const events = {
+        components: (info) => this.handleComponent(info, events, context, opts, remote, foundInternal),
+        nested: {
+          overrides: {
+            pattern: ["components", null, { key: "overrides", adjacencies: ["src"] }],
+            projection: ["components", null, "components"],
+            function: (value, info) => this.handleOverride(value, info, nested),
+            update: (o, info) => {
+              o.mainPath = info.path;
+            }
+          }
+        }
+      };
+      const found = await this.findSources(graph, events, context) ?? {};
+      this.flattenInto(foundInternal, found);
+      const tic = performance.now();
+      const total = Object.keys(found).reduce((acc, key) => acc + Object.keys(found[key]).length, 0);
+      let i = 0;
+      await Promise.all(Object.values(found).map(async (typeInfo) => {
+        await Promise.all(Object.entries(typeInfo).map(async ([path, pathInfo]) => {
+          const res = await this.resolveSource(path, pathInfo[0].mode);
+          await Promise.all(pathInfo.map(async (info) => await this.handleResolved(res, info)));
+          i++;
+          if (opts.callbacks?.sourceProgress instanceof Function)
+            opts.callbacks.sourceProgress(path, i, total);
+        }));
+      }));
+      const toc = performance.now();
+      console.log("Resolved", total, "sources in", toc - tic, "ms");
+      return graph;
+    };
+    this.updateContext = (info, context) => {
+      return {
+        ...context,
+        mainPath: info.path,
+        mode: info.type === "remote" ? "import" : context.mode
+      };
+    };
+    this.flattenInto = (o1, o2) => {
+      for (let type in o1) {
+        for (let path in o1[type]) {
+          if (!o2[type])
+            o2[type] = {};
+          if (!o2[type][path])
+            o2[type][path] = [];
+          o2[type][path].push(...o1[type][path]);
+        }
+      }
+    };
+    this.handleResolved = (res, info) => {
+      const ogSrc = info.value;
+      const name2 = info.name;
+      const isError = res instanceof Error;
+      const isModule = res && (!!Object.keys(res).reduce((a, b) => {
+        const desc = Object.getOwnPropertyDescriptor(res, b);
+        const isModule2 = desc && desc.get && !desc.set ? 1 : 0;
+        return a + isModule2;
+      }, 0) || Object.prototype.toString.call(res) === moduleStringTag);
+      const hasDefault = !!res?.default;
+      const isWASL = info.path.includes("wasl.json");
+      if (res && !isError) {
+        if (isModule && !hasDefault && !isWASL)
+          __privateGet(this, _throw).call(this, {
+            type: "warning",
+            message: `Node (${name2}) at ${info.path} does not have a default export.`,
+            file: ogSrc
+          });
+      } else {
+        remove(ogSrc, info.path, name2, info.parent, res);
+        if (res)
+          __privateGet(this, _throw).call(this, { message: res.message, file: info.path, type: "warning" });
+        return;
+      }
+      if (res !== void 0) {
+        if ((!isModule || !info.isComponent) && !isWASL)
+          info.setParent(isModule ? res.default : res, void 0, info.key);
+        else {
+          info.set(res);
+          const ref = info.get();
+          info.setParent(merge(ref[info.key], ref));
+        }
+        return res;
+      }
+    };
+    this.handleComponent = async (info, events, context, opts, acc = [], list = {}) => {
+      const newContext = this.updateContext(info, context);
+      info.mode = newContext.mode;
+      const res = await this.resolveSource(info.path, info.mode, newContext);
+      const found = await this.findSources(res, events, newContext);
+      if (opts.callbacks?.componentProgress instanceof Function)
+        opts.callbacks.componentProgress(info.path, acc.length, res);
+      if (found)
+        this.flattenInto(found, list);
+      await this.handleResolved(res, info);
+      acc.push(info);
+      return acc;
+    };
+    this.handleOverride = async (value, info, acc = []) => {
+      for (let nestedName in value) {
+        const nestedNode = info.get(nestedName);
+        if (nestedNode) {
+          for (let key in value[nestedName]) {
+            const newInfo = value[nestedName][key];
+            if (newInfo)
+              info.set(key, nestedName, newInfo);
+          }
+        } else
+          __privateGet(this, _throw).call(this, {
+            message: `Plugin target '${nestedName}' does not exist`,
+            node: name
+          });
+        acc.push(value);
+        return acc;
+      }
+      info.delete();
+    };
+    this.init = async (urlOrObject = __privateGet(this, _input), options = __privateGet(this, _options), url = "") => {
+      this.debug = void 0;
       const internalLoadCall = options._internal;
       const isFromValidator = !__privateGet(this, _main) && typeof internalLoadCall === "string";
       if (!__privateGet(this, _input))
@@ -6238,11 +6025,11 @@ var WASL = class {
       if (typeof urlOrObject === "object") {
         object = Object.assign({}, urlOrObject);
         if (typeof internalLoadCall === "string")
-          url = mainPath = resolve2(internalLoadCall);
+          url = mainPath = resolve(internalLoadCall);
         mode = "reference";
       } else if (url || isString) {
         if (!url)
-          url = resolve2(urlOrObject, options.relativeTo ?? "");
+          url = urlOrObject[0] === "." ? resolve(urlOrObject, options.relativeTo ?? "") : urlOrObject;
         mode = "import";
       } else
         console.error("Mode is not supported...");
@@ -6252,69 +6039,55 @@ var WASL = class {
       this.errors.push(...valid(urlOrObject, clonedOptions, "load"));
       switch (mode) {
         case "reference":
+          this.original = object;
           if (!innerTopLevel) {
             if (__privateGet(this, _filesystem)) {
-              const pkgPath = resolve2(basePkgPath, url);
+              const pkgPath = resolve(basePkgPath, url);
               const pkg = checkFiles(pkgPath, __privateGet(this, _filesystem));
               if (pkg)
                 object = Object.assign(pkg, isString ? {} : object);
             }
           }
+          break;
         default:
           if (!object) {
-            mainPath = await resolve2(url);
-            object = await this.get(mainPath, void 0);
+            mainPath = await resolve(url);
+            this.original = await this.get(mainPath, void 0);
+            object = JSON.parse(JSON.stringify(this.original));
             if (!innerTopLevel) {
-              const pkgUrl = resolve2(basePkgPath, mainPath, true);
+              const pkgUrl = resolve(basePkgPath, mainPath, true);
               const pkg = await this.get(pkgUrl, void 0);
               if (pkg)
                 object = Object.assign(pkg, object);
             }
           }
+          break;
       }
       if (!internalLoadCall)
         __privateSet(this, _main, mainPath);
       else if (__privateGet(this, _mode) === "reference" && !__privateGet(this, _main))
         __privateSet(this, _main, "");
-      if (this.debug) {
-        let target = this.debug.flow;
-        symbols.forEach((str) => target = target[str]);
-        target[mainPath] = {};
-        symbols.push(mainPath);
-        if (mainPath) {
-          if (!this.debug.resolutions[mainPath])
-            this.debug.resolutions[mainPath] = { _resolutions: 0, _depth: [], _time: [] };
-          const res = this.debug.resolutions;
-          res[mainPath]._resolutions++;
-          res[mainPath]._depth.push(counter);
-          res[mainPath]._time.push(Date.now() - startTime);
-        }
-      }
       if (this.errors.length === 0) {
-        const nodes = object.graph.nodes;
-        await this.resolve(nodes, {
-          mainPath,
-          url,
-          object
-        }, clonedOptions, object.graph, symbols, counter);
+        const copy = JSON.parse(JSON.stringify(this.original));
+        this.resolved = await this.resolve(copy, { mainPath, mode }, options);
         const drill = (parent, callback) => {
-          const nodes2 = parent.graph.nodes;
-          for (let tag in nodes2) {
-            const res = callback(nodes2[tag], {
+          const nodes = parent.components;
+          for (let tag in nodes) {
+            const res = callback(nodes[tag], {
               tag,
               parent,
               options: clonedOptions
             });
             if (res)
-              nodes2[tag] = res;
+              nodes[tag] = res;
           }
         };
         const drillToTest = (target) => {
           drill(target, (node, info) => {
-            const edges = info.parent.graph.edges;
-            for (let output in edges) {
-              const getTarget = (o, str) => o.graph?.nodes?.[str] ?? o[str];
-              let outTarget = info.parent.graph.nodes;
+            const connections = info.parent.listeners;
+            for (let output in connections) {
+              const getTarget = (o, str) => o.components?.[str] ?? o[str];
+              let outTarget = info.parent.components;
               output.split(".").forEach((str) => outTarget = getTarget(outTarget, str));
               if (!outTarget) {
                 __privateGet(this, _throw).call(this, {
@@ -6322,8 +6095,8 @@ var WASL = class {
                   file: url
                 });
               }
-              for (let input in edges[output]) {
-                let inTarget = nodes;
+              for (let input in connections[output]) {
+                let inTarget = this.resolved.components;
                 input.split(".").forEach((str) => inTarget = getTarget(inTarget, str));
                 if (!inTarget) {
                   __privateGet(this, _throw).call(this, {
@@ -6337,31 +6110,16 @@ var WASL = class {
         };
         if (internalLoadCall === void 0) {
           if (clonedOptions.output !== "object") {
-            this.plugin = new src_default(object, {
+            this.plugin = new src_default(this.resolved, {
               activate: clonedOptions.activate,
               parentNode: clonedOptions.parentNode
             });
-            this.original = Object.assign({}, this.plugin.initial);
-            let drillCopy = (target) => {
-              if (target?.graph) {
-                let graph = Object.assign({}, target.graph);
-                let nodes2 = graph.nodes = Object.assign({}, graph.nodes);
-                if (nodes2) {
-                  for (let k in nodes2) {
-                    nodes2[k] = Object.assign({}, nodes2[k].initial);
-                    drillCopy(nodes2[k]);
-                  }
-                }
-                target.graph = graph;
-              }
-            };
-            drillCopy(this.original);
             return this.plugin;
           } else
-            this.original = object;
-          drillToTest(object);
+            this.original = this.resolved;
+          drillToTest(this.resolved);
         }
-        return object;
+        return this.resolved;
       }
     };
     this.start = async () => {
@@ -6390,4 +6148,3 @@ var core_default = WASL;
 export {
   core_default as default
 };
-//# sourceMappingURL=index.esm.js.map

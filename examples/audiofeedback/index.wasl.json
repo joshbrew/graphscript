@@ -1,6 +1,15 @@
 {
     "components": {
-        "tagName": "div",
+        "app": {
+            "style": {
+                "background-color": "black",
+                "color": "white",
+                "font-family": "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
+                "width": "100%",
+                "height": "100%",
+                "overflow": "auto"
+            },
+            "tagName": "div",
             "components": {
                 "devices": {
                     "tagName": "div",
@@ -37,7 +46,21 @@
                                             "src": "./src/plugins/output/sound/header.js"
                                         },
                                         "soundDropdown": {
-                                            "src": "./src/plugins/output/sound/dropdown.js"
+                                            "src": "./src/plugins/output/sound/dropdown.js",
+                                            "soundFilePaths": [
+                                                {
+                                                    "label": "Kalimba",
+                                                    "src": "./src/assets/kalimba.wav"
+                                                },
+                                                {
+                                                    "label": "Phonk",
+                                                    "src": "./src/assets/phonk.wav"
+                                                },
+                                                {
+                                                    "label": "Synth Flute",
+                                                    "src": "./src/assets/synthflute.wav"
+                                                }
+                                            ]
                                         },
                                         "play": {
                                             "src": "./src/plugins/output/sound/play.js"
@@ -68,4 +91,5 @@
                 }
             }
         }
+    }
 }
