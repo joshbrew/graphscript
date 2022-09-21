@@ -9,3 +9,5 @@ export const attributes = {
     },
     innerText:'Stop'
 }
+
+export default (...input) => input

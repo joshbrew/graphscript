@@ -13,3 +13,5 @@ import GameState from "../../gameState.js";
             `
         }
     }
+
+    export default (...input) => input

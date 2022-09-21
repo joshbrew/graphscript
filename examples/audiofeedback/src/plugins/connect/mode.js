@@ -16,3 +16,5 @@ export const attributes = {
         }
     }
 }
+
+export default (...input) => input

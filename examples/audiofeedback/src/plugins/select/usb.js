@@ -10,3 +10,5 @@ export const onrender = (self)=>{
         self.innerHTML += `<option value='${key}'>${USB[key]}</option>`
     }
 }
+
+export default (...input) => input

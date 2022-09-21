@@ -1,0 +1,95 @@
+{
+    "components": {
+        "app": {
+            "style": {
+                "background-color": "black",
+                "color": "white",
+                "font-family": "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
+                "width": "100%",
+                "height": "100%",
+                "overflow": "auto"
+            },
+            "tagName": "div",
+            "components": {
+                "devices": {
+                    "tagName": "div",
+                        "components": {
+                            "devicediv": {
+                                "tagName": "div",
+                                "components": {
+                                        "connectheader": {
+                                            "src": "./src/plugins/connect/header.js"
+                                        },
+                                        "connectmode": {
+                                            "src": "./src/plugins/connect/mode.js"
+                                        },
+                                        "selectUSB": {
+                                            "src": "./src/plugins/select/usb.js"
+                                        },
+                                        "selectBLE": {
+                                            "src": "./src/plugins/select/ble.js"
+                                        },
+                                        "connectDevice": {
+                                            "src": "./src/plugins/connect/device.js"
+                                        }
+                                }
+                            }
+                    }
+                },
+                "output": {
+                    "tagName": "div",
+                        "components": {
+                            "playsounds": {
+                                "tagName": "div",
+                                "components": {
+                                        "soundheader": {
+                                            "src": "./src/plugins/output/sound/header.js"
+                                        },
+                                        "soundDropdown": {
+                                            "src": "./src/plugins/output/sound/dropdown.js",
+                                            "soundFilePaths": [
+                                                {
+                                                    "label": "Kalimba",
+                                                    "src": "./src/assets/kalimba.wav"
+                                                },
+                                                {
+                                                    "label": "Phonk",
+                                                    "src": "./src/assets/phonk.wav"
+                                                },
+                                                {
+                                                    "label": "Synth Flute",
+                                                    "src": "./src/assets/synthflute.wav"
+                                                }
+                                            ]
+                                        },
+                                        "play": {
+                                            "src": "./src/plugins/output/sound/play.js"
+                                        },
+                                        "stop": {
+                                            "src": "./src/plugins/output/sound/stop.js"
+                                        }
+                                    }
+                            },
+                            "other": {
+                                "tagName": "div",
+                                "components": {
+                                        "stats": {
+                                            "src": "./src/plugins/output/stats/start.js"
+                                        },
+                                        "resetstats": {
+                                            "src": "./src/plugins/output/stats/reset.js"
+                                        },
+                                        "waveform": {
+                                            "src": "./src/plugins/output/waveform.js"
+                                        },
+                                        "csvmenu": {
+                                            "src": "./src/plugins/output/csv/menu.js"
+                                        }
+                                }
+                            }
+                        }
+                }
+            }
+        }
+    }
+}
