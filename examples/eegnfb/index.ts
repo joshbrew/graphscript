@@ -2,7 +2,7 @@
 
 //resources
 import { DOMService, WorkerCanvas, GraphNodeProperties } from 'graphscript/';//'../../index'////'../../index';
-import { initDevice, workers, filterPresets, FilterSettings, chartSettings } from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder';//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
+import { initDevice, workers, filterPresets, FilterSettings, chartSettings } from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder';
 
 
 import { setSignalControls } from 'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
@@ -16,6 +16,7 @@ import { visualizeDirectory } from 'graphscript-services/storage/BFS_CSV';
 
 import './index.css'
 
+console.log(Devices);
 //types
 import { ElementProps } from 'graphscript/services/dom/types/element';
 import { WorkerRoute } from 'graphscript/services/worker/Worker.service';
@@ -187,6 +188,7 @@ const webappHtml = {
                                             mode as 'BLE'|'USB'|'BLE_OTHER'|'USB_OTHER'|'OTHER', 
                                             selected, 
                                             {
+                                                devices:Devices,
                                                 workerUrl:gsworker,
                                                 ondecoded: (data:{[key:number]:number|number[]}) => { 
                                                     //data returned from decoder thread, ready for 
