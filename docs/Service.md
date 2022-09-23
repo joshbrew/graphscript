@@ -117,7 +117,7 @@ type ConnectionTemplate = {
 }
 
 ```
-These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need increasing control over your program. There are no restrictions on top of the base protocols, it's all just boiled down to one liners and similar calls between services for mental clarity and a recommended configuration by default to enable the most desirable functionality e.g. if you do not specify your own onmessage callbacks for sockets or threads.
+These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need increasing control over your program. There are no restrictions on top of the base protocols, it's all just boiled down to one liners and similar calls between services for mental clarity and a recommended configuration by default to enable the most desirable functionality e.g. if you do not specify your own onmessage callbacks for sockets or threads then the default functions are set to interface with the graph/service architecture automatically for zero config if you stick to the main tag-based run/subscribe templates here. Everything in the base javascript tooling is available still for direct calls to save overhead - of which there is very little in our system here, ideally the bare minimum in each protocol to application maximize performance for general use cases.
 
 The subscribe and unsubscribe functions act the same as they do locally and configure the endpoints with a state subscription on arbitrary routes for you to do what you want with on the listening port.
 
