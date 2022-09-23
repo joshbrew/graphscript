@@ -33,7 +33,8 @@ function interpolerp(v0,v1,fit, floor=true) {
 export const appendCSV = (
     newData:{[key:string]:number|number[]}, //assume uniformly sized data is passed in, so pass separate timestamp intervals separately
     filename:string,
-    header?:string[]
+    header?:string[],
+    toFixed:number=5
 ) => {
 
     //console.log('append',filename);
@@ -50,7 +51,7 @@ export const appendCSV = (
         let keys = Array.from(Object.keys(newData)); if (keys.indexOf('timestamp') > -1) keys.splice(keys.indexOf('timestamp'), 1);
         CSV_REFERENCE[filename] = {
             header:header ? header : ['timestamp','localized',...keys] as string[],
-            lastX:undefined
+            lastX:undefined as any
         };
         csv = CSV_REFERENCE[filename];
         header = csv.header;
@@ -154,7 +155,7 @@ export const appendCSV = (
 
     if(header) csvProcessed += header.join(',') + '\n'; //append new headers when they show up
     toAppend.forEach((arr) => {
-        csvProcessed += arr.join(',') + '\n';    
+        csvProcessed += arr.map((v)=>{if(typeof v === 'number') return v.toFixed(toFixed); }).join(',') + '\n';    
     });
 
     csv.lastX = toAppend[toAppend.length-1][0]; //reference the last array written as the latest data for if we don't pass timestamps
@@ -222,12 +223,12 @@ export const createCSV = (
 //returns a basic html needed to visualize directory contents 
 export const visualizeDirectory = (dir:string, parentNode=document.body) => {
    return new Promise(async (res,rej) => {
-        if(parentNode.querySelector('#bfs' + dir)) parentNode.querySelector('#bfs' + dir).remove();
+        if(parentNode.querySelector('#bfs' + dir)) parentNode.querySelector('#bfs' + dir)?.remove();
         parentNode.insertAdjacentHTML('beforeend',`<div id='bfs${dir}' class='bfs${dir}'></div>`);
         let div = parentNode.querySelector('#bfs'+dir);
         await listFiles(dir).then((directory) => {
             //returns an array of directory listings
-            if(directory.length === 0) div.innerHTML = 'No Files!';
+            if(directory.length === 0) (div as any).innerHTML = 'No Files!';
             else directory.forEach((listing) => {
                 div?.insertAdjacentHTML(
                     'beforeend',
