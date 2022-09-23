@@ -52,24 +52,24 @@
   "resolved" "https://registry.npmjs.org/bson-objectid/-/bson-objectid-2.0.3.tgz"
   "version" "2.0.3"
 
-"device-decoder.third-party@^0.0.8":
-  "integrity" "sha512-0OiSwRty9cHInhhTfF1PxaMRm2zm0fH5n2RZzL8rk5MQd46mK4IVi/x4AHTE9v4Z6g7bvpxxeHjvZCunnhiSVw=="
-  "resolved" "https://registry.npmjs.org/device-decoder.third-party/-/device-decoder.third-party-0.0.8.tgz"
-  "version" "0.0.8"
+"device-decoder.third-party@^0.0.11":
+  "integrity" "sha512-cvkR3E68SpIoexct5wK/lb63CNcF8144+y5uguy2wTKlt8KKe/Jp9Bo9MwLxsiUVjKPg8L2obEvMfLIyBgCJQw=="
+  "resolved" "https://registry.npmjs.org/device-decoder.third-party/-/device-decoder.third-party-0.0.11.tgz"
+  "version" "0.0.11"
   dependencies:
     "webgl-plot-utils" "~0.2.7"
 
-"device-decoder@~0.2.12":
-  "integrity" "sha512-VcyHI8cOHyujZVt4IcF2EqhTkwlmFGJ3920nvSSHc/rJO/HwveQopdAdCwyBr8UUajxSoawP0Z3Tk6m7EEQS9A=="
-  "resolved" "https://registry.npmjs.org/device-decoder/-/device-decoder-0.2.12.tgz"
-  "version" "0.2.12"
+"device-decoder@~0.2.16":
+  "integrity" "sha512-LNGWAQ8lWA8QmP04BG9h2O87qPoChTal8E47xYu4G28TmHdBBra+GQS5PPSO1or7ea6AxocYAGx4kDWpCsy6Uw=="
+  "resolved" "https://registry.npmjs.org/device-decoder/-/device-decoder-0.2.16.tgz"
+  "version" "0.2.16"
   dependencies:
     "@capacitor-community/bluetooth-le" "~2.0.0"
     "brainsatplay-math" "~0.0.23"
     "graphscript" "~0.1.41"
     "graphscript-services" "~0.1.50"
     "graphscript-services.gpu" "~0.1.53"
-    "graphscript-services.storage" "~0.1.48"
+    "graphscript-services.storage" "~0.1.52"
     "webgl-plot-utils" "~0.2.7"
 
 "gpujsutils@~1.0.12":
@@ -88,10 +88,10 @@
     "gpujsutils" "~1.0.12"
     "webgl-plot-utils" "~0.2.4"
 
-"graphscript-services.storage@~0.1.48":
-  "integrity" "sha512-5iynu4T3W9IgsRD8LKE0ukKfquRQwY9Hg9yOsQknzOuRP5Hs7C/BlMIWYSxP6nnOH0TXqR1UIrgiirbObNDv4g=="
-  "resolved" "https://registry.npmjs.org/graphscript-services.storage/-/graphscript-services.storage-0.1.48.tgz"
-  "version" "0.1.48"
+"graphscript-services.storage@~0.1.52":
+  "integrity" "sha512-sgC4ssvpmY7n6EkzHJSn5IlQHtLJMJmINvupROdLPtzabeKcSd+ugP0P5UaAmKI7M5qA6ULzfgSnvRZdXlfcWg=="
+  "resolved" "https://registry.npmjs.org/graphscript-services.storage/-/graphscript-services.storage-0.1.52.tgz"
+  "version" "0.1.52"
   dependencies:
     "brainsatplay-math" "~0.0.23"
     "browserfs" "^1.4.3"
@@ -140,6 +140,14 @@
   "integrity" "sha512-8hmiGIJMDlwjg7dlJ4yKGLK8EsYqKgPWbG3b4wjJddKNwc7N7Dpn08Df4szr/sZdMVeOstrdYSsqzX6BYbcB+w=="
   "resolved" "https://registry.npmjs.org/throat/-/throat-6.0.1.tgz"
   "version" "6.0.1"
+
+"tinybuild@file:../../../../../AppData/Roaming/npm/node_modules/tinybuild":
+  "resolved" "file:../../../../../AppData/Roaming/npm/node_modules/tinybuild"
+  "version" "0.3.181"
+  dependencies:
+    "chokidar" "~3.5.3"
+    "esbuild" "~0.14.49"
+    "ws" "^8.5.0"
 
 "tslib@^2.1.0":
   "integrity" "sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ=="

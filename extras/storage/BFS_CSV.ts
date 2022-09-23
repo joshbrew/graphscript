@@ -9,6 +9,9 @@ const CSV_REFERENCE:{
     [filename:string]:{ //key is filename
         header:string[],
         lastX:number, //latest line, unjoined
+        buffer:string, //appended strings waiting to be written to browserfs 
+        buffered:number,
+        bufferSize:number|undefined
     }
 } = {}
 
@@ -30,7 +33,7 @@ function interpolerp(v0,v1,fit, floor=true) {
 
 
 //in our case we are receiving data in a uniform format 
-export const appendCSV = (
+export const appendCSV = async (
     newData:{[key:string]:number|number[]}, //assume uniformly sized data is passed in, so pass separate timestamp intervals separately
     filename:string,
     header?:string[],
@@ -51,7 +54,10 @@ export const appendCSV = (
         let keys = Array.from(Object.keys(newData)); if (keys.indexOf('timestamp') > -1) keys.splice(keys.indexOf('timestamp'), 1);
         CSV_REFERENCE[filename] = {
             header:header ? header : ['timestamp','localized',...keys] as string[],
-            lastX:undefined as any
+            lastX:undefined as any,
+            buffer:'',
+            buffered:0, //buffer numbers to be appended?
+            bufferSize:0
         };
         csv = CSV_REFERENCE[filename];
         header = csv.header;
@@ -155,33 +161,71 @@ export const appendCSV = (
 
     if(header) csvProcessed += header.join(',') + '\n'; //append new headers when they show up
     toAppend.forEach((arr) => {
-        csvProcessed += arr.map((v,i)=>{if((i > 0) && typeof v === 'number') return v.toFixed(toFixed); }).join(',') + '\n';    
+        csvProcessed += arr.map((v,i)=>{if((i > 0) && typeof v === 'number' && Math.floor(v) !== v) return v.toFixed(toFixed); else return v; }).join(',') + '\n';    
+        if(csv.bufferSize) csv.buffered++;
     });
 
     csv.lastX = toAppend[toAppend.length-1][0]; //reference the last array written as the latest data for if we don't pass timestamps
 
     //okay we are ready to append arrays to the file
-    return new Promise((res,rej) => {
-        exists(filename).then((fileExists) => {
-            if(!fileExists) {
-                writeFile(
-                    filename,
-                    csvProcessed,
-                    (written:boolean) => {
-                        res(written);
+    if(csv.bufferSize) {
+        csv.buffer += csvProcessed;
+        if(csv.buffered > csv.bufferSize) {
+            let r =  new Promise((res,rej) => {
+                exists(filename).then((fileExists) => {
+                    if(!fileExists) {
+                        writeFile(
+                            filename,
+                            csv.buffer,
+                            (written:boolean) => {
+                                res(written);
+                            }
+                        );
+                    } else {
+                        appendFile(
+                            filename, 
+                            csv.buffer, 
+                            (written:boolean) => {
+                                res(written);
+                            }
+                        );
                     }
-                );
-            } else {
-                appendFile(
-                    filename, 
-                    csvProcessed, 
-                    (written:boolean) => {
-                        res(written);
-                    }
-                );
-            }
-        });
-    }) as Promise<boolean>
+                });
+            }) as Promise<boolean>
+
+            await r;
+
+            csv.buffer = '';
+            csv.buffered = 0;
+
+            return r;
+        } 
+        else return Promise.resolve(true);
+    }
+    else {
+        return new Promise((res,rej) => {
+            exists(filename).then((fileExists) => {
+                if(!fileExists) {
+                    writeFile(
+                        filename,
+                        csvProcessed,
+                        (written:boolean) => {
+                            res(written);
+                        }
+                    );
+                } else {
+                    appendFile(
+                        filename, 
+                        csvProcessed, 
+                        (written:boolean) => {
+                            res(written);
+                        }
+                    );
+                }
+            });
+        }) as Promise<boolean>
+
+    } //e.g. generalize this for other data types
 }
 
 //todo: rewrite saved file with the new header (which requires fully rewriting a file chunk to shift the bytes in IndexedDB)
@@ -193,7 +237,8 @@ export const updateCSVHeader = (header:any[],filename:string) => {
 
 export const createCSV = (
     filename:string,
-    header:string[]
+    header:string[],
+    bufferSize:number=0 //accumulate a certain number of lines before writing to BFS? (necessary for > 100 updates/sec fyi)
 ) => {
 
     if(header?.indexOf('timestamp') > 1) {header.splice(header.indexOf('timestamp'),1); header.unshift('timestamp')}
@@ -203,7 +248,10 @@ export const createCSV = (
 
     CSV_REFERENCE[filename] = {
         header,
-        lastX:header[1] === 'localized' ? Date.now() : 0
+        lastX:header[1] === 'localized' ? Date.now() : 0,
+        bufferSize,
+        buffer:'',
+        buffered:0
     };
 
     //overwrite existing files

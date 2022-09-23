@@ -7,7 +7,7 @@ import { initDevice, workers, filterPresets, FilterSettings, chartSettings } fro
 
 import { setSignalControls } from 'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
 
-import gsworker from 'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
+import gsworker from '../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
 import { Devices } from 'device-decoder.third-party'//'../../../device_debugger/src/devices/third_party/index'//'device-decoder.third-party'
 
 import { Howl, Howler } from 'howler';
@@ -214,9 +214,9 @@ const webappHtml = {
                                                             }
                                                         });
                                                         GameState.sampleError.timestamp = GameState.latestRaw.timestamp;
-                                                        if(recording) {
-                                                            info.routes.csv2.worker.post('appendCSV',GameState.sampleError)
-                                                        }
+                                                        // if(recording) {
+                                                        //     info.routes.rmscsv.worker.post('appendCSV',GameState.sampleError)
+                                                        // }
                                                         requestAnimationFrame(rmseanim);
                                                     }
                                                 },
@@ -314,6 +314,44 @@ const webappHtml = {
                                                         }
 
                                                         //webapp.run('worker.updateChartData')
+                                                    } as WorkerRoute,
+                                                    vrms:{
+                                                        workerUrl:gsworker,
+                                                        init:'createSubprocess',
+                                                        initArgs:[
+                                                            'rms',
+                                                            {
+                                                                sps:Devices[mode][selected].sps,
+                                                                nSec:1,
+                                                                watch:['0','1','2','3']
+                                                            }
+                                                        ],
+                                                        callback:'runSubprocess',
+                                                        blocking:true, //runs async without backing up on bulk dispatches
+                                                        children:{
+                                                            vrms_main:{
+                                                                operator:(
+                                                                    result:any
+                                                                )=>{
+                                                                    GameState.latestRMS = result;
+                                                                    //console.log('vrms result', result); 
+                                                                }
+                                                            },
+                                                            rmscsv:{
+                                                                workerUrl:gsworker,
+                                                                // init:'createCSV',
+                                                                // initArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`],
+                                                                callback:'appendCSV',
+                                                                stopped:true //we will press a button to stop/start the csv collection conditionally
+                                                            } as WorkerRoute
+                                                        }
+                                                    } as WorkerRoute,
+                                                    csv:{
+                                                        workerUrl:gsworker,
+                                                        // init:'createCSV',
+                                                        // initArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`],
+                                                        callback:'appendCSV',
+                                                        stopped:true //we will press a button to stop/start the csv collection conditionally
                                                     } as WorkerRoute,
                                                     buffering: {
                                                         workerUrl:gsworker,
@@ -467,47 +505,8 @@ const webappHtml = {
                                                                 }
                                                             } as WorkerRoute,
                                                         }
-                                                    } as WorkerRoute,
-                                                    vrms:{
-                                                        workerUrl:gsworker,
-                                                        init:'createSubprocess',
-                                                        initArgs:[
-                                                            'rms',
-                                                            {
-                                                                sps:Devices[mode][selected].sps,
-                                                                nSec:1,
-                                                                watch:['0','1','2','3']
-                                                            }
-                                                        ],
-                                                        callback:'runSubprocess',
-                                                        blocking:true, //runs async without backing up on bulk dispatches
-                                                        children:{
-                                                            vrms_main:{
-                                                                operator:(
-                                                                    result:any
-                                                                )=>{
-                                                                    GameState.latestRMS = result;
-                                                                    //console.log('vrms result', result); 
-                                                                }
-                                                            }
-                                                        }
-                                                    } as WorkerRoute,
-                                                    csv:{
-                                                        workerUrl:gsworker,
-                                                        // init:'createCSV',
-                                                        // initArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`],
-                                                        callback:'appendCSV',
-                                                        stopped:true //we will press a button to stop/start the csv collection conditionally
-                                                    } as WorkerRoute,
-                                                    csv2:{
-                                                        workerUrl:gsworker,
-                                                        // init:'createCSV',
-                                                        // initArgs:[`data/${new Date().toISOString()}_${selected}_${mode}.csv`],
-                                                        callback:'appendCSV',
-                                                        stopped:true //we will press a button to stop/start the csv collection conditionally
                                                     } as WorkerRoute
-                                                },
-                                                
+                                                }
                                             }
                                         );
 
@@ -537,21 +536,25 @@ const webappHtml = {
                                                             'createCSV',
                                                             [
                                                                 `data/${new Date().toISOString()}_${selected}_${mode}.csv`,
-                                                                ['timestamp','0','1','2','3','4','5','6','7']
+                                                                ['timestamp','0','1','2','3','4','5','6','7'],
+                                                                3000 //buffer between writes to idb
                                                             ]
                                                         );
-                                                        info.routes.csv2.worker.post(
+                                                        info.routes.vrms.children.rmscsv.worker.post(
                                                             'createCSV',
                                                             [
                                                                 `data/${new Date().toISOString()}_RMS_${selected}_${mode}.csv`,
-                                                                ['timestamp','0','1','2','3']
+                                                                ['timestamp','0','1','2','3'],
+                                                                1000 //buffer between writes to idb
                                                             ]
                                                         );
                                                         info.routes.csv.worker.start();
+                                                        info.routes.vrms.children.rmscsv.worker.start();
                                                         cap.innerHTML = `Stop recording ${selected} (${mode})`;
                                                         cap.onclick = () => {
                                                             recording = false;
                                                             info.routes.csv.worker.stop();
+                                                            info.routes.vrms.children.rmscsv.worker.stop();
                                                             visualizeDirectory('data', csvmenu);
                                                             cap.innerHTML = `Record ${selected} (${mode})`;
                                                             cap.onclick = onclick;
