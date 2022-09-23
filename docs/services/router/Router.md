@@ -36,6 +36,8 @@ export type RouterOptions = ServiceOptions & {
 #### Connection Template Schema
 
 Any service can have a 'connections' object for storing connections or multiple groups of connections (e.g. socket servers in one group and all of the client sockets in another group) that the Router can look for automatically to pool connections that are then available by id for tying to different sources. It makes it a series of one-liners to configure a full endpoint systems and subscriptions through connections to events on programs across clients and servers. 
+
+
 ```ts
 
 type ConnectionTemplate = {

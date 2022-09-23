@@ -121,8 +121,6 @@ These services provide defaults for mostly zero config wiring up for programs, j
 
 The subscribe and unsubscribe functions act the same as they do locally and configure the endpoints with a state subscription on arbitrary routes for you to do what you want with on the listening port.
 
-To help out the `Router` service with less configuration, you can also stick all of your connections in a `connections:{}` object, which can objects that further group connections (e.g. socket servers versus sockets). This makes it easier to find connections that have opened and closed in real time to know when users join and leave or for associating endpoints properly, otherwise the Router provides configuration handles for everything you need to load your own services as long as the remote connection format is followed.
-
 # Included Services
 
 We will elaborate on all of this with individual docs for each microservice, as they can go pretty deep. 
