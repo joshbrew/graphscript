@@ -155,7 +155,7 @@ export const appendCSV = (
 
     if(header) csvProcessed += header.join(',') + '\n'; //append new headers when they show up
     toAppend.forEach((arr) => {
-        csvProcessed += arr.map((v)=>{if(typeof v === 'number') return v.toFixed(toFixed); }).join(',') + '\n';    
+        csvProcessed += arr.map((v,i)=>{if((i > 0) && typeof v === 'number') return v.toFixed(toFixed); }).join(',') + '\n';    
     });
 
     csv.lastX = toAppend[toAppend.length-1][0]; //reference the last array written as the latest data for if we don't pass timestamps
