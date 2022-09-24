@@ -320,7 +320,7 @@ export class DOMService extends Service {
         });
 
         // Use Graph Elements as Parent Nodes
-        Object.defineProperty(node, 'element', {
+        if (!node['element']) Object.defineProperty(node, 'element', {
             get: () => element,
             set: (v) => {
                 element = v
