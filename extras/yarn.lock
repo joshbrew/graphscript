@@ -14,10 +14,10 @@
   dependencies:
     "lodash" "^4.17.14"
 
-"brainsatplay-math@~0.0.23":
-  "integrity" "sha512-zoAaKTwFsclvkvlaFaOzHMAlPBQ5hK0Q5KpwadaamWlqqSRgR9zS9NX16SI8B1GetPWaOLwySfGMeZFz1QnoBw=="
-  "resolved" "https://registry.npmjs.org/brainsatplay-math/-/brainsatplay-math-0.0.23.tgz"
-  "version" "0.0.23"
+"brainsatplay-math@~0.0.25":
+  "integrity" "sha512-J2s+/4osnjVVqqKVwuCuYbr9eGhXF4eFsGq/ImPIHICx0+1hJHoUN1XVCyiC8rOM7Nf0/8mmtVknzEeayVc7sQ=="
+  "resolved" "https://registry.npmjs.org/brainsatplay-math/-/brainsatplay-math-0.0.25.tgz"
+  "version" "0.0.25"
 
 "browserfs@^1.4.3":
   "integrity" "sha512-tz8HClVrzTJshcyIu8frE15cjqjcBIu15Bezxsvl/i+6f59iNCN3kznlWjz0FEb3DlnDx3gW5szxeT6D1x0s0w=="
@@ -46,6 +46,14 @@
   "integrity" "sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw=="
   "resolved" "https://registry.npmjs.org/pako/-/pako-1.0.11.tgz"
   "version" "1.0.11"
+
+"tinybuild@file:../../../../AppData/Roaming/npm/node_modules/tinybuild":
+  "resolved" "file:../../../../AppData/Roaming/npm/node_modules/tinybuild"
+  "version" "0.3.181"
+  dependencies:
+    "chokidar" "~3.5.3"
+    "esbuild" "~0.14.49"
+    "ws" "^8.5.0"
 
 "webgl-plot-utils@~0.2.7":
   "integrity" "sha512-Fi6QNWeBivFlDU45sT/3HmDwrdbajpYqm/8OL7tgiH5e1zamnbZt2b6LspE2vuyOBJkV3nkfik/Yfoz9W6JUPQ=="

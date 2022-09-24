@@ -42,7 +42,7 @@ export class CSV { //data=["1|2","11|22"], or data=[[1,2,"xyz"],[2,3,"abc"],etc]
         } else{
             hiddenElement.download = Date().toISOString();
         }
-        if(!hiddenElement.download.includes('csv')) hiddenElement.download += ".csv"
+        
         hiddenElement.click();
     }
 

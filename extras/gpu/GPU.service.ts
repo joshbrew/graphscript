@@ -2,7 +2,7 @@
 
 import { Routes, Service, ServiceOptions } from "../../services/Service";
 import {gpuUtils} from 'gpujsutils'//'../node_modules/gpujsutils/src/gpuUtils'
-import {Math2} from 'brainsatplay-math'
+import {Math2} from '../../../brainsatplay-math/brainsatplay-math/Math2'//'brainsatplay-math'
 import { parseFunctionFromText } from "../../Graph";
 
 //https://github.com/joshbrew/gpujsutils

@@ -23,8 +23,8 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "browserfs": "^1.4.3",
-    "device-decoder": "~0.2.16",
-    "device-decoder.third-party": "^0.0.11",
+    "device-decoder": "~0.2.17",
+    "device-decoder.third-party": "~0.0.12",
     "graphscript": "~0.1.41",
     "howler": "~2.2.3"
   },

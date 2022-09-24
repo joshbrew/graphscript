@@ -11,7 +11,8 @@ const CSV_REFERENCE:{
         lastX:number, //latest line, unjoined
         buffer:string, //appended strings waiting to be written to browserfs 
         buffered:number,
-        bufferSize:number|undefined
+        bufferSize:number|undefined,
+        xIncrement?:number|undefined
     }
 } = {}
 
@@ -57,7 +58,8 @@ export const appendCSV = async (
             lastX:undefined as any,
             buffer:'',
             buffered:0, //buffer numbers to be appended?
-            bufferSize:0
+            bufferSize:0,
+            xIncrement:undefined
         };
         csv = CSV_REFERENCE[filename];
         header = csv.header;
@@ -77,9 +79,32 @@ export const appendCSV = async (
     }
     
 
-    let x = newData[csv.header[0]]; //first csv value treated as x for reference for growing the csv, mainly to generate timestamps if being used but not defined
-    if(csv.lastX === undefined) csv.lastX = Array.isArray(x) ? x[0] : x;
-    if(!x) {
+    let x;
+    
+    if(csv.xIncrement) {
+        if(!csv.lastX) {
+            if(typeof newData[csv.header[0]] !== 'undefined') {
+                x = newData[csv.header[0]];
+            } else if (csv.header[0].toLowerCase().includes('time') || csv.header[0].toLowerCase().includes('unix'))
+                x = Date.now();
+        }
+        else {
+            if(newData[csv.header[2]]) {
+                if(Array.isArray(newData[csv.header[2]])) x = csv.lastX + csv.xIncrement*(newData[csv.header[2]] as any[]).length;
+                else x = csv.lastX + csv.xIncrement;
+            }
+            else if(newData[csv.header[0]]) {
+                if(Array.isArray(newData[csv.header[0]])) x = csv.lastX + csv.xIncrement*(newData[csv.header[0]] as any[]).length;
+                else x = csv.lastX + csv.xIncrement;
+            }
+            else x = csv.lastX + csv.xIncrement;
+            
+        }
+    }
+    else x = newData[csv.header[0]]; //first csv value treated as x for reference for growing the csv, mainly to generate timestamps if being used but not defined
+    
+    if(typeof csv.lastX === 'undefined') csv.lastX = Array.isArray(x) ? x[0] : x;
+    if(typeof x === 'undefined') {
         if(csv.header[0].includes('time')) {
             let now = Date.now();
             if(maxLen === 1) x = Date.now();
@@ -115,11 +140,12 @@ export const appendCSV = async (
                 let d = newData[csv.header[j]];
                 if(j === 0) {
                     toAppend[i][0] = x[i];
+                    if (csv.header[j+1] === 'localized') {  j++; toAppend[i][j] = toISOLocal(x[i]); }
                     continue;
                 }
                 
-                if (csv.header[j] === 'localized') { toAppend[i][j] = toISOLocal(x[i]); }
-                else if(d === undefined) {
+                
+                if(d === undefined) {
                     toAppend[i][j] = '';
                 } else if (Array.isArray(d)) {
                     if(d.length === x.length) toAppend[i][j] = d[i];
@@ -145,15 +171,29 @@ export const appendCSV = async (
                         toAppend[i][j] = '';
                     }
                 }
+
+                if(typeof toAppend[i][j] === 'number' && Math.floor(toAppend[i][j]) !== toAppend[i][j]) 
+                    toAppend[i][j] = toAppend[i][j].toFixed(toFixed)
             }
         }
     } else {
         toAppend.push([]);
         for(let j = 0; j < csv.header.length; j++) {
+            
+            if(j === 0) {
+                toAppend[0][0] = x;
+                if (csv.header[j+1] === 'localized') {  j++; toAppend[0][j] = toISOLocal(x); }
+                continue;
+            }
+
             if((csv.header[j] in newData)) toAppend[0][j] = newData[csv.header[j]];
-            else if (csv.header[j] === 'localized') { toAppend[0][j] === toISOLocal(x); }
             else toAppend[0][j] = '';
+
+            
+            if(typeof toAppend[0][j] === 'number' && Math.floor(toAppend[0][j]) !== toAppend[0][j]) 
+                toAppend[0][j] = toAppend[0][j].toFixed(toFixed)
         }
+        
     }
 
 
@@ -161,7 +201,7 @@ export const appendCSV = async (
 
     if(header) csvProcessed += header.join(',') + '\n'; //append new headers when they show up
     toAppend.forEach((arr) => {
-        csvProcessed += arr.map((v,i)=>{if((i > 0) && typeof v === 'number' && Math.floor(v) !== v) return v.toFixed(toFixed); else return v; }).join(',') + '\n';    
+        csvProcessed += arr.join(',') + '\n';    
         if(csv.bufferSize) csv.buffered++;
     });
 
@@ -238,7 +278,8 @@ export const updateCSVHeader = (header:any[],filename:string) => {
 export const createCSV = (
     filename:string,
     header:string[],
-    bufferSize:number=0 //accumulate a certain number of lines before writing to BFS? (necessary for > 100 updates/sec fyi)
+    bufferSize:number=0, //accumulate a certain number of lines before writing to BFS? (necessary for > 100 updates/sec fyi)
+    xIncrement?:number //fixed time increment for newlines?
 ) => {
 
     if(header?.indexOf('timestamp') > 1) {header.splice(header.indexOf('timestamp'),1); header.unshift('timestamp')}
@@ -251,7 +292,8 @@ export const createCSV = (
         lastX:header[1] === 'localized' ? Date.now() : 0,
         bufferSize,
         buffer:'',
-        buffered:0
+        buffered:0,
+        xIncrement
     };
 
     //overwrite existing files
@@ -268,7 +310,7 @@ export const createCSV = (
 }
 
 
-//returns a basic html needed to visualize directory contents 
+//returns a basic html needed to visualize csv directory contents 
 export const visualizeDirectory = (dir:string, parentNode=document.body) => {
    return new Promise(async (res,rej) => {
         if(parentNode.querySelector('#bfs' + dir)) parentNode.querySelector('#bfs' + dir)?.remove();
@@ -283,7 +325,7 @@ export const visualizeDirectory = (dir:string, parentNode=document.body) => {
                     `<div id='${listing}' class='bfsfilediv'>
                         <span class='bfsfiletitle'>Data: </span>
                         <span>${listing}</span>
-                        ${listing.toLowerCase().endsWith('csv') ? `<button class='bfsdownloadbtn' id='download${listing}'>Download CSV</button>` : ``}
+                        <button class='bfsdownloadbtn' id='download${listing}'>Download CSV</button>
                         ${listing.indexOf('.') > -1 ? `<button class='bfsdeletebtn' id='delete${listing}'>Delete</button>` : ''}
                     </div>`
                 );

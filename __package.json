@@ -23,10 +23,10 @@
     "license": "AGPL-3.0-or-later",
     "dependencies": {
         "better-sse": "~0.8.0",
-        "brainsatplay-math": "~0.0.22",
+        "brainsatplay-math": "~0.0.25",
         "bson-objectid": "~2.0.3",
         "web-worker": "~1.2.0",
-        "ws": "~8.8.1"
+        "ws": "~8.9.0"
     },
     "nodemonConfig": {
         "env": {

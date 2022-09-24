@@ -9,8 +9,7 @@ export const rms:SubprocessContextProps = {
         nSec:1, //number of seconds of data to buffer
         watch:['0','1','2','3'],
         data:{},
-        rms:{},
-        blocking:false
+        rms:{}
     },
     //oncreate:(ctx) => { },
     ondata:(ctx,data) => {
@@ -32,18 +31,16 @@ export const rms:SubprocessContextProps = {
             } else ctx.rms.timestamp = data.timestamp;
         } else ctx.rms.timestamp = Date.now();
 
-        if(!ctx.blocking) {
-            ctx.blocking = true;
-            return new Promise(async res => {
-                await Promise.all(ctx.watch.map(async (key) => {
-                    ctx.rms[key] = Math.sqrt((ctx.data[key] as number[]).reduce((p,v,i) => p + v*v )/ctx.data[key].length); //root mean square sum
-                }))
+        //console.log(ctx.rms,ctx.data);
 
-                ctx.blocking = false;
-                res(ctx.rms);
-            }) 
-        }
+        return new Promise(async res => {
+            await Promise.all(ctx.watch.map(async (key) => {
+                if(ctx.data[key]) ctx.rms[key] = Math.sqrt(Math.abs((ctx.data[key] as number[]).reduce((p,v,i) => p + v*v )/ctx.data[key].length)); //root mean square sum
+                else delete ctx.rms[key];
+            }))
 
-        return;
+            res(ctx.rms);
+        }) 
+
     }
 }

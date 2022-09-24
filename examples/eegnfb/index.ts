@@ -2,16 +2,22 @@
 
 //resources
 import { DOMService, WorkerCanvas, GraphNodeProperties } from 'graphscript/';//'../../index'////'../../index';
-import { initDevice, workers, filterPresets, FilterSettings, chartSettings } from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder';
+import { 
+    initDevice, 
+    workers, 
+    filterPresets, 
+    FilterSettings, 
+    chartSettings 
+} from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder';
 
 
 import { setSignalControls } from 'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
 
-import gsworker from '../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
+import gsworker from 'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
 import { Devices } from 'device-decoder.third-party'//'../../../device_debugger/src/devices/third_party/index'//'device-decoder.third-party'
 
 import { Howl, Howler } from 'howler';
-import { visualizeDirectory } from 'graphscript-services/storage/BFS_CSV';
+import { visualizeDirectory } from 'graphscript-services.storage'//'../../extras/index.storage.services'//'graphscript-services/storage/BFS_CSV';
 
 
 import './index.css'
@@ -181,7 +187,7 @@ const webappHtml = {
                                         let rmseanim = () => {
                                             document.getElementById('rmse').innerHTML = rmsetemplate;
                                         }
-                                        let recording = false;
+                                        //let recording = false;
 
                                         let info = await initDevice(
                                             mode as 'BLE'|'USB'|'BLE_OTHER'|'USB_OTHER'|'OTHER', 
@@ -537,7 +543,8 @@ const webappHtml = {
                                                             [
                                                                 `data/${new Date().toISOString()}_${selected}_${mode}.csv`,
                                                                 ['timestamp','0','1','2','3','4','5','6','7'],
-                                                                3000 //buffer between writes to idb
+                                                                Devices[mode][selected].sps*5, //buffer between writes to idb
+                                                                1000/Devices[mode][selected].sps
                                                             ]
                                                         );
                                                         info.routes.vrms.children.rmscsv.worker.post(
@@ -545,7 +552,7 @@ const webappHtml = {
                                                             [
                                                                 `data/${new Date().toISOString()}_RMS_${selected}_${mode}.csv`,
                                                                 ['timestamp','0','1','2','3'],
-                                                                1000 //buffer between writes to idb
+                                                                50 //buffer between writes to idb
                                                             ]
                                                         );
                                                         info.routes.csv.worker.start();
