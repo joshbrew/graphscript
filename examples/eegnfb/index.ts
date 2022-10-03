@@ -721,7 +721,7 @@ const webappHtml = {
                     },
                     'rmsediv':{
                         tagName:'div',
-                        innerHTML:`RMSE (mV)`,
+                        innerHTML:`RMSV (mV)`,
                         children:{
                             'rmse':{
                                 tagName:'div'
@@ -746,3 +746,5 @@ const webappHtml = {
 }
 
 webapp.load(webappHtml);
+
+
