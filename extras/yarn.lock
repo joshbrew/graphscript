@@ -55,10 +55,10 @@
     "esbuild" "~0.14.49"
     "ws" "^8.5.0"
 
-"webgl-plot-utils@~0.2.7":
-  "integrity" "sha512-Fi6QNWeBivFlDU45sT/3HmDwrdbajpYqm/8OL7tgiH5e1zamnbZt2b6LspE2vuyOBJkV3nkfik/Yfoz9W6JUPQ=="
-  "resolved" "https://registry.npmjs.org/webgl-plot-utils/-/webgl-plot-utils-0.2.7.tgz"
-  "version" "0.2.7"
+"webgl-plot-utils@~0.3.4":
+  "integrity" "sha512-X/DJ8UCUZ6ghJ/3gay9XWr5fheRh8cdzxFic8m+QcY06xKzlPBgYaFS7itYUjqc3w06jd4KW4qItR5FWDww3WA=="
+  "resolved" "https://registry.npmjs.org/webgl-plot-utils/-/webgl-plot-utils-0.3.4.tgz"
+  "version" "0.3.4"
   dependencies:
     "webgl-plot" "~0.7.0"
 

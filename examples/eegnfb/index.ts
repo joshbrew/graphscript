@@ -1,7 +1,7 @@
 //@ts-nocheck
 
 //resources
-import { DOMService, WorkerCanvas, GraphNodeProperties } from 'graphscript/';//'../../index'////'../../index';
+import { DOMService, WorkerCanvas, GraphNodeProperties } from 'graphscript';//'../../index'////'../../index';
 import { 
     initDevice, 
     workers, 

@@ -1,10 +1,10 @@
 {
-    "name": "graphscript-services",
-    "version": "0.1.51",
+    "name": "graphscript-services.gpu",
+    "version": "0.1.54",
     "description": "Extra services for graphscript.",
-    "main": "dist/index.services.js",
-    "module": "dist/index.services.esm.js",
-    "types": "dist/extras/index.services.d.ts",
+    "main": "dist/index.gpu.services.js",
+    "module": "dist/index.gpu.services.esm.js",
+    "types": "dist/extras/index.gpu.services.d.ts",
     "scripts": {
         "start": "tinybuild path=tinybuild.config.js && tinybuild path=tinybuild.gpu.config.js && tinybuild path=tinybuild.storage.config.js",
         "build": "tinybuild build",
@@ -27,7 +27,7 @@
         "browserfs": "^1.4.3",
         "bson-objectid": "~2.0.3",
         "gpujsutils": "~1.0.12",
-        "webgl-plot-utils":"~0.2.7"
+        "webgl-plot-utils":"~0.3.2"
     },
     "nodemonConfig": {
         "env": {
