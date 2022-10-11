@@ -465,7 +465,7 @@ let ret = router.load({
 ```
 
 
-And to set up the worker, we add an intermediate function to the worker's `receiveCanvas`function using the `workerCanvasRoutes` we provided. This simply adds references to desirable ThreeJS modules to the canvas properties that you can reference in the functions you write from the main thread.
+And to set up the worker, we add an intermediate function to the worker's `setupCanvas`function using the `workerCanvasRoutes` we provided. This simply adds references to desirable ThreeJS modules to the canvas properties that you can reference in the functions you write from the main thread.
 
 ```ts
 
@@ -510,7 +510,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
 
                     Object.assign(options, ThreeProps); //install desired props to our canvas's 'self' reference
 
-                    let renderId = this.graph.run('receiveCanvas', options); //the the base canvas tools do the rest, all ThreeJS tools are on self, for self contained ThreeJS renders
+                    let renderId = this.graph.run('setupCanvas', options); //the the base canvas tools do the rest, all ThreeJS tools are on self, for self contained ThreeJS renders
                     //you can use the canvas render loop by default, or don't provide a draw function and just use the init and the Three animate() callback
 
                     //let canvasopts = this.graph.CANVASES[renderId] as WorkerCanvas;

@@ -56,9 +56,11 @@ export declare class ProxyManager {
     getProxy: (id: any) => any;
     handleEvent: (data: any, id: any) => boolean;
 }
+declare function makeProxy(id: any, elm?: any): any;
+declare function handleProxyEvent(data: any, id: any): any;
 export declare const proxyElementWorkerRoutes: {
     initProxyElement: typeof initProxyElement;
-    makeProxy: (id: any, elm?: any) => any;
-    handleProxyEvent: (data: any, id: any) => any;
+    makeProxy: typeof makeProxy;
+    handleProxyEvent: typeof handleProxyEvent;
 };
 export {};

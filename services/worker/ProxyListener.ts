@@ -312,21 +312,37 @@ export class ProxyManager {
     }
 }
 
+function makeProxy(id, elm?) {
+
+  if(this.graph) {
+
+    if(!this.graph.ProxyManager) this.graph.ProxyManager = new ProxyManager();
+
+    this.graph.ProxyManager.makeProxy(id, elm);
+
+  }
+  else {
+    if(!globalThis.ProxyManager) globalThis.ProxyManager = new ProxyManager();
+
+    globalThis.ProxyManager.makeProxy(id, elm);
+  }
+    return id;
+}
+function handleProxyEvent( data, id){
+  if(this.graph) {
+    if(!this.graph.ProxyManager) this.graph.ProxyManager = new ProxyManager();
+    if(this.graph.ProxyManager.handleEvent(data, id)) return data;
+  } else {
+    if(!globalThis.ProxyManager) globalThis.ProxyManager = new ProxyManager();
+    if(globalThis.ProxyManager.handleEvent(data, id)) return data;
+  }
+}
 
 //just load these into the worker service front and back. These are integrated in the worker canvas routes as well
 export const proxyElementWorkerRoutes = {
-    initProxyElement:initProxyElement,
-    makeProxy:function(id, elm?) {
-        if(!this.graph.ProxyManager) this.graph.ProxyManager = new ProxyManager();
-
-        this.graph.ProxyManager.makeProxy(id, elm);
-
-        return id;
-    },
-    handleProxyEvent:function( data, id){
-      if(!this.graph.ProxyManager) this.graph.ProxyManager = new ProxyManager();
-      if(this.graph.ProxyManager.handleEvent(data, id)) return data;
-    }
+    initProxyElement,
+    makeProxy,
+    handleProxyEvent
 } 
 
 

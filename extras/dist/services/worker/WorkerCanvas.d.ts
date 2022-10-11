@@ -1,4 +1,4 @@
-import { Graph } from "../../Graph";
+import { initProxyElement } from './ProxyListener';
 export declare type WorkerCanvasTransferProps = {
     canvas: HTMLCanvasElement;
     context?: string;
@@ -11,22 +11,21 @@ export declare type WorkerCanvasTransferProps = {
     animating?: boolean;
     [key: string]: any;
 };
-export declare type WorkerCanvasReceiveProps = {
+export declare type CanvasProps = {
     canvas: any;
-    context: string | CanvasRenderingContext2D | WebGL2RenderingContext | WebGLRenderingContext;
+    context?: string | CanvasRenderingContext2D | WebGL2RenderingContext | WebGLRenderingContext;
     _id?: string;
     width?: number;
     height?: number;
-    init?: string;
-    update?: string;
-    draw?: string;
-    clear?: string;
+    draw?: string | ((self: any, canvas: any, context: any) => void);
+    update?: string | ((self: any, canvas: any, context: any, input: any) => void);
+    init?: string | ((self: any, canvas: any, context: any) => void);
+    clear?: string | ((self: any, canvas: any, context: any) => void);
     animating?: boolean;
     [key: string]: any;
 };
-export declare type WorkerCanvasControls = {
+export declare type CanvasControls = {
     _id: string;
-    worker: Worker | MessagePort;
     draw: (props?: any) => void;
     update: (props: {
         [key: string]: any;
@@ -35,10 +34,14 @@ export declare type WorkerCanvasControls = {
     init: () => void;
     stop: () => void;
     start: () => void;
-    set: (newDrawProps: WorkerCanvasReceiveProps) => void;
+    set: (newDrawProps: CanvasProps) => void;
 };
+export declare type WorkerCanvasControls = {
+    worker: Worker | MessagePort;
+    terminate: () => void;
+} & CanvasControls;
 export declare type WorkerCanvas = {
-    graph: Graph;
+    graph: any;
     canvas: any;
     context?: CanvasRenderingContext2D | WebGL2RenderingContext | WebGLRenderingContext;
     _id: string;
@@ -49,22 +52,37 @@ export declare type WorkerCanvas = {
     animating: boolean;
     [key: string]: any;
 };
+export declare function transferCanvas(worker: Worker | MessagePort, options: WorkerCanvasTransferProps, route?: string): WorkerCanvasControls;
+export declare function setDraw(settings: CanvasProps, _id?: string): string;
+export declare function Renderer(options: CanvasProps & {
+    worker?: Worker | string | Blob | MessagePort;
+    route?: string;
+}): string | CanvasControls;
+export declare function setupCanvas(options: CanvasProps): string | CanvasControls;
+export declare function drawFrame(props?: {
+    [key: string]: any;
+}, _id?: string): string;
+export declare function clearCanvas(_id?: string): string;
+export declare function initCanvas(_id?: string): string;
+export declare function updateCanvas(input?: any, _id?: string): string;
+export declare function setProps(props?: {
+    [key: string]: any;
+}, _id?: string): string;
+export declare function startAnim(_id?: string, draw?: string | ((this: any, canvas: any, context: any) => void)): string;
+export declare function stopAnim(_id?: string): string;
 export declare const workerCanvasRoutes: {
-    transferCanvas: (worker: Worker | MessagePort, options: WorkerCanvasTransferProps, route?: string) => WorkerCanvasControls;
-    receiveCanvas: (options: WorkerCanvasReceiveProps) => string;
-    setDraw: (settings: WorkerCanvasReceiveProps, _id?: string) => string;
-    drawFrame: (props?: {
-        [key: string]: any;
-    }, _id?: string) => string;
-    clearCanvas: (_id?: string) => string;
-    initCanvas: (_id?: string) => string;
-    updateCanvas: (input?: any, _id?: string) => string;
-    setProps: (props?: {
-        [key: string]: any;
-    }, _id?: string) => string;
-    startAnim: (_id?: string, draw?: string | ((this: any, canvas: any, context: any) => void)) => string;
-    stopAnim: (_id?: string) => string;
-    initProxyElement: typeof import("./ProxyListener").initProxyElement;
+    Renderer: typeof Renderer;
+    transferCanvas: typeof transferCanvas;
+    setupCanvas: typeof setupCanvas;
+    setDraw: typeof setDraw;
+    drawFrame: typeof drawFrame;
+    clearCanvas: typeof clearCanvas;
+    initCanvas: typeof initCanvas;
+    updateCanvas: typeof updateCanvas;
+    setProps: typeof setProps;
+    startAnim: typeof startAnim;
+    stopAnim: typeof stopAnim;
+    initProxyElement: typeof initProxyElement;
     makeProxy: (id: any, elm?: any) => any;
     handleProxyEvent: (data: any, id: any) => any;
 };
