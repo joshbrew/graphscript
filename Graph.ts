@@ -62,7 +62,7 @@ export type Tree = {
 //properties input on GraphNode or add, or for children
 export type GraphNodeProperties = {
     tag?:string, //generated if not specified, or use to get another node by tag instead of generating a new one
-    operator?:OperatorType|((...args)=>any|void), //Operator to handle I/O on this node. Returned inputs can propagate according to below settings
+    operator?:string|OperatorType|((...args)=>any|void), //Operator to handle I/O on this node. Returned inputs can propagate according to below settings
     forward?:boolean, //pass output to child nodes
     backward?:boolean, //pass output to parent node
     children?:{[key:string]:string|boolean|undefined|GraphNodeProperties|GraphNode|Graph}//string|GraphNodeProperties|GraphNode|(GraphNodeProperties|GraphNode|string)[], //child node(s), can be tags of other nodes, properties objects like this, or GraphNodes, or null
@@ -449,9 +449,13 @@ export class GraphNode {
     }
 
     //set an operator using our operator types or any arbitrary function :D    //this is the i/o handler, or the 'main' function for this node to propagate results. The origin is the node the data was propagated from 
-    setOperator = (operator:OperatorType) => {
+    setOperator = (operator:OperatorType|string) => {
+        if(typeof operator === 'string') {
+            if(this.graph && this.graph.get(operator)) operator = this.graph.get(operator).operator;
+            else if(this.nodes.get(operator)) operator = this.nodes.get(operator);
+        }
         if(typeof operator !== 'function') return operator;
-        this.operator = operator.bind(this); // operator is always bound to this class instance
+        this.operator = operator.bind(this); // operator is always bound to this class instance (arrow functions are still correctly scoped)
         return operator;
     }
 
