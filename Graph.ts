@@ -228,7 +228,7 @@ export class GraphNode {
 
         if(typeof properties === 'function') { //pass a function instead of properties to set up a functional graph quickly
             properties = { operator:properties as any };
-            if(properties.operator.name) properties.tag = properties.operator.name;
+            if((properties.operator as Function).name) properties.tag = (properties.operator as Function).name;
         } else if (typeof properties.operator === 'string') {
             if(graph) {
                 let n = graph.get(properties.operator);
