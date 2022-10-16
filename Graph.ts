@@ -233,6 +233,7 @@ export class GraphNode {
             if(graph) {
                 let n = graph.get(properties.operator);
                 if(n) properties.operator = n.operator;
+                if(!properties.tag && (properties.operator as Function).name) properties.tag = (properties.operator as Function).name;
             }
         }
 
