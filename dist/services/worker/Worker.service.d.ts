@@ -80,7 +80,7 @@ export declare class WorkerService extends Service {
     }) => WorkerInfo;
     toObjectURL: (scriptTemplate: string) => string;
     getTransferable(message: any): any;
-    transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: any) => any;
+    transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: StructuredSerializeOptions) => any;
     terminate: (worker: Worker | MessagePort | string) => boolean;
     establishMessageChannel: (worker: Worker | string | MessagePort | WorkerInfo, worker2?: Worker | string | MessagePort | WorkerInfo) => string | false;
     request: (message: ServiceMessage | any, workerId: string, transfer?: any, method?: string) => Promise<unknown>;

@@ -8,7 +8,7 @@ export class EventHandler {
     data={}
     triggers={}
 
-    constructor() {}
+    constructor(data?:{[key:string]:any}) { if(typeof data === 'object') this.data = data; }
 
     setState = (updateObj:{[key:string]:any}) => {
         Object.assign(this.data, updateObj);

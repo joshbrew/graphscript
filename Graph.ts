@@ -77,7 +77,18 @@ export type GraphNodeProperties = {
     delay?:false|number, //ms delay to fire the node
     repeat?:false|number, // set repeat as an integer to repeat the input n times, cmd will be the number of times the operation has been repeated
     recursive?:false|number, //or set recursive with an integer to pass the output back in as the next input n times, cmd will be the number of times the operation has been repeated
-    reactive?:boolean|((_state:{[key:string]:any})=>void), //use a local state object to trigger state subscriptions, using the node's _unique tag to subscribe
+    reactive?:boolean |
+                ((self:GraphNode)=>void) |
+                {
+                    "self"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+                    "parent"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+                    "children"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+                    "self."?:(self:GraphNode,prop:any,node:any,key:string)=>void
+                    "parent."?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+                    "children."?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+                    "[tag]."?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+                    [key:string]:(self:GraphNode,prop:any,node:any,key:string)=>void
+                }, //use a local state object to trigger state subscriptions, using the node's _unique tag to subscribe
     frame?:boolean, //true or false. If repeating or recursing, execute on requestAnimationFrame? Careful mixing this with animate:true
     animate?:boolean, //true or false, run the operation on an animationFrame loop?
     loop?:false|number, //milliseconds or false, run the operation on a loop?
@@ -101,7 +112,7 @@ export class EventHandler {
     data={}
     triggers={}
 
-    constructor() {}
+    constructor(data?:{[key:string]:any}) { if(typeof data === 'object') this.data = data; }
 
     setState = (updateObj:{[key:string]:any}) => {
         Object.assign(this.data, updateObj);
@@ -167,8 +178,13 @@ export const state = new EventHandler();
 //const restrictedKeys = ['_state', 'graph']
 
 // added to GraphNode and Graph
-function addLocalState(props) {
-    if(!this._state) this._state = {};
+function addLocalState(props?) {
+    if(!props) props = this._initial;
+    if(!props) return;
+    if(!this._state) {
+        this._state = {};
+        this._events = new EventHandler(this._state);
+    }
     for (let k in props) {
       if (k === '_state' || k === 'graph') continue;
     //   else if (!(k in this._initial)) continue
@@ -180,8 +196,9 @@ function addLocalState(props) {
                 this._state[k];
             },
             set: (v) => {
-                this._state[k] = v;
-                if(this.state.triggers[this._unique]) this.setState({[this._unique]:this._state}); //trigger subscriptions, if any
+                if(this.state.triggers[this._unique]) 
+                    this.setState({[this._unique]:this}); //trigger subscriptions, if any
+                this._events.setState({[k]:v}); //this will update _state and trigger local key subscriptions
             },
             enumerable: true,
             configurable: true
@@ -210,7 +227,20 @@ export class GraphNode {
     animation = undefined; //animation function, uses operator if undefined (with cmd 'animate')
     forward:boolean = true; /// propagate outputs to children?
     backward:boolean = false; //propagate outputs to parents?
-    reactive: boolean|((_state:{[key:string]:any})=>void) = false; //does the node proxy custom props through a local _state? Subscribe by the _unique id or pass a callback in GraphNodeProperties 
+    reactive:boolean |
+    ((self:GraphNode)=>void) |
+    {
+        "self"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "parent"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "children"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "self.x"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "parent.x"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "children.x"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "[tag].x"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        [key:string]:(self:GraphNode,prop:any,node:any,key:string)=>void
+    } = false; //does the node proxy custom props through a local _state? Subscribe by the _unique id or pass a callback in GraphNodeProperties 
+    _events?:EventHandler;
+    
     runSync:boolean = false;
     firstRun:boolean = true;
     DEBUGNODE:boolean = false; //prints a console.time and console.timeEnd on each runOp call
@@ -316,7 +346,7 @@ export class GraphNode {
                 if(hasnode) {
                     //this.merge(hasnode)
                     if(this.reactive) {
-                        this.addLocalState(hasnode);
+                        this.addLocalState(hasnode._initial);
                     }
 
                     if(!this.source) this.source = hasnode;
@@ -387,13 +417,6 @@ export class GraphNode {
             }
 
 
-            if(this.reactive) {
-                addLocalState(properties);
-                if(typeof this.reactive === 'function') {
-                    this.state.subscribeTrigger(this._unique,this.reactive);
-                }
-            }
-
             if(typeof parent === 'object') {
                 this.parent=parent;
                 if(parent instanceof GraphNode || parent instanceof Graph) parent.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
@@ -413,6 +436,64 @@ export class GraphNode {
     
             if(this.parent instanceof GraphNode || this.parent instanceof Graph) this.checkNodesHaveChildMapped(this.parent, this);
         
+            
+
+            if(this.reactive) {
+                this.addLocalState(properties);
+                if(typeof this.reactive === 'function') {
+                    this.state.subscribeTrigger(this._unique,this.reactive);
+                }
+                else if(typeof this.reactive === 'object') {
+                    for(const key in this.reactive) {
+                        if(typeof (this.reactive as any)[key] === 'function') {
+                            if(key.includes('.')) {
+                                let split = key.split('.');
+                                if(split[0] === 'self') {
+                                    if(!this._state) this.addLocalState();
+                                    (this.reactive as any)[key] = this._events.subscribeTrigger(key,(this.reactive as any)[key])
+                                } else if(split[0] === 'parent' && this.parent) {
+                                    if(!this.parent._state) this.addLocalState();
+                                    (this.reactive as any)[key] = this.parent._events.subscribeTrigger(key,(this.reactive as any)[key])
+                                } else if(split[0] === 'children') {
+                                    let subs = {};
+                                    for(const k in this.children) {
+                                        if(this.children[k]?.state) {              
+                                            if(!this.children[k]._state) this.children[k].addLocalState();
+                                            subs[k] = this.children[k]._events.subscribeTrigger(key,(this.reactive as any)[key]);   
+                                        }
+                                    }
+                                    (this.reactive as any)[key] = subs;
+                                } else if(this.nodes.get(split[0])) {
+                                    if(!this.nodes.get(key)._state) this.nodes.get(key).addLocalState();
+                                    (this.reactive as any)[key] = this.nodes.get(key)._events.subscribeTrigger(key,(this.reactive as any)[key]);
+                                }
+                            } else {
+                                if(key === 'self') {
+                                    if(!this._state) this.parent.addLocalState();
+                                    (this.reactive as any)[key] = this.state.subscribeTrigger(this._unique,(this.reactive as any)[key]);
+                                } else if (key === 'parent' && this.parent) {
+                                    if(!this.parent._state) this.parent.addLocalState();
+                                    (this.reactive as any)[key] = this.parent.state.subscribeTrigger(this.parent._unique,(this.reactive as any)[key]);
+                                } else if (key === 'children' && this.children) {
+                                    let subs = {};
+                                    for(const k in this.children) {
+                                        if(this.children[k]?.state) {              
+                                            if(!this.children[k]._state) this.children[k].addLocalState();
+                                            subs[k] = this.children[k].state.subscribeTrigger(this.children[k]._unique,(this.reactive as any)[key]);   
+                                        }
+                                    }
+                                    (this.reactive as any)[key] = subs;
+                                } else if(this.nodes.get(key)) {
+                                    if(!this.nodes.get(key)._state) this.nodes.get(key).addLocalState();
+                                    (this.reactive as any)[key] = this.nodes.get(key).state.subscribeTrigger(this.nodes.get(key)._unique,(this.reactive as any)[key]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
             if(typeof this.oncreate === 'function') this.oncreate(this);
             if(!this.firstRun) this.firstRun = true; 
             if(this.animation && !this.animate) this.animate = true;
@@ -781,32 +862,6 @@ export class GraphNode {
         }
         return n;
     }
-    
-    remove = (n:string|GraphNode) => {
-        if(typeof n === 'string') n = this.nodes.get(n);
-        if((n as GraphNode)?.tag) {
-            this.nodes.delete((n as GraphNode).tag);
-            if(this.children[(n as GraphNode).tag]) delete this.children[(n as GraphNode).tag];
-            if(this.graph) {
-                this.graph.nodes.delete((n as GraphNode).tag);
-                this.graph.nNodes = this.graph.nodes.size;
-            }
-            this.nodes.forEach((n:GraphNode) => {
-                if(n.nodes.get((n as GraphNode).tag)) {
-                    n.nodes.delete((n as GraphNode).tag);
-                    if(n.children[(n as GraphNode).tag]) delete n.children[(n as GraphNode).tag];
-                    if(n.parent?.tag === (n as GraphNode).tag) delete n.parent;
-                }
-            }); 
-            
-            if((n as GraphNode).ondelete) (n as GraphNode).ondelete(n);
-        }
-
-        if(typeof this._state === 'object') {
-            this.state.unsubscribeTrigger(this._unique);
-        }
-    }
-    
     //append a node as a child to a parent node (this by default)
     append = (n:string|GraphNode, parentNode=this) => {
         if(typeof n === 'string') n = this.nodes.get(n);
@@ -910,27 +965,7 @@ export class GraphNode {
             }
             return Object.assign(baseprops,uniqueprops)
        }
-       else 
-        return {
-            tag:n.tag,
-            operator:n.operator,
-            graph:n.graph,
-            children:n.children, //will return the original prototypes kept in this._initial if they exist
-            parent:n.parent,
-            forward:n.forward,
-            backward:n.bacward,
-            loop:n.loop,
-            animate:n.animate,
-            frame:n.frame,
-            delay:n.delay,
-            recursive:n.recursive,
-            repeat:n.repeat,
-            branch:n.branch,
-            oncreate:n.oncreate,
-            reactive:n.reactive,
-            DEBUGNODE:n.DEBUGNODE,
-            ...this._initial
-       };
+       else return Object.assign(baseprops,this._initial);
     }
     
     setProps = (props:GraphNodeProperties={}) => {
@@ -949,59 +984,98 @@ export class GraphNode {
 
     }
 
+    
+    remove = (n:string|GraphNode) => {
+        if(typeof n === 'string') n = this.nodes.get(n);
+        if(n instanceof GraphNode) {
+            this.nodes.delete((n as GraphNode).tag);
+            if(this.children[(n as GraphNode).tag]) delete this.children[(n as GraphNode).tag];
+            if(n.graph) {
+                n.graph.nodes.delete((n as GraphNode).tag);
+                n.graph.nNodes = n.graph.nodes.size;
+            }
+            this.nodes.forEach((nd:GraphNode) => {
+                if(nd.nodes.get((n as GraphNode).tag)) {
+                    nd.nodes.delete((n as GraphNode).tag);
+                    if(nd.children[(n as GraphNode).tag]) delete nd.children[(n as GraphNode).tag];
+                    if(nd.parent?.tag === (n as GraphNode).tag) delete nd.parent;
+                }
+            }); 
+
+
+            n.cleanup();
+    
+        }
+
+    }
+
+    cleanup = () => {
+
+        this.stopNode();
+        
+        if(typeof this._state === 'object') {
+            this.state.unsubscribeTrigger(this._unique);
+        }
+
+        if(typeof this.reactive === 'object') {
+            for(const key in this.reactive as any) {
+                if(typeof (this.reactive as any)[key] === 'function') {
+                    if(key.includes('.')) {
+                        let split = key.split('.');
+                        if(split[0] === 'self' && this._events) {
+                            this._events.unsubscribeTrigger(key,(this.reactive as any)[key])
+                        } else if(split[0] === 'parent' && this.parent?._events) {
+                            this.parent._events.unsubscribeTrigger(key,(this.reactive as any)[key])
+                        } else if(split[0] === 'children') {
+                            let subs = (this.reactive as any)[key];
+                            for(const k in this.children) {
+                                if(this.children[k]?._events) {              
+                                    this.children[k]._events.unsubscribeTrigger(key,subs[k]);   
+                                }
+                            }
+                        } else if(this.nodes.get(split[0])?._events) {
+                            this.nodes.get(key)._events.unsubscribeTrigger(key,(this.reactive as any)[key]);
+                        }
+                    } else {
+                        if(key === 'self') {
+                            (this.reactive as any)[key] = this.state.unsubscribeTrigger(this._unique,(this.reactive as any)[key]);
+                        } else if (key === 'parent' && this.parent?.state) {
+                            (this.reactive as any)[key] = this.parent.state.unsubscribeTrigger(this.parent._unique,(this.reactive as any)[key]);
+                        } else if (key === 'children' && this.children) {
+                            let subs = (this.reactive as any)[key];
+                            for(const k in this.children) {
+                                if(this.children[k]?.state) {              
+                                    this.children[k].state.unsubscribeTrigger(this.children[k]._unique,subs[k]);   
+                                }
+                            }
+                        } else if(this.nodes.get(key)?.state) {
+                            this.nodes.get(key).state.unsubscribeTrigger(this.nodes.get(key)._unique,(this.reactive as any)[key]);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(this.ondelete) this.ondelete(this);
+    }
+    
     removeTree = (n:GraphNode|string) => { //stop and dereference nodes to garbage collect them
-        if(n)if(typeof n === 'string') n = this.nodes.get(n);
+        if(typeof n === 'string') n = this.nodes.get(n) as GraphNode;
         if((n as GraphNode)?.nodes) {
             let checked = {};
             const recursivelyRemove = (node) => {
                 if(typeof node.children === 'object' && !checked[node.tag]) {
                     checked[node.tag] = true;
                     for(const key in node.children) {
-                        if(node.children[key].stopNode) 
-                            node.children[key].stopNode();
-                            
-                        if(node.children[key].tag) {
-                            if(this.nodes.get(node.children[key].tag)) 
-                                this.nodes.delete(node.children[key].tag);
+                        this.remove(node.children[key])
 
-                            this.nodes.forEach((n) => {
-                                if(n.nodes.get(node.children[key].tag)) 
-                                    n.nodes.delete(node.children[key].tag);
-                                if(n.children?.[key] instanceof GraphNode) 
-                                    delete n.children[key];
-                            });
-
-                            
-                            if((node.children[key] as GraphNode).ondelete && !this.graph) //the graph removeTree will call this 
-                                (node.children[key] as GraphNode).ondelete(node.children[key]);
-
-                            recursivelyRemove(node.children[key]);
-                        }
+                        recursivelyRemove(node.children[key]);
                     }
                 }
             }
-            if((n as GraphNode).stopNode) 
-                (n as GraphNode).stopNode();
             if((n as GraphNode).tag) {
-                this.nodes.delete((n as GraphNode).tag);
-                if(this.children?.[(n as GraphNode).tag]) 
-                    delete this.children[(n as GraphNode).tag];
-                if(this.parent?.tag === (n as GraphNode).tag) 
-                    delete this.parent;
-                if(this[(n as GraphNode).tag] instanceof GraphNode) 
-                    delete this[(n as GraphNode).tag];
-                this.nodes.forEach((n) => {
-                    if((n as GraphNode)?.tag) {
-                        if(n.nodes.get((n as GraphNode).tag)) n.nodes.delete((n as GraphNode).tag);
-                        if(n.children?.[(n as GraphNode).tag] instanceof GraphNode) 
-                            delete n.children[(n as GraphNode).tag];
-                    }
-                });
+                this.remove(n);
                 recursivelyRemove(n);
-                if(this.graph) 
-                    this.graph.removeTree(n, checked); //remove from parent graph too 
-                else if((n as GraphNode).ondelete) 
-                    (n as GraphNode).ondelete(n);
             }
         }
     }
@@ -1184,6 +1258,7 @@ export class Graph {
     state=new EventHandler();
     reactive:boolean|((_state:{[key:string]:any})=>void)
     _initial:any;
+    _events?:EventHandler;
     //_state: any = {};
     _unique=`${Math.random()}`; //mostly-guaranteed unique id
 
@@ -1342,27 +1417,13 @@ export class Graph {
     removeTree = (n:string|GraphNode, checked?:any) => {
         if(n)if(typeof n === 'string') n = this.nodes.get(n);
         if((n as GraphNode)?.nodes) {
-            let checked = {};
+            if(!checked) checked = {};
             const recursivelyRemove = (node) => {
                 if(typeof node.children === 'object' && !checked[node.tag]) {
                     checked[node.tag] = true;
                     for(const key in node.children) {
-                        if(node.children[key]?.stopNode) 
-                            node.children[key].stopNode();
-                        if(node.children[key]?.tag) {
-                            if(this.nodes.get(node.children[key].tag)) 
-                                this.nodes.delete(node.children[key].tag);
-
-                            this.nodes.forEach((n) => {
-                                if(n.nodes.get(node.children[key].tag)) 
-                                    n.nodes.delete(node.children[key].tag);
-                                if(n.children?.[key] instanceof GraphNode) 
-                                    delete n.children[key];
-                            });
-
-                            if((node.children[key] as GraphNode).ondelete) 
-                                (node.children[key] as GraphNode).ondelete(node.children[key]);
-
+                        if(node.children[key] instanceof GraphNode) {
+                            this.remove(node.children[key]);
                             recursivelyRemove(node.children[key]);
                         }
                     }
@@ -1371,40 +1432,33 @@ export class Graph {
             if((n as GraphNode).stopNode) 
                 (n as GraphNode).stopNode();
             if((n as GraphNode).tag) {
-                this.nodes.delete((n as GraphNode).tag);
-                if(this.parent?.tag === (n as GraphNode).tag) 
-                    delete this.parent;
-                if(this[(n as GraphNode).tag] instanceof GraphNode) 
-                    delete this[(n as GraphNode).tag];
-                this.nodes.forEach((n) => {
-                    if((n as GraphNode)?.tag) {
-                        if(n.nodes.get((n as GraphNode).tag)) n.nodes.delete((n as GraphNode).tag);
-                        if(n.children?.[(n as GraphNode).tag] instanceof GraphNode) 
-                            delete n.children[(n as GraphNode).tag];
-                    }
-                });
+                this.remove(n);
                 recursivelyRemove(n);
-                if((n as GraphNode).ondelete) 
-                    (n as GraphNode).ondelete(n);
             }
         }
     }
 
     remove = (n:string|GraphNode) => {
         if(typeof n === 'string') n = this.nodes.get(n);
-        if((n as GraphNode)?.nodes) {
-            if((n as GraphNode).stopNode) (n as GraphNode).stopNode();
-            if((n as GraphNode)?.tag) {
-                if(this.nodes.get((n as GraphNode).tag)) 
-                {
-                    this.nodes.delete((n as GraphNode).tag);
-                    //if(this.graph) this.graph.nodes.delete(node.tag);
-                    this.nodes.forEach((n) => {
-                        if(n.nodes.get((n as GraphNode).tag)) n.nodes.delete((n as GraphNode).tag);
+        if(n instanceof GraphNode) {
+            if(n.stopNode) n.stopNode();
+            if(n?.tag) {
+                if(this.nodes.get(n.tag)) {
+                    this.nodes.delete(n.tag);
+                    n.cleanup();
+                    if(this.parent?.tag === n.tag) 
+                        delete this.parent;
+                    if(this[n.tag] instanceof GraphNode) 
+                        delete this[n.tag];
+                    this.nodes.forEach((nd) => {
+                        if((nd as GraphNode)?.tag) {
+                            if(nd.nodes.get((n as GraphNode).tag)) nd.nodes.delete((n as GraphNode).tag);
+                            if(nd.children?.[(n as GraphNode).tag] instanceof GraphNode) 
+                                delete nd.children[(n as GraphNode).tag];
+                        }
                     });
                 }
             }
-            if((n as GraphNode).ondelete) (n as GraphNode).ondelete(n);
         }
         return n;
     }

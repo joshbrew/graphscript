@@ -47,7 +47,16 @@ export type GraphNodeProperties = {
         } //it still returns afterward but is treated like an additional flow statement :D. GraphNodes being run will contain the origin node (who had the branch)
     },
     
-    reactive?:boolean|((_state:{[key:string]:any})=>void), //use a local state object to trigger state subscriptions, using the node's _unique tag for subscribing on global state
+    reactive?:boolean | ((self:GraphNode)=>void) | {
+        "self"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "parent"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "children"?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "self."?:(self:GraphNode,prop:any,node:any,key:string)=>void
+        "parent."?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "children."?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        "[tag]."?:(self:GraphNode,prop:any,node:any,key:string)=>void,
+        [key:string]:(self:GraphNode,prop:any,node:any,key:string)=>void
+    }, //subscribe to self/parent/children generally when unique properties change or when specific properties change when you specify e.g 'x.a' to subscribe to property 'a' on node 'x'. This engages setters so triggers are run invisibly
 
     tree?:Tree, //can also declare independent node maps on a node for referencing
     

@@ -10,7 +10,7 @@ export declare type Tree = {
 };
 export declare type GraphNodeProperties = {
     tag?: string;
-    operator?: OperatorType | ((...args: any[]) => any | void);
+    operator?: string | OperatorType | ((...args: any[]) => any | void);
     forward?: boolean;
     backward?: boolean;
     children?: {
@@ -27,9 +27,13 @@ export declare type GraphNodeProperties = {
     delay?: false | number;
     repeat?: false | number;
     recursive?: false | number;
-    reactive?: boolean | ((_state: {
-        [key: string]: any;
-    }) => void);
+    reactive?: boolean | ((self: GraphNode) => void) | {
+        "self."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "parent."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "children."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "[tag]."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        [key: string]: (self: GraphNode, prop: any, node: any, key: string) => void;
+    };
     frame?: boolean;
     animate?: boolean;
     loop?: false | number;
@@ -44,7 +48,9 @@ export declare class EventHandler {
     pushToState: {};
     data: {};
     triggers: {};
-    constructor();
+    constructor(data?: {
+        [key: string]: any;
+    });
     setState: (updateObj: {
         [key: string]: any;
     }) => {};
@@ -61,7 +67,7 @@ export declare const state: EventHandler;
  * const graph = new GraphNode({custom: 1, operator: (input) => console.log(input, self.custom)});
  * ```
  */
-declare function addLocalState(props: any): void;
+declare function addLocalState(props?: any): void;
 export declare class GraphNode {
     nodes: Map<any, any>;
     _initial: {
@@ -79,9 +85,14 @@ export declare class GraphNode {
     animation: any;
     forward: boolean;
     backward: boolean;
-    reactive: boolean | ((_state: {
-        [key: string]: any;
-    }) => void);
+    reactive: boolean | ((self: GraphNode) => void) | {
+        "self."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "parent."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "children."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "[tag]."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        [key: string]: (self: GraphNode, prop: any, node: any, key: string) => void;
+    };
+    _events?: EventHandler;
     runSync: boolean;
     firstRun: boolean;
     DEBUGNODE: boolean;
@@ -92,7 +103,7 @@ export declare class GraphNode {
     addLocalState: typeof addLocalState;
     operator: OperatorType;
     runOp: (...args: any[]) => any;
-    setOperator: (operator: OperatorType) => OperatorType;
+    setOperator: (operator: OperatorType | string) => string | OperatorType;
     /**
      * Runs the graph node and passes output to connected nodes
      *
@@ -112,7 +123,6 @@ export declare class GraphNode {
     setParent: (parent: GraphNode) => void;
     setChildren: (children: GraphNode | GraphNode[]) => void;
     add: (n?: GraphNodeProperties | OperatorType | ((...args: any[]) => any | void)) => GraphNode | GraphNodeProperties;
-    remove: (n: string | GraphNode) => void;
     append: (n: string | GraphNode, parentNode?: this) => void;
     subscribe: (callback: string | GraphNode | ((res: any) => void), tag?: string) => number;
     unsubscribe: (sub?: number, tag?: string) => boolean;
@@ -138,12 +148,18 @@ export declare class GraphNode {
         repeat: any;
         branch: any;
         oncreate: any;
-        reactive: boolean | ((_state: {
-            [key: string]: any;
-        }) => void);
+        reactive: boolean | ((self: GraphNode) => void) | {
+            [key: string]: (self: GraphNode, prop: any, node: any, key: string) => void;
+            "self."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+            "parent."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+            "children."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+            "[tag]."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        };
         DEBUGNODE: boolean;
     };
     setProps: (props?: GraphNodeProperties) => void;
+    remove: (n: string | GraphNode) => void;
+    cleanup: () => void;
     removeTree: (n: GraphNode | string) => void;
     checkNodesHaveChildMapped: (n: GraphNode | Graph, child: GraphNode, checked?: {}) => void;
     convertChildrenToNodes: (n?: GraphNode) => any;
@@ -169,6 +185,7 @@ export declare class Graph {
         [key: string]: any;
     }) => void);
     _initial: any;
+    _events?: EventHandler;
     _unique: string;
     tree: Tree;
     [key: string]: any;
