@@ -304,7 +304,8 @@ const webappHtml = {
                                                                                 self.overlay.width = o.width;
                                                                                 self.overlay.height = o.height;
                                                                             }
-                                                                            console.log(self.graph.plotter.plots); //not sure why webgl plot is not resizing lines correctly
+                                                                            
+                                                                            self.graph.plotter.plots[self._id].plot.webgl.viewport(0, 0, canvas.width, canvas.height);
                                                                         });
 
                                                                         if(self.graph.chartSettings) Object.assign(settings,self.graph.chartSettings);
@@ -501,6 +502,8 @@ const webappHtml = {
                                                                                                 self.overlay.width = canvas.clientWidth;
                                                                                                 self.overlay.height = canvas.clientHeight;
                                                                                             }
+                                                                                            
+                                                                                            self.graph.plotter.plots[self._id].plot.webgl.viewport(0, 0, canvas.width, canvas.height);
                                                                                             //r.width = canvas.width; r.height = canvas.height; 
                                                                                         });
 
