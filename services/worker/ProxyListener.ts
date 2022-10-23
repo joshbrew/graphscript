@@ -1,5 +1,7 @@
 //from UI thread
 
+declare var WorkerGlobalScope;
+
 /////////////https://threejsfundamentals.org/threejs/lessons/threejs-offscreencanvas.html
 const mouseEventHandler = makeSendPropertiesHandler([
     'ctrlKey',
@@ -237,9 +239,9 @@ export class ElementProxyReceiver extends EventDispatcher  {
         this.width = data.width;
         this.height = data.height;
 
-        if(typeof this.proxied === 'object') { //auto resize
-          this.proxied.width = this.width;
-          this.proxied.height = this.height;
+        if(typeof this.proxied === 'object') { //provide size information to the object for resize functions to use on a thread 
+          this.proxied.style.width = this.width + 'px';
+          this.proxied.style.height = this.height + 'px';
           this.proxied.clientWidth = this.width;
           this.proxied.clientHeight = this.height;
         }
@@ -277,15 +279,17 @@ export class ProxyManager {
 
           //console.log(proxy, addTo);
 
-          addTo.style = proxy.style;
+          if(typeof WorkerGlobalScope !== 'undefined') addTo.style = proxy.style;
+
           if(proxy.width) {
-            addTo.width = proxy.width;
+            addTo.style.width = proxy.width + 'px';
             addTo.clientWidth = proxy.width;
           }
           if(proxy.height) {
-            addTo.height = proxy.height;
+            addTo.style.height = proxy.height + 'px';
             addTo.clientHeight = proxy.height;
           }
+          
           addTo.setPointerCapture = proxy.setPointerCapture.bind(proxy);
           addTo.releasePointerCapture = proxy.releasePointerCapture.bind(proxy);
           addTo.getBoundingClientRect = proxy.getBoundingClientRect.bind(proxy);

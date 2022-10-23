@@ -47,18 +47,18 @@
   "resolved" "https://registry.npmjs.org/pako/-/pako-1.0.11.tgz"
   "version" "1.0.11"
 
-"tinybuild@file:../../../../../AppData/Roaming/npm/node_modules/tinybuild":
-  "resolved" "file:../../../../../AppData/Roaming/npm/node_modules/tinybuild"
-  "version" "0.3.190"
+"tinybuild@file:../../../../AppData/Roaming/npm/node_modules/tinybuild":
+  "resolved" "file:../../../../AppData/Roaming/npm/node_modules/tinybuild"
+  "version" "0.3.181"
   dependencies:
     "chokidar" "~3.5.3"
     "esbuild" "~0.14.49"
     "ws" "^8.5.0"
 
-"webgl-plot-utils@~0.3.4":
-  "integrity" "sha512-X/DJ8UCUZ6ghJ/3gay9XWr5fheRh8cdzxFic8m+QcY06xKzlPBgYaFS7itYUjqc3w06jd4KW4qItR5FWDww3WA=="
-  "resolved" "https://registry.npmjs.org/webgl-plot-utils/-/webgl-plot-utils-0.3.4.tgz"
-  "version" "0.3.4"
+"webgl-plot-utils@~0.3.8":
+  "integrity" "sha512-NerHDByA+NGq47ffFhoS0iLPiasjutaqyz6LCQUNdwJw+v/fITvSUcov+j2BHZY5pS2G8NDpApPDtZlfVgpojQ=="
+  "resolved" "https://registry.npmjs.org/webgl-plot-utils/-/webgl-plot-utils-0.3.8.tgz"
+  "version" "0.3.8"
   dependencies:
     "webgl-plot" "~0.7.0"
 

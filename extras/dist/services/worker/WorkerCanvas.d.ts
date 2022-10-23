@@ -52,12 +52,12 @@ export declare type WorkerCanvas = {
     animating: boolean;
     [key: string]: any;
 };
-export declare function transferCanvas(worker: Worker | MessagePort, options: WorkerCanvasTransferProps, route?: string): WorkerCanvasControls;
-export declare function setDraw(settings: CanvasProps, _id?: string): string;
 export declare function Renderer(options: CanvasProps & {
     worker?: Worker | string | Blob | MessagePort;
     route?: string;
 }): string | CanvasControls;
+export declare function transferCanvas(worker: Worker | MessagePort, options: WorkerCanvasTransferProps, route?: string): WorkerCanvasControls;
+export declare function setDraw(settings: CanvasProps, _id?: string): string;
 export declare function setupCanvas(options: CanvasProps): string | CanvasControls;
 export declare function drawFrame(props?: {
     [key: string]: any;

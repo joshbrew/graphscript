@@ -59,6 +59,26 @@ export type WorkerCanvas = { //this is the object stored on the worker to track 
     [key:string]:any //any transferrable props you want to use in your animation
 }
 
+export function Renderer(
+    options:CanvasProps & {worker?:Worker|string|Blob|MessagePort, route?:string}
+) {
+
+    if(options.worker) {
+        let worker = options.worker;
+        let route = options.route;
+
+        if(worker instanceof Blob || typeof worker === 'string') {
+            worker = new Worker(worker as any);
+        }
+        delete options.worker;
+        delete options.route;
+    
+        return transferCanvas(worker, options as WorkerCanvasTransferProps, route);
+    }
+    else return setupCanvas(options);
+}
+
+
 export function transferCanvas(
     worker:Worker|MessagePort,
     options:WorkerCanvasTransferProps,
@@ -68,6 +88,8 @@ export function transferCanvas(
     if(!options._id) options._id = `canvas${Math.floor(Math.random()*1000000000000000)}`;
 
     let offscreen = (options.canvas as any).transferControlToOffscreen();
+    if(!options.width) options.width = options.canvas.clientWidth;
+    if(!options.height) options.height = options.canvas.clientHeight;
 
     let message:any = {route:route ? route : 'setupCanvas', args:{
         ...options,
@@ -99,6 +121,8 @@ export function transferCanvas(
         transfer.push(...options.transfer);
         delete options.transfer;
     }
+
+    //console.log(worker,message);
 
     worker.postMessage(message,transfer);
 
@@ -160,6 +184,7 @@ export function setDraw(
             //create an element proxy to add event listener functionality
             if(this.graph) this.graph.run('makeProxy', canvasopts._id, canvasopts.canvas);
             else proxyElementWorkerRoutes.makeProxy(canvasopts._id, canvasopts.canvas);
+
             //now the canvas can handle mouse and resize events, more can be implemented
         }
         if(typeof settings.context === 'string') canvasopts.context = canvasopts.canvas.getContext(settings.context);
@@ -188,24 +213,6 @@ export function setDraw(
     return undefined;
 }
 
-export function Renderer(
-    options:CanvasProps & {worker?:Worker|string|Blob|MessagePort, route?:string}
-) {
-
-    if(options.worker) {
-        let worker = options.worker;
-        let route = options.route;
-
-        if(worker instanceof Blob || typeof worker === 'string') {
-            worker = new Worker(worker as any);
-        }
-        delete options.worker;
-        delete options.route;
-    
-        return transferCanvas(worker, options as WorkerCanvasTransferProps, route);
-    }
-    else return setupCanvas(options);
-}
 
 export function setupCanvas(
     options:CanvasProps
@@ -223,10 +230,9 @@ export function setupCanvas(
 
     if(this.graph?.CANVASES[canvasOptions._id]) {
         this.graph.run('setDraw',canvasOptions);
-    } else if(globalThis.CANVASES[canvasOptions._id]) {
+    } else if(globalThis.CANVASES?.[canvasOptions._id]) {
         setDraw(canvasOptions);
     } else {
-
         canvasOptions.graph = this.graph;
 
         if(this.graph) this.graph.CANVASES[canvasOptions._id] = canvasOptions;
@@ -285,7 +291,41 @@ export function setupCanvas(
 
     if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
         return canvasOptions._id as string;
-    else return canvasOptions as any as CanvasControls; //lol
+    else {
+            //lets add some utilities to make it easy to update the thread
+    const canvascontrols = {
+        _id:options._id,
+        width:options.width,
+        height:options.height,
+        draw:(props?:any)=>{
+            drawFrame(props,options._id);
+        },
+        update:(props:{[key:string]:any})=>{
+            updateCanvas(props,options._id);
+        },
+        clear:()=>{
+            clearCanvas(options._id);
+        },
+        init:()=>{
+            //console.log('Posting init')
+            initCanvas(options._id);
+        },
+        stop:()=>{
+            stopAnim(options._id);
+        },
+        start:()=>{
+            startAnim(options._id);
+        },
+        set:(newDrawProps:CanvasProps)=>{
+            setDraw(newDrawProps,options._id);
+        },
+        terminate:()=>{
+            stopAnim(options._id);
+        }
+    }
+
+        return canvascontrols as CanvasControls;
+    }
 }
 
 //local function copy, same thing but returns the whole canvas object

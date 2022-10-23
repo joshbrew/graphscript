@@ -1,19 +1,19 @@
 //@ts-nocheck
 
 //resources
-import { DOMService, WorkerCanvas, GraphNodeProperties } from 'graphscript';//'../../index'////'../../index';
+import { DOMService, WorkerCanvas, GraphNodeProperties } from 'graphscript'//'../../index';
 import { 
     initDevice, 
     workers, 
     filterPresets, 
     FilterSettings, 
     chartSettings 
-} from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder';
+} from 'device-decoder'////'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder';
 
 
-import { setSignalControls } from 'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
+import { setSignalControls } from 'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'//'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
 
-import gsworker from 'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
+import gsworker from 'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
 import { Devices } from 'device-decoder.third-party'//'../../../device_debugger/src/devices/third_party/index'//'device-decoder.third-party'
 
 import { Howl, Howler } from 'howler';
@@ -261,7 +261,12 @@ const webappHtml = {
                                                             }
 
                                                             let canvas = document.getElementById('waveform');
+                                                            canvas.width = canvas?.clientWidth;
+                                                            canvas.height = canvas?.clientHeight;
                                                             let overlay = document.getElementById('waveformoverlay').transferControlToOffscreen();
+                                                            overlay.width = canvas?.clientWidth;
+                                                            overlay.height = canvas?.clientHeight;
+
 
                                                             if(chartSettings[selected]) {
                                                                 console.log(chartSettings[selected])
@@ -273,7 +278,7 @@ const webappHtml = {
                                                                 self.worker.worker,
                                                                 {
                                                                     canvas,
-                                                                    context:undefined,
+                                                                    //context:undefined,
                                                                     _id:'waveform',
                                                                     overlay,
                                                                     transfer:[overlay],
@@ -284,8 +289,6 @@ const webappHtml = {
                                                                             canvas,
                                                                             _id:self._id,
                                                                             overlay:self.overlay,
-                                                                            width:canvas.clientWidth,
-                                                                            height:canvas.clientHeight,
                                                                             lines:{
                                                                                 '0':{nSec:10, sps: 250}, //{nPoints:1000}
                                                                                 '1':{nSec:10, sps: 250},
@@ -294,6 +297,15 @@ const webappHtml = {
                                                                             },
                                                                             useOverlay:true,
                                                                         };
+
+                                                                        canvas.addEventListener('resize',(o)=>{ 
+                                                                            canvas.width = o.width; canvas.height = o.height;
+                                                                            if(self.overlay) { 
+                                                                                self.overlay.width = o.width;
+                                                                                self.overlay.height = o.height;
+                                                                            }
+                                                                            console.log(self.graph.plotter.plots); //not sure why webgl plot is not resizing lines correctly
+                                                                        });
 
                                                                         if(self.graph.chartSettings) Object.assign(settings,self.graph.chartSettings);
 
@@ -459,7 +471,7 @@ const webappHtml = {
                                                                                     transfer:[overlay],
                                                                                     init:(self:WorkerCanvas, canvas, context) => {
                                                                                         //console.log('init', globalThis.Devices);
-                
+
                                                                                         let settings = {
                                                                                             canvas,
                                                                                             _id:self._id,
@@ -481,9 +493,17 @@ const webappHtml = {
                 
                                                                                         let r = self.graph.run('setupChart', settings);
 
-                                                                                        canvas.addEventListener('resize',() => {
-                                                                                            self.graph.run('u')
+                                                                                        console.log(settings);
+                                                                                        
+                                                                                        canvas.addEventListener('resize',()=>{ 
+                                                                                            canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight;
+                                                                                            if(self.overlay) { 
+                                                                                                self.overlay.width = canvas.clientWidth;
+                                                                                                self.overlay.height = canvas.clientHeight;
+                                                                                            }
+                                                                                            //r.width = canvas.width; r.height = canvas.height; 
                                                                                         });
+
 
                                                                                     },
                                                                                     update:(

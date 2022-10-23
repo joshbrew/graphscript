@@ -28,6 +28,9 @@ export declare type GraphNodeProperties = {
     repeat?: false | number;
     recursive?: false | number;
     reactive?: boolean | ((self: GraphNode) => void) | {
+        "self"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "parent"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "children"?: (self: GraphNode, prop: any, node: any, key: string) => void;
         "self."?: (self: GraphNode, prop: any, node: any, key: string) => void;
         "parent."?: (self: GraphNode, prop: any, node: any, key: string) => void;
         "children."?: (self: GraphNode, prop: any, node: any, key: string) => void;
@@ -86,10 +89,13 @@ export declare class GraphNode {
     forward: boolean;
     backward: boolean;
     reactive: boolean | ((self: GraphNode) => void) | {
-        "self."?: (self: GraphNode, prop: any, node: any, key: string) => void;
-        "parent."?: (self: GraphNode, prop: any, node: any, key: string) => void;
-        "children."?: (self: GraphNode, prop: any, node: any, key: string) => void;
-        "[tag]."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "self"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "parent"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "children"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "self.x"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "parent.x"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "children.x"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+        "[tag].x"?: (self: GraphNode, prop: any, node: any, key: string) => void;
         [key: string]: (self: GraphNode, prop: any, node: any, key: string) => void;
     };
     _events?: EventHandler;
@@ -150,10 +156,13 @@ export declare class GraphNode {
         oncreate: any;
         reactive: boolean | ((self: GraphNode) => void) | {
             [key: string]: (self: GraphNode, prop: any, node: any, key: string) => void;
-            "self."?: (self: GraphNode, prop: any, node: any, key: string) => void;
-            "parent."?: (self: GraphNode, prop: any, node: any, key: string) => void;
-            "children."?: (self: GraphNode, prop: any, node: any, key: string) => void;
-            "[tag]."?: (self: GraphNode, prop: any, node: any, key: string) => void;
+            self?: (self: GraphNode, prop: any, node: any, key: string) => void;
+            parent?: (self: GraphNode, prop: any, node: any, key: string) => void;
+            children?: (self: GraphNode, prop: any, node: any, key: string) => void;
+            "self.x"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+            "parent.x"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+            "children.x"?: (self: GraphNode, prop: any, node: any, key: string) => void;
+            "[tag].x"?: (self: GraphNode, prop: any, node: any, key: string) => void;
         };
         DEBUGNODE: boolean;
     };

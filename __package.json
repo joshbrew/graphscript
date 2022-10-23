@@ -1,6 +1,6 @@
 {
     "name": "graphscript-node",
-    "version": "0.1.42",
+    "version": "0.1.49",
     "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
     "main": "dist/index.node.js",
     "types": "dist/index.node.d.ts",
