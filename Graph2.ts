@@ -296,7 +296,7 @@ _
         if((childrenKey && typeof node[childrenKey] === 'object')) {
             recursiveSet(node[childrenKey],node);
         }
-        if(node._node.children) {
+        else if(node._node.children) {
             recursiveSet(node._node.children,node);
         }
 
@@ -354,7 +354,7 @@ _
             if((childrenKey && typeof node[childrenKey] === 'object')) {
                 recursiveRemove(node[childrenKey]);
             }
-            if(node._node.children) {
+            else if(node._node.children) {
                 recursiveRemove(node._node.children);
             }
         }
