@@ -99,3 +99,6 @@ console.log('nodeB reparented to graph2',popped,graph2);
 
 
 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC
+
+
+graph.get('nodeA').jump();
