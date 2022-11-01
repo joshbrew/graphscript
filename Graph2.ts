@@ -402,11 +402,12 @@ _
         }
     }
 
-    clearListeners(node:GraphNode|string) {
+    clearListeners(node:GraphNode|string,listener?:string) {
         if(typeof node === 'string') node = this.get(node) as GraphNode;
         if(node?._node.listenerSubs) {
             //console.log(node._node.listenerSubs);
             for(const key in node._node.listenerSubs) {
+                if(listener && key !== listener) continue; 
                 if(typeof node._node.listenerSubs[key] !== 'number') continue;
                 let n = this.get(key);
                 //console.log(key,n);
