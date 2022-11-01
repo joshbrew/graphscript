@@ -60,13 +60,13 @@ let graph = new Graph({
                     if(node._node.loop && typeof node._node.loop === 'number') {
                         node._node.isLooping = true
                         if(!node._node.looper) {
-                            looper = () => {
+                            node._node.looper = () => {
                                 if(node._node.isLooping) {
                                     node._node.operator();
-                                    setTimeout(looper,node._node.loop);
+                                    setTimeout(node._node.looper,node._node.loop);
                                 }
                             }
-                            looper();
+                            node._node.looper();
                         }
                     }
                 }
