@@ -115,9 +115,8 @@ export class GraphNode {
 
             if(properties instanceof Graph) this._node.source = properties; //keep tabs on source graphs passed to make nodes
 
-            if(typeof this._node.oncreate === 'function') {
-                this._node.oncreate(this);
-            }
+            if(typeof this._node.oncreate === 'function') { this._node.oncreate(this); }
+            else if (Array.isArray(this._node.oncreate)) { this._node.oncreate.forEach((o:Function) => { o(this); }) }
         }
     }
 
@@ -327,7 +326,8 @@ _
             }
 
             if(typeof node._node.ondelete === 'function') node._node.ondelete(node);
-
+            else if (Array.isArray(node._node.ondelete)) { node._node.ondelete.forEach((o:Function) => {o(node)}); }
+ 
             const recursiveRemove = (t) => {
                 for(const key in t) {
                     this.unsubscribe(t[key]);
@@ -344,6 +344,7 @@ _
                     }
 
                     if(typeof t[key]?._node?.ondelete === 'function') t[key]._node.ondelete(t[key]);
+                    else if (Array.isArray(t[key]?._node.ondelete)) { t[key]?._node.ondelete.forEach((o:Function) => {o(node)}); }
                    
                     if(childrenKey) {
                         if(typeof t[key][childrenKey] === 'object') {
