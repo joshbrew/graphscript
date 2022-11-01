@@ -266,7 +266,7 @@ _
         let node = new GraphNode(properties, parent as GraphNode, this);
         this._node.nodes.set(node._node.tag,node);
 
-        console.log('old:',properties._node,'new:',node._node);
+        //console.log('old:',properties._node,'new:',node._node);
         
         if(node._node.listeners) {
             listeners[node._node.tag] = node._node.listeners;
