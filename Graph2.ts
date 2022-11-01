@@ -224,9 +224,9 @@ _
                 if(typeof p === 'object') {
                     if(!p._node) p._node = {};
                     if(!p._node.tag) p._node.tag = key;
+                    for(const l in loaders) { loaders[l](p,parent,this); } //run any passes on the nodes to set things up further
                     let node = new GraphNode(p,parent,this);
                     this._node.tree[node._node.tag] = p; //reference the original props by tag in the tree for children
-                    for(const l in loaders) { loaders[l](node,parent,this); } //run any passes on the nodes to set things up further
                     this.set(node._node.tag,node);
                     if(node._node.listeners) {
                         listeners[node._node.tag] = node._node.listeners;
