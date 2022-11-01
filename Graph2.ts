@@ -170,8 +170,8 @@ export class GraphNode {
         this._node.operator = (...args) => {
             let result = fn(...args);
             if(typeof result?.then === 'function') {
-                result.then((res)=>{ this._node.state.setValue( this._node.tag,res ) }).catch(console.error);
-            } else this._node.state.setValue(this._node.tag,result);
+                result.then((res)=>{ if(res !== undefined) this._node.state.setValue( this._node.tag,res ) }).catch(console.error);
+            } else if(result !== undefined) this._node.state.setValue(this._node.tag,result);
             return result;
         } 
 
