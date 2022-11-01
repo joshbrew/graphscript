@@ -205,7 +205,7 @@ function addLocalState(props?) {
         });
       }
     }
-  }
+}
 
 
 
