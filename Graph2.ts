@@ -514,8 +514,9 @@ let tree = {
         y:2,
         _node:{
             listeners:{
-                'nodeB.x':(newX)=>{ console.log('nodeB x prop changed:',newX); this.x = newX; }, //listeners in a scope are bound to 'this' node
-                'nodeB.nodeC':(state)=>{console.log('nodeC state changed:', state)}
+                'nodeB.x':function(newX){ console.log('nodeB x prop changed:',newX, this); this.x = newX; }, //listeners in a scope are bound to 'this' node
+                'nodeB.nodeC':function(op_result){console.log('nodeC operator returned:', op_result, this)},
+                'nodeB.nodeC.z':function(newZ){console.log('nodeC z prop changed:', newZ, this)}
             }
         }
     },
@@ -526,9 +527,12 @@ let tree = {
         _node:{
             children:{
                 nodeC:{
-                    z:4
+                    z:4,
                     _node:{
-                        operator:(a) => { this.z += a; }
+                        operator:function(a) { this.z += a; console.log('nodeC z prop added to',this); return this.z; },
+                        listeners:{
+                            'nodeA.x':function(newX) { console.log('nodeA x prop updated', newX);}
+                        }
                     }
                 }
             }
@@ -538,7 +542,7 @@ let tree = {
 
     nodeC:(a,b,c)=>{ return a+b+c; }, //becomes the ._node.operator prop and calling triggers setState for this tag (or nested tag if a child)
 
-    nodeZ //reference a module namespace import 
+    nodeZ //can treat imports as default objects
 
 };
 
@@ -550,5 +554,22 @@ graph.get('nodeB').x += 1; //should trigger nodeA listener
 
 graph.run('nodeB.nodeC', 4); //should trigger nodeA listener
 
+console.log('graph1',graph);
 
+let tree2 = {
+    graph
+};
+
+let graph2 = new Graph({tree:tree2});
+
+let popped = graph.remove('nodeB');
+
+console.log(popped._node.tag, 'popped')
+
+graph2.add(popped); //reparent nodeB to the parent graph
+
+console.log('nodeB reparented to graph2',popped,graph2);
+
+
+popped.x += 1; //should no longer trigger nodeA.x listener on nodeC
 */
