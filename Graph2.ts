@@ -20,8 +20,8 @@ export class GraphNode {
         children: undefined as any,
         localState: undefined as any,
         events: undefined as any,
-        oncreate:undefined as any,
-        ondelete:undefined as any,
+        oncreate:undefined as any, //function or array of functions
+        ondelete:undefined as any, //function or array of functions
         initial:undefined as any,
         listeners:undefined as any, //e.g. { 'nodeA.x':(newX)=>{console.log('nodeA.x changed:',x)}  }
         source:undefined as any// source graph if a graph is passed as properties
