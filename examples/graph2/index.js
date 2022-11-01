@@ -98,7 +98,7 @@ graph2.add(popped); //reparent nodeB to the parent graph
 console.log('nodeB reparented to graph2',popped,graph2);
 
 
-popped.x += 1; //should no longer trigger nodeA.x listener on nodeC
+popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
 
 
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
