@@ -15,16 +15,16 @@ export class GraphNode {
         tag:`node${Math.floor(Math.random()*1000000000000000)}`,
         unique:`${Math.random()}`,
         state,
-        operator: undefined as any,
-        graph: undefined as any,
-        children: undefined as any,
-        localState: undefined as any,
-        events: undefined as any,
-        oncreate:undefined as any, //function or array of functions
-        ondelete:undefined as any, //function or array of functions
-        initial:undefined as any,
-        listeners:undefined as any, //e.g. { 'nodeA.x':(newX)=>{console.log('nodeA.x changed:',x)}  }
-        source:undefined as any// source graph if a graph is passed as properties
+        // operator: undefined as any,
+        // graph: undefined as any,
+        // children: undefined as any,
+        // localState: undefined as any,
+        // events: undefined as any,
+        // oncreate:undefined as any, //function or array of functions
+        // ondelete:undefined as any, //function or array of functions
+        // initial:undefined as any,
+        // listeners:undefined as any, //e.g. { 'nodeA.x':(newX)=>{console.log('nodeA.x changed:',x)}  }
+        // source:undefined as any// source graph if a graph is passed as properties
     }
 
 
@@ -98,10 +98,10 @@ export class GraphNode {
 
             //nested graphs or 2nd level+ nodes get their parents as a tag
             if(parent?._node && (!(parent instanceof Graph) || properties instanceof Graph)) properties._node.tag = parent._node.tag + '.' + properties._node.tag; //load parents first
-            // if(parent instanceof Graph && properties instanceof Graph) {
-            //     //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
-            //     properties._node.nodes.forEach((n) => {parent._node.nodes.set(properties._node.tag+'.'+n._node.tag,n)});
-            // }
+            if(parent instanceof Graph && properties instanceof Graph && parent._node.mapGraphs) {
+                //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
+                properties._node.nodes.forEach((n) => {parent._node.nodes.set(properties._node.tag+'.'+n._node.tag,n)});
+            }
 
             if(properties._node.initial) { //set to true to capture initial conditions, making this optional so it's not all the time
                 properties._node.initial = {};
@@ -182,13 +182,14 @@ export class GraphNode {
 
 export class Graph {
 
-    _node = {
-        tree:undefined as any,
+    _node:{[key:string]:any} = {
         tag:`graph${Math.floor(Math.random()*1000000000000000)}`,
-        loaders:undefined as any,
         nodes:new Map(),
         state,
-        childrenKey:undefined as any
+        // mapGraphs:false //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
+        // tree:undefined as any,
+        // loaders:undefined as any,
+        // childrenKey:undefined as any
     }
 
     constructor(
