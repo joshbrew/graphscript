@@ -459,7 +459,6 @@ _
 
 }
 
-
 // added to GraphNode and Graph
 function addLocalState(props?:{[key:string]:any}) {
     if(!props) props = this;
