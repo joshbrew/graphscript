@@ -194,7 +194,7 @@ export class Graph {
     constructor(
         options?:{
             tree?:{[key:string]:any},
-            loaders?:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph)=>void},
+            loaders?:{[key:string]:(properties:any,parent:Graph|GraphNode,graph:Graph)=>void},
             state?:EventHandler,
             childrenKey?:string,
             [key:string]:any
@@ -250,12 +250,6 @@ _
 
     }
 
-    run(node:string|GraphNode, ...args:any[]) {
-        if(typeof node === 'string') node = this.get(node);
-        if((node as GraphNode)?._node?.operator) {
-            return (node as GraphNode)?._node?.operator(...args);
-        }
-    }
 
     add(properties:any, parent?:GraphNode|string, childrenKey:string=this._node.childrenKey) {
 
@@ -280,9 +274,9 @@ _
                 if(typeof p === 'object') {
                     if(!p._node) p._node = {};
                     if(!p._node.tag) p._node.tag = key;
+                    for(const l in this._node.loaders) { this._node.loaders[l](p,parent,this); } //run any passes on the nodes to set things up further
                     let nd = new GraphNode(p,parent,this);
                     this._node.tree[nd._node.tag] = p; //reference the original props by tag in the tree for children
-                    for(const l in this._node.loaders) { this._node.loaders[l](nd,parent,this); } //run any passes on the nodes to set things up further
                     this.set(nd._node.tag,nd);
                     if(nd._node.listeners) {
                         listeners[nd._node.tag] = nd._node.listeners;
@@ -371,6 +365,13 @@ _
         }
 
         return node;
+    }
+
+    run(node:string|GraphNode, ...args:any[]) {
+        if(typeof node === 'string') node = this.get(node);
+        if((node as GraphNode)?._node?.operator) {
+            return (node as GraphNode)?._node?.operator(...args);
+        }
     }
 
     setListeners(listeners:{[key:string]:{[key:string]:any}}) {
