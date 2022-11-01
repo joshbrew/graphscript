@@ -40,7 +40,35 @@ let tree = {
 };
 
 let graph = new Graph({
-    tree
+    tree,
+    loaders:{
+        'looper':(props,parent,graph)=>{ //badabadabadabooop
+
+            let oncreate = (node) => {
+                if(node._node.loop && typeof node._node.loop === 'number') {
+                    node._node.isLooping = true
+                    if(!node._node.looper) looper = () => {
+                        if(node._node.isLooping) {
+                            node._node.operator();
+                            setTimeout(looper,node._node.loop);
+                        }
+                    }
+                }
+            }
+
+            if(typeof props.oncreate === 'undefined') props.oncreate = [oncreate];
+            else if (typeof props.oncreate === 'function') props.oncreate = [oncreate,props.oncreate];
+            else if (Array.isArray(props.oncreate)) props.oncreate.unshift(oncreate);
+
+            let ondelete = (node) => {
+                if(node._node.isLooping) node._node.isLooping = false;
+            }
+
+            if(typeof props.ondelete === 'undefined') props.ondelete = [ondelete];
+            else if (typeof props.ondelete === 'function') props.ondelete = [ondelete,props.ondelete];
+            else if (Array.isArray(props.ondelete)) props.ondelete.unshift(ondelete);
+        }
+    }
 });
 
 graph.get('nodeB').x += 1; //should trigger nodeA listener
