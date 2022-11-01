@@ -7,6 +7,7 @@ let tree = {
     nodeA:{
         x:1,
         y:2,
+        jump:()=>{console.log('jump!'); return 'jumped!'; },
         _node:{
             listeners:{
                 'nodeB.x':function(newX){ console.log('nodeB x prop changed:',newX, this); this.x = newX; }, //listeners in a scope are bound to 'this' node
@@ -26,7 +27,10 @@ let tree = {
                     _node:{
                         operator:function(a) { this.z += a; console.log('nodeC z prop added to',this); return this.z; },
                         listeners:{
-                            'nodeA.x':function(newX) { console.log('nodeA x prop updated', newX);}
+                            'nodeA.x':function(newX) { console.log('nodeA x prop updated', newX);},
+                            'nodeA.jump':function(jump) { 
+                                console.log('nodeA ', jump);
+                            }
                         }
                     }
                 }
@@ -74,6 +78,8 @@ let graph = new Graph({
 graph.get('nodeB').x += 1; //should trigger nodeA listener
 
 graph.run('nodeB.nodeC', 4); //should trigger nodeA listener
+
+graph.get('nodeA').jump();
 
 console.log('graph1',graph);
 

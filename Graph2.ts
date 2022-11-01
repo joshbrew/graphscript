@@ -410,10 +410,9 @@ _
                 if(listener && key !== listener) continue; 
                 if(typeof node._node.listenerSubs[key] !== 'number') continue;
                 let n = this.get(key);
-                //console.log(key,n);
                 if(!n) {
                     n = this.get(key.substring(0,key.lastIndexOf('.')));
-                    //console.log(key.substring(0,key.lastIndexOf('.')),key,n);
+                    //console.log(key.substring(0,key.lastIndexOf('.')),key,n,node._node.listenerSubs[key]);
                     if(n) this.unsubscribe(n,key.substring(key.lastIndexOf('.')+1),node._node.listenerSubs[key]);
                 } else {
                     this.unsubscribe(n,undefined,node._node.listenerSubs[key]);
@@ -454,7 +453,10 @@ _
     }
 
     unsubscribe = ( node:GraphNode|string, key?:string, sub?:number ) => {
-        if(node instanceof GraphNode) return node._unsubscribe(sub,key);
+        if(node instanceof GraphNode) {
+            //console.log(node,node._unsubscribe);
+            return node._unsubscribe(sub,key);
+        }
         else return this.get(node)?._unsubscribe(sub,key);
     }
 
@@ -473,17 +475,17 @@ function addLocalState(props?:{[key:string]:any}) {
     let localState = this._node.localState;
     for (let k in props) {
         localState[k] = props[k];
-        if (k in this) delete this[k]; //replace with proxied keys
-        if(typeof props[k] === 'function') {
-            let fn = props[k] as Function;
-            props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
+        if(typeof localState[k] === 'function' && !k.startsWith('_')) {
+            let fn = localState[k].bind(this) as Function;
+            localState[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
                 let result = fn(...args);
                 if(typeof result?.then === 'function') {
-                    result.then((res)=>{ this._node.events.setValue( k,res ) }).catch(console.error);
+                    result.then((res)=>{ this._node.events.setValue( k, res ) }).catch(console.error);
                 } else this._node.events.setValue(k,result);
                 return result;
             } 
         }
+        //console.log(k, localState[k]);
         Object.defineProperty(this, k, {
             get: () => {
                 return localState[k];
