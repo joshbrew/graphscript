@@ -24,7 +24,10 @@ let tree = {
                 nodeC:{
                     z:4,
                     _node:{
-                        operator:function(a) { this.z += a; console.log('nodeC z prop added to',this); return this.z; }
+                        operator:function(a) { this.z += a; console.log('nodeC z prop added to',this); return this.z; },
+                        listeners:{
+                            'nodeA.x':function(newX) { console.log('nodeA x prop updated', newX);}
+                        }
                     }
                 }
             }
@@ -44,7 +47,7 @@ graph.get('nodeB').x += 1; //should trigger nodeA listener
 
 graph.run('nodeB.nodeC', 4); //should trigger nodeA listener
 
-console.log(graph);
+console.log('graph1',graph);
 
 let tree2 = {
     graph
@@ -52,4 +55,13 @@ let tree2 = {
 
 let graph2 = new Graph({tree:tree2});
 
-console.log(graph2);
+let popped = graph.remove('nodeB');
+
+console.log(popped._node.tag, 'popped')
+
+graph2.add(popped); //reparent nodeB to the parent graph
+
+console.log('nodeB reparented to graph2',popped,graph2);
+
+
+popped.x += 1; //should no longer trigger nodeA.x listener on nodeC

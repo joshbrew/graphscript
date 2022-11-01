@@ -98,7 +98,10 @@ export class GraphNode {
 
             //nested graphs or 2nd level+ nodes get their parents as a tag
             if(parent?._node && (!(parent instanceof Graph) || properties instanceof Graph)) properties._node.tag = parent._node.tag + '.' + properties._node.tag; //load parents first
-            
+            // if(parent instanceof Graph && properties instanceof Graph) {
+            //     //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
+            //     properties._node.nodes.forEach((n) => {parent._node.nodes.set(properties._node.tag+'.'+n._node.tag,n)});
+            // }
 
             if(properties._node.initial) { //set to true to capture initial conditions, making this optional so it's not all the time
                 properties._node.initial = {};
@@ -159,7 +162,7 @@ export class GraphNode {
     
     //unsub the callback
     _unsubscribe = (sub?:number, key?:string) => {
-        if(key && this._node.events) return this._node.events.unsubscribe(key,sub);
+        if(key && this._node.events) return this._node.events.unsubscribeTrigger(key,sub);
         else return this._node.state.unsubscribeTrigger(this._node.tag,sub);
     }
 
@@ -248,32 +251,6 @@ _
 
     }
 
-    setListeners(listeners) {
-        //now setup event listeners
-        for(const key in listeners) {
-            let node = this.get(key);
-            if(typeof listeners[key] === 'object') {
-                for(const k in listeners[key]) {
-                    let n = this.get(k);
-                    let sub;
-                    let fn = listeners[key][k].bind(node);//bind 'this' for the callback to the owner node 
-                    listeners[key][k] = fn; 
-                    if(!n) {
-                        let tag = k.substring(0,k.lastIndexOf('.'));
-                        n = this.get(tag);
-                        if(n) {
-                            sub = this.subscribe(listeners[key][k],n,k.substring(k.lastIndexOf('.')+1));
-                            node._node.listeners[k] = sub;
-                        }
-                    } else {
-                        sub = this.subscribe(listeners[key][k],n);
-                        node._node.listeners[k] = sub;
-                    }
-                }
-            }
-        }
-    }
-
     run(node:string|GraphNode, ...args:any[]) {
         if(typeof node === 'string') node = this.get(node);
         if((node as GraphNode)?._node?.operator) {
@@ -287,6 +264,9 @@ _
 
         if(typeof parent === 'string') parent = this.get(parent);
         let node = new GraphNode(properties, parent as GraphNode, this);
+        this._node.nodes.set(node._node.tag,node);
+
+        console.log('old:',properties._node,'new:',node._node);
         
         if(node._node.listeners) {
             listeners[node._node.tag] = node._node.listeners;
@@ -333,25 +313,17 @@ _
         return node;
     }
 
-    remove(node:GraphNode|string, childrenKey:string=this._node.childrenKey) {
+    remove(node:GraphNode|string, clearListeners:boolean=true, childrenKey:string=this._node.childrenKey) {
         this.unsubscribe(node);
 
         if(typeof node === 'string') node = this.get(node);
 
         if(node instanceof GraphNode) {
             this._node.nodes.delete(node._node.tag);
+            delete this._node.tree[node._node.tag]
 
-            if(node._node.listeners) {
-                for(const key in node._node.listeners) {
-                    if(typeof node._node.listeners[key] !== 'number') continue;
-                    let n = this.get(key);
-                    if(!n) {
-                        n = this.get(key.substring(0,key.lastIndexOf('.')));
-                        if(n) this.unsubscribe(n,key.substring(key.lastIndexOf('.')+1),node._node.listeners[key]);
-                    } else {
-                        this.unsubscribe(n,undefined,node._node.listeners[key]);
-                    }
-                }
+            if(clearListeners) {
+                this.clearListeners(node);
             }
 
             if(typeof node._node.ondelete === 'function') node._node.ondelete(node);
@@ -359,23 +331,20 @@ _
             const recursiveRemove = (t) => {
                 for(const key in t) {
                     this.unsubscribe(t[key]);
+                    this._node.nodes.delete(t[key]._node.tag);
+                    delete this._node.tree[t[key]._node.tag]
                     this._node.nodes.delete(key);
+                    delete this._node.tree[key]
 
-                    if(t[key]._node.listeners) {
-                        for(const k in t[key]._node.listeners) {
-                            if(typeof t[key]._node.listeners[k] !== 'number') continue;
-                            let n = this.get(k);
-                            if(!n) {
-                                n = this.get(k.substring(0,k.lastIndexOf('.')));
-                                if(n) this.unsubscribe(n,k.substring(k.lastIndexOf('.')+1),t[key]._node.listeners[k]);
-                            } else {
-                                this.unsubscribe(n,undefined,t[key]._node.listeners[k]);
-                            }
-                        }
+                    //console.log(key, 'removing child',t[key]);
+                    t[key]._node.tag = t[key]._node.tag.substring(t[key]._node.tag.lastIndexOf('.')+1);
+
+                    if(clearListeners) {
+                        this.clearListeners(t[key]);
                     }
 
                     if(typeof t[key]?._node?.ondelete === 'function') t[key]._node.ondelete(t[key]);
-
+                   
                     if(childrenKey) {
                         if(typeof t[key][childrenKey] === 'object') {
                             recursiveRemove(t[key][childrenKey]);
@@ -395,7 +364,61 @@ _
             }
         }
 
+        if((node as any)?._node.tag && (node as any)?._node.parent) {
+            delete (node as any)?._node.parent;
+            (node as any)._node.tag = (node as any)._node.tag.substring((node as any)._node.tag.indexOf('.')+1);
+        }
+
         return node;
+    }
+
+    setListeners(listeners:{[key:string]:{[key:string]:any}}) {
+        //now setup event listeners
+        for(const key in listeners) {
+            let node = this.get(key);
+            if(typeof listeners[key] === 'object') {
+                for(const k in listeners[key]) {
+                    let n = this.get(k);
+                    let sub;
+                    let fn = listeners[key][k].bind(node);//bind 'this' for the callback to the owner node 
+                    listeners[key][k] = fn; 
+                    if(!n) {
+                        let tag = k.substring(0,k.lastIndexOf('.'));
+                        n = this.get(tag);
+                        if(n) {
+                            sub = this.subscribe(listeners[key][k],n,k.substring(k.lastIndexOf('.')+1));
+                            if(!node._node.listenerSubs) node._node.listenerSubs = {};
+                            node._node.listenerSubs[k] = sub;
+                        }
+                    } else {
+                        sub = this.subscribe(listeners[key][k],n);
+                        if(!node._node.listenerSubs) node._node.listenerSubs = {};
+                        node._node.listenerSubs[k] = sub;
+                    }
+                }
+            }
+        }
+    }
+
+    clearListeners(node:GraphNode|string) {
+        if(typeof node === 'string') node = this.get(node) as GraphNode;
+        if(node?._node.listenerSubs) {
+            //console.log(node._node.listenerSubs);
+            for(const key in node._node.listenerSubs) {
+                if(typeof node._node.listenerSubs[key] !== 'number') continue;
+                let n = this.get(key);
+                //console.log(key,n);
+                if(!n) {
+                    n = this.get(key.substring(0,key.lastIndexOf('.')));
+                    //console.log(key.substring(0,key.lastIndexOf('.')),key,n);
+                    if(n) this.unsubscribe(n,key.substring(key.lastIndexOf('.')+1),node._node.listenerSubs[key]);
+                } else {
+                    this.unsubscribe(n,undefined,node._node.listenerSubs[key]);
+                }
+                delete node._node.listeners[key];
+                delete node._node.listenerSubs[key];
+            }
+        }
     }
 
     get = (tag) => { return this._node.nodes.get(tag); };
