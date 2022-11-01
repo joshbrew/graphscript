@@ -41,6 +41,13 @@ let tree = {
 
     nodeD:(a,b,c)=>{ return a+b+c; }, //becomes the ._node.operator prop and calling triggers setState for this tag (or nested tag if a child)
 
+    nodeE:{
+        _node:{
+            loop:1000,
+            operator:()=>{console.log('looped!');}
+        }
+    }
+
 };
 
 let graph = new Graph({
@@ -48,29 +55,35 @@ let graph = new Graph({
     loaders:{
         'looper':(props,parent,graph)=>{ //badabadabadabooop
 
-            let oncreate = (node) => {
-                if(node._node.loop && typeof node._node.loop === 'number') {
-                    node._node.isLooping = true
-                    if(!node._node.looper) looper = () => {
-                        if(node._node.isLooping) {
-                            node._node.operator();
-                            setTimeout(looper,node._node.loop);
+            if(props._node.loop) {
+                let oncreate = (node) => {
+                    if(node._node.loop && typeof node._node.loop === 'number') {
+                        node._node.isLooping = true
+                        if(!node._node.looper) {
+                            looper = () => {
+                                if(node._node.isLooping) {
+                                    node._node.operator();
+                                    setTimeout(looper,node._node.loop);
+                                }
+                            }
+                            looper();
                         }
                     }
                 }
+    
+                if(typeof props._node.oncreate === 'undefined') props._node.oncreate = [oncreate];
+                else if (typeof props._node.oncreate === 'function') props._node.oncreate = [oncreate,props._node.oncreate];
+                else if (Array.isArray(props._node.oncreate)) props._node.oncreate.unshift(oncreate);
+    
+                let ondelete = (node) => {
+                    if(node._node.isLooping) node._node.isLooping = false;
+                }
+    
+                if(typeof props._node.ondelete === 'undefined') props._node.ondelete = [ondelete];
+                else if (typeof props._node.ondelete === 'function') props._node.ondelete = [ondelete,props._node.ondelete];
+                else if (Array.isArray(props._node.ondelete)) props._node.ondelete.unshift(ondelete);
             }
-
-            if(typeof props.oncreate === 'undefined') props.oncreate = [oncreate];
-            else if (typeof props.oncreate === 'function') props.oncreate = [oncreate,props.oncreate];
-            else if (Array.isArray(props.oncreate)) props.oncreate.unshift(oncreate);
-
-            let ondelete = (node) => {
-                if(node._node.isLooping) node._node.isLooping = false;
-            }
-
-            if(typeof props.ondelete === 'undefined') props.ondelete = [ondelete];
-            else if (typeof props.ondelete === 'function') props.ondelete = [ondelete,props.ondelete];
-            else if (Array.isArray(props.ondelete)) props.ondelete.unshift(ondelete);
+            
         }
     }
 });
@@ -102,3 +115,6 @@ popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will st
 
 
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
+
+
+setTimeout(()=>{ graph.remove('nodeE'); console.log('nodeE popped!') },5500)
