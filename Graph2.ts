@@ -6,11 +6,12 @@ import { EventHandler } from "./services/EventHandler";
 export const state = new EventHandler();
 
 
+//todo: new types
 
 //this is a scope
 export class GraphNode {
 
-    _node = { //GraphNode-specific properties 
+    _node:{[key:string]:any} = { //GraphNode-specific properties 
         tag:`node${Math.floor(Math.random()*1000000000000000)}`,
         unique:`${Math.random()}`,
         state,
@@ -478,6 +479,8 @@ function addLocalState(props?:{[key:string]:any}) {
 /*
 Usage:
 
+import * as nodeZ from './nodeZ.js'
+
 let tree = {
 
     nodeA:{
@@ -504,7 +507,12 @@ let tree = {
                 }
             }
         }
-    }
+    },
+
+
+    nodeC:(a,b,c)=>{ return a+b+c; }, //becomes the ._node.operator prop and calling triggers setState for this tag (or nested tag if a child)
+
+    nodeZ //reference a module namespace import 
 
 };
 
