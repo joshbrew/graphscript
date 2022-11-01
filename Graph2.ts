@@ -477,7 +477,7 @@ function addLocalState(props?:{[key:string]:any}) {
         localState[k] = props[k];
         if(typeof localState[k] === 'function' && !k.startsWith('_')) {
             let fn = localState[k].bind(this) as Function;
-            localState[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
+            props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
                 let result = fn(...args);
                 if(typeof result?.then === 'function') {
                     result.then((res)=>{ this._node.events.setValue( k, res ) }).catch(console.error);
