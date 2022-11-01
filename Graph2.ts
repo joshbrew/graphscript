@@ -474,31 +474,34 @@ function addLocalState(props?:{[key:string]:any}) {
     }
     let localState = this._node.localState;
     for (let k in props) {
-        localState[k] = props[k];
-        if(typeof localState[k] === 'function' && !k.startsWith('_')) {
-            let fn = localState[k].bind(this) as Function;
-            props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
-                let result = fn(...args);
-                if(typeof result?.then === 'function') {
-                    result.then((res)=>{ this._node.events.setValue( k, res ) }).catch(console.error);
-                } else this._node.events.setValue(k,result);
-                return result;
-            } 
+        if(typeof props[k] === 'function') {
+            if(!k.startsWith('_')) {
+                let fn = props[k].bind(this) as Function;
+                props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
+                    let result = fn(...args);
+                    if(typeof result?.then === 'function') {
+                        result.then((res)=>{ this._node.events.setValue( k, res ) }).catch(console.error);
+                    } else this._node.events.setValue(k,result);
+                    return result;
+                } 
+            }
+        } else {
+            localState[k] = props[k];
+            //console.log(k, localState[k]);
+            Object.defineProperty(this, k, {
+                get: () => {
+                    return localState[k];
+                },
+                set: (v) => {
+                    if(this._node.state.triggers[this._node.unique]) {
+                        this._node.state.setValue(this._node.unique,this); //trigger subscriptions, if any
+                    }
+                    this._node.events.setValue(k,v); //this will update localState and trigger local key subscriptions
+                },
+                enumerable: true,
+                configurable: true
+            });
         }
-        //console.log(k, localState[k]);
-        Object.defineProperty(this, k, {
-            get: () => {
-                return localState[k];
-            },
-            set: (v) => {
-                if(this._node.state.triggers[this._node.unique]) {
-                    this._node.state.setValue(this._node.unique,this); //trigger subscriptions, if any
-                }
-                this._node.events.setValue(k,v); //this will update localState and trigger local key subscriptions
-            },
-            enumerable: true,
-            configurable: true
-        });
     }
 }
 
