@@ -23,7 +23,8 @@ export class GraphNode {
         oncreate:undefined as any,
         ondelete:undefined as any,
         initial:undefined as any,
-        listeners:undefined as any //e.g. { 'nodeA.x':(newX)=>{console.log('nodeA.x changed:',x)}  }
+        listeners:undefined as any, //e.g. { 'nodeA.x':(newX)=>{console.log('nodeA.x changed:',x)}  }
+        source:undefined as any// source graph if a graph is passed as properties
     }
 
 
@@ -48,7 +49,7 @@ export class GraphNode {
                 if(graph?.get(properties._node)) {
                     properties = graph.get(properties._node);
                 } else properties._node = {}
-            } else properties._node = {};
+            } else if(!properties._node) properties._node = {};
 
             if(parent) properties._node.parent = parent;
             if(graph) properties._node.graph = graph;
@@ -95,7 +96,9 @@ export class GraphNode {
                     properties._node.tag = `node${Math.floor(Math.random()*1000000000000000)}`;
             }
 
-            if(parent?._node) properties._node.tag = parent._node.tag + '.' + properties._node.tag; //load parents first
+            //nested graphs or 2nd level+ nodes get their parents as a tag
+            if(parent?._node && (!(parent instanceof Graph) || properties instanceof Graph)) properties._node.tag = parent._node.tag + '.' + properties._node.tag; //load parents first
+            
 
             if(properties._node.initial) { //set to true to capture initial conditions, making this optional so it's not all the time
                 properties._node.initial = {};
@@ -104,7 +107,10 @@ export class GraphNode {
                 }
             }
 
+            properties._node = Object.assign(this._node,properties._node);
             Object.assign(this,properties);
+
+            if(properties instanceof Graph) this._node.source = properties; //keep tabs on source graphs passed to make nodes
 
             if(typeof this._node.oncreate === 'function') {
                 this._node.oncreate(this);
@@ -116,7 +122,7 @@ export class GraphNode {
     _subscribe = (callback:string|GraphNode|((res)=>void), key?:string) => {
         if(key) {
             if(!this._node.localState) {
-                addLocalState(this);
+                addLocalState.bind(this)(this);
             }
              
             if(typeof callback === 'string') {
@@ -125,7 +131,7 @@ export class GraphNode {
             }
             if(typeof callback === 'function') {
                 return this._node.events.subscribeTrigger(key, callback);
-            } else if(callback) return this._node.events.subscribeTrigger(key, (state:any)=>{ if((callback as any)._node.operator) (callback as any)._node.operator(state); })
+            } else if((callback as GraphNode)?._node) return this._node.events.subscribeTrigger(key, (state:any)=>{ if((callback as any)._node.operator) (callback as any)._node.operator(state); })
             
         }
         else {
@@ -135,7 +141,7 @@ export class GraphNode {
             }
             if(typeof callback === 'function') {
                 return this._node.state.subscribeTrigger(this._node.tag, callback);
-            } else if(callback) return this._node.state.subscribeTrigger(this._node.tag, (res:any)=>{ if((callback as any)._node.operator) (callback as any)._node.operator(res); })
+            } else if((callback as GraphNode)?._node) return this._node.state.subscribeTrigger(this._node.tag, (res:any)=>{ if((callback as any)._node.operator) (callback as any)._node.operator(res); })
         
         }
     }
@@ -158,6 +164,7 @@ export class GraphNode {
     }
 
     _setOperator = (fn:(...args:any[])=>any) => {
+        fn = fn.bind(this);
         this._node.operator = (...args) => {
             let result = fn(...args);
             if(typeof result?.then === 'function') {
@@ -206,7 +213,7 @@ _
 
         let listeners = {}; //collect listener props declared
 
-        function recursiveSet(t,parent) {
+        const recursiveSet = (t,parent) => {
             for(const key in t) {
                 let p = t[key];
                 if(typeof p === 'function') p = {_node:{ operator:p }} 
@@ -237,26 +244,34 @@ _
         recursiveSet(tree,this);
 
         //now setup event listeners
+        this.setListeners(listeners);
+
+    }
+
+    setListeners(listeners) {
+        //now setup event listeners
         for(const key in listeners) {
             let node = this.get(key);
             if(typeof listeners[key] === 'object') {
                 for(const k in listeners[key]) {
                     let n = this.get(k);
                     let sub;
-                    let fn = listeners[key][k];
-                    listeners[key][k] = ((inp) => { return fn(inp); }).bind(node); //bind 'this' for the callback to the node 
+                    let fn = listeners[key][k].bind(node);//bind 'this' for the callback to the owner node 
+                    listeners[key][k] = fn; 
                     if(!n) {
-                        n = this.get(key.substring(0,key.lastIndexOf('.')));
-                        if(n) sub = this.subscribe(listeners[key][k],node,key.substring(key.lastIndexOf('.')+1));
-                        n._node.listeners[k] = sub;
+                        let tag = k.substring(0,k.lastIndexOf('.'));
+                        n = this.get(tag);
+                        if(n) {
+                            sub = this.subscribe(listeners[key][k],n,k.substring(k.lastIndexOf('.')+1));
+                            node._node.listeners[k] = sub;
+                        }
                     } else {
                         sub = this.subscribe(listeners[key][k],n);
-                        n._node.listeners[k] = sub;
+                        node._node.listeners[k] = sub;
                     }
                 }
             }
         }
-
     }
 
     run(node:string|GraphNode, ...args:any[]) {
@@ -268,9 +283,7 @@ _
 
     add(properties:any, parent?:GraphNode|string, childrenKey:string=this._node.childrenKey) {
 
-        
         let listeners = {}; //collect listener props declared
-
 
         if(typeof parent === 'string') parent = this.get(parent);
         let node = new GraphNode(properties, parent as GraphNode, this);
@@ -279,7 +292,7 @@ _
             listeners[node._node.tag] = node._node.listeners;
         }
 
-        function recursiveSet(t,parent) {
+        const recursiveSet = (t,parent) =>  {
             for(const key in t) {
                 let p = t[key];
                 if(typeof p === 'function') p = {_node:{ operator:p }} 
@@ -290,7 +303,7 @@ _
                     if(!p._node.tag) p._node.tag = key;
                     let nd = new GraphNode(p,parent,this);
                     this._node.tree[nd._node.tag] = p; //reference the original props by tag in the tree for children
-                    for(const l in this._node.loaders) { this.loaders[l](nd,parent,this); } //run any passes on the nodes to set things up further
+                    for(const l in this._node.loaders) { this._node.loaders[l](nd,parent,this); } //run any passes on the nodes to set things up further
                     this.set(nd._node.tag,nd);
                     if(nd._node.listeners) {
                         listeners[nd._node.tag] = nd._node.listeners;
@@ -315,25 +328,7 @@ _
         }
 
         //now setup event listeners
-        for(const key in listeners) {
-            let node = this.get(key);
-            if(typeof listeners[key] === 'object') {
-                for(const k in listeners[key]) {
-                    let n = this.get(k);
-                    let sub;
-                    let fn = listeners[key][k];
-                    listeners[key][k] = ((inp) => { return fn(inp); }).bind(node); //bind 'this' for the callback to the node
-                    if(!n) {
-                        n = this.get(key.substring(0,key.lastIndexOf('.')));
-                        if(n) sub = this.subscribe(listeners[key],node,key.substring(key.lastIndexOf('.')+1));
-                        n._node.listeners[k] = sub;
-                    } else {
-                        sub = this.subscribe(listeners[key][k],n);
-                        n._node.listeners[k] = sub;
-                    }
-                }
-            }
-        }
+        this.setListeners(listeners);
 
         return node;
     }
@@ -361,7 +356,7 @@ _
 
             if(typeof node._node.ondelete === 'function') node._node.ondelete(node);
 
-            function recursiveRemove(t) {
+            const recursiveRemove = (t) => {
                 for(const key in t) {
                     this.unsubscribe(t[key]);
                     this._node.nodes.delete(key);
@@ -399,10 +394,12 @@ _
                 recursiveRemove(node._node.children);
             }
         }
+
+        return node;
     }
 
-    get = this._node.nodes.get;
-    set = this._node.nodes.set;
+    get = (tag) => { return this._node.nodes.get(tag); };
+    set = (tag,node) => { this._node.nodes.set(tag,node); };
 
     getProps = (node:GraphNode|string, getInitial?:boolean) => {
         if(typeof node === 'string') node = this.get(node);
@@ -444,14 +441,17 @@ function addLocalState(props?:{[key:string]:any}) {
     if(!props) return;
     if(!this._node.localState) {
         this._node.localState = {};
+    }
+    if(!this._node.events) {
         this._node.events = new EventHandler(this._node.localState);
     }
+    let localState = this._node.localState;
     for (let k in props) {
-        this._node.localState[k] = props[k];
+        localState[k] = props[k];
         if (k in this) delete this[k]; //replace with proxied keys
         if(typeof props[k] === 'function') {
             let fn = props[k] as Function;
-            props[k] = (...args) => {
+            props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
                 let result = fn(...args);
                 if(typeof result?.then === 'function') {
                     result.then((res)=>{ this._node.events.setState( { [k]:res } ) }).catch(console.error);
@@ -461,11 +461,12 @@ function addLocalState(props?:{[key:string]:any}) {
         }
         Object.defineProperty(this, k, {
             get: () => {
-                this._node.localState[k];
+                return localState[k];
             },
             set: (v) => {
-                if(this._node.state.triggers[this._node.unique]) 
+                if(this._node.state.triggers[this._node.unique]) {
                     this._node.state.setState({[this._node.unique]:this}); //trigger subscriptions, if any
+                }
                 this._node.events.setState({[k]:v}); //this will update localState and trigger local key subscriptions
             },
             enumerable: true,
