@@ -171,8 +171,8 @@ export class GraphNode {
         this._node.operator = (...args) => {
             let result = fn(...args);
             if(typeof result?.then === 'function') {
-                result.then((res)=>{ this._node.state.setState( { [this._node.tag]:res } ) }).catch(console.error);
-            } else this._node.state.setState({ [this._node.tag]:result });
+                result.then((res)=>{ this._node.state.setValue( this._node.tag,res ) }).catch(console.error);
+            } else this._node.state.setValue(this._node.tag,result);
             return result;
         } 
 
@@ -477,8 +477,8 @@ function addLocalState(props?:{[key:string]:any}) {
             props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
                 let result = fn(...args);
                 if(typeof result?.then === 'function') {
-                    result.then((res)=>{ this._node.events.setState( { [k]:res } ) }).catch(console.error);
-                } else this._node.events.setState({ [k]:result });
+                    result.then((res)=>{ this._node.events.setValue( k,res ) }).catch(console.error);
+                } else this._node.events.setValue(k,result);
                 return result;
             } 
         }
@@ -488,9 +488,9 @@ function addLocalState(props?:{[key:string]:any}) {
             },
             set: (v) => {
                 if(this._node.state.triggers[this._node.unique]) {
-                    this._node.state.setState({[this._node.unique]:this}); //trigger subscriptions, if any
+                    this._node.state.setValue(this._node.unique,this); //trigger subscriptions, if any
                 }
-                this._node.events.setState({[k]:v}); //this will update localState and trigger local key subscriptions
+                this._node.events.setValue(k,v); //this will update localState and trigger local key subscriptions
             },
             enumerable: true,
             configurable: true
