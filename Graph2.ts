@@ -282,9 +282,10 @@ _
                         listeners[nd._node.tag] = nd._node.listeners;
                     }
                     if(childrenKey) {
-                        if(typeof nd[childrenKey] === 'object') {
-                            recursiveSet(nd._node[childrenKey],nd);
+                        if(Array.isArray(childrenKey)) {
+                            childrenKey.map((k) => { recursiveSet(node[k],node); })
                         }
+                        else if(typeof node[childrenKey] === 'object') recursiveSet(node[childrenKey],node);
                     }
                     else if(nd._node.children) {
                         recursiveSet(nd._node.children, nd);
