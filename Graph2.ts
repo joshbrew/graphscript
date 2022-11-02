@@ -231,9 +231,10 @@ _
                         listeners[node._node.tag] = node._node.listeners;
                     }
                     if(childrenKey) {
-                        if(typeof node[childrenKey] === 'object') {
-                            recursiveSet(node._node[childrenKey],node);
+                        if(Array.isArray(childrenKey)) {
+                            childrenKey.map((k) => { recursiveSet(node[k],node); })
                         }
+                        else if(typeof node[childrenKey] === 'object') recursiveSet(node[childrenKey],node);
                     }
                     else if(node._node.children) {
                         recursiveSet(node._node.children, node);
@@ -292,8 +293,11 @@ _
             } 
         }
 
-        if((childrenKey && typeof node[childrenKey] === 'object')) {
-            recursiveSet(node[childrenKey],node);
+        if(childrenKey) {
+            if(Array.isArray(childrenKey)) {
+                childrenKey.map((k) => { recursiveSet(node[k],node); })
+            }
+            else if(typeof node[childrenKey] === 'object') recursiveSet(node[childrenKey],node);
         }
         else if(node._node.children) {
             recursiveSet(node._node.children,node);
