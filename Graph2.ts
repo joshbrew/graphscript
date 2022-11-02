@@ -214,42 +214,11 @@ export class Graph {
 
     }
 _
-    setTree(tree:{[key:string]:any},loaders=this._node.loaders, childrenKey:string=this._node.childrenKey) {
+    setTree(tree:{[key:string]:any},loaders=this._node.loaders) {
 
         this._node.tree = Object.assign(this._node.tree ? this._node.tree : {},tree);
 
-        let listeners = {}; //collect listener props declared
-
-        const recursiveSet = (t,parent) => {
-            for(const key in t) {
-                let p = t[key];
-                if(typeof p === 'function') p = {_node:{ operator:p }} 
-                else if (typeof p === 'string') p = this._node.tree[p];
-                else if (typeof p === 'boolean') p = this._node.tree[key];
-                if(typeof p === 'object') {
-                    if(!p._node) p._node = {};
-                    if(!p._node.tag) p._node.tag = key;
-                    for(const l in loaders) { loaders[l](p,parent,this); } //run any passes on the nodes to set things up further
-                    let node = new GraphNode(p,parent,this);
-                    this._node.tree[node._node.tag] = p; //reference the original props by tag in the tree for children
-                    this.set(node._node.tag,node);
-                    if(node._node.listeners) {
-                        listeners[node._node.tag] = node._node.listeners;
-                    }
-                    if(childrenKey) {
-                        if(Array.isArray(childrenKey)) {
-                            childrenKey.map((k) => { recursiveSet(node[k],node); })
-                        }
-                        else if(typeof node[childrenKey] === 'object') recursiveSet(node[childrenKey],node);
-                    }
-                    else if(node._node.children) {
-                        recursiveSet(node._node.children, node);
-                    }
-                }
-            } 
-        }
-
-        recursiveSet(tree,this);
+        let listeners = this.recursiveSet(tree,this);
 
         //now setup event listeners
         this.setListeners(listeners);
@@ -257,7 +226,7 @@ _
     }
 
 
-    add(properties:any, parent?:GraphNode|string, childrenKey:string=this._node.childrenKey) {
+    add(properties:any, parent?:GraphNode|string) {
 
         let listeners = {}; //collect listener props declared
 
@@ -271,43 +240,8 @@ _
             listeners[node._node.tag] = node._node.listeners;
         }
 
-        const recursiveSet = (t,parent) =>  {
-            for(const key in t) {
-                let p = t[key];
-                if(typeof p === 'function') p = {_node:{ operator:p }} 
-                else if (typeof p === 'string') p = this._node.tree[p];
-                else if (typeof p === 'boolean') p = this._node.tree[key];
-                if(typeof p === 'object') {
-                    if(!p._node) p._node = {};
-                    if(!p._node.tag) p._node.tag = key;
-                    for(const l in this._node.loaders) { this._node.loaders[l](p,parent,this); } //run any passes on the nodes to set things up further
-                    let nd = new GraphNode(p,parent,this);
-                    this._node.tree[nd._node.tag] = p; //reference the original props by tag in the tree for children
-                    this.set(nd._node.tag,nd);
-                    if(nd._node.listeners) {
-                        listeners[nd._node.tag] = nd._node.listeners;
-                    }
-                    if(childrenKey) {
-                        if(Array.isArray(childrenKey)) {
-                            childrenKey.map((k) => { recursiveSet(node[k],node); })
-                        }
-                        else if(typeof node[childrenKey] === 'object') recursiveSet(node[childrenKey],node);
-                    }
-                    else if(nd._node.children) {
-                        recursiveSet(nd._node.children, nd);
-                    }
-                }
-            } 
-        }
-
-        if(childrenKey) {
-            if(Array.isArray(childrenKey)) {
-                childrenKey.map((k) => { recursiveSet(node[k],node); })
-            }
-            else if(typeof node[childrenKey] === 'object') recursiveSet(node[childrenKey],node);
-        }
-        else if(node._node.children) {
-            recursiveSet(node._node.children,node);
+        if(node._node.children) {
+            this.recursiveSet(node._node.children,node,listeners);
         }
 
         //now setup event listeners
@@ -316,7 +250,31 @@ _
         return node;
     }
 
-    remove(node:GraphNode|string, clearListeners:boolean=true, childrenKey:string=this._node.childrenKey) {
+    recursiveSet = (t,parent,listeners={}) =>  {
+        for(const key in t) {
+            let p = t[key];
+            if(typeof p === 'function') p = {_node:{ operator:p }} 
+            else if (typeof p === 'string') p = this._node.tree[p];
+            else if (typeof p === 'boolean') p = this._node.tree[key];
+            if(typeof p === 'object') {
+                if(!p._node) p._node = {};
+                if(!p._node.tag) p._node.tag = key;
+                for(const l in this._node.loaders) { this._node.loaders[l](p,parent,this); } //run any passes on the nodes to set things up further
+                let nd = new GraphNode(p,parent,this);
+                this._node.tree[nd._node.tag] = p; //reference the original props by tag in the tree for children
+                this.set(nd._node.tag,nd);
+                if(nd._node.listeners) {
+                    listeners[nd._node.tag] = nd._node.listeners;
+                }
+                else if(nd._node.children) {
+                    this.recursiveSet(nd._node.children, nd, listeners);
+                }
+            }
+        } 
+        return listeners;
+    }
+
+    remove(node:GraphNode|string, clearListeners:boolean=true) {
         this.unsubscribe(node);
 
         if(typeof node === 'string') node = this.get(node);
@@ -350,21 +308,13 @@ _
                     if(typeof t[key]?._node?.ondelete === 'function') t[key]._node.ondelete(t[key]);
                     else if (Array.isArray(t[key]?._node.ondelete)) { t[key]?._node.ondelete.forEach((o:Function) => {o(node)}); }
                    
-                    if(childrenKey) {
-                        if(typeof t[key][childrenKey] === 'object') {
-                            recursiveRemove(t[key][childrenKey]);
-                        }
-                    }
-                    else if(t[key]._node.children) {
+                    if(t[key]._node.children) {
                         recursiveRemove(t[key]._node.children);
                     }
                 } 
             }
 
-            if((childrenKey && typeof node[childrenKey] === 'object')) {
-                recursiveRemove(node[childrenKey]);
-            }
-            else if(node._node.children) {
+            if(node._node.children) {
                 recursiveRemove(node._node.children);
             }
         }
@@ -398,12 +348,12 @@ _
                         let tag = k.substring(0,k.lastIndexOf('.'));
                         n = this.get(tag);
                         if(n) {
-                            sub = this.subscribe(listeners[key][k],n,k.substring(k.lastIndexOf('.')+1));
+                            sub = this.subscribe(n,k.substring(k.lastIndexOf('.')+1),listeners[key][k]);
                             if(!node._node.listenerSubs) node._node.listenerSubs = {};
                             node._node.listenerSubs[k] = sub;
                         }
                     } else {
-                        sub = this.subscribe(listeners[key][k],n);
+                        sub = this.subscribe(n,undefined,listeners[key][k]);
                         if(!node._node.listenerSubs) node._node.listenerSubs = {};
                         node._node.listenerSubs[k] = sub;
                     }
@@ -456,7 +406,7 @@ _
     }
 
     subscribe = (
-        callback:(res:any)=>void, node:GraphNode|string, key?:string
+        node:GraphNode|string, key:string|undefined, callback:(res:any)=>void
     ) => {
         if(node instanceof GraphNode) return node._subscribe(callback,key);
         else return this.get(node)?._subscribe(callback,key);
