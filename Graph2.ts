@@ -88,6 +88,7 @@ export class GraphNode {
                 properties._node.nodes.forEach((n) => {parent._node.nodes.set(properties._node.tag+'.'+n._node.tag,n)});
             }
 
+
             if(properties._node.initial) { //set to true to capture initial conditions, making this optional so it's not all the time
                 properties._node.initial = {};
                 for(const key in properties) {
@@ -98,6 +99,13 @@ export class GraphNode {
             properties._node = Object.assign(this._node,properties._node);
             Object.assign(this,properties);
 
+            if(properties._node.operator && parent instanceof GraphNode && parent._node.operator) {
+                let sub = parent._subscribe(this);
+                let ondelete = () => { parent?._unsubscribe(sub);}
+                if(Array.isArray(this._node.ondelete)) { this._node.ondelete.push(ondelete); }
+                else if (this._node.ondelete) { this._node.ondelete = [ondelete,this._node.ondelete] }
+                else this._node.ondelete = [ondelete];
+            }
             if(properties instanceof Graph) this._node.source = properties; //keep tabs on source graphs passed to make nodes
 
             if(typeof this._node.oncreate === 'function') { this._node.oncreate(this); }
