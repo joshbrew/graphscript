@@ -54,21 +54,6 @@ export class GraphNode {
             if(parent) properties._node.parent = parent;
             if(graph) properties._node.graph = graph;
 
-            const recursivelyAssign = (target,obj) => {
-                for(const key in obj) {
-                    if(obj[key]?.constructor.name === 'Object' && !Array.isArray(obj[key])) {
-                        if(target[key]?.constructor.name === 'Object' && !Array.isArray(target[key])) 
-                            recursivelyAssign(target[key], obj[key]);
-                        else target[key] = recursivelyAssign({},obj[key]); 
-                    } else {
-                        target[key] = obj[key];
-                        if(typeof target[key] === 'function') target[key] = target[key].bind(this);
-                    }
-                }
-            
-                return target;
-            }
-
             for(const key in properties) {
                 if(typeof properties[key] === 'function') 
                     properties[key] = properties[key].bind(this);
@@ -202,8 +187,7 @@ export class Graph {
         }
     ) {
         if(options) {
-            Object.assign(this._node,options);
-
+            recursivelyAssign(this._node,options); //assign loaders etc
             if(options.tree) this.setTree(options.tree);
         }
 
@@ -506,6 +490,21 @@ function addLocalState(props?:{[key:string]:any}) {
     }
 }
 
+
+const recursivelyAssign = (target,obj) => {
+    for(const key in obj) {
+        if(obj[key]?.constructor.name === 'Object' && !Array.isArray(obj[key])) {
+            if(target[key]?.constructor.name === 'Object' && !Array.isArray(target[key])) 
+                recursivelyAssign(target[key], obj[key]);
+            else target[key] = recursivelyAssign({},obj[key]); 
+        } else {
+            target[key] = obj[key];
+            if(typeof target[key] === 'function') target[key] = target[key].bind(this);
+        }
+    }
+
+    return target;
+}
 
 
 /*

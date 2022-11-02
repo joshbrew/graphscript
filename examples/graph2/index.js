@@ -55,7 +55,7 @@ let graph = new Graph({
     loaders:{
         'looper':(props,parent,graph)=>{ //badabadabadabooop
 
-            if(props._node.loop && typeof node._node.loop === 'number') {
+            if(props._node.loop && typeof props._node.loop === 'number') {
                 let oncreate = (node) => {
                     if(node._node.loop && typeof node._node.loop === 'number') {
                         node._node.isLooping = true
