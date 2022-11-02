@@ -183,6 +183,7 @@ export class Graph {
             loaders?:{[key:string]:(properties:any,parent:Graph|GraphNode,graph:Graph)=>void},
             state?:EventHandler,
             childrenKey?:string,
+            mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
             [key:string]:any
         }
     ) {
