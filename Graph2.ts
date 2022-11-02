@@ -85,7 +85,7 @@ export class GraphNode {
             if(parent?._node && (!(parent instanceof Graph) || properties instanceof Graph)) properties._node.tag = parent._node.tag + '.' + properties._node.tag; //load parents first
             if(parent instanceof Graph && properties instanceof Graph) {
 
-                if(properties._node.loaders) Object.assign(parent._node.loaders ? parent._node.loaders : {}, properties._node.loaders); //let the parent graph adopt the child graph loaders
+                if(properties._node.loaders) Object.assign(parent._node.loaders ? parent._node.loaders : {}, properties._node.loaders); //let the parent graph adopt the child graph's loaders
 
                 if(parent._node.mapGraphs) {
                     //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
@@ -468,6 +468,10 @@ _
             return node._unsubscribe(sub,key);
         }
         else return this.get(node)?._unsubscribe(sub,key);
+    }
+
+    setState = (update:{[key:string]:any}) => {
+        this._node.state.setState(update);
     }
 
 }
