@@ -211,12 +211,11 @@ export class Graph {
             if(options.tree) this.setTree(options.tree);
         }
 
-
     }
 _
-    setTree(tree:{[key:string]:any},loaders=this._node.loaders) {
+    setTree(tree:{[key:string]:any}) {
 
-        this._node.tree = Object.assign(this._node.tree ? this._node.tree : {},tree);
+        this._node.tree = Object.assign(this._node.tree ? this._node.tree : {}, tree);
 
         let listeners = this.recursiveSet(tree,this);
 
@@ -225,6 +224,11 @@ _
 
     }
 
+    setLoaders(loaders:{[key:string]:(properties:any,parent:Graph|GraphNode,graph:Graph)=>void}, replace?:boolean) {
+        if(replace)  this._node.loaders = loaders;
+        else Object.assign(this._node.loaders,loaders);
+        return this._node.loaders;
+    }
 
     add(properties:any, parent?:GraphNode|string) {
 
@@ -259,6 +263,7 @@ _
             if(typeof p === 'object') {
                 if(!p._node) p._node = {};
                 if(!p._node.tag) p._node.tag = key;
+                if(this.get(p._node.tag)) continue; //don't duplicate a node we already have in the graph by tag
                 for(const l in this._node.loaders) { this._node.loaders[l](p,parent,this); } //run any passes on the nodes to set things up further
                 let nd = new GraphNode(p,parent,this);
                 this._node.tree[nd._node.tag] = p; //reference the original props by tag in the tree for children
