@@ -1,21 +1,10 @@
 
 import { Graph } from "../../Graph2";
-
+import * as nodeA from './nodeA'
 
 let tree = {
 
-    nodeA:{
-        x:1,
-        y:2,
-        jump:()=>{console.log('jump!'); return 'jumped!'; },
-        _node:{
-            listeners:{
-                'nodeB.x':function(newX){ console.log('nodeB x prop changed:',newX, this); this.x = newX; }, //listeners in a scope are bound to 'this' node
-                'nodeB.nodeC':function(op_result){console.log('nodeC operator returned:', op_result, this)},
-                'nodeB.nodeC.z':function(newZ){console.log('nodeC z prop changed:', newZ, this)}
-            }
-        }
-    },
+    nodeA,
 
     nodeB:{
         x:3,
@@ -54,6 +43,8 @@ let graph = new Graph({
     tree,
     loaders:{
         'looper':(props,parent,graph)=>{ //badabadabadabooop
+
+            console.log('Props', props)
 
             if(props._node.loop && typeof props._node.loop === 'number') {
                 let oncreate = (node) => {
