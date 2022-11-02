@@ -236,7 +236,7 @@ export class Graph {
         }
 
     }
-_
+
     setTree(tree:{[key:string]:any}) {
 
         this._node.tree = Object.assign(this._node.tree ? this._node.tree : {}, tree);
