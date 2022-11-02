@@ -241,16 +241,22 @@ _
 
         this._node.tree = Object.assign(this._node.tree ? this._node.tree : {}, tree);
 
-        let listeners = this.recursiveSet(tree,this);
+        let cpy = Object.assign({},tree);
+        delete cpy._node; //we can specify _node behaviors on the tree too to specify listeners
+
+        let listeners = this.recursiveSet(cpy,this);
 
         //make the tree a node 
-        let node = new GraphNode(tree,undefined,this); //no parent tags here
-       
-        this._node.nodes.set(node._node.tag,node);
-        if(node._node.listeners) {
-            listeners[node._node.tag] = node._node.listeners;
-        } //now the tree can specify nodes
-
+        if(tree._node) {
+            if(!tree._node.tag) tree.node._tag = `tree${Math.floor(Math.random()*1000000000000000)}`;
+            for(const l in this._node.loaders) { this._node.loaders[l](tree,this,this); } //run any passes on the nodes to set things up further
+            let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
+            this._node.nodes.set(node._node.tag,node);
+            if(node._node.listeners) {
+                listeners[node._node.tag] = node._node.listeners;
+            } //now the tree can specify nodes
+    
+        }
 
         //now setup event listeners
         this.setListeners(listeners);
