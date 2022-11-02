@@ -83,6 +83,8 @@ let graph = new Graph({
     }
 });
 
+nodeAInstance.x = 1;
+
 graph.get('nodeB').x += 1; //should trigger nodeA listener
 
 graph.run('nodeB.nodeC', 4); //should trigger nodeA listener

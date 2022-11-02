@@ -15,7 +15,6 @@ export type GraphNodeProperties = {
         oncreate?:Function|Function[],
         ondelete?:Function|Function[],
         listeners?:{[key:string]:(result)=>void},
-        initial?:boolean, //track initial values on a key
         [key:string]:any
     },
     [key:string]:any
@@ -46,7 +45,6 @@ export class GraphNode {
         // events: undefined as any,
         // oncreate:undefined as any, //function or array of functions
         // ondelete:undefined as any, //function or array of functions
-        // initial:undefined as any,
         // listeners:undefined as any, //e.g. { 'nodeA.x':(newX)=>{console.log('nodeA.x changed:',x)}  }
         // source:undefined as any// source graph if a graph is passed as properties
     }
@@ -123,13 +121,7 @@ export class GraphNode {
                 }
             }
 
-
-            if(properties._node.initial) { //set to true to capture initial conditions, making this optional so it's not all the time
-                properties._node.initial = {};
-                for(const key in properties) {
-                    properties._node.initial = properties[key]; //shallow copy to capture initial conditions
-                }
-            }
+            properties._node.initial = properties; //original object or function
 
             properties._node = Object.assign(this._node,properties._node);
             Object.assign(this,properties);
@@ -152,7 +144,7 @@ export class GraphNode {
     _subscribe = (callback:string|GraphNode|((res)=>void), key?:string) => {
         if(key) {
             if(!this._node.localState) {
-                addLocalState.bind(this)(this);
+                this._addLocalState(this._node.initial);
             }
              
             if(typeof callback === 'string') {
@@ -206,6 +198,53 @@ export class GraphNode {
         return this._node.operator;
     }
 
+    
+// added to GraphNode and Graph
+_addLocalState(props?:{[key:string]:any}) {
+    if(!props) props = this;
+    if(!props) return;
+    if(!this._node.localState) {
+        this._node.localState = {};
+    }
+    if(!this._node.events) {
+        this._node.events = new EventHandler(this._node.localState);
+    }
+    let localState = this._node.localState;
+    for (let k in props) {
+        if(typeof props[k] === 'function') {
+            if(!k.startsWith('_')) {
+                let fn = props[k].bind(this) as Function;
+                props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
+                    let result = fn(...args);
+                    if(typeof result?.then === 'function') {
+                        result.then((res)=>{ this._node.events.setValue( k, res ) }).catch(console.error);
+                    } else this._node.events.setValue(k,result);
+                    return result;
+                } 
+            }
+        } else {
+            localState[k] = props[k];
+            //console.log(k, localState[k]);
+
+            let definition = {
+                get: () => {
+                    return localState[k];
+                },
+                set: (v) => {
+                    if(this._node.state.triggers[this._node.unique]) {
+                        this._node.state.setValue(this._node.unique,this); //trigger subscriptions, if any
+                    }
+                    this._node.events.setValue(k,v); //this will update localState and trigger local key subscriptions
+                },
+                enumerable: true,
+                configurable: true
+            } as any;
+
+            Object.defineProperty(this, k, definition);
+            Object.defineProperty(props, k, definition);
+        }
+    }
+}
 }
 
 export class Graph {
@@ -214,6 +253,7 @@ export class Graph {
         tag:`graph${Math.floor(Math.random()*1000000000000000)}`,
         nodes:new Map(),
         state,
+        // addState:true //apply the addLocalState on node init 
         // mapGraphs:false //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
         // tree:undefined as any,
         // loaders:undefined as any,
@@ -468,50 +508,10 @@ export class Graph {
         this._node.state.setState(update);
     }
 
+    
+
 }
 
-// added to GraphNode and Graph
-function addLocalState(props?:{[key:string]:any}) {
-    if(!props) props = this;
-    if(!props) return;
-    if(!this._node.localState) {
-        this._node.localState = {};
-    }
-    if(!this._node.events) {
-        this._node.events = new EventHandler(this._node.localState);
-    }
-    let localState = this._node.localState;
-    for (let k in props) {
-        if(typeof props[k] === 'function') {
-            if(!k.startsWith('_')) {
-                let fn = props[k].bind(this) as Function;
-                props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
-                    let result = fn(...args);
-                    if(typeof result?.then === 'function') {
-                        result.then((res)=>{ this._node.events.setValue( k, res ) }).catch(console.error);
-                    } else this._node.events.setValue(k,result);
-                    return result;
-                } 
-            }
-        } else {
-            localState[k] = props[k];
-            //console.log(k, localState[k]);
-            Object.defineProperty(this, k, {
-                get: () => {
-                    return localState[k];
-                },
-                set: (v) => {
-                    if(this._node.state.triggers[this._node.unique]) {
-                        this._node.state.setValue(this._node.unique,this); //trigger subscriptions, if any
-                    }
-                    this._node.events.setValue(k,v); //this will update localState and trigger local key subscriptions
-                },
-                enumerable: true,
-                configurable: true
-            });
-        }
-    }
-}
 
 
 function recursivelyAssign (target,obj) {
