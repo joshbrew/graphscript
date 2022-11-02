@@ -243,6 +243,15 @@ _
 
         let listeners = this.recursiveSet(tree,this);
 
+        //make the tree a node 
+        let node = new GraphNode(tree,undefined,this); //no parent tags here
+       
+        this._node.nodes.set(node._node.tag,node);
+        if(node._node.listeners) {
+            listeners[node._node.tag] = node._node.listeners;
+        } //now the tree can specify nodes
+
+
         //now setup event listeners
         this.setListeners(listeners);
 
