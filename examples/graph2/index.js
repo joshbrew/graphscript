@@ -2,9 +2,11 @@
 import { Graph } from "../../Graph2";
 import * as nodeA from './nodeA'
 
+const nodeAInstance = Object.assign({}, nodeA)
+
 let tree = {
 
-    nodeA,
+    nodeA: nodeAInstance,
 
     nodeB:{
         x:3,
