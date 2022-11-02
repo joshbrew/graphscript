@@ -1,6 +1,6 @@
 
 import { Graph } from "../../Graph2";
-import * as nodeA from './nodeA'
+import * as nodeA from './nodes/nodeA.js'
 
 const nodeAInstance = Object.assign({}, nodeA)
 
@@ -44,9 +44,11 @@ let tree = {
 let graph = new Graph({
     tree,
     loaders:{
-        'looper':(props,parent,graph)=>{ //badabadabadabooop
+        'escompose': (props,parent,graph) =>{
+            console.log('escompose loader', props, parent, graph);
+        },
 
-            console.log('Props', props)
+        'looper':(props,parent,graph)=>{ //badabadabadabooop
 
             if(props._node.loop && typeof props._node.loop === 'number') {
                 let oncreate = (node) => {

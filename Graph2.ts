@@ -231,7 +231,7 @@ export class Graph {
         }
     ) {
         if(options) {
-            recursivelyAssign(this._node,options); //assign loaders etc
+            recursivelyAssign.call(this, this._node,options); //assign loaders etc
             if(options.tree) this.setTree(options.tree);
         }
 
@@ -499,7 +499,7 @@ function addLocalState(props?:{[key:string]:any}) {
 }
 
 
-const recursivelyAssign = (target,obj) => {
+function recursivelyAssign (target,obj) {
     for(const key in obj) {
         if(obj[key]?.constructor.name === 'Object' && !Array.isArray(obj[key])) {
             if(target[key]?.constructor.name === 'Object' && !Array.isArray(target[key])) 
