@@ -83,14 +83,20 @@ export class GraphNode {
 
             //nested graphs or 2nd level+ nodes get their parents as a tag
             if(parent?._node && (!(parent instanceof Graph) || properties instanceof Graph)) properties._node.tag = parent._node.tag + '.' + properties._node.tag; //load parents first
-            if(parent instanceof Graph && properties instanceof Graph && parent._node.mapGraphs) {
-                //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
-                properties._node.nodes.forEach((n) => {parent._node.nodes.set(properties._node.tag+'.'+n._node.tag,n)});
+            if(parent instanceof Graph && properties instanceof Graph) {
 
-                let ondelete = () => { properties._node.nodes.forEach((n) => {parent._node.nodes.delete(properties._node.tag+'.'+n._node.tag)}); }
-                if(Array.isArray(this._node.ondelete)) { this._node.ondelete.push(ondelete); }
-                else if (this._node.ondelete) { this._node.ondelete = [ondelete,this._node.ondelete] }
-                else this._node.ondelete = [ondelete];
+                if(properties._node.loaders) Object.assign(parent._node.loaders ? parent._node.loaders : {}, properties._node.loaders); //let the parent graph adopt the child graph loaders
+
+                if(parent._node.mapGraphs) {
+                    //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
+                    properties._node.nodes.forEach((n) => {parent._node.nodes.set(properties._node.tag+'.'+n._node.tag,n)});
+
+                    let ondelete = () => { properties._node.nodes.forEach((n) => {parent._node.nodes.delete(properties._node.tag+'.'+n._node.tag)}); }
+                    if(Array.isArray(this._node.ondelete)) { this._node.ondelete.push(ondelete); }
+                    else if (this._node.ondelete) { this._node.ondelete = [ondelete,this._node.ondelete] }
+                    else this._node.ondelete = [ondelete];
+
+                }
             }
 
 
