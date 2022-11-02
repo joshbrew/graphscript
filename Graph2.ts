@@ -6,12 +6,36 @@ import { EventHandler } from "./services/EventHandler";
 export const state = new EventHandler();
 
 
-//todo: new types
+export type GraphNodeProperties = {
+    _node?:{
+        tag?:string,
+        state?:EventHandler,
+        operator?:((...args:any[])=>any)|string,
+        children?:{[key:string]:GraphNodeProperties},
+        oncreate?:Function|Function[],
+        ondelete?:Function|Function[],
+        listeners?:{[key:string]:(result)=>void},
+        initial?:boolean, //track initial values on a key
+        [key:string]:any
+    },
+    [key:string]:any
+}
+
+export type GraphProperties = {
+    tree?:{[key:string]:any},
+    loaders?:{[key:string]:(properties:GraphNodeProperties,parent:Graph|GraphNode,graph:Graph)=>void},
+    state?:EventHandler,
+    childrenKey?:string,
+    mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
+    [key:string]:any
+}
 
 //this is a scope
 export class GraphNode {
 
-    _node:{[key:string]:any} = { //GraphNode-specific properties 
+    _node:{
+        [key:string]:any
+    } = { //GraphNode-specific properties 
         tag:`node${Math.floor(Math.random()*1000000000000000)}`,
         unique:`${Math.random()}`,
         state,
@@ -27,9 +51,9 @@ export class GraphNode {
         // source:undefined as any// source graph if a graph is passed as properties
     }
 
-
+    //pass GraphNodeProperties, functions, or tags of other nodes
     constructor(properties:any, parent?:{[key:string]:any}, graph?:Graph) {
-        
+
         if(typeof properties === 'function') {
             properties = {
                 _node:{
