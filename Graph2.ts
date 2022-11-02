@@ -241,7 +241,12 @@ _addLocalState(props?:{[key:string]:any}) {
             } as any;
 
             Object.defineProperty(this, k, definition);
-            Object.defineProperty(props, k, definition);
+            
+            try {
+                Object.defineProperty(props, k, definition);
+            } catch(e) {
+                console.error('Could not redefine property', k)
+            }
         }
     }
 }
@@ -288,7 +293,7 @@ export class Graph {
 
         //make the tree a node 
         if(tree._node) {
-            if(!tree._node.tag) tree.node._tag = `tree${Math.floor(Math.random()*1000000000000000)}`;
+            if(!tree._node.tag) tree._node._tag = `tree${Math.floor(Math.random()*1000000000000000)}`;
             for(const l in this._node.loaders) { this._node.loaders[l](tree,this,this); } //run any passes on the nodes to set things up further
             let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
             this._node.nodes.set(node._node.tag,node);
