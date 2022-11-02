@@ -55,7 +55,7 @@ let graph = new Graph({
     loaders:{
         'looper':(props,parent,graph)=>{ //badabadabadabooop
 
-            if(props._node.loop) {
+            if(props._node.loop && typeof node._node.loop === 'number') {
                 let oncreate = (node) => {
                     if(node._node.loop && typeof node._node.loop === 'number') {
                         node._node.isLooping = true
@@ -110,11 +110,8 @@ graph2.add(popped); //reparent nodeB to the parent graph
 
 console.log('nodeB reparented to graph2',popped,graph2);
 
-
 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
 
-
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
-
 
 setTimeout(()=>{ graph.remove('nodeE'); console.log('nodeE popped!') },5500)
