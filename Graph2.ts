@@ -347,6 +347,7 @@ export class Graph {
                 if(this.get(p._node.tag)) continue; //don't duplicate a node we already have in the graph by tag
                 for(const l in this._node.loaders) { this._node.loaders[l](p,parent,this); } //run any passes on the nodes to set things up further
                 let nd = new GraphNode(p,parent,this);
+                t[key] = nd; //replace child with a graphnode
                 this._node.tree[nd._node.tag] = p; //reference the original props by tag in the tree for children
                 this.set(nd._node.tag,nd);
                 if(nd._node.listeners) {
@@ -367,7 +368,7 @@ export class Graph {
 
         if(node instanceof GraphNode) {
             this._node.nodes.delete(node._node.tag);
-            delete this._node.tree[node._node.tag]
+            delete this._node.tree[node._node.tag];
 
             if(clearListeners) {
                 this.clearListeners(node);
@@ -397,6 +398,8 @@ export class Graph {
                     if(t[key]._node.children) {
                         recursiveRemove(t[key]._node.children);
                     }
+
+                   // console.log('removed!', t[key])
                 } 
             }
 
@@ -451,6 +454,7 @@ export class Graph {
     clearListeners(node:GraphNode|string,listener?:string) {
         if(typeof node === 'string') node = this.get(node) as GraphNode;
         if(node?._node.listenerSubs) {
+            //console.log(node?._node.listenerSubs);
             //console.log(node._node.listenerSubs);
             for(const key in node._node.listenerSubs) {
                 if(listener && key !== listener) continue; 
@@ -463,6 +467,8 @@ export class Graph {
                 } else {
                     this.unsubscribe(n,undefined,node._node.listenerSubs[key]);
                 }
+
+                //console.log('unsubscribed', key)
                 delete node._node.listeners[key];
                 delete node._node.listenerSubs[key];
             }
@@ -494,8 +500,24 @@ export class Graph {
     subscribe = (
         node:GraphNode|string, key:string|undefined, callback:(res:any)=>void
     ) => {
-        if(node instanceof GraphNode) return node._subscribe(callback,key);
-        else return this.get(node)?._subscribe(callback,key);
+        if(!(node instanceof GraphNode)) node = this.get(node);
+
+        let sub;
+        if(node instanceof GraphNode) {
+            sub = node._subscribe(callback,key);
+
+            let ondelete = () => {
+                (node as GraphNode)._unsubscribe(sub,key);
+                //console.log('unsubscribed', key)
+            }
+
+            if(node._node.ondelete) {
+                if(Array.isArray(node._node.ondelete)) {node._node.ondelete.push(ondelete);}
+                else node._node.ondelete = [ondelete,node._node.ondelete];
+            } else node._node.ondelete = [ondelete];
+        }
+
+        return sub;
     }
 
     unsubscribe = ( node:GraphNode|string, key?:string, sub?:number ) => {

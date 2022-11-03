@@ -114,3 +114,4 @@ popped._node.children.nodeC._node.operator(1);
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 
 setTimeout(()=>{ graph.remove('nodeE'); console.log('nodeE popped!') },5500)
+console.log('graph2',graph);
