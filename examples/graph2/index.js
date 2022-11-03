@@ -89,7 +89,7 @@ graph.get('nodeB').x += 1; //should trigger nodeA listener
 
 graph.run('nodeB.nodeC', 4); //should trigger nodeA listener
 
-graph.get('nodeA').jump();
+graph.get('nodeA').jump(); //should trigger nodeC listener
 
 console.log('graph1',graph);
 
