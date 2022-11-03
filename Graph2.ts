@@ -326,6 +326,7 @@ export class Graph {
         }
 
         if(node._node.children) {
+            node._node.children = Object.assign({},node._node.children);
             this.recursiveSet(node._node.children,node,listeners);
         }
 
@@ -354,7 +355,8 @@ export class Graph {
                     listeners[nd._node.tag] = nd._node.listeners;
                 }
                 else if(nd._node.children) {
-                    this.recursiveSet(nd._node.children, nd, listeners);
+                    nd._node.children = Object.assign({},nd._node.children);
+                    this.recursiveSet(Object.assign({},nd._node.children), nd, listeners);
                 }
             }
         } 
