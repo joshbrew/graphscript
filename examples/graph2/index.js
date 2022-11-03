@@ -109,6 +109,8 @@ console.log('nodeB reparented to graph2',popped,graph2);
 
 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
 
+popped._node.children.nodeC._node.operator(1);
+
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 
 setTimeout(()=>{ graph.remove('nodeE'); console.log('nodeE popped!') },5500)
