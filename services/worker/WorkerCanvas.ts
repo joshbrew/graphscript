@@ -75,7 +75,7 @@ export function Renderer(
     
         return transferCanvas(worker, options as WorkerCanvasTransferProps, route);
     }
-    else return setupCanvas(options);
+    else return setupCanvas.call(this, options);
 }
 
 
