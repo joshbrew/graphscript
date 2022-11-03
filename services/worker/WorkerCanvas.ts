@@ -73,7 +73,7 @@ export function Renderer(
         delete options.worker;
         delete options.route;
     
-        return transferCanvas.call(this, worker, options as WorkerCanvasTransferProps, route);
+        return transferCanvas(worker, options as WorkerCanvasTransferProps, route);
     }
     else return setupCanvas(options);
 }
