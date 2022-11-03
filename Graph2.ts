@@ -242,11 +242,8 @@ _addLocalState(props?:{[key:string]:any}) {
 
             Object.defineProperty(this, k, definition);
             
-            try {
-                Object.defineProperty(props, k, definition);
-            } catch(e) {
-                console.error('Could not redefine property', k)
-            }
+            let dec = Object.getOwnPropertyDescriptor(props,k);
+            if(dec === undefined || dec?.configurable) Object.defineProperty(props, k, definition);
         }
     }
 }
