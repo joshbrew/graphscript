@@ -5,7 +5,7 @@ import { GraphNode, Graph } from "./Graph2";
 /**
  * setting backward:true propagates operator results to parent
  */
-export const backprop = (node:GraphNode,parent,graph) => {
+export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     
     if(node._node.backward && parent instanceof GraphNode) {
 
@@ -40,7 +40,7 @@ export const backprop = (node:GraphNode,parent,graph) => {
  * 
  * 
  */
-export const loop = (node,parent,graph)=>{ //badabadabadabooop
+export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //badabadabadabooop
 
     if(node._node.operator && !node._node.looperSet) {
         node._node.looperSet = true;
@@ -113,7 +113,7 @@ export const loop = (node,parent,graph)=>{ //badabadabadabooop
  * nodeA._node.animate = true | () => void, to run the operator or a specified animation function on loop
  * 
  */
-export const animate =  (node,parent,graph) => {
+export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     if(node._node.animate) {
         if(typeof node._node.animate === 'function') node._node.animate = node._node.animate.bind(node);
         let anim = (node) => {
@@ -155,7 +155,7 @@ export const animate =  (node,parent,graph) => {
  * }
  * 
  */
-export const branching = (node,parent,graph) => {
+export const branching = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     if(typeof node._node.branch === 'object' && node._node.operator && !node._node.branchApplied) {
         let fn = node._node.operator;
         node._node.branchApplied = true;
@@ -215,7 +215,7 @@ export const branching = (node,parent,graph) => {
  *  nodeA._node.listeners['nodeB.x'] = { callback:(result)=>void, trigger:any }
  * 
  */
-export const triggerListenerOncreate = (node,parent,graph) => {
+export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     if(node._node.listeners) {
         for(const key in node._node.listeners) {
             if(typeof node._node.listeners[key] === 'object') {
@@ -232,7 +232,7 @@ export const triggerListenerOncreate = (node,parent,graph) => {
  *  nodeA._node.listeners['nodeB.x'] = { callback:(result)=>void, transform:(result)=>any }
  * 
  */
-export const transformListenerResult = (node,parent,graph) => {
+export const transformListenerResult = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     if(node._node.listeners) {
         for(const key in node._node.listeners) {
             if(typeof node._node.listeners[key] === 'object') {
