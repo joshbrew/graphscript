@@ -232,7 +232,7 @@ export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,gr
  *  nodeA._node.listeners['nodeB.x'] = { callback:(result)=>void, binding:{any} }
  * 
  */
-export const callListenerAs = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
+export const bindListener = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     if(node._node.listeners) {
         for(const key in node._node.listeners) {
             if(typeof node._node.listeners[key] === 'object') {
@@ -274,5 +274,6 @@ export const loaders = {
     animate,
     branching,
     triggerListenerOncreate,
+    bindListener,
     transformListenerResult
 }
