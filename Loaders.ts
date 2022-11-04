@@ -227,6 +227,19 @@ export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,gr
     }
 }
 
+export const callListenerAs = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
+    if(node._node.listeners) {
+        for(const key in node._node.listeners) {
+            if(typeof node._node.listeners[key] === 'object') {
+                if(typeof node._node.listeners[key].binding === 'object') {
+                    node._node.listeners.callback = node._node.listeners.callback.bind(node._node.listeners[key].binding);
+                }
+            }
+        }
+    }
+}
+
+
 /**
  * 
  *  nodeA._node.listeners['nodeB.x'] = { callback:(result)=>void, transform:(result)=>any }
