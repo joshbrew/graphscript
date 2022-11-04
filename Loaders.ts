@@ -88,15 +88,13 @@ export const loop = (node,parent,graph)=>{ //badabadabadabooop
         if(node._node.loop && typeof node._node.loop === 'number') {
             
             node._node.isLooping = true
-            if(!node._node.looper) {
-                node._node.looper = () => {
-                    if(node._node.isLooping) {
-                        node._node.operator();
-                        setTimeout(node._node.looper,node._node.loop);
-                    }
+            node._node.looper = () => {
+                if(node._node.isLooping) {
+                    node._node.operator();
+                    setTimeout(node._node.looper,node._node.loop);
                 }
-                node._node.looper();
             }
+            node._node.looper();
             
             let ondelete = (node) => {
                 if(node._node.isLooping) node._node.isLooping = false;
@@ -116,9 +114,8 @@ export const loop = (node,parent,graph)=>{ //badabadabadabooop
  * 
  */
 export const animate =  (node,parent,graph) => {
-    if(node._node.animate && !node._node.animationSet) {
+    if(node._node.animate) {
         if(typeof node._node.animate === 'function') node._node.animate = node._node.animate.bind(node);
-        node._node.animationSet = true;
         let anim = (node) => {
             if(node._node.animate) {
                 node._node.isAnimating = true
