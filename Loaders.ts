@@ -227,6 +227,11 @@ export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,gr
     }
 }
 
+/** Trigger listeners oncreate with specific arguments
+ * 
+ *  nodeA._node.listeners['nodeB.x'] = { callback:(result)=>void, binding:{any} }
+ * 
+ */
 export const callListenerAs = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     if(node._node.listeners) {
         for(const key in node._node.listeners) {
