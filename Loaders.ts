@@ -42,8 +42,8 @@ export const backprop = (node:GraphNode,parent,graph) => {
  */
 export const loop = (node,parent,graph)=>{ //badabadabadabooop
 
-    if(node._node.operator) {
-
+    if(node._node.operator && !node._node.looperSet) {
+        node._node.looperSet = true;
         if(typeof node._node.delay === 'number') {
             let fn = node._node.operator;
             node._node.operator = (...args:any[]) => {
@@ -116,8 +116,9 @@ export const loop = (node,parent,graph)=>{ //badabadabadabooop
  * 
  */
 export const animate =  (node,parent,graph) => {
-    if(node._node.animate) {
+    if(node._node.animate && !node._node.animationSet) {
         if(typeof node._node.animate === 'function') node._node.animate = node._node.animate.bind(node);
+        node._node.animationSet = true;
         let anim = (node) => {
             if(node._node.animate) {
                 node._node.isAnimating = true
@@ -158,8 +159,9 @@ export const animate =  (node,parent,graph) => {
  * 
  */
 export const branching = (node,parent,graph) => {
-    if(typeof node._node.branch === 'object' && node._node.operator) {
+    if(typeof node._node.branch === 'object' && node._node.operator && !node._node.branchApplied) {
         let fn = node._node.operator;
+        node._node.branchApplied = true;
         node._node.operator = ((...args:any[]) => {
             let result = fn(...args);
             for(const key in node._node.branch) { //run branching operations
@@ -184,8 +186,10 @@ export const branching = (node,parent,graph) => {
     if(node._node.listeners) {
         for(const key in node._node.listeners) {
             if(typeof node._node.listeners[key] === 'object') {
-                if(node._node.listeners[key].branch) {
+                if(node._node.listeners[key].branch && !node._node.listeners[key].branchApplied) {
                     let fn = node._node.listeners[key].callback;
+                    
+                    node._node.listeners[key].branchApplied = true;
                     node._node.listeners.callback = (ret) => {
                         let triggered = () => {
                             if(typeof node._node.listeners[key].branch.then === 'function') {
@@ -235,8 +239,9 @@ export const transformListenerResult = (node,parent,graph) => {
     if(node._node.listeners) {
         for(const key in node._node.listeners) {
             if(typeof node._node.listeners[key] === 'object') {
-                if(typeof node._node.listeners[key].transform === 'function') {
+                if(typeof node._node.listeners[key].transform === 'function' && !node._node.listeners[key].transformApplied) {
                     let fn = node._node.listeners[key].callback;
+                    node._node.listeners[key].transformApplied = true;
                     node._node.listeners.callback = (ret) => {
                         ret = node._node.listeners[key].transform(ret)
                         return fn(ret);
