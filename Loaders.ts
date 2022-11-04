@@ -3,7 +3,7 @@ import { GraphNode, Graph } from "./Graph2";
 //loaders are triggered just after graphnode creation, after oncreate() is called
 
 /**
- * setting backward:true propagates operator results to parent
+ * setting nodeA._node.backward:true propagates operator results to parent
  */
 export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     
@@ -21,7 +21,7 @@ export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
 
 /**
  * 
- * Specify a timer loop, will stop when node is popped or this._node.isLooping is set false
+ * Specify a timer loop, will stop when node is popped or nodeA._node.isLooping is set false
  * nodeA._node.loop = 100 will loop the operator every 100 milliseconds
  * 
  * Or 
