@@ -242,8 +242,9 @@ _addLocalState(props?:{[key:string]:any}) {
 
             Object.defineProperty(this, k, definition);
             
-            let dec = Object.getOwnPropertyDescriptor(props,k);
-            if(dec === undefined || dec?.configurable) Object.defineProperty(props, k, definition);
+            const ogProps = this._node.initial
+            let dec = Object.getOwnPropertyDescriptor(ogProps,k);
+            if(dec === undefined || dec?.configurable) Object.defineProperty(ogProps, k, definition);
         }
     }
 }
