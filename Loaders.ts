@@ -1,6 +1,10 @@
 import { GraphNode, Graph } from "./Graph2";
 
 //loaders are triggered just after graphnode creation, after oncreate() is called
+
+/**
+ * setting backward:true propagates operator results to parent
+ */
 export const backprop = (node:GraphNode,parent,graph) => {
     
     if(node._node.backward && parent instanceof GraphNode) {
@@ -25,6 +29,17 @@ export const backprop = (node:GraphNode,parent,graph) => {
     
 }
 
+/**
+ * 
+ * nodeA._node.loop = 100 will loop the operator every 100 milliseconds
+ * 
+ * nodeA._node.delay will delay the operator by specified millisecond number and resolve the result as a promise
+ * nodeA._node.frame will use requestAnimationFrame to call the function and resolve the result as a promise
+ * nodeA._node.repeat will repeat the operator the specified number of times
+ * nodeA._node.recursive will do the same as repeat but will pass in the previous operator call's results 
+ * 
+ * 
+ */
 export const loop = (node,parent,graph)=>{ //badabadabadabooop
 
     if(node._node.operator) {
@@ -69,33 +84,30 @@ export const loop = (node,parent,graph)=>{ //badabadabadabooop
                 return result;
             }
         } 
-    }
-       
-    if(node._node.loop && typeof node._node.loop === 'number') {
-        let looper = (nd) => {
-            if(nd._node.loop && typeof nd._node.loop === 'number') {
-                nd._node.isLooping = true
-                if(!nd._node.looper) {
-                    nd._node.looper = () => {
-                        if(nd._node.isLooping) {
-                            nd._node.operator();
-                            setTimeout(nd._node.looper,nd._node.loop);
-                        }
+               
+        if(node._node.loop && typeof node._node.loop === 'number') {
+            
+            node._node.isLooping = true
+            if(!node._node.looper) {
+                node._node.looper = () => {
+                    if(node._node.isLooping) {
+                        node._node.operator();
+                        setTimeout(node._node.looper,node._node.loop);
                     }
-                    nd._node.looper();
                 }
+                node._node.looper();
             }
-        }
-        looper(node);
-        
-        let ondelete = (node) => {
-            if(node._node.isLooping) node._node.isLooping = false;
-        }
+            
+            let ondelete = (node) => {
+                if(node._node.isLooping) node._node.isLooping = false;
+            }
 
-        if(typeof node._node.ondelete === 'undefined') node._node.ondelete = [ondelete];
-        else if (typeof node._node.ondelete === 'function') node._node.ondelete = [ondelete,node._node.ondelete];
-        else if (Array.isArray(node._node.ondelete)) node._node.ondelete.unshift(ondelete);
+            if(typeof node._node.ondelete === 'undefined') node._node.ondelete = [ondelete];
+            else if (typeof node._node.ondelete === 'function') node._node.ondelete = [ondelete,node._node.ondelete];
+            else if (Array.isArray(node._node.ondelete)) node._node.ondelete.unshift(ondelete);
+        }
     }
+
 }
 
 /** Animations
@@ -159,7 +171,7 @@ export const branching = (node,parent,graph) => {
                     } else result = node._node.branch[key].then; //just replace the result in this case
                 }
                 if(typeof node._node.branch[key].if === 'function') {
-                    if(node._node.branch[key].if(result) === result) {
+                    if(node._node.branch[key].if(result)) {
                         triggered();
                     }
                 } else if(node._node.branch[key].if === result) {
@@ -183,7 +195,7 @@ export const branching = (node,parent,graph) => {
                             } else ret = node._node.listeners[key].branch.then; //just replace the result in this case
                         }
                         if(typeof node._node.listeners[key].branch.if === 'function') {
-                            if(node._node.listeners[key].branch.if(ret) === ret) {
+                            if(node._node.listeners[key].branch.if(ret)) {
                                 triggered();
                             }
                         } else if(node._node.listeners[key].branch.if === ret) {

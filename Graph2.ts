@@ -318,6 +318,7 @@ export class Graph {
 
         if(typeof parent === 'string') parent = this.get(parent);
         let node = new GraphNode(properties, parent as GraphNode, this);
+        for(const l in this._node.loaders) { this._node.loaders[l](node,parent,this); } //run any passes on the nodes to set things up further
         this._node.nodes.set(node._node.tag,node);
 
         //console.log('old:',properties._node,'new:',node._node);
