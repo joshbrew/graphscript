@@ -440,6 +440,7 @@ export class Graph {
                     let sub;
                     if(typeof listeners[key][k] === 'function') listeners[key][k] = { callback:listeners[key][k] };
                     listeners[key][k].callback = listeners[key][k].callback.bind(node);
+                    if(typeof node._node.listeners !== 'object') node._node.listeners = {}; //if we want to subscribe a node with listeners that doesn't predeclare them
                     if(!n) {
                         let tag = k.substring(0,k.lastIndexOf('.'));
                         n = this.get(tag);
@@ -504,7 +505,7 @@ export class Graph {
     }
 
     subscribe = (
-        node:GraphNode|string, key:string|undefined, callback:(res:any)=>void
+        node:GraphNode|string, key:string|undefined, callback:GraphNode|((res:any)=>void)
     ) => {
         if(!(node instanceof GraphNode)) node = this.get(node);
 

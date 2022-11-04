@@ -9,21 +9,11 @@ export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     
     if(node._node.backward && parent instanceof GraphNode) {
 
-        let sub = node._subscribe((result) => {
-            if(parent._node.operator) parent._node.operator(result);
+        graph.setListeners({
+            [parent._node.tag]:{
+                [node._node.tag]:parent
+            }
         })
-
-        let ondelete = (nd) => {
-            node._unsubscribe(sub);
-        }
-    
-        if(typeof node._node.ondelete === 'undefined') node._node.ondelete = [ondelete];
-        else if (typeof node._node.ondelete === 'function') node._node.ondelete = [ondelete,node._node.ondelete];
-        else if (Array.isArray(node._node.ondelete)) node._node.ondelete.unshift(ondelete);
-        
-        if(typeof parent._node.ondelete === 'undefined') parent._node.ondelete = [ondelete];
-        else if (typeof parent._node.ondelete === 'function') parent._node.ondelete = [ondelete,parent._node.ondelete];
-        else if (Array.isArray(parent._node.ondelete)) parent._node.ondelete.unshift(ondelete);
     }
 
     
@@ -31,10 +21,14 @@ export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
 
 /**
  * 
+ * Specify a timer loop, will stop when node is popped or this._node.isLooping is set false
  * nodeA._node.loop = 100 will loop the operator every 100 milliseconds
  * 
+ * Or 
  * nodeA._node.delay will delay the operator by specified millisecond number and resolve the result as a promise
  * nodeA._node.frame will use requestAnimationFrame to call the function and resolve the result as a promise
+ * 
+ * Use in combination with:
  * nodeA._node.repeat will repeat the operator the specified number of times
  * nodeA._node.recursive will do the same as repeat but will pass in the previous operator call's results 
  * 
