@@ -212,7 +212,7 @@ export const branching = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => 
 
 /** Trigger listeners oncreate with specific arguments
  * 
- *  nodeA._node.listeners['nodeB.x'] = { callback:(result)=>void, trigger:any }
+ *  nodeA._node.listeners['nodeB.x'] = { callback:(result)=>void, oncreate:any }
  * 
  */
 export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
