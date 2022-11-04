@@ -14,7 +14,7 @@ export type GraphNodeProperties = {
         children?:{[key:string]:GraphNodeProperties},
         oncreate?:Function|Function[],
         ondelete?:Function|Function[],
-        listeners?:{[key:string]:(result)=>void},
+        listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void}},
         [key:string]:any
     },
     [key:string]:any
@@ -265,7 +265,7 @@ export class Graph {
     constructor(
         options?:{
             tree?:{[key:string]:any},
-            loaders?:{[key:string]:(properties:any,parent:Graph|GraphNode,graph:Graph)=>void},
+            loaders?:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph)=>void},
             state?:EventHandler,
             childrenKey?:string,
             mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
@@ -305,7 +305,7 @@ export class Graph {
 
     }
 
-    setLoaders(loaders:{[key:string]:(properties:any,parent:Graph|GraphNode,graph:Graph)=>void}, replace?:boolean) {
+    setLoaders(loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph)=>void}, replace?:boolean) {
         if(replace)  this._node.loaders = loaders;
         else Object.assign(this._node.loaders,loaders);
         return this._node.loaders;
@@ -342,12 +342,15 @@ export class Graph {
             if(typeof p === 'function') p = {_node:{ operator:p }} 
             else if (typeof p === 'string') p = this._node.tree[p];
             else if (typeof p === 'boolean') p = this._node.tree[key];
+            else if (typeof p.default === 'function') {
+                p._node.operator = p.default;
+            }
             if(typeof p === 'object') {
                 if(!p._node) p._node = {};
                 if(!p._node.tag) p._node.tag = key;
                 if(this.get(p._node.tag)) continue; //don't duplicate a node we already have in the graph by tag
-                for(const l in this._node.loaders) { this._node.loaders[l](p,parent,this); } //run any passes on the nodes to set things up further
                 let nd = new GraphNode(p,parent,this);
+                for(const l in this._node.loaders) { this._node.loaders[l](nd,parent,this); } //run any passes on the nodes to set things up further
                 t[key] = nd; //replace child with a graphnode
                 this._node.tree[nd._node.tag] = p; //reference the original props by tag in the tree for children
                 this.set(nd._node.tag,nd);
@@ -433,20 +436,20 @@ export class Graph {
                 for(const k in listeners[key]) {
                     let n = this.get(k);
                     let sub;
-                    let fn = listeners[key][k].bind(node);//bind 'this' for the callback to the owner node 
-                    listeners[key][k] = fn; 
+                    if(typeof listeners[key][k] === 'function') listeners[key][k] = { callback:listeners[key][k] };
+                    listeners[key][k].callback = listeners[key][k].callback.bind(node);
                     if(!n) {
                         let tag = k.substring(0,k.lastIndexOf('.'));
                         n = this.get(tag);
                         if(n) {
-                            sub = this.subscribe(n,k.substring(k.lastIndexOf('.')+1),listeners[key][k]);
-                            if(!node._node.listenerSubs) node._node.listenerSubs = {};
-                            node._node.listenerSubs[k] = sub;
+                            sub = this.subscribe(n,k.substring(k.lastIndexOf('.')+1), listeners[key][k].callback );
+                            if(typeof node._node.listeners[k] !== 'object') node._node.listeners[k] = { callback: node._node.listeners[key][k] };
+                            node._node.listeners[k].sub = sub;
                         }
                     } else {
-                        sub = this.subscribe(n,undefined,listeners[key][k]);
-                        if(!node._node.listenerSubs) node._node.listenerSubs = {};
-                        node._node.listenerSubs[k] = sub;
+                        sub = this.subscribe(n,undefined,listeners[key][k].callback);
+                        if(typeof node._node.listeners[k] !== 'object') node._node.listeners[k] = { callback: node._node.listeners[k] };
+                        node._node.listeners[k].sub = sub;
                     }
                 }
             }
@@ -455,24 +458,23 @@ export class Graph {
 
     clearListeners(node:GraphNode|string,listener?:string) {
         if(typeof node === 'string') node = this.get(node) as GraphNode;
-        if(node?._node.listenerSubs) {
-            //console.log(node?._node.listenerSubs);
-            //console.log(node._node.listenerSubs);
-            for(const key in node._node.listenerSubs) {
+        if(node?._node.listeners) {
+            //console.log(node?._node.listeners);
+            //console.log(node._node.listeners);
+            for(const key in node._node.listeners) {
                 if(listener && key !== listener) continue; 
-                if(typeof node._node.listenerSubs[key] !== 'number') continue;
+                if(typeof node._node.listeners[key].sub !== 'number') continue;
                 let n = this.get(key);
                 if(!n) {
                     n = this.get(key.substring(0,key.lastIndexOf('.')));
-                    //console.log(key.substring(0,key.lastIndexOf('.')),key,n,node._node.listenerSubs[key]);
-                    if(n) this.unsubscribe(n,key.substring(key.lastIndexOf('.')+1),node._node.listenerSubs[key]);
+                    //console.log(key.substring(0,key.lastIndexOf('.')),key,n,node._node.listeners[key]);
+                    if(n) this.unsubscribe(n,key.substring(key.lastIndexOf('.')+1),node._node.listeners[key].sub);
                 } else {
-                    this.unsubscribe(n,undefined,node._node.listenerSubs[key]);
+                    this.unsubscribe(n,undefined,node._node.listeners[key].sub);
                 }
 
                 //console.log('unsubscribed', key)
                 delete node._node.listeners[key];
-                delete node._node.listenerSubs[key];
             }
         }
     }

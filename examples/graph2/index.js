@@ -1,5 +1,6 @@
 
 import { Graph } from "../../Graph2";
+import { loaders } from "../../Loaders";
 import * as nodeA from './nodes/nodeA.js'
 
 const nodeAInstance = Object.assign({}, nodeA)
@@ -29,7 +30,6 @@ let tree = {
         }
     },
 
-
     nodeD:(a,b,c)=>{ return a+b+c; }, //becomes the ._node.operator prop and calling triggers setState for this tag (or nested tag if a child)
 
     nodeE:{
@@ -44,42 +44,10 @@ let tree = {
 let graph = new Graph({
     tree,
     loaders:{
-        'escompose': (props,parent,graph) =>{
-            console.log('escompose loader', props, parent, graph);
+        'escompose': (node,parent,graph) =>{
+            console.log('escompose loader', node, parent, graph);
         },
-
-        'looper':(props,parent,graph)=>{ //badabadabadabooop
-
-            if(props._node.loop && typeof props._node.loop === 'number') {
-                let oncreate = (node) => {
-                    if(node._node.loop && typeof node._node.loop === 'number') {
-                        node._node.isLooping = true
-                        if(!node._node.looper) {
-                            node._node.looper = () => {
-                                if(node._node.isLooping) {
-                                    node._node.operator();
-                                    setTimeout(node._node.looper,node._node.loop);
-                                }
-                            }
-                            node._node.looper();
-                        }
-                    }
-                }
-    
-                if(typeof props._node.oncreate === 'undefined') props._node.oncreate = [oncreate];
-                else if (typeof props._node.oncreate === 'function') props._node.oncreate = [oncreate,props._node.oncreate];
-                else if (Array.isArray(props._node.oncreate)) props._node.oncreate.unshift(oncreate);
-    
-                let ondelete = (node) => {
-                    if(node._node.isLooping) node._node.isLooping = false;
-                }
-    
-                if(typeof props._node.ondelete === 'undefined') props._node.ondelete = [ondelete];
-                else if (typeof props._node.ondelete === 'function') props._node.ondelete = [ondelete,props._node.ondelete];
-                else if (Array.isArray(props._node.ondelete)) props._node.ondelete.unshift(ondelete);
-            }
-            
-        }
+        ...loaders
     }
 });
 
