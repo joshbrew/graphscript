@@ -1,9 +1,8 @@
-import { Service, ServiceMessage } from "../Service2";
+import { Service, ServiceMessage, ServiceOptions } from "../Service2";
 import {createSession, createChannel, Session, SessionState, Channel} from 'better-sse'; //third party lib. SSEs really just push notifications to an http endpoint but it's minimal overhead
 import http from 'http'
 import https from 'https'
 import { Readable } from "node:stream";
-import { GraphOptions } from "../../Graph2";
 
 //using better-sse, load any http/https servers in
 
@@ -70,7 +69,7 @@ export class SSEbackend extends Service {
     }
 
     
-    constructor(options?:GraphOptions) {
+    constructor(options?:ServiceOptions) {
         super(options)
         this.setTree(this);
     }

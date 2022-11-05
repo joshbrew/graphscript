@@ -1,5 +1,5 @@
-import { GraphNode, GraphOptions } from "../../Graph2";
-import { Service, ServiceMessage } from "../Service2";
+import { GraphNode } from "../../Graph2";
+import { Service, ServiceMessage, ServiceOptions } from "../Service2";
 
 
 export type RequestOptions = { //frontend request options (not http or https)
@@ -25,7 +25,7 @@ export class HTTPfrontend extends Service {
     fetchProxied = false;
     listening = {};
 
-    constructor(options?:GraphOptions, path?:string, fetched?: (clone: Response, args: any[], response: Response) => Promise<void>) {
+    constructor(options?:ServiceOptions, path?:string, fetched?: (clone: Response, args: any[], response: Response) => Promise<void>) {
         super(options);
         this.setTree(this);
         this.listen(path,fetched);

@@ -1,6 +1,6 @@
 import { DOMElement } from "./DOMElement"; //https://github.com/joshbrew/DOMElement <---- this is the special sauce
-import { Graph, GraphNode, GraphNodeProperties, GraphOptions } from '../../Graph2';
-import { Service } from "../Service2";
+import { Graph, GraphNode } from '../../Graph2';
+import { Service, ServiceOptions } from "../Service2";
 
 import {CompleteOptions, ElementInfo, ElementProps, ComponentProps, ComponentInfo, CanvasElementProps, CanvasOptions, CanvasElementInfo} from './types/index';
 
@@ -90,7 +90,7 @@ export class DOMService extends Service {
     }
 
     constructor(
-        options?:GraphOptions,
+        options?:ServiceOptions,
         parentNode?:HTMLElement,
         interpreters?:{[key:string]:(template:string,options:ComponentProps) => void}
     ) {

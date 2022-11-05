@@ -1,6 +1,5 @@
-import { GraphOptions } from "../../Graph2";
 import { HTTPfrontend, RequestOptions } from "../http/HTTP.browser";
-import { Service, ServiceMessage } from "../Service2";
+import { Service, ServiceMessage, ServiceOptions } from "../Service2";
 
 export type EventSourceProps = {
     url:string,
@@ -46,7 +45,7 @@ export class SSEfrontend extends Service {
         eventsources:this.eventsources
     }
 
-    constructor(options?:GraphOptions) {
+    constructor(options?:ServiceOptions) {
         super(options);
         this.setTree(this);
     }

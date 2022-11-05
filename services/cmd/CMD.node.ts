@@ -1,7 +1,7 @@
 //for running parallel processes (with their own memory, as opposed to workers which share memory) in node.js
 import {ChildProcess, fork, Serializable, spawn} from 'child_process'
-import { Route, Routes, Service, ServiceMessage, ServiceOptions } from '../Service';
-import { GraphNodeProperties } from '../../Graph';
+import { Service, ServiceMessage, ServiceOptions } from '../Service2';
+import { Graph, GraphNode, GraphNodeProperties } from '../../Graph2';
 import path from 'path';
 
 //enable message passing between child processes.
@@ -43,23 +43,24 @@ export class CMDService extends Service {
     } 
 
     connections = { //higher level reference for Router
-        processes:this.processess
+        processes:undefined as any
     }
 
-    customRoutes:ServiceOptions['customRoutes']={
-        'process':(route: CMDRoute|Route, routeKey: string, routes: Routes) => {
-            if((route as CMDRoute).command) {
-               this.createProcess((route as CMDRoute)); 
+    subprocessloader = {
+        'process':(node: CMDRoute & GraphNode, parent: GraphNode, graph: Graph, tree:any, properties:any) => {
+            if((node as CMDRoute).command) {
+               this.createProcess((node as CMDRoute)); 
             }
-            return route;
         }
     }
 
     constructor(options?:ServiceOptions) {
         super(options)
-        this.load(this.routes);
+        this.setTree(this);
 
-        if(process.stdin) {
+        this.connections.processes = this.processes;
+
+        if(process?.stdin) {
             process.stdin.on('data', (data) => {
                 let str = data.toString(); 
                 this.receive(str);
@@ -223,11 +224,11 @@ export class CMDService extends Service {
         return res;
     }
 
-    subscribeProcess(route:string, childprocess:ChildProcess|string) {
+    subscribeProcess(route:string, childprocess:ChildProcess|string,key?:string) {
         if(typeof childprocess === 'string' && this.processes[childprocess]) {
             childprocess = this.processes[childprocess].process;
         }
-        return this.subscribe(route, (res:any) => {
+        return this.subscribe(route, key, (res:any) => {
             //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
             if(res instanceof Promise) {
                 res.then((r) => {
@@ -239,9 +240,9 @@ export class CMDService extends Service {
         });
     } 
 
-    subscribeToProcess(route:string, processId:string, callback?:((res:any)=>void)|string) {
+    subscribeToProcess(route:string, processId:string, callback?:((res:any)=>void)|string, key?:string) {
         if(typeof processId === 'string' && this.processes[processId]) {
-            this.subscribe(processId, (res) => {
+            this.subscribe(processId, key, (res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[processId]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node
@@ -252,17 +253,6 @@ export class CMDService extends Service {
             });
             return this.processes[processId].request(JSON.stringify({route:'subscribeSocket', args:[route,processId]}));
         }
-    }
-
-    routes:Routes={
-        createProcess:this.createProcess,
-        abort:this.abort,
-        send:this.send,
-        request:this.request,
-        runRequest:this.runRequest,
-        subscribeProcess:this.subscribeProcess,
-        subscribeToProcess:this.subscribeToProcess,
-        unsubscribe:this.unsubscribe
     }
 
 }

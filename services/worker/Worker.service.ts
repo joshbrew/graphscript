@@ -1,6 +1,6 @@
-import { Service, ServiceMessage } from "../Service2";
+import { Service, ServiceMessage, ServiceOptions } from "../Service2";
 import Worker from 'web-worker' //cross platform for node and browser
-import { Graph, GraphNode, GraphNodeProperties, GraphOptions } from "../../Graph2";
+import { Graph, GraphNode, GraphNodeProperties } from "../../Graph2";
 
 declare var WorkerGlobalScope;
 
@@ -63,7 +63,7 @@ export class WorkerService extends Service {
         workers:this.workers
     }
 
-    constructor(options?:GraphOptions) {
+    constructor(options?:ServiceOptions) {
         super();
         this.setLoaders({workers:this.workerloader}) //add a custom route loader for the worker logic
         this.setTree(this); //load additional methods on the service

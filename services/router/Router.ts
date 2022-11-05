@@ -1,6 +1,5 @@
 import { Graph, GraphNode } from "../../Graph"
-import { GraphOptions } from "../../Graph2"
-import { Service, ServiceMessage } from "../Service2"
+import { Service, ServiceMessage, ServiceOptions } from "../Service2"
 
 /*
 Goals of router:
@@ -77,7 +76,7 @@ export type RouterOptions = {
     syncServices?:boolean,
     order?:string[],
     [key:string]:any
-} & GraphOptions
+} & ServiceOptions
 
 export class Router extends Service {
 

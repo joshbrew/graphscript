@@ -1,5 +1,5 @@
-import { GraphOptions } from "../../Graph2";
-import { Service, ServiceMessage } from "../Service2";
+
+import { Service, ServiceMessage, ServiceOptions } from "../Service2";
 
 export type WebSocketProps = {
     host:string,
@@ -44,7 +44,7 @@ export class WSSfrontend extends Service {
     }
 
     
-    constructor(options?:GraphOptions) {
+    constructor(options?:ServiceOptions) {
         super(options)
         this.setTree(this);
     }

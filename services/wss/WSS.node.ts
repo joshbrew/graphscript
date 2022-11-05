@@ -1,8 +1,7 @@
-import { Service, ServiceMessage } from "../Service2";
+import { Service, ServiceMessage, ServiceOptions } from "../Service2";
 import WebSocket, { WebSocketServer } from 'ws'; //third party lib. //createWebSocketStream <-- use this for cross-node instance communication
 import http from 'http'
 import https from 'https'
-import { GraphOptions } from "../../Graph2";
 //import { GraphNode } from "../Graph";
 
 export type SocketServerProps = {
@@ -86,7 +85,7 @@ export class WSSbackend extends Service {
         servers:this.servers, sockets:this.sockets
     };
 
-    constructor(options?:GraphOptions) {
+    constructor(options?:ServiceOptions) {
         super(options)
         this.setTree(this);
     }
