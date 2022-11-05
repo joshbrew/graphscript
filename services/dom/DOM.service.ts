@@ -1,5 +1,5 @@
 import { DOMElement } from "./DOMElement"; //https://github.com/joshbrew/DOMElement <---- this is the special sauce
-import { Graph, GraphNode, GraphNodeProperties } from '../../Graph2';
+import { Graph, GraphNode, GraphNodeProperties, GraphOptions } from '../../Graph2';
 import { Service } from "../Service2";
 
 import {CompleteOptions, ElementInfo, ElementProps, ComponentProps, ComponentInfo, CanvasElementProps, CanvasOptions, CanvasElementInfo} from './types/index';
@@ -86,17 +86,15 @@ export class DOMService extends Service {
                     this.addElement(r as any,r.generateChildElementNodes);
                 }
             }
-
-            return r;
         }
     }
 
     constructor(
-        options?:any,
+        options?:GraphOptions,
         parentNode?:HTMLElement,
         interpreters?:{[key:string]:(template:string,options:ComponentProps) => void}
     ) {
-            super({props:options?.props,name:options?.name ? options.name : `dom${Math.floor(Math.random()*1000000000000000)}`});
+            super();
             
             if(options?.parentNode) parentNode = options.parentNode;
             if(typeof parentNode === 'string') parentNode = document.getElementById(parentNode);
@@ -107,8 +105,9 @@ export class DOMService extends Service {
             }
 
             //console.log('init domservice', options)
-
+            this.setLoaders(this.domloader);
             this.setTree(this);
+            if(options) this.init(options);
             
     }
     

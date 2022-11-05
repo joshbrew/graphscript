@@ -1,4 +1,5 @@
 import { Graph, GraphNode } from "../../Graph"
+import { GraphOptions } from "../../Graph2"
 import { Service, ServiceMessage } from "../Service2"
 
 /*
@@ -76,7 +77,7 @@ export type RouterOptions = {
     syncServices?:boolean,
     order?:string[],
     [key:string]:any
-}
+} & GraphOptions
 
 export class Router extends Service {
 

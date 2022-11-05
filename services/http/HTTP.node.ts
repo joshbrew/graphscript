@@ -3,7 +3,7 @@ import * as http from 'http'
 import * as https from 'https'
 import * as fs from 'fs'
 import * as path from 'path'
-import { GraphNode, GraphNodeProperties } from "../../Graph2";
+import { GraphNode, GraphNodeProperties, GraphOptions } from "../../Graph2";
 
 
 export type ServerProps = {
@@ -80,7 +80,7 @@ export class HTTPbackend extends Service {
     };
 
     constructor(
-        options?:any,
+        options?:GraphOptions,
         settings?:{ host?:string, port?:number, protocol?:'http'|'https', certpath?:string, keypath?:string }
     ) {
         super(options);

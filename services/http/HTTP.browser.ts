@@ -1,4 +1,4 @@
-import { GraphNode } from "../../Graph2";
+import { GraphNode, GraphOptions } from "../../Graph2";
 import { Service, ServiceMessage } from "../Service2";
 
 
@@ -25,7 +25,7 @@ export class HTTPfrontend extends Service {
     fetchProxied = false;
     listening = {};
 
-    constructor(options?:any, path?:string, fetched?: (clone: Response, args: any[], response: Response) => Promise<void>) {
+    constructor(options?:GraphOptions, path?:string, fetched?: (clone: Response, args: any[], response: Response) => Promise<void>) {
         super(options);
         this.setTree(this);
         this.listen(path,fetched);

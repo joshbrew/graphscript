@@ -1,6 +1,6 @@
 import { Service, ServiceMessage } from "../Service2";
 import Worker from 'web-worker' //cross platform for node and browser
-import { Graph, GraphNode, GraphNodeProperties } from "../../Graph2";
+import { Graph, GraphNode, GraphNodeProperties, GraphOptions } from "../../Graph2";
 
 declare var WorkerGlobalScope;
 
@@ -63,17 +63,18 @@ export class WorkerService extends Service {
         workers:this.workers
     }
 
-    constructor(options?) {
-        super(options);
+    constructor(options?:GraphOptions) {
+        super();
         this.setLoaders({workers:this.workerloader}) //add a custom route loader for the worker logic
         this.setTree(this); //load additional methods on the service
+        if(options) this.init(options);
 
         if(typeof WorkerGlobalScope !== 'undefined' && globalThis instanceof WorkerGlobalScope) {
             this.addDefaultMessageListener();    
         }
     }
 
-    loadWorkerRoute(rt:WorkerRoute,routeKey:string,) {
+    loadWorkerRoute = (rt:WorkerRoute,routeKey:string) => {
         if(rt.workerUrl) rt.url = rt.workerUrl;
         if(rt.workerId) rt._node.tag = rt.workerId;
         if(!rt._node.tag) rt._node.tag = routeKey;
@@ -231,7 +232,7 @@ export class WorkerService extends Service {
     }
 
     //works in window as well (caution)
-    addDefaultMessageListener() {
+    addDefaultMessageListener = () => {
         globalThis.onmessage = (ev:MessageEvent) => {
             let result = this.receive(ev.data); //this will handle graph logic and can run requests for the window or messsage ports etc etc.
             //console.log(JSON.stringify(ev.data), JSON.stringify(result),JSON.stringify(Array.from((self as any).SERVICE.nodes.keys())))

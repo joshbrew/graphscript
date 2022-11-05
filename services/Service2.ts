@@ -1,4 +1,4 @@
-import { Graph, GraphNode } from "../Graph2";
+import { Graph, GraphNode, GraphOptions } from "../Graph2";
 import {loaders} from '../Loaders';
 
 
@@ -25,7 +25,7 @@ export class Service extends Graph {
     
     name = `service${Math.floor(Math.random()*1000000000000000)}`;
 
-    constructor(options:any) {
+    constructor(options?:GraphOptions) {
         super(
             recursivelyAssign(
                 { //assign properties to the 

@@ -1,3 +1,4 @@
+import { GraphOptions } from "../../Graph2";
 import { Service, ServiceMessage } from "../Service2";
 
 export type WebRTCProps = {
@@ -59,7 +60,7 @@ export class WebRTCfrontend extends Service {
     }
 
     constructor(
-        options?:any, 
+        options?:GraphOptions, 
         iceServers?:{urls:string[]}[] 
     ) {
         super(options);

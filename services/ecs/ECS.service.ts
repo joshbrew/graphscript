@@ -1,4 +1,4 @@
-import { GraphNode, GraphNodeProperties } from '../../Graph2';
+import { GraphNode, GraphNodeProperties, GraphOptions } from '../../Graph2';
 import { Service } from '../Service2';
 
 //Entity Component System Service
@@ -45,7 +45,7 @@ export type ECSOptions = {
     },
     order?:string[], //system order of execution by key
     [key:string]:any
-} 
+} & GraphOptions
 
 export class ECSService extends Service {
 

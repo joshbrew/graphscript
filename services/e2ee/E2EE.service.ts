@@ -1,6 +1,6 @@
 //End to end encryption using sjcl and keygen stuff, should involve webworkers 
 
-import { GraphNode } from "../../Graph2";
+import { GraphNode, GraphOptions } from "../../Graph2";
 import { Service, ServiceMessage } from "../Service2";
 import sjcl from "./sjcl"; //stanford javascript cryptography library, super minimal!
 
@@ -19,7 +19,7 @@ export class E2EEService extends Service {
     secret?:string; 
 
     constructor(
-        options?:any,
+        options?:GraphOptions,
         keys?:{ //match ids to decryption keys then attempt to reroute the data
         [key:string]:{ key:string, _id?:string } //if method undefined, default to AES (the one that is considered most secure/general)
     }, secureKeys?:boolean, secret?:string) {

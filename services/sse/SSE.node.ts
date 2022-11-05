@@ -3,6 +3,7 @@ import {createSession, createChannel, Session, SessionState, Channel} from 'bett
 import http from 'http'
 import https from 'https'
 import { Readable } from "node:stream";
+import { GraphOptions } from "../../Graph2";
 
 //using better-sse, load any http/https servers in
 
@@ -69,7 +70,7 @@ export class SSEbackend extends Service {
     }
 
     
-    constructor(options?:any) {
+    constructor(options?:GraphOptions) {
         super(options)
         this.setTree(this);
     }

@@ -29,6 +29,15 @@ export type GraphProperties = {
     [key:string]:any
 }
 
+export type GraphOptions = {
+    tree?:{[key:string]:any},
+    loaders?:{[key:string]:{node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties}},
+    state?:EventHandler,
+    childrenKey?:string,
+    mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
+    [key:string]:any
+}
+
 //this is a scope
 export class GraphNode {
 
@@ -264,20 +273,16 @@ export class Graph {
     }
 
     constructor(
-        options?:{
-            tree?:{[key:string]:any},
-            loaders?:{[key:string]:{node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties}},
-            state?:EventHandler,
-            childrenKey?:string,
-            mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
-            [key:string]:any
-        }
+        options?:GraphOptions
     ) {
+        this.init(options);
+    }
+
+    init = (options:GraphOptions) => {
         if(options) {
             recursivelyAssign.call(this, this._node,options); //assign loaders etc
             if(options.tree) this.setTree(options.tree);
         }
-
     }
 
     setTree = (tree:{[key:string]:any}) => {
@@ -306,7 +311,7 @@ export class Graph {
 
     }
 
-    setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph)=>void}, replace?:boolean) => {
+    setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,props:any)=>void}, replace?:boolean) => {
         if(replace)  this._node.loaders = loaders;
         else Object.assign(this._node.loaders,loaders);
         return this._node.loaders;

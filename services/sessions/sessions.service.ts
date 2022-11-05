@@ -1,6 +1,7 @@
-import { stringifyFast } from "../../Graph";
+import { stringifyFast } from "../utils";
 import { Service } from "../Service2";
 import { User } from "../router/Router";
+import { GraphOptions } from "../../Graph2";
 
 //parse from this object/endpoint and send to that object/endpoint, e.g. single users
 export type PrivateSessionProps = {
@@ -95,7 +96,7 @@ export class SessionsService extends Service {
         shared:{}
     }
 
-    constructor(options:any, users?:{[key:string]:SessionUser}) {
+    constructor(options:GraphOptions, users?:{[key:string]:SessionUser}) {
         super(options);
         this.setTree(this);
         if(users) this.users = users;
