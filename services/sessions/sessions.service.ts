@@ -1,5 +1,5 @@
 import { stringifyFast } from "../../Graph";
-import { Routes, Service, ServiceOptions } from "../Service";
+import { Service } from "../Service2";
 import { User } from "../router/Router";
 
 //parse from this object/endpoint and send to that object/endpoint, e.g. single users
@@ -95,9 +95,9 @@ export class SessionsService extends Service {
         shared:{}
     }
 
-    constructor(options:ServiceOptions, users?:{[key:string]:SessionUser}) {
+    constructor(options:any, users?:{[key:string]:SessionUser}) {
         super(options);
-        this.load(this.routes);
+        this.setTree(this);
         if(users) this.users = users;
     }
 
@@ -197,10 +197,10 @@ export class SessionsService extends Service {
         if(options._id){ 
             session = this.sessions.private[options._id];
             if(!session) session = this.sessions.shared[options._id];
-            if(this.sesh.private[options._id] && userId) {
+            if(this.sessions.private[options._id] && userId) {
                 let sesh = this.sessions.shared[options._id];
                 if(sesh.settings && (sesh?.settings.source === userId || sesh.settings.admins?.[userId] || sesh.settings.moderators?.[userId] || sesh.settings.ownerId === userId)) {
-                    return Object.assign(this.session.shared[options._id],options);
+                    return Object.assign(this.sessions.shared[options._id],options);
                 }
             } else if(options.settings?.source) {
                 return this.openPrivateSession(options as PrivateSessionProps,userId);
@@ -343,9 +343,9 @@ export class SessionsService extends Service {
         } 
 
         if(typeof session.onopen === 'function') {
-            let sub = this.subscribe('joinSession',(res) => {
+            let sub = this.subscribe('joinSession',undefined,(res) => {
                 if(res._id === (session as any)._id) (session as any).onopen(session, userId);
-                this.unsubscribe('joinSession', sub as number);
+                this.unsubscribe('joinSession', undefined, sub as number);
             })
         }
 
@@ -860,7 +860,7 @@ export class SessionsService extends Service {
 
 		// if(!settings.callback) settings.callback = this.STREAMALLLATEST;
 
-        this.subscribe('streamName',(res:any)=>{ 
+        this.subscribe('streamName', undefined, (res:any)=>{ 
             if(this.streamSettings[streamName].onupdate) 
                 (this.streamSettings[streamName] as any).onupdate(res,this.streamSettings[streamName]); 
         });
@@ -932,42 +932,19 @@ export class SessionsService extends Service {
         
 	}
 
-    
-    routes:Routes = {
-        getSessionInfo:this.getSessionInfo,
-        openPrivateSession:this.openPrivateSession,
-        openSharedSession:this.openSharedSession,
-        updateSession:this.updateSession,
-        joinSession:this.joinSession,
-        setUserProps:this.setUserProps,
-        leaveSession:this.leaveSession,
-        getFirstMatch:this.getFirstMatch,
-        swapHost:this.swapHost,
-        deleteSession:this.deleteSession,
-        subscribeToSession:this.subscribeToSession,
-        transmitSessionUpdates:this.transmitSessionUpdates,
-        receiveSessionUpdates:this.receiveSessionUpdates,
-        getUpdatedUserData:this.getUpdatedUserData,
-        userUpdateCheck:this.userUpdateCheck,
-        userUpdateLoop:{ //this node loop will run separately from the one below it
-            operator:this.userUpdateCheck, 
-            loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
-        },
-        sessionLoop:{
-            operator:this.sessionUpdateCheck, 
-            loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
-        },
-        setStreamFunc:this.setStreamFunc,
-        addStreamFunc:this.addStreamFunc,
-        setStream:this.setStream,
-        removeStream:this.removeStream,
-        updateStreamData:this.updateStreamData,
-        getStreamUpdate:this.getStreamUpdate,
-        getAllStreamUpdates:this.getAllStreamUpdates,
-        streamLoop:{
-            operator:this.getAllStreamUpdates,
-            loop:10
-        }
+    streamLoop = {
+        _node:{operator:this.getAllStreamUpdates},
+        loop:10
+    }
+
+    userUpdateLoop = { //this node loop will run separately from the one below it
+        _node:{operator:this.userUpdateCheck}, 
+        loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
+    }
+
+    sessionLoop = {
+        _node:{operator:this.sessionUpdateCheck}, 
+        loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
     }
 
 

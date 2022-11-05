@@ -1,5 +1,5 @@
 import { HTTPfrontend, RequestOptions } from "../http/HTTP.browser";
-import { Service, Routes, ServiceOptions, ServiceMessage } from "../Service";
+import { Service, ServiceMessage } from "../Service2";
 
 export type EventSourceProps = {
     url:string,
@@ -45,9 +45,9 @@ export class SSEfrontend extends Service {
         eventsources:this.eventsources
     }
 
-    constructor(options?:ServiceOptions) {
+    constructor(options?:any) {
         super(options);
-        this.load(this.routes);
+        this.setTree(this);
     }
     
     openSSE = (
@@ -266,15 +266,15 @@ export class SSEfrontend extends Service {
         return res;
     }
 
-    subscribeSSE = (route:string,url:string) => {
-        return this.subscribe(route,(res) => {
+    subscribeSSE = (route:string,url:string,key?:string) => {
+        return this.subscribe(route,key,(res) => {
             this.POST(res,url,'json');
         })
     }
     
-    subscribeToSSE = (route:string, url:string, callback?:string|((res:any)=>void), sessionId?:string) => {
+    subscribeToSSE = (route:string, url:string, callback?:string|((res:any)=>void), sessionId?:string,key?:string) => {
         if(url) {
-            this.subscribe(url,(res) => {
+            this.subscribe(url,key,(res) => {
                 let msg = JSON.parse(res);
                 if(msg?.callbackId === route) {
                     if(!callback) this.setState({[url]:msg.args}); //just set state
@@ -307,17 +307,4 @@ export class SSEfrontend extends Service {
         }
     } 
 
-    routes:Routes = {
-        openSSE:{
-            operator:this.openSSE,
-            aliases:['open']
-        },
-        request:this.request,
-        runRequest:this.runRequest,
-        transmit:this.transmit,
-        POST:this.POST,
-        terminate:this.terminate,
-        subscribeToSSE:this.subscribeToSSE, //outgoing subscriptions
-        subscribeSSE:this.subscribeSSE, //incoming subcriptions
-    }
 }

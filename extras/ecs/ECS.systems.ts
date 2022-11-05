@@ -1,4 +1,4 @@
-import { GraphNode } from "../../Graph";
+import { GraphNode } from "../../Graph2";
 import { Entity } from "../../services/ecs/ECS.service";
 
 export const Systems = {
@@ -6,11 +6,10 @@ export const Systems = {
     collision:{ //e.g. https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
         //Better implementation: https://wickedengine.net/2020/04/26/capsule-collision-detection/, should adapt for gpujs or something for mass physics
         //lastTime:performance.now(),
-        tag:'collision',
         setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[this.tag]) continue;
+                if(entity.components) if(!entity.components[this._node.tag]) continue;
 
                 this.setupEntity(entity);
             }
@@ -27,34 +26,36 @@ export const Systems = {
 
             return entity;
         },
-        operator:function(
-            entities:{[key:string]:GraphNode}
+        _node:{
+            tag:'collision',
+            operator:function(
+            entities:{[key:string]:Entity}
         ){
 
             let keys = this.entityKeys;
 
             for(let i = 0; i < keys.length; i++) {
                 const entity1 = entities[keys[i]];
-                if(entity1.components) if(!entity1.components[this.tag] || !entity1.collisionEnabled) continue;
+                if(entity1.components) if(!entity1.components[this._node.tag] || !entity1.collisionEnabled) continue;
                 if(!entity1.collisionEnabled) continue;
                 for(let j = 0; j < keys.length; j++) {
                     if(i === j) continue;
                     const entity2 = entities[keys[j]];
-                    if(entity2.components) if(!entity2.components[this.tag]) continue;
+                    if(entity2.components) if(!entity2.components[this._node.tag]) continue;
                     if(!entity2.collisionEnabled) continue;
                  
                     let colliding = Systems.collision.collisionCheck(entity1 as any,entity2 as any); //returns distance from origin if colliding (to reduce redundancy later)
                     if(colliding !== false) {
                         if(!entity1.colliding) entity1.colliding = {}
                         if(!entity2.colliding) entity2.colliding = {}
-                        entity1.colliding[entity2.tag] = colliding;
-                        entity2.colliding[entity1.tag] = colliding;
+                        entity1.colliding[entity2._node.tag] = colliding;
+                        entity2.colliding[entity1._node.tag] = colliding;
                     }
                 }
             }
             return entities;
             //now resolve the collisions e.g. relative displacement + mass-force vectors to pass to the movement system
-        },
+        }},
         collisionCheck:(
             body1:{
                 position:{x:number,y:number,z:number},
@@ -713,12 +714,11 @@ export const Systems = {
         }
     },// as SystemProps,
     collider:{ //this resolves collisions to update movement vectors
-        tag:'collider',
         lastTime:performance.now(),
         setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[this.tag]) continue;
+                if(entity.components) if(!entity.components[this._node.tag]) continue;
                 this.setupEntity(entity);
             }
 
@@ -752,13 +752,15 @@ export const Systems = {
 
             return entity;
         },
-        operator: function (entities:{[key:string]:Entity}) {
+        _node:{
+            tag:'collider',
+            operator: function (entities:{[key:string]:Entity}) {
 
             let keys = this.entityKeys;
 
             for(let i = 0; i < keys.length; i++) {
                 const entity1 = entities[keys[i]];
-                if(entity1.components) if(!entity1.components[this.tag] || !entity1.collisionEnabled) continue;
+                if(entity1.components) if(!entity1.components[this._node.tag] || !entity1.collisionEnabled) continue;
                 
                 if(entity1.useBoundingBox) this.checkBoundingBox(entity1); 
                 
@@ -770,7 +772,7 @@ export const Systems = {
                         const entity2 = entities[key2];
                         if(entity1.colliding[key2] === false) {
                             delete entity1.colliding[key2] 
-                            delete entity2.colliding[entity1.tag]; 
+                            delete entity2.colliding[entity1._node.tag]; 
                             continue;
                         }
                         if(!entity2.collisionEnabled) continue;
@@ -787,7 +789,7 @@ export const Systems = {
                             }
                             else {
                                 this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
-                                delete entity2.colliding[entity1.tag]; //both resolved
+                                delete entity2.colliding[entity1._node.tag]; //both resolved
                             }
                         }
                         //}
@@ -795,14 +797,14 @@ export const Systems = {
                         //else if(entity2.collisionType === 'box')
                         //this.resolveBoxCollision(entity1,entity2);
                         
-                        delete entity1.colliding[entity2.tag];
+                        delete entity1.colliding[entity2._node.tag];
                     }
                     
                     delete entity1.colliding;
                 }
             }
             return entities;
-        },
+        }},
         checkBoundingBox:(entity)=>{
 
             //console.log('before',entity.position);
@@ -958,20 +960,19 @@ export const Systems = {
                 }
 
             }
-            //if(!entity1.collidedWith[entity2.tag] && !entity1.prevCollidedWith[entity2.tag]) {
+            //if(!entity1.collidedWith[entity2._node.tag] && !entity1.prevCollidedWith[entity2._node.tag]) {
             //}
-            // entity1.collidedWith[entity2.tag] = entity2.tag;
-            // entity2.collidedWith[entity1.tag] = entity1.tag;
+            // entity1.collidedWith[entity2._node.tag] = entity2._node.tag;
+            // entity2.collidedWith[entity1._node.tag] = entity1._node.tag;
         }
     },// as SystemProps,
     nbody:{ //gravitational attraction
-        tag:'nbody',
         lastTime:performance.now(),
         G:0.00000000006674, //Newton's gravitational constant, can set differently on different sets of components 
         setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[this.tag]) continue;
+                if(entity.components) if(!entity.components[this._node.tag]) continue;
 
                 this.setupEntity(entity);
             }
@@ -990,13 +991,15 @@ export const Systems = {
         
             return entity;
         },
-        operator:function(entities:{[key:string]:Entity}){
+        _node:{
+            tag:'nbody',
+            operator:function(entities:{[key:string]:Entity}){
 
             let keys = this.entityKeys;
 
             for(let i = 0; i < keys.length; i++) {
                 const entity = entities[keys[i]];
-                if(entity.components) if(!entity.components[this.tag]) continue;
+                if(entity.components) if(!entity.components[this._node.tag]) continue;
                 if(!entity.mass) continue;
                 
                 let nSearched = 0;
@@ -1005,7 +1008,7 @@ export const Systems = {
                     let randKey = keys[Math.floor(Math.random()*keys.length)];
                     nSearched++;
                     const entity2 = entities[randKey];
-                    if(entity2.components) if(!entity2.components[this.tag]) continue nested;
+                    if(entity2.components) if(!entity2.components[this._node.tag]) continue nested;
                     if(!entity2.mass || !entity2.isAttractor) continue nested;
 
                     this.attract(
@@ -1020,7 +1023,7 @@ export const Systems = {
             }
 
             return entities;
-        },
+        }},
         attract:function(
             body1,
             body2,
@@ -1076,7 +1079,6 @@ export const Systems = {
         }
     },// as SystemProps,
     boid:{ //boids, updates velocities based on a particle rule subset
-        tag:'boid',
         lastTime:performance.now(),
         defaultAnchor:{x:Math.random(),y:Math.random(),z:Math.random(), mul:0.006},
         setupEntities:function (entities:any){
@@ -1130,7 +1132,9 @@ export const Systems = {
 
             return entity;
         },
-        operator:function (entities:{[key:string]:Entity}){
+        _node:{
+            tag:'boid',
+            operator:function (entities:{[key:string]:Entity}){
             
             let now = performance.now();
             let timeStep = now - this.lastTime
@@ -1325,14 +1329,13 @@ export const Systems = {
             //console.log('nloops', nloops, timeStep)
             return entities;
         }
-    },// as SystemProps,
+    }},// as SystemProps,
     movement:{ //update force/acceleration/velocity/position vectors
-        tag:'movement',
         lastTime:performance.now(),
         setupEntities:function (entities:{[key:string]:Entity}){ //install needed data structures to entities
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[this.tag]) continue;
+                if(entity.components) if(!entity.components[this._node.tag]) continue;
 
                 this.setupEntity(entity);
             }
@@ -1350,7 +1353,9 @@ export const Systems = {
 
             return entity;
         },
-        operator:function(entities:{[key:string]:Entity}){
+        _node:{
+            tag:'movement',
+            operator:function(entities:{[key:string]:Entity}){
             let now = performance.now();
             let timeStep = (now - this.lastTime) * 0.001;
             this.lastTime = now; 
@@ -1359,7 +1364,7 @@ export const Systems = {
 
             for(let i = 0; i < keys.length; i++) {
                 const entity = entities[keys[i]];
-                if(entity.components) if(!entity.components[this.tag]) continue;
+                if(entity.components) if(!entity.components[this._node.tag]) continue;
                 if(entity.fixed) continue;
                 
                 if(entity.mass) { //F = ma, F in Newtons, m in kg, a in m/s^2
@@ -1404,7 +1409,7 @@ export const Systems = {
 
             return entities;
         }
-    } //as SystemProps,
+    }} //as SystemProps,
     //materials:{} as SystemProps, //
 } //as {[key:string]:SystemProps & {[key:string]:any}}
 

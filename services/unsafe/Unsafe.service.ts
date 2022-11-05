@@ -13,12 +13,12 @@ export const unsafeRoutes = {
         //if(fnName === 'setupChart') console.log(fn);
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
-            if(this.graph.get(fnName)) {
-                this.graph.get(fnName).setOperator(fn.bind(this.graph.get(fnName))); //overwrite operator
+            if(this._node.graph.get(fnName)) {
+                this._node.graph.get(fnName).setOperator(fn.bind(this._node.graph.get(fnName))); //overwrite operator
             }
             else {
-                let node = (this.graph as Graph).add({tag:fnName,operator:fn});
-                if(this.graph instanceof Service) this.graph.load({[fnName]:node});
+                let node = (this._node.graph as Graph).add({tag:fnName,operator:fn});
+                if(this._node.graph instanceof Service) this._node.graph.load({[fnName]:node});
             }
             return true;
         }
@@ -30,10 +30,10 @@ export const unsafeRoutes = {
         //console.log(fn);
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
-            if(this.graph.get(fnName)) {
-                this.graph.get(fnName).setOperator(fn); //overwrite operator
+            if(this._node.graph.get(fnName)) {
+                this._node.graph.get(fnName).setOperator(fn); //overwrite operator
             }
-            else (this.graph as Graph).add({tag:fnName,operator:fn});
+            else (this._node.graph as Graph).add({tag:fnName,operator:fn});
             //console.log(this)
             return true;
         }
@@ -45,10 +45,10 @@ export const unsafeRoutes = {
         //console.log(fn);
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
-            if(this.graph.get(route)) {
-                this.graph.get(route)[fnName] = fn; //overwrite method
+            if(this._node.graph.get(route)) {
+                this._node.graph.get(route)[fnName] = fn; //overwrite method
             }
-            else (this.graph as Graph).add({tag:fnName,[fnName]:fn});
+            else (this._node.graph as Graph).add({tag:fnName,[fnName]:fn});
             //console.log(this)
             return true;
         }
@@ -56,8 +56,8 @@ export const unsafeRoutes = {
     },
     assignRoute:function(route:string,source:{[key:string]:any}) { //set values on a route
         //console.log(fn, fnName)
-        if(this.graph.get(route) && typeof source === 'object') {
-            Object.assign(this.graph.get(route),source);
+        if(this._node.graph.get(route) && typeof source === 'object') {
+            Object.assign(this._node.graph.get(route),source);
         }
     },
     transferClass:(classObj:any, className?:string)=>{ //send a class over a remote service
@@ -69,7 +69,7 @@ export const unsafeRoutes = {
         }
         return false;
     },
-    receiveClass:function(stringified:string, className?:string){ //eval a class string and set it as a key on the local graph by class name, so this.graph.method exists
+    receiveClass:function(stringified:string, className?:string){ //eval a class string and set it as a key on the local graph by class name, so this._node.graph.method exists
         if(typeof stringified === 'string') {
             //console.log(stringified)
             if(stringified.indexOf('class') === 0) {
@@ -78,7 +78,7 @@ export const unsafeRoutes = {
                 
                 if(!name)
                     name = cls.name; //get classname
-                    this.graph[name] = cls;
+                    this._node.graph[name] = cls;
                 
                 return true;
             }
@@ -95,12 +95,12 @@ export const unsafeRoutes = {
         return true;
     },
     setValue:function(key:string, value:any) { //set a value on the graph scope
-        this.graph[key] = value;
+        this._node.graph[key] = value;
         return true;
     },
     assignObject:function(target:string, source:{[key:string]:any}){ //assign a value on an object on the globalThis scope
-        if(!this.graph[target]) return false;
-        if(typeof source === 'object') Object.assign( this.graph[target],source);
+        if(!this._node.graph[target]) return false;
+        if(typeof source === 'object') Object.assign( this._node.graph[target],source);
         return true;
     },
     setGlobalFunction:(fn:any, fnName?:string) => { //set a value on the globalThis scope
@@ -120,7 +120,7 @@ export const unsafeRoutes = {
         //console.log(fn);
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
-            this.graph[globalObjectName][fnName] = fn;
+            this._node.graph[globalObjectName][fnName] = fn;
             //console.log(this)
             return true;
         }
@@ -131,19 +131,19 @@ export const unsafeRoutes = {
         //console.log(fn);
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
-            this.graph[fnName] = fn;
+            this._node.graph[fnName] = fn;
             //console.log(this)
             return true;
         }
         return false;
     },
     assignFunctionToObject:function(objectName:string, fn:any, fnName:any) { //assign a value on an object on the globalThis scope
-        if(! this.graph[objectName]) return false;
+        if(! this._node.graph[objectName]) return false;
         if(typeof fn === 'string') fn = parseFunctionFromText(fn);
         //console.log(fn);
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
-            this.graph[objectName][fnName] = fn;
+            this._node.graph[objectName][fnName] = fn;
             //console.log(this)
             return true;
         }

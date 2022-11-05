@@ -1,4 +1,4 @@
-import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, ServiceMessage } from "../Service2";
 import WebSocket, { WebSocketServer } from 'ws'; //third party lib. //createWebSocketStream <-- use this for cross-node instance communication
 import http from 'http'
 import https from 'https'
@@ -85,9 +85,9 @@ export class WSSbackend extends Service {
         servers:this.servers, sockets:this.sockets
     };
 
-    constructor(options?:ServiceOptions) {
+    constructor(options?:any) {
         super(options)
-        this.load(this.routes);
+        this.setTree(this);
     }
 
     setupWSS = (
@@ -540,7 +540,7 @@ export class WSSbackend extends Service {
         return res;
     }
 
-    subscribeSocket = (route:string, socket:WebSocket|string) => {
+    subscribeSocket = (route:string, socket:WebSocket|string, key?:string) => {
         if(typeof socket === 'string') {
             if(this.sockets[socket]) socket = this.sockets[socket].socket;
             else {
@@ -552,7 +552,7 @@ export class WSSbackend extends Service {
         }
     
         if(typeof socket === 'object')
-            return this.subscribe(route, (res:any) => {
+            return this.subscribe(route, key, (res:any) => {
                 //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
                 if((socket as WebSocket).readyState === (socket as WebSocket).OPEN) {
                     if(res instanceof Promise) {
@@ -566,9 +566,9 @@ export class WSSbackend extends Service {
             });
     } 
 
-    subscribeToSocket = (route:string, socketId:string, callback?:string|((res:any)=>void)) => {
+    subscribeToSocket = (route:string, socketId:string, callback?:string|((res:any)=>void), key?:string) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
-            this.subscribe(socketId, (res) => {
+            this.subscribe(socketId, key, (res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[socketId]:res.args});
                     else if(typeof callback === 'string') { //just set state 
@@ -581,20 +581,10 @@ export class WSSbackend extends Service {
         }
     }
 
-    routes:Routes={
-        open:(options:SocketServerProps|SocketProps) => {
-            if((options as SocketServerProps).server) return this.setupWSS(options as SocketServerProps);
-            else return this.openWS(options as SocketProps);
-        },
-        setupWSS:this.setupWSS,
-        openWS:this.openWS,
-        closeWS:this.closeWS,
-        request:this.request,
-        runRequest:this.runRequest,
-        terminate:this.terminate,
-        subscribeSocket:this.subscribeSocket,
-        subscribeToSocket:this.subscribeToSocket,
-        unsubscribe:this.unsubscribe
+    open = (options:SocketServerProps|SocketProps) => {
+        if((options as SocketServerProps).server) return this.setupWSS(options as SocketServerProps);
+        else return this.openWS(options as SocketProps);
     }
+
 
 }

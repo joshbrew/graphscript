@@ -1,4 +1,4 @@
-import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph";
+import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph2";
 import { CanvasElementProps } from "./canvascomponent";
 import { ComponentProps } from "./component";
 

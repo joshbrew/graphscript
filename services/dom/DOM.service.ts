@@ -1,6 +1,6 @@
 import { DOMElement } from "./DOMElement"; //https://github.com/joshbrew/DOMElement <---- this is the special sauce
-import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph';
-import { RouteProp, Service, ServiceOptions } from "../Service";
+import { Graph, GraphNode, GraphNodeProperties } from '../../Graph2';
+import { Service } from "../Service2";
 
 import {CompleteOptions, ElementInfo, ElementProps, ComponentProps, ComponentInfo, CanvasElementProps, CanvasOptions, CanvasElementInfo} from './types/index';
 
@@ -11,21 +11,6 @@ export type DOMRouteProp =
     ElementProps |
     ComponentProps |
     CanvasElementProps
-
-export type DOMServiceRoute = 
-    GraphNode |
-    GraphNodeProperties |
-    Graph |
-    OperatorType |
-    ((...args)=>any|void) |
-    { aliases?:string[] } & GraphNodeProperties |
-    RouteProp | 
-    DOMRouteProp
-
-
-export type DOMRoutes = {
-    [key:string]:DOMServiceRoute
-}
 
 
 export class DOMService extends Service {
@@ -76,50 +61,38 @@ export class DOMService extends Service {
         }
     }
 
-    customRoutes:ServiceOptions["customRoutes"] = {
-        'dom':(r:DOMServiceRoute|any, route:string, routes:DOMRoutes|any) => {
+    domloader = {
+        'dom':(r:DOMRouteProp & GraphNode, parent:GraphNode & DOMRouteProp, graph:Graph, tree:any, props:any) => {
             // console.log(r)
-            if(!(r instanceof GraphNode)) {
 
-                if(r.element?.parentNode?.id && r.graph?.parentNode?.id) {
-                    if(r.graph.parentNode.id === r.element.id) {
-                        r.parentNode = this.parentNode; //triggers the setter to reparent
-                    }
-                }
-                else {
-                    if(r.template) { //assume its a component node
-                        if(!r.tag) r.tag = route;
-                        this.addComponent(r,r.generateChildElementNodes);
-                    }
-                    else if(r.context) { //assume its a canvas node
-                        if(!r.tag) r.tag = route;
-                        this.addCanvasComponent(r);
-                    }
-                    else if(r.tagName || r.element) { //assume its an element node
-                        if(!r.tag) r.tag = route;
-                        this.addElement(r,r.generateChildElementNodes);
-                    }
-                }
+            if((parent._node.tag || parent.id) && (parent.template || parent.context || parent.tagName || parent.element) && (r.template || r.context || r.tagName || r.element) && !r.parentNode) {
+                if(parent._node.tag) r.parentNode = parent._node.tag; 
+                if(parent.id) r.parentNode = parent.id;
+            }
 
+            if(r.element?.parentNode?.id && r.graph?.parentNode?.id) {
+                if(r.graph.parentNode.id === r.element.id) {
+                    r.parentNode = this.parentNode; //triggers the setter to reparent
+                }
+            }
+            else {
+                if(r.template) { //assume its a component node
+                    this.addComponent(r as any,r.generateChildElementNodes);
+                }
+                else if(r.context) { //assume its a canvas node
+                    this.addCanvasComponent(r as any);
+                }
+                else if(r.tagName || r.element) { //assume its an element node
+                    this.addElement(r as any,r.generateChildElementNodes);
+                }
             }
 
             return r;
         }
     }
 
-    customChildren:ServiceOptions["customChildren"] = {
-        'dom':(rt:DOMServiceRoute|any, routeKey:string, parent:any, routes:DOMRoutes, checked:DOMRoutes) => {
-            //automatically parent children html routes to parent html routes without needing explicit parentNode definitions
-            if((parent.tag || parent.id) && (parent.template || parent.context || parent.tagName || parent.element) && (rt.template || rt.context || rt.tagName || rt.element) && !rt.parentNode) {
-                if(parent.tag) rt.parentNode = parent.tag; 
-                if(parent.id) rt.parentNode = parent.id;
-            }
-            return rt;
-        }
-    }
-
     constructor(
-        options?:ServiceOptions,
+        options?:any,
         parentNode?:HTMLElement,
         interpreters?:{[key:string]:(template:string,options:ComponentProps) => void}
     ) {
@@ -135,7 +108,7 @@ export class DOMService extends Service {
 
             //console.log('init domservice', options)
 
-            this.init(options);
+            this.setTree(this);
             
     }
     
@@ -190,7 +163,7 @@ export class DOMService extends Service {
 
         this.elements[options.id] = {element:elm, node, parentNode: (options as CompleteOptions).parentNode, divs};
         
-        if(!node.ondelete) node.ondelete = (node) => { 
+        if(!node._node.ondelete) node._node.ondelete = (node) => { 
             elm.remove(); 
             if(options.onremove) options.onremove.call(this.elements[options.id].node, elm, this.elements[options.id]); 
         } //in this case we need to remove the element from the dom via the node and run callbacks here due to elements lacking an 'onremove' event
@@ -292,13 +265,13 @@ export class DOMService extends Service {
     resolveGraphNode = (element, options) => {
 
 
-        let node: GraphNode
-        if(this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
-            node = this.nodes.get(options.id);
+        let node: GraphNode & DOMRouteProp;
+        if(this._node.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this._node.nodes.get(options.id)?.parentNode === options.parentNode) {
+            node = this._node.nodes.get(options.id);
         } else {
             let parentId = options.parentNode instanceof HTMLElement ? options.parentNode?.id : typeof options.parentNode === 'string' ? options.parentNode : undefined;
             let parent;
-            if(parentId) parent = this.nodes.get(parentId);
+            if(parentId) parent = this._node.nodes.get(parentId);
             node = new GraphNode(
                 options instanceof Graph ? options : Object.assign({},options),
                 parent,
@@ -571,8 +544,8 @@ export class DOMService extends Service {
             if((element as ComponentInfo|CanvasElementInfo).element) element = (element as ComponentInfo|CanvasElementInfo).element;
          }
         else if(typeof element === 'string' && this.components[element]) {
-            if((this.components[element] as CanvasElementInfo).node.isAnimating)
-                (this.components[element] as CanvasElementInfo).node.stopNode();
+            if((this.components[element] as CanvasElementInfo).node._node.isAnimating)
+                (this.components[element] as CanvasElementInfo).node._node.isAnimating = false;
             if((this.components[element] as ComponentInfo).divs)
                 (this.components[element] as ComponentInfo).divs.forEach((d) => this.terminate(d));
                 
@@ -591,7 +564,7 @@ export class DOMService extends Service {
         }
         
         if(element) {
-            if(this.nodes.get((element as any).id)) {
+            if(this._node.nodes.get((element as any).id)) {
                 this.removeTree((element as any).id);
             }
 
@@ -606,13 +579,6 @@ export class DOMService extends Service {
         return false;
     }
     
-    defaultRoutes:DOMRoutes = { //declared at the end so everything on this class is defined to pass through as node props
-        addElement:this.addElement,
-        addComponent:this.addComponent,
-        addCanvasComponent:this.addCanvasComponent,
-        terminate:this.terminate
-    }
-
 }
 
 /**

@@ -22,7 +22,7 @@ export type GraphNodeProperties = {
 
 export type GraphProperties = {
     tree?:{[key:string]:any},
-    loaders?:{[key:string]:(properties:GraphNodeProperties,parent:Graph|GraphNode,graph:Graph)=>void},
+    loaders?:{[key:string]:{node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties}},
     state?:EventHandler,
     childrenKey?:string,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
@@ -48,7 +48,7 @@ export class GraphNode {
         // listeners:undefined as any, //e.g. { 'nodeA.x':(newX)=>{console.log('nodeA.x changed:',x)}  }
         // source:undefined as any// source graph if a graph is passed as properties
     }
-
+    
     //pass GraphNodeProperties, functions, or tags of other nodes
     constructor(properties:any, parent?:{[key:string]:any}, graph?:Graph) {
 
@@ -242,7 +242,7 @@ _addLocalState(props?:{[key:string]:any}) {
 
             Object.defineProperty(this, k, definition);
             
-            const ogProps = this._node.initial
+            const ogProps = this._node.initial;
             let dec = Object.getOwnPropertyDescriptor(ogProps,k);
             if(dec === undefined || dec?.configurable) Object.defineProperty(ogProps, k, definition);
         }
@@ -266,7 +266,7 @@ export class Graph {
     constructor(
         options?:{
             tree?:{[key:string]:any},
-            loaders?:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph)=>void},
+            loaders?:{[key:string]:{node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties}},
             state?:EventHandler,
             childrenKey?:string,
             mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
@@ -280,7 +280,7 @@ export class Graph {
 
     }
 
-    setTree(tree:{[key:string]:any}) {
+    setTree = (tree:{[key:string]:any}) => {
 
         this._node.tree = Object.assign(this._node.tree ? this._node.tree : {}, tree);
 
@@ -292,8 +292,8 @@ export class Graph {
         //make the tree a node 
         if(tree._node) {
             if(!tree._node.tag) tree._node._tag = `tree${Math.floor(Math.random()*1000000000000000)}`;
-            for(const l in this._node.loaders) { this._node.loaders[l](tree,this,this); } //run any passes on the nodes to set things up further
             let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
+            for(const l in this._node.loaders) { this._node.loaders[l](node,this,this,tree); } //run any passes on the nodes to set things up further
             this._node.nodes.set(node._node.tag,node);
             if(node._node.listeners) {
                 listeners[node._node.tag] = node._node.listeners;
@@ -306,19 +306,19 @@ export class Graph {
 
     }
 
-    setLoaders(loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph)=>void}, replace?:boolean) {
+    setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph)=>void}, replace?:boolean) => {
         if(replace)  this._node.loaders = loaders;
         else Object.assign(this._node.loaders,loaders);
         return this._node.loaders;
     }
 
-    add(properties:any, parent?:GraphNode|string) {
+    add = (properties:any, parent?:GraphNode|string) => {
 
         let listeners = {}; //collect listener props declared
 
         if(typeof parent === 'string') parent = this.get(parent);
         let node = new GraphNode(properties, parent as GraphNode, this);
-        for(const l in this._node.loaders) { this._node.loaders[l](node,parent,this); } //run any passes on the nodes to set things up further
+        for(const l in this._node.loaders) { this._node.loaders[l](node,parent,this,properties); } //run any passes on the nodes to set things up further
         this._node.nodes.set(node._node.tag,node);
 
         //console.log('old:',properties._node,'new:',node._node);
@@ -331,6 +331,8 @@ export class Graph {
             node._node.children = Object.assign({},node._node.children);
             this.recursiveSet(node._node.children,node,listeners);
         }
+
+        if(node._node.tree) this.setTree(node._node.tree);
 
         //now setup event listeners
         this.setListeners(listeners);
@@ -351,24 +353,26 @@ export class Graph {
                 if(!p._node) p._node = {};
                 if(!p._node.tag) p._node.tag = key;
                 if(this.get(p._node.tag)) continue; //don't duplicate a node we already have in the graph by tag
-                let nd = new GraphNode(p,parent,this);
-                for(const l in this._node.loaders) { this._node.loaders[l](nd,parent,this); } //run any passes on the nodes to set things up further
-                t[key] = nd; //replace child with a graphnode
-                this._node.tree[nd._node.tag] = p; //reference the original props by tag in the tree for children
-                this.set(nd._node.tag,nd);
-                if(nd._node.listeners) {
-                    listeners[nd._node.tag] = nd._node.listeners;
+                let node = new GraphNode(p,parent,this);
+                for(const l in this._node.loaders) { this._node.loaders[l](node,parent,this,t); } //run any passes on the nodes to set things up further
+                t[key] = node; //replace child with a graphnode
+                this._node.tree[node._node.tag] = p; //reference the original props by tag in the tree for children
+                this.set(node._node.tag,node);
+                if(node._node.listeners) {
+                    listeners[node._node.tag] = node._node.listeners;
                 }
-                else if(nd._node.children) {
-                    nd._node.children = Object.assign({},nd._node.children);
-                    this.recursiveSet(nd._node.children, nd, listeners);
+                else if(node._node.children) {
+                    node._node.children = Object.assign({},node._node.children);
+                    this.recursiveSet(node._node.children, node, listeners);
                 }
+
+                if(node._node.tree) this.setTree(node._node.tree);
             }
         } 
         return listeners;
     }
 
-    remove(node:GraphNode|string, clearListeners:boolean=true) {
+    remove = (node:GraphNode|string, clearListeners:boolean=true) => {
         this.unsubscribe(node);
 
         if(typeof node === 'string') node = this.get(node);
@@ -423,14 +427,16 @@ export class Graph {
         return node;
     }
 
-    run(node:string|GraphNode, ...args:any[]) {
+    removeTree = (tree:any) => {}
+
+    run = (node:string|GraphNode, ...args:any[]) => {
         if(typeof node === 'string') node = this.get(node);
         if((node as GraphNode)?._node?.operator) {
             return (node as GraphNode)?._node?.operator(...args);
         }
     }
 
-    setListeners(listeners:{[key:string]:{[key:string]:any}}) {
+    setListeners = (listeners:{[key:string]:{[key:string]:any}}) => {
         //now setup event listeners
         for(const key in listeners) {
             let node = this.get(key);
@@ -459,7 +465,7 @@ export class Graph {
         }
     }
 
-    clearListeners(node:GraphNode|string,listener?:string) {
+    clearListeners = (node:GraphNode|string,listener?:string) => {
         if(typeof node === 'string') node = this.get(node) as GraphNode;
         if(node?._node.listeners) {
             //console.log(node?._node.listeners);
@@ -538,8 +544,6 @@ export class Graph {
     setState = (update:{[key:string]:any}) => {
         this._node.state.setState(update);
     }
-
-    
 
 }
 

@@ -1,4 +1,4 @@
-import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, ServiceMessage } from "../Service2";
 
 export type WebSocketProps = {
     host:string,
@@ -43,9 +43,9 @@ export class WSSfrontend extends Service {
     }
 
     
-    constructor(options?:ServiceOptions) {
+    constructor(options?:any) {
         super(options)
-        this.load(this.routes);
+        this.setTree(this);
     }
 
     openWS = (
@@ -293,13 +293,13 @@ export class WSSfrontend extends Service {
         return res;
     }
 
-    subscribeSocket = (route:string, socket:WebSocket|string) => {
+    subscribeSocket = (route:string, socket:WebSocket|string, key?:string) => {
         if(typeof socket === 'string' && this.sockets[socket]) {
             socket = this.sockets[socket].socket;
         }
 
         if(typeof socket === 'object')
-            return this.subscribe(route, (res:any) => {
+            return this.subscribe(route, key, (res:any) => {
                 //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
                 if((socket as WebSocket).readyState === (socket as WebSocket).OPEN) {
                     if(res instanceof Promise) {
@@ -313,9 +313,9 @@ export class WSSfrontend extends Service {
             });
     } 
 
-    subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string) => {
+    subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string, key?:string) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
-            this.subscribe(socketId, (res) => {
+            this.subscribe(socketId, key, (res) => {
                 let msg = JSON.parse(res);
                 if(msg?.callbackId === route) {
                     if(!callback) this.setState({[socketId]:msg.args}); //just set state
@@ -327,19 +327,6 @@ export class WSSfrontend extends Service {
             });
             return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId]});
         }
-    }
-
-    routes:Routes = {
-        openWS:{
-            operator:this.openWS,
-            aliases:['open']
-        },
-        request:this.request,
-        runRequest:this.runRequest,
-        terminate:this.terminate,
-        subscribeSocket:this.subscribeSocket,
-        subscribeToSocket:this.subscribeToSocket,
-        unsubscribe:this.unsubscribe
     }
 
 }

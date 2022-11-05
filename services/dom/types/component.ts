@@ -1,5 +1,5 @@
 import { DOMElement } from "../DOMElement"
-import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph"
+import { Graph, GraphNode, GraphNodeProperties } from "../../../Graph2"
 import { ElementProps } from "./element"
 import { CanvasElementProps } from "./canvascomponent"
 

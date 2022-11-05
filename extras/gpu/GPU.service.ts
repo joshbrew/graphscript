@@ -1,9 +1,9 @@
 //gpujs implementation. all of this can and should be optimized and built upon but it's just functional
 
-import { Routes, Service, ServiceOptions } from "../../services/Service";
+import { Service } from "../../services/Service2";
 import {gpuUtils} from 'gpujsutils'//'../node_modules/gpujsutils/src/gpuUtils'
 import {Math2} from 'brainsatplay-math'
-import { parseFunctionFromText } from "../../Graph";
+import { parseFunctionFromText } from "../../services/utils";
 
 //https://github.com/joshbrew/gpujsutils
 
@@ -12,9 +12,9 @@ export class GPUService extends Service {
     gpu = new gpuUtils()
 
     
-    constructor(options?:ServiceOptions) {
+    constructor(options?:any) {
         super(options)
-        this.load(this.routes);
+        this.setTree(this);
     }
 
 
@@ -108,13 +108,4 @@ export class GPUService extends Service {
         return [dfts[0], dfts[1], coherenceResults];
     }
 
-    routes:Routes = {
-        addFunc:this.addFunc,
-        addKernel:this.addKernel,
-        callKernel:this.callKernel,
-        dft:this.dft,
-        multidft:this.multidft,
-        multidftbandpass:this.multidftbandpass,
-        coherence:this.coherence
-    }
 }

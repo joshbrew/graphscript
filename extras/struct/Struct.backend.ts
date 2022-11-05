@@ -1,6 +1,6 @@
 import ObjectID from "bson-objectid"
 import { AuthorizationStruct, CommentStruct, GroupStruct, ProfileStruct } from "./datastructures/types";
-import { Routes, Service, ServiceOptions } from "../../services/Service";
+import { Service } from "../../services/Service2";
 import { User } from '../../services/router/Router';
 
 const randomId = (prefix?) => ((prefix) ? `${prefix}_` : '')  + Math.floor(1000000000000000*Math.random())
@@ -58,7 +58,7 @@ export class StructBackend extends Service {
     useAuths: boolean = true //check if the user querying has the correct permissions 
 
     constructor(
-        options?:ServiceOptions,
+        options?:any,
         dboptions?:{
             users?:{[key:string]:User},
             mode?:'local' | 'mongodb' | string,
@@ -67,7 +67,7 @@ export class StructBackend extends Service {
         }
     ) {
         super(options);
-        this.load(this.routes);
+        this.setTree(this);
         if(dboptions?.users) this.users = dboptions.users; //set the reference so this keeps concurrent with the user router
         if(dboptions?.db) this.mode = (this.db) ? ((dboptions.mode) ? dboptions.mode : 'local') : 'local'
         if(dboptions?.collections) this.collections = dboptions.collections;
@@ -917,7 +917,7 @@ export class StructBackend extends Service {
     }
 
     //safely returns the profile id, username, and email and other basic info based on the user role set applied
-    async getMongoUsersByRoles(user:Partial<ProfileStruct>,role:string) {
+    async getMongoUsersByRole(user:Partial<ProfileStruct>,role:string) {
         let users = this.collections.profile.instance.find({
             userRoles:{$all: {[role]:true}}
         });
@@ -1619,26 +1619,6 @@ export class StructBackend extends Service {
         // Delete the Reference by ID
         if (this.collections[struct.structType]) delete this.collections[struct.structType].reference[struct._id]
         return true;
-    }
-
-    routes:Routes = {
-        query:this.query,
-        getUser:this.getUser,
-        setUser:this.setUser,
-        getUsersByIds:this.getUsersByIds,
-        getUsersByRole:this.getUsersByRole,
-        deleteUser:this.deleteUser,
-        setData:this.setData,
-        getData:this.getData,
-        getDataByIds:this.getDataByIds,
-        getAllData:this.getAllData,
-        deleteData:this.deleteData,
-        getUserGroups:this.getUserGroups,
-        setGroup:this.setGroup,
-        deleteGroup:this.deleteGroup,
-        setAuthorization:this.setAuthorization,
-        getAuthorizations:this.getAuthorizations,
-        deleteAuthorization:this.deleteAuthorization
     }
 
 }

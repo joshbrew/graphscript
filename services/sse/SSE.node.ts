@@ -1,4 +1,4 @@
-import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, ServiceMessage } from "../Service2";
 import {createSession, createChannel, Session, SessionState, Channel} from 'better-sse'; //third party lib. SSEs really just push notifications to an http endpoint but it's minimal overhead
 import http from 'http'
 import https from 'https'
@@ -69,9 +69,9 @@ export class SSEbackend extends Service {
     }
 
     
-    constructor(options?:ServiceOptions) {
+    constructor(options?:any) {
         super(options)
-        this.load(this.routes);
+        this.setTree(this);
     }
 
     setupSSE = (options:SSEProps) => {
@@ -238,7 +238,7 @@ export class SSEbackend extends Service {
                             if(typeof body.route === 'string') {
                                 if(body.route.includes('/') && body.route.length > 1) 
                                     body.route = body.route.split('/').pop();
-                                route = this.routes[body.route];
+                                route = this._node.tree[body.route];
                             }
                            
                         }
@@ -247,7 +247,7 @@ export class SSEbackend extends Service {
                         } else if (callbackId && sse.requests[callbackId]) {
                             sse.requests[callbackId](args);
                         }
-                        if(this.keepState) this.setState({[path]:body});
+                        if(this._node.keepState) this.setState({[path]:body});
                     });
                 }
             }
@@ -442,10 +442,11 @@ export class SSEbackend extends Service {
         route:string, 
         path:string, 
         sessionId?:string,
-        eventName?:string
+        eventName?:string,
+        key?:string
     ) => {
         if(this.servers[path]) {
-            return this.subscribe(route, (res) => {
+            return this.subscribe(route, key, (res) => {
                 this.servers[path].send({args:res, callbackId:route}, eventName, sessionId);
             })
         }
@@ -456,11 +457,12 @@ export class SSEbackend extends Service {
         path:string, 
         callback?:string|((res:any)=>void), 
         sessionId?:string,
-        eventName?:string
+        eventName?:string,
+        key?:string
     ) => {
         if(this.servers[path]) {
 
-            this.subscribe(path,(res) => {
+            this.subscribe(path,key,(res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[path]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node
@@ -504,19 +506,6 @@ export class SSEbackend extends Service {
         }
 
         return true;
-    }
-
-    routes:Routes = {
-        setupSSE:{
-            operator:this.setupSSE,
-            aliases:['open']  
-        },
-        terminate:this.terminate,
-        transmit:this.transmit,
-        request:this.request,
-        runRequest:this.runRequest,
-        streamReadable:this.streamReadable,
-        streamIterable:this.streamIterable
     }
 
 }

@@ -1,7 +1,7 @@
 //End to end encryption using sjcl and keygen stuff, should involve webworkers 
 
-import { GraphNode } from "../../Graph";
-import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
+import { GraphNode } from "../../Graph2";
+import { Service, ServiceMessage } from "../Service2";
 import sjcl from "./sjcl"; //stanford javascript cryptography library, super minimal!
 
 //End to end encryption service, this will redirect transmits/receives through an encoder/decoder framework
@@ -19,7 +19,7 @@ export class E2EEService extends Service {
     secret?:string; 
 
     constructor(
-        options?:ServiceOptions,
+        options?:any,
         keys?:{ //match ids to decryption keys then attempt to reroute the data
         [key:string]:{ key:string, _id?:string } //if method undefined, default to AES (the one that is considered most secure/general)
     }, secureKeys?:boolean, secret?:string) {
@@ -33,6 +33,8 @@ export class E2EEService extends Service {
             }
             else Object.assign(this.keys,keys);
         }
+
+        this.setTree(this);
     }
 
     addKey = (
@@ -168,7 +170,7 @@ export class E2EEService extends Service {
                 return this.handleServiceMessage(message);
             } else if ((typeof message.node === 'string' || message.node instanceof GraphNode)) {
                 return this.handleGraphNodeCall(message.node, message.args);
-            } else if(this.keepState) {    
+            } else if(this._node.keepState) {    
                 if(message.route)
                     this.setState({[message.route]:message.args});
                 if(message.node)
@@ -178,12 +180,4 @@ export class E2EEService extends Service {
         
     } //
     
-    routes:Routes={
-        encryptRoute:this.encryptRoute,
-        decryptRoute:this.decryptRoute,
-        encrypt:this.encrypt,
-        decrypt:this.decrypt,
-        generateSecret:E2EEService.generateSecret,
-        addKey:this.addKey
-    }
 }

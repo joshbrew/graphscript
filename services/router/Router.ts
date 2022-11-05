@@ -1,5 +1,5 @@
 import { Graph, GraphNode } from "../../Graph"
-import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service"
+import { Service, ServiceMessage } from "../Service2"
 
 /*
 Goals of router:
@@ -57,7 +57,7 @@ export type ConnectionInfo = {
     onclose?:(connection:ConnectionInfo,...args:any[])=>void
 }
 
-export type RouterOptions = ServiceOptions & {
+export type RouterOptions = {
     services?:{
         [key:string]:Service|any|{
             service:Service|any,
@@ -74,7 +74,8 @@ export type RouterOptions = ServiceOptions & {
         } //can be a service constructor
     }
     syncServices?:boolean,
-    order?:string[]
+    order?:string[],
+    [key:string]:any
 }
 
 export class Router extends Service {
@@ -106,39 +107,33 @@ export class Router extends Service {
 
     constructor(options?:RouterOptions){
         super(options);
-        this.load(this.routes);
+        this.setTree(this);
         if(options) {
             if(options.order) this.order = options.order;
 
             if(options.services) {
                 for(const key in options.services) {
                     let opt = (options.services[key] as any);
-                    if(opt instanceof Service) {
+                    if(opt.service instanceof Service) {
                         opt.service.name = key; opt.service.tag = key;
-                        this.addService(opt.service, opt.connections, options.includeClassName, options.routeFormat, options.syncServices);
+                        this.addService(opt.service, opt.connections, options.syncServices);
                     } else if (typeof opt === 'function') {
                         let service = new opt() as Service; //instantiate a class prototype
-                        service.name = key; service.tag = key;
-                        if(service) 
+                        (service as any).name = key; service._node.tag = key;
+                        if(service instanceof Service) 
                             this.addService(
                                 service, 
-                                service.connections, 
-                                options.includeClassName, 
-                                options.routeFormat, 
+                                (service as any).connections, 
                                 options.syncServices
                             );
                     }
                     else {
                         if (typeof opt.service === 'function') {
                             let service = new opt.service({name:key}) as Service; //instantiate a class prototype
-                            service.name = key; service.tag = key;
+                            (service as any).name = key; service._node.tag = key;
                             if(service) 
                                 this.addService(
-                                    service, 
-                                    undefined, 
-                                    options.includeClassName, 
-                                    options.routeFormat, 
-                                    options.syncServices
+                                    service
                                 );
                                 opt.service = service;
                         }
@@ -146,9 +141,6 @@ export class Router extends Service {
                             opt.service.name = key; opt.service.tag = key;
                             this.addService(
                                 opt.service, 
-                                undefined,
-                                options.includeClassName, 
-                                options.routeFormat, 
                                 options.syncServices
                             );
                         }
@@ -485,7 +477,7 @@ export class Router extends Service {
                     }
                 }
             }
-            if(typeof options === 'string' && this.nodes.get(options)) options = {connection:this.nodes.get(options)};
+            if(typeof options === 'string' && this._node.nodes.get(options)) options = {connection:this._node.nodes.get(options)};
         } 
         if(!options || typeof options === 'string') return undefined;
 
@@ -614,10 +606,10 @@ export class Router extends Service {
                         options.service = this.services[options.service];
                     }
                     if(typeof options.service === 'object') {
-                        if(options.service.connections) { //reference we have on available services
-                            for(const key in options.service.connections) {
-                                if(options.service.connections[key][c as string]) {   
-                                    c = options.service.connections[key][c as string];
+                        if((options.service as any).connections) { //reference we have on available services
+                            for(const key in (options.service as any).connections) {
+                                if((options.service as any).connections[key][c as string]) {   
+                                    c = (options.service as any).connections[key][c as string];
                                     settings.connectionType = key;
                                     settings.connectionsKey = c as string;
                                     break;
@@ -734,15 +726,13 @@ export class Router extends Service {
 
     addService = (
         service:Service,
-        connections?:any, //the object on the service we want to associate connections wtih
-        includeClassName?:boolean,
-        routeFormat?:string,
+        connections?:any, //the object on the service we want to associate connections with
         syncServices?:boolean,
         source?:string,
         order?:string[],
     ) => {
         //console.log(service)
-        this.load(service,includeClassName,routeFormat,this.customRoutes,this.customChildren);
+        this.setTree(service);
         this.services[service.name] = service;
         if(connections) {
             if(typeof connections === 'string') this.addServiceConnections(service,connections,source);
@@ -756,7 +746,7 @@ export class Router extends Service {
         if(order) this.order = order;
         else {
             if(!this.order) this.order = [];
-            this.order.push(service.name);
+            this.order.push((service as any).name);
         }
     }
 
@@ -858,6 +848,7 @@ export class Router extends Service {
         relay:string|ConnectionInfo, //the router we are trying to relay messages through
         endpoint:string, //the endpoint on the router that we want to subscribe to through the router
         callback:string|((res:any)=>void),
+        key?:string,
         ...args:any[]
     ) => {
         if(typeof relay === 'string') {
@@ -867,7 +858,7 @@ export class Router extends Service {
         if(typeof relay === 'object')
             return new Promise((res,rej) => {
                 (relay as any).run('routeConnections',[route,endpoint,(relay as any)._id,...args]).then((sub) => {
-                    this.subscribe(endpoint, (res) => {
+                    this.subscribe(endpoint, key, (res) => {
                         if(res?.callbackId === route) {
                             if(!callback) this.setState({[endpoint]:res.args});
                             else if(typeof callback === 'string') { //just set state 
@@ -939,13 +930,13 @@ export class Router extends Service {
     //tie node references together across service node maps so they can call each other's relative routes
     syncServices = () => {
         for(const name in this.services) { 
-            if('users' in this.services[name]) this.services[name].users = this.users;
-            this.nodes.forEach((n,tag) => {
-                if(!this.services[name].nodes.get(n.tag)) {
-                    this.services[name].nodes.set(n.tag,n);
+            if('users' in this.services[name]) (this.services[name] as Router).users = this.users;
+            this._node.nodes.forEach((n,tag) => {
+                if(!this.services[name]._node.nodes.get(n.tag)) {
+                    this.services[name]._node.nodes.set(n.tag,n);
                 } else {
-                    if(!this.services[name].nodes.get(tag) && n._UNIQUE !== this.services[name].nodes.get(n.tag)._UNIQUE) //use the remapped key if it's not the same node
-                        this.services[name].nodes.set(tag,n);
+                    if(!this.services[name]._node.nodes.get(tag) && n._UNIQUE !== this.services[name]._node.nodes.get(n.tag)._UNIQUE) //use the remapped key if it's not the same node
+                        this.services[name]._node.nodes.set(tag,n);
                 }
             });
         }
@@ -969,19 +960,6 @@ export class Router extends Service {
         //console.log(user,props)
     }
 
-    routes:Routes={
-        addUser:this.addUser,
-        removeUser:this.removeUser,
-        getConnection:this.getConnection,
-        addConnection:this.addConnection,
-        removeConnection:this.removeConnection,
-        addService:this.addService,
-        addServiceConnections:this.addServiceConnections,
-        openConnection:this.openConnection,
-        terminate:this.terminate,
-        routeConnections:this.routeConnections,
-        subscribeThroughConnection:this.subscribeThroughConnection,
-        syncServices:this.syncServices
-    }
+
 
 }

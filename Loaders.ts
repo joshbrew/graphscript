@@ -1,4 +1,4 @@
-import { GraphNode, Graph } from "./Graph2";
+import { GraphNode, Graph, GraphNodeProperties } from "./Graph2";
 
 //loaders are triggered just after graphnode creation, after oncreate() is called
 
@@ -262,6 +262,28 @@ export const transformListenerResult = (node:GraphNode,parent:GraphNode|Graph,gr
 }
 
 
+export const substitute_operator = (node:GraphNode & GraphNodeProperties, parent:GraphNode|Graph,graph:Graph) => {
+    //console.log('route', r)
+    if(node.post && !node._node.operator) {
+        node._setOperator(node.post);
+    } else if (!node._node.operator && typeof node.get == 'function') {
+        node._setOperator(node.get);
+    }
+    if(node.aliases) {
+        node.aliases.forEach((a) => {
+            graph._node.nodes.set(a,node);
+            let ondelete = (node) => {
+                graph._node.nodes.delete(a);
+            }
+    
+            if(typeof node._node.ondelete === 'undefined') node._node.ondelete = [ondelete];
+            else if (typeof node._node.ondelete === 'function') node._node.ondelete = [ondelete,node._node.ondelete];
+            else if (Array.isArray(node._node.ondelete)) node._node.ondelete.unshift(ondelete);
+        })
+    }
+}
+
+//standard loaders with flow logic for operators and listeners
 export const loaders = {
     backprop,
     loop,
@@ -269,5 +291,6 @@ export const loaders = {
     branching,
     triggerListenerOncreate,
     bindListener,
-    transformListenerResult
+    transformListenerResult,
+    substitute_operator
 }

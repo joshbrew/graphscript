@@ -1,4 +1,4 @@
-import { Graph, parseFunctionFromText } from '../../Graph';
+import { parseFunctionFromText } from '../utils';
 import { WorkerInfo, WorkerService } from './Worker.service';
 import { unsafeRoutes } from '../unsafe/Unsafe.service';
 

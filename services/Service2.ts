@@ -1,4 +1,6 @@
 import { Graph, GraphNode } from "../Graph2";
+import {loaders} from '../Loaders';
+
 
 export type TypedArray =
 | Int8Array
@@ -21,9 +23,20 @@ export type ServiceMessage = {
 
 export class Service extends Graph {
     
+    name = `service${Math.floor(Math.random()*1000000000000000)}`;
 
     constructor(options:any) {
-        super(options);
+        super(
+            recursivelyAssign(
+                { //assign properties to the 
+                    loaders:{...loaders},
+                    //tree:
+                },
+                options
+            ) 
+        );
+
+        this.setTree(this);
     }
 
 
@@ -167,44 +180,52 @@ export class Service extends Graph {
             });
     }
 
-    terminate = (...args:any) => {
-       this._node.nodes.forEach((n) => {
-           n.stopNode(); //stops any loops
-       });
-    }
+    terminate = (...args:any) => {}
     
-    isTypedArray(x:any) { //https://stackoverflow.com/a/40319428
-        return (ArrayBuffer.isView(x) && Object.prototype.toString.call(x) !== "[object DataView]");
+    isTypedArray = isTypedArray;
+    recursivelyAssign = recursivelyAssign;
+    spliceTypedArray = spliceTypedArray;
+    ping = ()=>{ //define functions, graph props, etc. All methods defined in a route object are callable
+        console.log('pinged');//this.transmit('pong');
+        return 'pong';
     }
-
-    recursivelyAssign = (target,obj) => {
-        for(const key in obj) {
-            if(typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-                if(typeof target[key] === 'object' && !Array.isArray(target[key])) this.recursivelyAssign(target[key], obj[key]);
-                else target[key] = this.recursivelyAssign({},obj[key]); 
-            } else target[key] = obj[key];
-        }
-    
-        return target;
-    }
-    
-    //splice out a section of a typed array. If end is undefined we'll splice all values from the starting position to the end
-    //if you want to replace values, just use .set, this is for quickly removing values to trim arrays e.g. if an entity is popped
-    spliceTypedArray(arr:TypedArray,start:number,end?:number):TypedArray {
-        let s = arr.subarray(0,start)
-        let e;
-        if(end) {
-            e = arr.subarray(end+1);
-        }
-
-        let ta;
-        if(s.length > 0 || e?.length > 0) ta = new (arr as any).constructor(s.length+e.length); //use the same constructor
-        if(ta) {
-            if(s.length > 0) ta.set(s);
-            if(e && e.length > 0) ta.set(e,s.length);
-        }
-        return ta as TypedArray;
+    echo = (...args:any)=>{ //this transmits input arguments, so to echo on a specific service do e.g. 'wss/echo'
+        this.transmit(...args);
+        return args;
     }
     
 }
 
+
+export function isTypedArray(x:any) { //https://stackoverflow.com/a/40319428
+    return (ArrayBuffer.isView(x) && Object.prototype.toString.call(x) !== "[object DataView]");
+}
+
+export const recursivelyAssign = (target,obj) => {
+    for(const key in obj) {
+        if(typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+            if(typeof target[key] === 'object' && !Array.isArray(target[key])) recursivelyAssign(target[key], obj[key]);
+            else target[key] = recursivelyAssign({},obj[key]); 
+        } else target[key] = obj[key];
+    }
+
+    return target;
+}
+
+//splice out a section of a typed array. If end is undefined we'll splice all values from the starting position to the end
+//if you want to replace values, just use .set, this is for quickly removing values to trim arrays e.g. if an entity is popped
+export function spliceTypedArray(arr:TypedArray,start:number,end?:number):TypedArray {
+    let s = arr.subarray(0,start)
+    let e;
+    if(end) {
+        e = arr.subarray(end+1);
+    }
+
+    let ta;
+    if(s.length > 0 || e?.length > 0) ta = new (arr as any).constructor(s.length+e.length); //use the same constructor
+    if(ta) {
+        if(s.length > 0) ta.set(s);
+        if(e && e.length > 0) ta.set(e,s.length);
+    }
+    return ta as TypedArray;
+}

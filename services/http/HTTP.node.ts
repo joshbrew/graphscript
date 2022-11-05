@@ -1,9 +1,9 @@
-import { RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, ServiceMessage } from "../Service2";
 import * as http from 'http'
 import * as https from 'https'
 import * as fs from 'fs'
 import * as path from 'path'
-import { GraphNode } from "../../Graph";
+import { GraphNode, GraphNodeProperties } from "../../Graph2";
 
 
 export type ServerProps = {
@@ -20,7 +20,7 @@ export type ServerProps = {
             onrequest?:GraphNode|string|((self:HTTPbackend, node:GraphNode, request:http.IncomingMessage, response:http.ServerResponse)=>void), //run a function or node? the template, request and response are passed as arguments, you can write custom node logic within this function to customize inputs etc.
             redirect?:string, // can redirect the url to call a different route instead, e.g. '/':{redirect:'home'} sets the route passed to the receiver as 'home'
             inject?:{[key:string]:{}|null}|string[]|string| ((...args:any)=>any) //append html      
-        } & RouteProp
+        } & GraphNodeProperties
     },
     protocol?:'http'|'https',
     type?:'httpserver'|string,
@@ -80,11 +80,11 @@ export class HTTPbackend extends Service {
     };
 
     constructor(
-        options?:ServiceOptions,
+        options?:any,
         settings?:{ host?:string, port?:number, protocol?:'http'|'https', certpath?:string, keypath?:string }
     ) {
         super(options);
-        this.load(this.routes);
+        this.setTree(this);
 
         //console.log(settings);
         if(settings) {
@@ -121,7 +121,7 @@ export class HTTPbackend extends Service {
                     if((options.pages[key] as any).template) {
                         (options.pages[key] as any).get = (options.pages[key] as any).template;
                     }
-                    if(key !== '_all') this.load({[`${options.port}/${key}`]:options.pages[key]});
+                    if(key !== '_all') this.setTree({[`${options.port}/${key}`]:options.pages[key]});
                 }
             }
         }
@@ -178,11 +178,11 @@ export class HTTPbackend extends Service {
                 if(typeof options.pages[url] === 'object') {
                     if((options.pages[url] as any).onrequest) {
                         if(typeof (options.pages[url] as any).onrequest === 'string') {
-                            (options.pages[url] as any).onrequest = this.nodes.get((options.pages[url] as any).onrequest);
+                            (options.pages[url] as any).onrequest = this._node.nodes.get((options.pages[url] as any).onrequest);
                         }
                         if(typeof (options.pages[url] as any).onrequest === 'object') {
-                            if((options.pages[url] as any).onrequest.run) {
-                                ((options.pages[url] as any).onrequest as GraphNode).run(options.pages[url], request, response);
+                            if((options.pages[url] as any).onrequest._node?.operator) {
+                                ((options.pages[url] as any).onrequest as GraphNode)._node.operator(options.pages[url], request, response);
                             } 
                         } else if(typeof (options.pages[url] as any).onrequest === 'function') {
                             (options.pages[url] as any).onrequest(this,options.pages[url], request, response);
@@ -292,11 +292,11 @@ export class HTTPbackend extends Service {
                     }
                     if((options.pages[url] as any).onrequest) {
                         if(typeof (options.pages[url] as any).onrequest === 'string') {
-                            (options.pages[url] as any).onrequest = this.nodes.get((options.pages[url] as any).onrequest);
+                            (options.pages[url] as any).onrequest = this._node.nodes.get((options.pages[url] as any).onrequest);
                         }
                         if(typeof (options.pages[url] as any).onrequest === 'object') {
-                            if((options.pages[url] as any).onrequest.run) {
-                                ((options.pages[url] as any).onrequest as GraphNode).run(options.pages[url], request, response);
+                            if((options.pages[url] as any).onrequest._node?.operator) {
+                                ((options.pages[url] as any).onrequest as GraphNode)._node.operator(options.pages[url], request, response);
                             } 
                         } else if(typeof (options.pages[url] as any).onrequest === 'function') {
                             (options.pages[url] as any).onrequest(this,options.pages[url], request, response);
@@ -594,9 +594,9 @@ export class HTTPbackend extends Service {
                     let route;
                     if(served) {
                         let rt = `${served.port}/${message.route}`;
-                        if(this.nodes.get(rt)) route = rt
+                        if(this._node.nodes.get(rt)) route = rt
                     }
-                    if(!route && this.nodes.get(message.route)) route = message.route;
+                    if(!route && this._node.nodes.get(message.route)) route = message.route;
                     
                     if(route) {
                         let res:any;
@@ -648,22 +648,22 @@ export class HTTPbackend extends Service {
                     
                     let route,method,args;
                     if(body?.route){ //if arguments were posted 
-                        route = this.routes[body.route];
+                        route = this._node.tree[body.route];
                         method = body.method;
                         args = body.args;
                         if(!route) {
                             if(typeof body.route === 'string') if(body.route.includes('/') && body.route.length > 1) body.route = body.route.split('/').pop();
-                            route = this.routes[body.route];
+                            route = this._node.tree[body.route];
                         }
                     }
                     if(!route) { //body post did not provide argument so use the request route
                         if (message?.route) {
-                            let route = this.routes[message.route];
+                            let route = this._node.tree[message.route];
                             method = message.method;
                             args = message.args;
                             if(!route) {
                                 if(typeof message.route === 'string') if(message.route.includes('/') && message.route.length > 1) message.route = message.route.split('/').pop() as string;
-                                route = this.routes[message.route];
+                                route = this._node.tree[message.route];
                             }
                         }
                     }
@@ -846,11 +846,11 @@ export class HTTPbackend extends Service {
         if(typeof template === 'string') {
             if(!template.includes('<html')) template = '<!DOCTYPE html><html>'+template+'</html>'; //add a root
         }
-        if(typeof this.routes[path] === 'object') {
-            (this.routes[path] as any).get = template;
-            this.nodes.get(path).get = template;
+        if(typeof this._node.tree[path] === 'object') {
+            (this._node.tree[path] as any).get = template;
+            this._node.nodes.get(path).get = template;
         }
-        else this.load({
+        else this.setTree({
                 [path]: {
                     get:template
                 }
@@ -861,11 +861,11 @@ export class HTTPbackend extends Service {
         if(typeof template === 'string') {
             if(!template.includes('<') || (!template.includes('>'))) template = '<div>'+template+'</div>';
         }
-        if(typeof this.routes[path] === 'object') {
-            (this.routes[path] as any).get = template;
-            this.nodes.get(path).get = template;
+        if(typeof this._node.tree[path] === 'object') {
+            (this._node.tree[path] as any).get = template;
+            this._node.nodes.get(path).get = template;
         }
-        else this.load({
+        else this.setTree({
                 [path]: {
                     get:template
                 }
@@ -881,8 +881,8 @@ export class HTTPbackend extends Service {
                 for(const key in obj) {
                     appendTemplate(obj,key,res); //recursive append
                 }
-            } else if((this.routes[r] as RouteProp)?.get) {
-                let toAdd = (this.routes[r] as RouteProp).get;
+            } else if(this._node.tree[r]?.get) {
+                let toAdd = this._node.tree[r]?.get;
                 if(typeof toAdd === 'function') toAdd = toAdd(obj[r]);
                 if(typeof toAdd === 'string')  {
                     let lastDiv = res.lastIndexOf('<');
@@ -892,8 +892,8 @@ export class HTTPbackend extends Service {
                     } res += toAdd; 
                 }
                 
-            } else if (typeof this.routes[r] === 'function') {
-                let routeresult = (this.routes[r] as Function)(obj[r]); //template function, pass props
+            } else if (typeof this._node.tree[r] === 'function') {
+                let routeresult = (this._node.tree[r] as Function)(obj[r]); //template function, pass props
                 if(typeof routeresult === 'string') {   
                     let lastDiv = res.lastIndexOf('<');
                     if(lastDiv > 0) {
@@ -904,7 +904,7 @@ export class HTTPbackend extends Service {
                     //console.log(lastDiv, res, routeresult)
                 }
                 //console.log(routeresult)
-            } else if (typeof this.routes[r] === 'string') res += this.routes[r];
+            } else if (typeof this._node.tree[r] === 'string') res += this._node.tree[r];
             return res;
         }
 
@@ -922,77 +922,55 @@ export class HTTPbackend extends Service {
         return result;
     }
 
-    routes:Routes={
-        setupServer:{
-            operator:this.setupServer,
-            aliases:['open']
-        },
-        terminate:(path:string|number)=>{
-            if(path) for(const address in this.servers) {
-                if(address.includes(`${path}`)) {
-                    this.terminate(this.servers[address]);
-                    delete this.servers[address];
+    GET = this.get;
+    POST = this.post;
+    hotreload = (socketURL:string|URL=`http://localhost:8080/wss`) => { 
+            
+        if(socketURL instanceof URL) socketURL = socketURL.toString();
+
+        const HotReloadClient = (url=`http://localhost:8080/wss`) => {
+            //hot reload code injected from backend
+            //const socketUrl = `ws://${cfg.host}:${cfg.hotreload}`;
+            let socket = new WebSocket(url);
+            socket.addEventListener('close',()=>{
+              // Then the server has been turned off,
+              // either due to file-change-triggered reboot,
+              // or to truly being turned off.
+          
+              // Attempt to re-establish a connection until it works,
+              // failing after a few seconds (at that point things are likely
+              // turned off/permanantly broken instead of rebooting)
+              const interAttemptTimeoutMilliseconds = 100;
+              const maxDisconnectedTimeMilliseconds = 3000;
+              const maxAttempts = Math.round(maxDisconnectedTimeMilliseconds/interAttemptTimeoutMilliseconds);
+              let attempts = 0;
+              const reloadIfCanConnect = ()=>{
+                attempts ++ ;
+                if(attempts > maxAttempts){
+                  console.error("Could not reconnect to dev server.");
+                  return;
                 }
-            }
-        },
-        GET:this.get, //generic get from url
-        POST:this.post, //generic post to url
-        addPage:this.addPage,
-        addHTML:this.addHTML,
-        buildPage:this.buildPage,
-        getRequestBody:this.getRequestBody,
-
-        // provides injectable browser websocket-based hot reload template, 
-        //  you still need to enable a websocket server separately
-        hotreload:(socketURL:string|URL=`http://localhost:8080/wss`) => { 
-            
-            if(socketURL instanceof URL) socketURL = socketURL.toString();
-
-            const HotReloadClient = (url=`http://localhost:8080/wss`) => {
-                //hot reload code injected from backend
-                //const socketUrl = `ws://${cfg.host}:${cfg.hotreload}`;
-                let socket = new WebSocket(url);
-                socket.addEventListener('close',()=>{
-                  // Then the server has been turned off,
-                  // either due to file-change-triggered reboot,
-                  // or to truly being turned off.
-              
-                  // Attempt to re-establish a connection until it works,
-                  // failing after a few seconds (at that point things are likely
-                  // turned off/permanantly broken instead of rebooting)
-                  const interAttemptTimeoutMilliseconds = 100;
-                  const maxDisconnectedTimeMilliseconds = 3000;
-                  const maxAttempts = Math.round(maxDisconnectedTimeMilliseconds/interAttemptTimeoutMilliseconds);
-                  let attempts = 0;
-                  const reloadIfCanConnect = ()=>{
-                    attempts ++ ;
-                    if(attempts > maxAttempts){
-                      console.error("Could not reconnect to dev server.");
-                      return;
-                    }
-                    socket = new WebSocket(url);
-                    socket.onerror = (er) => {
-                      console.error(`Hot reload port disconnected, will reload on reconnected. Attempt ${attempts} of ${maxAttempts}`);
-                    }
-                    socket.addEventListener('error',()=>{
-                      setTimeout(reloadIfCanConnect,interAttemptTimeoutMilliseconds);
-                    });
-                    socket.addEventListener('open',()=>{
-                      location.reload();
-                    });
-                  };
-                  reloadIfCanConnect();
+                socket = new WebSocket(url);
+                socket.onerror = (er) => {
+                  console.error(`Hot reload port disconnected, will reload on reconnected. Attempt ${attempts} of ${maxAttempts}`);
+                }
+                socket.addEventListener('error',()=>{
+                  setTimeout(reloadIfCanConnect,interAttemptTimeoutMilliseconds);
                 });
-            }
-            
-            return `
-                <script>
-                    console.log('Hot Reload port available at ${socketURL}');  
-                    (`+HotReloadClient.toString()+`)('${socketURL}') 
-                </script>
-            `
-        },
-        pwa:(serviceWorkerPath:string|URL, manifestPath?:string|URL) => {} //pwa template injector
+                socket.addEventListener('open',()=>{
+                  location.reload();
+                });
+              };
+              reloadIfCanConnect();
+            });
+        }
+        
+        return `
+            <script>
+                console.log('Hot Reload port available at ${socketURL}');  
+                (`+HotReloadClient.toString()+`)('${socketURL}') 
+            </script>
+        `
     }
 
 }

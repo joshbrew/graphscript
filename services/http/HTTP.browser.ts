@@ -1,5 +1,5 @@
-import { GraphNode } from "../../Graph";
-import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { GraphNode } from "../../Graph2";
+import { Service, ServiceMessage } from "../Service2";
 
 
 export type RequestOptions = { //frontend request options (not http or https)
@@ -25,9 +25,9 @@ export class HTTPfrontend extends Service {
     fetchProxied = false;
     listening = {};
 
-    constructor(options?:ServiceOptions, path?:string, fetched?: (clone: Response, args: any[], response: Response) => Promise<void>) {
+    constructor(options?:any, path?:string, fetched?: (clone: Response, args: any[], response: Response) => Promise<void>) {
         super(options);
-        this.load(this.routes);
+        this.setTree(this);
         this.listen(path,fetched);
     }
 
@@ -122,7 +122,7 @@ export class HTTPfrontend extends Service {
             message = JSON.stringify(obj);
         }
         if(obj?.method?.toLowerCase() == 'get' || message?.toLowerCase() === 'get') return this.GET(url);
-        return this.post(message,url);
+        return this.POST(message,url);
      
     }
 
@@ -241,17 +241,9 @@ export class HTTPfrontend extends Service {
         } else {
             if(!listener)
                 delete this.listening[path];
-            else delete this.listeners[listener]    
+            else delete this.listening[listener]    
         }
     }
 
-    routes:Routes={
-        request:this.request,
-        GET:this.GET,
-        POST:this.POST,
-        transponder:this.transponder,
-        listen:this.listen,
-        stopListening:this.stopListening
-    }
 
 }

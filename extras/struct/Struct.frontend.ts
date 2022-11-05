@@ -1,6 +1,6 @@
 import { DataTablet, DS } from './datastructures/index'
 import { Data, ProfileStruct, AuthorizationStruct, GroupStruct, DataStruct, EventStruct, ChatroomStruct, CommentStruct, Struct } from './datastructures/types';
-import { Routes, Service, ServiceOptions } from '../../services/Service';
+import { Service } from '../../services/Service2';
 import { User } from '../../services/router/Router';
 
 export const randomId = (prefix?) => ((prefix) ? `${prefix}` : '')  + Math.floor(1000000000000000*Math.random())
@@ -19,11 +19,11 @@ export class StructFrontend extends Service {
     id: string = randomId()
 
     constructor(
-        options?:ServiceOptions,
+        options?:any,
         user?:Partial<User>
     ) {
         super(options);
-        this.load(this.routes);
+        this.setTree(this);
 
         if (user instanceof Object && Object.keys(user).length > 0) this.setupUser(user) // Declares currentUser
     }
@@ -625,7 +625,7 @@ export class StructFrontend extends Service {
                 otherrole = team+'_owner';
             }
             if(otherrole) {
-                let users = await this.getUsersByRoles([otherrole]);
+                let users = await this.getUsersByRole(otherrole);
                     //console.log(res.data)
                 
                 if(users) await Promise.all(users.map(async (groupie)=>{
@@ -1122,55 +1122,5 @@ export class StructFrontend extends Service {
             return res as Array<any>;
     }
 
-    routes:Routes = {
-        setupUser:this.setupUser,
-        addStruct:this.addStruct,
-        getUser:this.getUser,
-        getUsers:this.getUsers,
-        getUsersByRole:this.getUsersByRole,
-        getAllUserData:this.getAllUserData,
-        query:this.query,
-        getData:this.getData,
-        getDataByIds:this.getDataByIds,
-        getStructParentData:this.getStructParentData,
-        setUser:this.setUser,
-        checkUserToken:this.checkUserToken,
-        setData:this.setData,
-        updateServerData:this.updateServerData,
-        deleteData:this.deleteData,
-        deleteUser:this.deleteUser,
-        setGroup:this.setGroup,
-        getUserGroups:this.getUserGroups,
-        deleteGroup:this.deleteGroup,
-        setAuthorization:this.setAuthorization,
-        getAuthorizations:this.getAuthorizations,
-        deleteAuthorizations:this.deleteAuthorization,
-        checkForNotifications:this.checkForNotifications,
-        resolveNotifications:this.resolveNotifications,
-        setAuthorizationsByGroup:this.setAuthorizationsByGroup,
-        deleteRoom:this.deleteRoom,
-        deleteComment:this.deleteComment,
-        getUserDataByAuthorizations:this.getUserDataByAuthorization,
-        getUserDataByAuthorizationGroup:this.getUserDataByAuthorizationGroup,
-        overwriteLocalData:this.overwriteLocalData,
-        setLocalData:this.setLocalData,
-        getLocalData:this.getLocalData,
-        getLocalUserPeerIds:this.getLocalUserPeerIds,
-        getLocalReplies:this.getLocalReplies,
-        hasLocalAuthorization:this.hasLocalAuthorization,
-        deleteLocalData:this.deleteLocalData,
-        deleteStruct:this.deleteStruct,
-        stripStruct:this.stripStruct,
-        createStruct:this.createStruct,
-        userStruct:this.userStruct,
-        authorizeUser:this.authorizeUser,
-        addGroup:this.addGroup,
-        dataObject:this.dataObject,
-        addData:this.addData,
-        addEvent:this.addEvent,
-        addChatroom:this.addChatroom,
-        addComment:this.addComment,
-        
-    }
 
 }

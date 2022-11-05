@@ -318,11 +318,11 @@ export class ProxyManager {
 
 function makeProxy(id, elm?) {
 
-  if(this.graph) {
+  if(this?._node?.graph) {
 
-    if(!this.graph.ProxyManager) this.graph.ProxyManager = new ProxyManager();
+    if(!this._node.graph.ProxyManager) this._node.graph.ProxyManager = new ProxyManager();
 
-    this.graph.ProxyManager.makeProxy(id, elm);
+    this._node.graph.ProxyManager.makeProxy(id, elm);
 
   }
   else {
@@ -333,9 +333,9 @@ function makeProxy(id, elm?) {
     return id;
 }
 function handleProxyEvent( data, id){
-  if(this.graph) {
-    if(!this.graph.ProxyManager) this.graph.ProxyManager = new ProxyManager();
-    if(this.graph.ProxyManager.handleEvent(data, id)) return data;
+  if(this?._node?.graph) {
+    if(!this._node.graph.ProxyManager) this._node.graph.ProxyManager = new ProxyManager();
+    if(this._node.graph.ProxyManager.handleEvent(data, id)) return data;
   } else {
     if(!globalThis.ProxyManager) globalThis.ProxyManager = new ProxyManager();
     if(globalThis.ProxyManager.handleEvent(data, id)) return data;
