@@ -21,24 +21,20 @@ export type ServiceMessage = {
     [key:string]:any //it's an object so do whatever, any messages meant for web protocols need to be stringified or buffered
 }
 
-export type ServiceOptions = GraphOptions & { services:Service|Function }
+export type ServiceOptions = GraphOptions & { services:Service|Function|{[key:string]:any} }
 
 export class Service extends Graph {
     
     name = `service${Math.floor(Math.random()*1000000000000000)}`;
 
     constructor(options?:ServiceOptions) {
-        super(
-            recursivelyAssign(
-                { //assign properties to the 
-                    loaders:{...loaders},
-                    //tree:
-                },
-                options
-            ) 
-        );
+        super({ //assign properties to the graph
+                ...options,
+                loaders: options?.loaders ? Object.assign({...loaders},options.loaders) : {...loaders}
+                //tree:
+        });
 
-        if(options.services) {
+        if(options?.services) {
             for(const s in options.services) {
                 if(typeof options.services[s] === 'function') this.setTree(new options.services[s]()); //instantiate a constructor
                 else if(typeof options.services[s] === 'object') this.setTree(options.services[s]);

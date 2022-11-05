@@ -65,7 +65,7 @@ export class WorkerService extends Service {
 
     constructor(options?:ServiceOptions) {
         super();
-        this.setLoaders({workers:this.workerloader}) //add a custom route loader for the worker logic
+        this.setLoaders(this.workerloader) //add a custom route loader for the worker logic
         this.setTree(this); //load additional methods on the service
         if(options) this.init(options);
 
@@ -159,13 +159,14 @@ export class WorkerService extends Service {
     }
 
     workerloader:any = {
-        'worker':(node: WorkerRoute & GraphNode, parent:WorkerRoute & GraphNode, graph:Graph, tree:any) => {
+        'workers':(node: WorkerRoute & GraphNode, parent:WorkerRoute & GraphNode, graph:Graph, tree:any) => {
             let rt = node as WorkerRoute;
             if(rt?.worker || rt?.workerId || (rt as WorkerRoute)?.workerUrl) { //each set of props with a worker will instantiate a new worker, else you can use the same worker elsewhere by passing the corresponding tag
                 
                 if(!node.parentRoute && parent?.callback) node.parentRoute = parent?.callback;
             
                 let worker = this.loadWorkerRoute(rt, rt._node.tag);
+                console.log(worker);
                 if(worker) {
                     if(!rt.parentRoute && (rt._node.parent as any)?.callback) rt.parentRoute = (rt._node.parent as any).callback;
                     if(rt._node.parent && !rt.portId){ 

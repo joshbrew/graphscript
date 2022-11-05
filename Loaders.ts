@@ -81,17 +81,17 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //bad
                
         if(node._node.loop && typeof node._node.loop === 'number') {
             
-            node._node.isLooping = true
+            if(!('looping' in node._node)) node._node.looping = true
             node._node.looper = () => {
-                if(node._node.isLooping) {
+                if(node._node.looping) {
                     node._node.operator();
                     setTimeout(node._node.looper,node._node.loop);
                 }
             }
-            node._node.looper();
+            if(node._node.looping) node._node.looper();
             
             let ondelete = (node) => {
-                if(node._node.isLooping) node._node.isLooping = false;
+                if(node._node.looping) node._node.looping = false;
             }
 
             if(typeof node._node.ondelete === 'undefined') node._node.ondelete = [ondelete];
@@ -112,24 +112,24 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
         if(typeof node._node.animate === 'function') node._node.animate = node._node.animate.bind(node);
         let anim = (node) => {
             if(node._node.animate) {
-                node._node.isAnimating = true
+                if(!('animating' in node._node)) node._node.animating = true
                 if(!node._node.animation) {
                     node._node.animation = () => {
-                        if(node._node.isAnimating) {
+                        if(node._node.animating) {
                             if(typeof node._node.animate === 'function') node._node.animate();
                             else node._node.operator();
                             requestAnimationFrame(node._node.animation);
                         }
                     }
                     requestAnimationFrame(node._node.animation);
-                    node._node.animation();
+                    if(node._node.animating) node._node.animation();
                 }
             }
         }
         requestAnimationFrame(anim);
 
         let ondelete = (node) => {
-            if(node._node.isAnimating) node._node.isAnimating = false;
+            if(node._node.animating) node._node.animating = false;
         }
 
         if(typeof node._node.ondelete === 'undefined') node._node.ondelete = [ondelete];

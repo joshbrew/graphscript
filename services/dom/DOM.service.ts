@@ -201,7 +201,7 @@ export class DOMService extends Service {
     updateOptions = (options, element): CompleteOptions => {
 
         if(!options.id && options.tag) options.id = options.tag;
-        if(!options.tag && options.id) options.tag = options.id;
+        if(!options._node.tag && options.id) options._node.tag = options.id;
         if(!options.id) options.id = `${options.tagName ?? 'element'}${Math.floor(Math.random()*1000000000000000)}`;
 
         let p = options.parentNode;
@@ -245,18 +245,12 @@ export class DOMService extends Service {
                     // if(options.parentNode.shadowRoot) {
                     //     console.log(options.parentNode.shadowRoot)
                     //     options.parentNode.shadowRoot.appendChild(elm);
-                    // } else 
+                    // } else  
                     parentNode.appendChild(elm);
                 }
 
                 if(oncreate) oncreate.call(elm.node, elm, this.elements[options.id]);
 
-                if(elm.node.animation || elm.node.animate) {
-                    elm.node.runAnimation();
-                }
-                if(elm.node.looper || typeof elm.node.loop === 'number' && elm.node.loop) {
-                    elm.node.runLoop()
-                }   
             },0.01); //small timeout makes sure the elements all load before executing node utilities
         }
     }

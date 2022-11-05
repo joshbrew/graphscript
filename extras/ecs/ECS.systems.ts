@@ -28,9 +28,7 @@ export const Systems = {
         },
         _node:{
             tag:'collision',
-            operator:function(
-            entities:{[key:string]:Entity}
-        ){
+            operator:function( entities:{[key:string]:Entity}){
 
             let keys = this.entityKeys;
 

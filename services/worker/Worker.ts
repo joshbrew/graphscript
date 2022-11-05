@@ -11,14 +11,12 @@ declare var WorkerGlobalScope;
 
 if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
     (self as any).SERVICE = new WorkerService({
-        routes:[
-            (self as any).SERVICE,
+        services:{
             //GPUService,
             workerCanvasRoutes,
             ECSService,
             unsafeRoutes //allows dynamic route loading
-        ],
-        includeClassName:false
+        }
     });
     
 }

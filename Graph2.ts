@@ -31,7 +31,7 @@ export type GraphProperties = {
 
 export type GraphOptions = {
     tree?:{[key:string]:any},
-    loaders?:{[key:string]:{node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties}},
+    loaders?:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties)=>void},
     state?:EventHandler,
     childrenKey?:string,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
@@ -84,11 +84,6 @@ export class GraphNode {
 
             if(parent) properties._node.parent = parent;
             if(graph) properties._node.graph = graph;
-
-            for(const key in properties) {
-                if(typeof properties[key] === 'function') 
-                    properties[key] = properties[key].bind(this);
-            }
 
             if(typeof properties.default === 'function') 
                 properties.default = this._setOperator(properties.default);
@@ -280,7 +275,7 @@ export class Graph {
 
     init = (options:GraphOptions) => {
         if(options) {
-            recursivelyAssign.call(this, this._node,options); //assign loaders etc
+            recursivelyAssign.call(this, this._node, options); //assign loaders etc
             if(options.tree) this.setTree(options.tree);
         }
     }
@@ -314,6 +309,7 @@ export class Graph {
     setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,props:any)=>void}, replace?:boolean) => {
         if(replace)  this._node.loaders = loaders;
         else Object.assign(this._node.loaders,loaders);
+
         return this._node.loaders;
     }
 
@@ -562,7 +558,7 @@ function recursivelyAssign (target,obj) {
             else target[key] = recursivelyAssign({},obj[key]); 
         } else {
             target[key] = obj[key];
-            if(typeof target[key] === 'function') target[key] = target[key].bind(this);
+            //if(typeof target[key] === 'function') target[key] = target[key].bind(this);
         }
     }
 

@@ -10,28 +10,22 @@ import {
     WorkerCanvasControls,
     WorkerInfo
 } from '../../index'//'graphscript'
-import { ElementProps } from 'graphscript/dist/services/dom/types/element';
+import { ElementProps } from '../../services/dom/types/index';
 
 import gsworker from './worker'
 
 const workers = new WorkerService();
 
-const router = new Router({
-    routes:[
-        DOMService,
-        workers,
-        workerCanvasRoutes
-    ]
-});
+const router = new Router({ services:{ DOMService, workers, workerCanvasRoutes } });
 
-console.log(router)
+console.log(router);
 
 document.body.style.height = '100vh'
 
-let ret = router.load({
+let ret = router.setTree({
     'main':{
         tagName:'div',
-        children:{
+        _node:{children:{
             'div':{
                 tagName:'div',
                 innerText:'Multithreaded canvases!'
@@ -486,7 +480,7 @@ let ret = router.load({
                     workers.terminate(info.entities2._id);
                 }        
             } as ElementProps      
-        } 
+        }} 
     } as ElementProps
 });
 
