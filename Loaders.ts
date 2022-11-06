@@ -108,7 +108,7 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //bad
  * 
  */
 export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node._node.animate) {
+    if(node._node.animate === true) {
         if(typeof node._node.animate === 'function') node._node.animate = node._node.animate.bind(node);
         let anim = (node) => {
             if(node._node.animate) {

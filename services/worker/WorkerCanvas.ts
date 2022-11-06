@@ -75,7 +75,10 @@ export function Renderer(
     
         return transferCanvas(worker, options as WorkerCanvasTransferProps, route);
     }
-    else return setupCanvas(options);
+    else {
+        initProxyElement(options.canvas,undefined,options._id);
+        return setupCanvas(options);
+    }
 }
 
 
@@ -84,6 +87,7 @@ export function transferCanvas(
     options:WorkerCanvasTransferProps,
     route?:string //we can reroute from the default 'setupCanvas' e.g. for other rendering init processes like in threejs
 ) {
+
     if(!options) return undefined;
     if(!options._id) options._id = `canvas${Math.floor(Math.random()*1000000000000000)}`;
 
@@ -239,7 +243,7 @@ export function setupCanvas(
         else globalThis.CANVASES[canvasOptions._id] = canvasOptions;
 
         //create an element proxy to add event listener functionality
-        if(this._node.graph) this._node.graph.run('makeProxy', canvasOptions._id, canvasOptions.canvas);
+        if(this?._node.graph) this._node.graph.run('makeProxy', canvasOptions._id, canvasOptions.canvas);
         else proxyElementWorkerRoutes.makeProxy(canvasOptions._id, canvasOptions.canvas);
         //now the canvas can handle mouse and resize events, more can be implemented
   

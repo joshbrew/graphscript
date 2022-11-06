@@ -51,11 +51,11 @@ export class ECSService extends Service {
 
     entities:{
         [key:string]:Entity
-    } = {}
+    } = {};
 
     systems:{
         [key:string]: System
-    } = {}
+    } = {};
 
     entityMap = new Map<string,{[key:string]:Entity}>(); //maps of filtered entity objects based on system tag. e.g. this.maps.get('boids')['entity3'];
     entityKeyMap = new Map<string, string[]>(); //arrays of keys of entities belonging to each system, for lookup
@@ -71,12 +71,12 @@ export class ECSService extends Service {
         super(options);
         this.setTree(this);
 
-        if(options.systems)
+        if(options?.systems)
             for(const key in options.systems) {
                 this.addSystem(options.systems[key], undefined, undefined, undefined, undefined, options.order);
             }
 
-        if(options.entities) {
+        if(options?.entities) {
             for(const key in options.entities) {
                 this.addEntity(options.entities[key],options.entities[key].components)
             }
@@ -116,8 +116,8 @@ export class ECSService extends Service {
         //console.log('updated',this.entities,this.systems)
     }
 
-    animate = (filter:boolean=true,order?:string[]) => {
-        if(this.animating === false) {
+    animateEntities = (filter:boolean=true,order?:string[]) => {
+        if(!this.animating) {
             this.animating = true;
             if(typeof requestAnimationFrame !== 'undefined') {
                 let anim = () => {
@@ -125,6 +125,7 @@ export class ECSService extends Service {
                         if(this.animating){ 
                             this.updateEntities(order,filter);
                             anim();
+                            
                         }
                     });
                 }
@@ -148,7 +149,7 @@ export class ECSService extends Service {
     }
 
     start = (filter?:boolean) => {
-        this.animate(filter);
+        this.animateEntities(filter);
     }
 
     addEntities = ( //add multiple entities from the same prototype;
@@ -159,6 +160,7 @@ export class ECSService extends Service {
         let i = 0;
 
         let newEntities = {};
+
 
         while(i < count) {
             let entity = this.addEntity(
@@ -186,6 +188,7 @@ export class ECSService extends Service {
                 components[k] = true;
             })
         }
+        if(!entity._node) entity._node = {};
         if(entity._node.tag && this.entities[entity._node.tag]) {
             this.entityCt++;
             let tag = entity._node.tag+this.entityCt;
@@ -209,6 +212,7 @@ export class ECSService extends Service {
         systems:{[key:string]:SystemProps}={}, 
         order?:string[]    
     ) => {
+
         for(const key in systems) {
             systems[key]._node.tag = key;
             this.addSystem(systems[key],undefined,undefined,undefined,undefined,order)
@@ -247,7 +251,7 @@ export class ECSService extends Service {
         if(!this.entityKeyMap.get(system._node.tag)) this.entityKeyMap.set(system._node.tag, []); //map to track arrays of entity keys to remove redundancy
         this.systems[system._node.tag].entities = this.entityMap.get(system._node.tag); //shared object ref
         this.systems[system._node.tag].entityKeys = this.entityKeyMap.get(system._node.tag); //shared key ref
-        if(this.systems[system._node.tag]?.setupEntities) {
+        if(this.systems[system._node.tag]?.setupEntities && Object.keys(this.entities).length > 1) {
             let filtered = this.filterObject(this.entities,(key,v)=>{if(v.components[system._node.tag]) return true;});
             this.systems[system._node.tag].setupEntities(filtered);
             Object.assign(this.entityMap.get(system._node.tag),filtered);

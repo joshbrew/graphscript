@@ -15,6 +15,7 @@ export type GraphNodeProperties = {
         oncreate?:Function|Function[],
         ondelete?:Function|Function[],
         listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void}},
+        inputState?:boolean //we can track inputs on a node, subscribe to state with 'input' on the end of the tag or 'tag.prop' 
         [key:string]:any
     },
     [key:string]:any
@@ -144,8 +145,8 @@ export class GraphNode {
         }
     }
 
-    //subscribe an output with an arbitrary callback
-    _subscribe = (callback:string|GraphNode|((res)=>void), key?:string) => {
+    //subscribe an output or input with an arbitrary callback
+    _subscribe = (callback:string|GraphNode|((res)=>void), key?:string, subInput?:boolean) => {
         if(key) {
             if(!this._node.localState) {
                 this._addLocalState(this);
@@ -156,8 +157,8 @@ export class GraphNode {
                 else callback = this._node.graph.nodes.get(callback);
             }
             if(typeof callback === 'function') {
-                return this._node.events.subscribeTrigger(key, callback);
-            } else if((callback as GraphNode)?._node) return this._node.events.subscribeTrigger(key, (state:any)=>{ if((callback as any)._node.operator) (callback as any)._node.operator(state); })
+                return this._node.events.subscribeTrigger(subInput ? key+'input' : subInput, callback);
+            } else if((callback as GraphNode)?._node) return this._node.events.subscribeTrigger(subInput ? key+'input' : key, (state:any)=>{ if((callback as any)._node.operator) (callback as any)._node.operator(state); })
             
         }
         else {
@@ -166,8 +167,8 @@ export class GraphNode {
                 else callback = this._node.graph.nodes.get(callback);
             }
             if(typeof callback === 'function') {
-                return this._node.state.subscribeTrigger(this._node.tag, callback);
-            } else if((callback as GraphNode)?._node) return this._node.state.subscribeTrigger(this._node.tag, (res:any)=>{ if((callback as any)._node.operator) (callback as any)._node.operator(res); })
+                return this._node.state.subscribeTrigger(subInput ? this._node.tag+'input' : this._node.tag, callback);
+            } else if((callback as GraphNode)?._node) return this._node.state.subscribeTrigger(subInput ? this._node.tag+'input' : this._node.tag, (res:any)=>{ if((callback as any)._node.operator) (callback as any)._node.operator(res); })
         
         }
     }
@@ -184,14 +185,15 @@ export class GraphNode {
     }
     
     //unsub the callback
-    _unsubscribe = (sub?:number, key?:string) => {
-        if(key && this._node.events) return this._node.events.unsubscribeTrigger(key,sub);
-        else return this._node.state.unsubscribeTrigger(this._node.tag,sub);
+    _unsubscribe = (sub?:number, key?:string, subInput?:boolean) => {
+        if(key && this._node.events) return this._node.events.unsubscribeTrigger(subInput ? key+'input' : key, sub);
+        else return this._node.state.unsubscribeTrigger(subInput ? this._node.tag+'input' : this._node.tag, sub);
     }
 
     _setOperator = (fn:(...args:any[])=>any) => {
         fn = fn.bind(this);
         this._node.operator = (...args) => {
+            if(this._node.inputState) this._node.events.setValue(this._node.tag+'input',args);
             let result = fn(...args);
             if(typeof result?.then === 'function') {
                 result.then((res)=>{ if(res !== undefined) this._node.state.setValue( this._node.tag,res ) }).catch(console.error);
@@ -218,6 +220,7 @@ _addLocalState(props?:{[key:string]:any}) {
             if(!k.startsWith('_')) {
                 let fn = props[k].bind(this) as Function;
                 props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
+                    if(this._node.inputState) this._node.events.setValue(k+'input',args);
                     let result = fn(...args);
                     if(typeof result?.then === 'function') {
                         result.then((res)=>{ this._node.events.setValue( k, res ) }).catch(console.error);
@@ -256,7 +259,12 @@ _addLocalState(props?:{[key:string]:any}) {
 
 export class Graph {
 
-    _node:{[key:string]:any} = {
+    _node:{
+        tag:string,
+        state:EventHandler,
+        nodes:Map<string,GraphNode|any>
+        [key:string]:any
+    } = {
         tag:`graph${Math.floor(Math.random()*1000000000000000)}`,
         nodes:new Map(),
         state,
@@ -344,13 +352,15 @@ export class Graph {
     recursiveSet = (t,parent,listeners={}) =>  {
         for(const key in t) {
             let p = t[key];
+            if(Array.isArray(p)) continue;
             if(typeof p === 'function') p = {_node:{ operator:p }} 
             else if (typeof p === 'string') p = this._node.tree[p];
             else if (typeof p === 'boolean') p = this._node.tree[key];
             else if (typeof p.default === 'function') {
                 p._node.operator = p.default;
-            }
+            } 
             if(typeof p === 'object') {
+                p = Object.assign({},p); //make sure we don't mutate the original object
                 if(!p._node) p._node = {};
                 if(!p._node.tag) p._node.tag = key;
                 if(this.get(p._node.tag)) continue; //don't duplicate a node we already have in the graph by tag
@@ -452,13 +462,13 @@ export class Graph {
                         let tag = k.substring(0,k.lastIndexOf('.'));
                         n = this.get(tag);
                         if(n) {
-                            sub = this.subscribe(n,k.substring(k.lastIndexOf('.')+1), listeners[key][k].callback );
-                            if(typeof node._node.listeners[k] !== 'object') node._node.listeners[k] = { callback: node._node.listeners[key][k] };
+                            sub = this.subscribe(n, k.substring(k.lastIndexOf('.')+1), listeners[key][k].callback, listeners[key][k].inputState );
+                            if(typeof node._node.listeners[k] !== 'object') node._node.listeners[k] = { callback: listeners[key][k].callback, inputState:listeners[key][k]?.inputState };
                             node._node.listeners[k].sub = sub;
                         }
                     } else {
-                        sub = this.subscribe(n,undefined,listeners[key][k].callback);
-                        if(typeof node._node.listeners[k] !== 'object') node._node.listeners[k] = { callback: node._node.listeners[k] };
+                        sub = this.subscribe(n, undefined, listeners[key][k].callback, listeners[key][k].inputState);
+                        if(typeof node._node.listeners[k] !== 'object') node._node.listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState };
                         node._node.listeners[k].sub = sub;
                     }
                 }
@@ -478,9 +488,9 @@ export class Graph {
                 if(!n) {
                     n = this.get(key.substring(0,key.lastIndexOf('.')));
                     //console.log(key.substring(0,key.lastIndexOf('.')),key,n,node._node.listeners[key]);
-                    if(n) this.unsubscribe(n,key.substring(key.lastIndexOf('.')+1),node._node.listeners[key].sub);
+                    if(n) this.unsubscribe(n,key.substring(key.lastIndexOf('.')+1),node._node.listeners[key].sub, node._node.listeners[key].inputState);
                 } else {
-                    this.unsubscribe(n,undefined,node._node.listeners[key].sub);
+                    this.unsubscribe(n,undefined,node._node.listeners[key].sub, node._node.listeners[key].inputState);
                 }
 
                 //console.log('unsubscribed', key)
@@ -512,34 +522,50 @@ export class Graph {
     }
 
     subscribe = (
-        node:GraphNode|string, key:string|undefined, callback:GraphNode|((res:any)=>void)
+        node:GraphNode|string, key:string|undefined, callback:string|GraphNode|((res:any)=>void), subInput?:boolean
     ) => {
-        if(!(node instanceof GraphNode)) node = this.get(node);
+
+        let nd;
+        if(!(node instanceof GraphNode)) nd = this.get(node);
 
         let sub;
-        if(node instanceof GraphNode) {
-            sub = node._subscribe(callback,key);
+        if(nd instanceof GraphNode) {
+            sub = nd._subscribe(callback,key,subInput);
 
             let ondelete = () => {
-                (node as GraphNode)._unsubscribe(sub,key);
+                (nd as GraphNode)._unsubscribe(sub,key,subInput);
                 //console.log('unsubscribed', key)
             }
 
-            if(node._node.ondelete) {
-                if(Array.isArray(node._node.ondelete)) {node._node.ondelete.push(ondelete);}
-                else node._node.ondelete = [ondelete,node._node.ondelete];
-            } else node._node.ondelete = [ondelete];
+            if(nd._node.ondelete) {
+                if(Array.isArray(nd._node.ondelete)) {nd._node.ondelete.push(ondelete);}
+                else nd._node.ondelete = [ondelete,nd._node.ondelete];
+            } else nd._node.ondelete = [ondelete];
+        } else if (typeof node === 'string') {
+            if(typeof callback === 'string') callback = this.get(callback);
+            if(callback instanceof GraphNode && callback._node.operator) {
+                sub = this._node.state.subscribeTrigger(node as string, callback._node.operator); 
+                let ondelete = () => {
+                    this._node.state.unsubscribeTrigger(node as string,sub)
+                    //console.log('unsubscribed', key)
+                }
+    
+                if(callback._node.ondelete) {
+                    if(Array.isArray(callback._node.ondelete)) {callback._node.ondelete.push(ondelete);}
+                    else callback._node.ondelete = [ondelete,callback._node.ondelete];
+                } else callback._node.ondelete = [ondelete];
+            }
+            else if (typeof callback === 'function') sub = this._node.state.subscribeTrigger(node as string, callback); 
         }
-
         return sub;
     }
 
-    unsubscribe = ( node:GraphNode|string, key?:string, sub?:number ) => {
+    unsubscribe = ( node:GraphNode|string, key?:string, sub?:number, subInput?:boolean) => {
         if(node instanceof GraphNode) {
             //console.log(node,node._unsubscribe);
-            return node._unsubscribe(sub,key);
+            return node._unsubscribe(sub,key,subInput);
         }
-        else return this.get(node)?._unsubscribe(sub,key);
+        else return this.get(node)?._unsubscribe(sub,key,subInput);
     }
 
     setState = (update:{[key:string]:any}) => {

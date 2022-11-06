@@ -14,11 +14,10 @@ export const unsafeRoutes = {
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
             if(this._node.graph.get(fnName)) {
-                this._node.graph.get(fnName).setOperator(fn.bind(this._node.graph.get(fnName))); //overwrite operator
+                this._node.graph.get(fnName)._setOperator(fn); //overwrite operator
             }
             else {
-                let node = (this._node.graph as Graph).add({tag:fnName,operator:fn});
-                if(this._node.graph instanceof Service) this._node.graph.load({[fnName]:node});
+                let node = (this._node.graph as Graph).add({_node:{tag:fnName,operator:fn}});
             }
             return true;
         }
@@ -31,9 +30,9 @@ export const unsafeRoutes = {
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
             if(this._node.graph.get(fnName)) {
-                this._node.graph.get(fnName).setOperator(fn); //overwrite operator
+                this._node.graph.get(fnName)._setOperator(fn); //overwrite operator
             }
-            else (this._node.graph as Graph).add({tag:fnName,operator:fn});
+            else (this._node.graph as Graph).add({_node:{tag:fnName,operator:fn}});
             //console.log(this)
             return true;
         }
@@ -48,7 +47,7 @@ export const unsafeRoutes = {
             if(this._node.graph.get(route)) {
                 this._node.graph.get(route)[fnName] = fn; //overwrite method
             }
-            else (this._node.graph as Graph).add({tag:fnName,[fnName]:fn});
+            else (this._node.graph as Graph).add({_node:{tag:fnName,[fnName]:fn}});
             //console.log(this)
             return true;
         }

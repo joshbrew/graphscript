@@ -114,9 +114,9 @@ export class Router extends Service {
             if(options.services) {
                 for(const key in options.services) {
                     let opt = (options.services[key] as any);
-                    if(opt.service instanceof Service) {
-                        opt.service.name = key; opt.service.tag = key;
-                        this.addService(opt.service, opt.connections, options.syncServices);
+                    if(opt instanceof Service) {
+                        opt.name = key; opt._node.tag = key;
+                        this.addService(opt, (opt as any).connections, options.syncServices);
                     } else if (typeof opt === 'function') {
                         let service = new opt() as Service; //instantiate a class prototype
                         (service as any).name = key; service._node.tag = key;
@@ -128,7 +128,7 @@ export class Router extends Service {
                             );
                     }
                     else {
-                        if (typeof opt.service === 'function') {
+                        if (typeof opt?.service === 'function') {
                             let service = new opt.service({name:key}) as Service; //instantiate a class prototype
                             (service as any).name = key; service._node.tag = key;
                             if(service) 
@@ -137,14 +137,14 @@ export class Router extends Service {
                                 );
                                 opt.service = service;
                         }
-                        else if(opt.service instanceof Service) {
+                        else if(opt?.service instanceof Service) {
                             opt.service.name = key; opt.service.tag = key;
                             this.addService(
                                 opt.service, 
                                 options.syncServices
                             );
                         }
-                        if(typeof opt.service === 'object') {
+                        if(typeof opt?.service === 'object') {
                             if(opt.connections) {
                                 if(Array.isArray(opt.connections)) {
                                     (opt.connections as any).forEach((k) => {

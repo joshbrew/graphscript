@@ -21,7 +21,7 @@ export type ServiceMessage = {
     [key:string]:any //it's an object so do whatever, any messages meant for web protocols need to be stringified or buffered
 }
 
-export type ServiceOptions = GraphOptions & { services:Service|Function|{[key:string]:any} }
+export type ServiceOptions = GraphOptions & { services:{[key:string]:Service|Function|{[key:string]:any}} }
 
 export class Service extends Graph {
     
@@ -34,16 +34,17 @@ export class Service extends Graph {
                 //tree:
         });
 
-        if(options?.services) {
-            for(const s in options.services) {
-                if(typeof options.services[s] === 'function') this.setTree(new options.services[s]()); //instantiate a constructor
-                else if(typeof options.services[s] === 'object') this.setTree(options.services[s]);
-            }
-        }
+        if(options?.services) this.addServices(options.services);
 
         this.setTree(this);
     }
 
+    addServices(services:{[key:string]:Service|Function|{[key:string]:any}}) {
+        for(const s in services) {
+            if(typeof services[s] === 'function') this.setTree(new (services[s] as any)()); //instantiate a constructor
+            else if(typeof services[s] === 'object') this.setTree(services[s]);
+        }
+    }
 
     handleMethod = (
         route:string, 
@@ -68,7 +69,6 @@ export class Service extends Graph {
 
     handleServiceMessage(message:ServiceMessage) {
         let call; 
-        //console.log('message', message)
         if(typeof message === 'object') {
             if(message.route) call = message.route; else if (message.node) call = message.node;
         }

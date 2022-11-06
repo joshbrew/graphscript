@@ -59,14 +59,18 @@ export class WorkerService extends Service {
 
     threadRot = 0; //thread rotation if not specifying
 
-    connections = { //higher level reference for Router
-        workers:this.workers
-    }
+    connections: any;
 
     constructor(options?:ServiceOptions) {
         super();
-        this.setLoaders(this.workerloader) //add a custom route loader for the worker logic
-        this.setTree(this); //load additional methods on the service
+
+        this.connections = { //higher level reference for Router
+            workers:this.workers
+        }
+    
+        if(options?.services) this.addServices(options.services);
+        this.setTree(this);
+        this.setLoaders(this.workerloader); //add a custom route loader for the worker logic
         if(options) this.init(options);
 
         if(typeof WorkerGlobalScope !== 'undefined' && globalThis instanceof WorkerGlobalScope) {
@@ -166,7 +170,6 @@ export class WorkerService extends Service {
                 if(!node.parentRoute && parent?.callback) node.parentRoute = parent?.callback;
             
                 let worker = this.loadWorkerRoute(rt, rt._node.tag);
-                console.log(worker);
                 if(worker) {
                     if(!rt.parentRoute && (rt._node.parent as any)?.callback) rt.parentRoute = (rt._node.parent as any).callback;
                     if(rt._node.parent && !rt.portId){ 
@@ -181,10 +184,10 @@ export class WorkerService extends Service {
                     if(rt.parentRoute) {
                         if(!rt.stopped) {
                             if(typeof rt._node.parent === 'string' && rt._node.parent === worker._id) {
-                                worker.run('subscribe', [rt.parentRoute, rt.callback]);
+                                worker.run('subscribe', [rt.parentRoute, undefined, rt.callback]);
                             }
                             else if(rt._node.tag === rt._node.parent?._node.tag || worker._id === rt._node.parent?._node.tag) {
-                                worker.run('subscribe', [rt.parentRoute, rt.callback]);
+                                worker.run('subscribe', [rt.parentRoute, undefined, rt.callback]);
                             }
                             else worker.run('subscribeToWorker', [rt.parentRoute, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
                                 worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
@@ -196,7 +199,7 @@ export class WorkerService extends Service {
                         if(typeof rt._node.parent === 'string') {
                             if(!rt.stopped) {
                                 if(rt.parent === worker._id) {
-                                    worker.run('subscribe', [rt.parent, rt.callback]);
+                                    worker.run('subscribe', [rt.parent, undefined, rt.callback]);
                                 }
                                 else worker.run('subscribeToWorker', [rt.parent, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
                                     worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
@@ -207,7 +210,7 @@ export class WorkerService extends Service {
                         } else if(rt._node.parent?._node.tag) {
                             if(!rt.stopped) {
                                 if(rt._node.tag === rt._node.parent._node.tag || worker._id === rt._node.parent._node.tag) {
-                                    worker.run('subscribe', [rt._node.parent._node.tag, rt.callback]);
+                                    worker.run('subscribe', [rt._node.parent._node.tag, undefined, rt.callback]);
                                 }
                                 else worker.run('subscribeToWorker', [rt._node.parent._node.tag, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
                                     worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
@@ -287,7 +290,7 @@ export class WorkerService extends Service {
                 args
             };
             if(method) message.method = method;
-
+            //console.log(message);
             return this.transmit(message,worker,transfer);
         }
 
@@ -305,7 +308,8 @@ export class WorkerService extends Service {
                         }
                     }
                 }
-                worker.addEventListener('message',onmessage)
+                worker.addEventListener('message',onmessage);
+                
                 this.transmit(req, worker, transfer);
             });
         }
@@ -426,7 +430,7 @@ export class WorkerService extends Service {
         let transfer;
         if(typeof message === 'object') {
             if(message.args) {
-                if (message.args.constructor?.name === 'Object') {
+                if (message.args?.constructor?.name === 'Object') {
                     for(const key in message.args) {
                         if(ArrayBuffer.isView(message.args[key])) {
                             if(!transfer) 
@@ -445,18 +449,18 @@ export class WorkerService extends Service {
                     message.args.forEach((arg) => {
                         if(ArrayBuffer.isView(arg)) { 
                             transfer = [arg.buffer] as StructuredSerializeOptions;
-                        } else if (arg.constructor?.name === 'ArrayBuffer') 
+                        } else if (arg?.constructor?.name === 'ArrayBuffer') 
                             transfer = [arg] as StructuredSerializeOptions;
                     });
                 } 
                 else if(ArrayBuffer.isView(message.args)) { 
                     transfer = [message.args.buffer] as StructuredSerializeOptions;
                 } 
-                else if (message.args.constructor?.name === 'ArrayBuffer') {
+                else if (message.args?.constructor?.name === 'ArrayBuffer') {
                     transfer = [message] as StructuredSerializeOptions;
                 } 
             }
-            else if (message.constructor?.name === 'Object') { 
+            else if (message?.constructor?.name === 'Object') { 
                 for(const key in message) {
                     if(ArrayBuffer.isView(message[key])) {
                         if(!transfer) 
@@ -495,8 +499,6 @@ export class WorkerService extends Service {
         if(!transfer) {
             transfer = this.getTransferable(message); //automatically transfer arraybuffers
         }
-
-        //console.log(message)
 
         if(worker instanceof Worker || worker instanceof MessagePort) {
             worker.postMessage(message,transfer);
@@ -601,13 +603,12 @@ export class WorkerService extends Service {
         });
     }
 
-    runRequest = (message:ServiceMessage|any, worker:undefined|string|Worker|MessagePort, callbackId:string|number) => {  
+    runRequest = (message:ServiceMessage|any, worker:undefined|string|Worker|MessagePort, callbackId:string|number) => {
         let res = this.receive(message);
         if(typeof worker === 'string' && this.workers[worker]) {
             if(this.workers[worker].port) worker = this.workers[worker].port;
             else worker = this.workers[worker].worker;
         }
-        //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
         if(res instanceof Promise) {
             res.then((r) => {
                 if(worker instanceof Worker || worker instanceof MessagePort) 
@@ -632,8 +633,6 @@ export class WorkerService extends Service {
     ) => {
 
         let callback:(res:any) => void;
-
-        //console.log(route,worker);
 
         if(blocking) {
 
@@ -705,7 +704,7 @@ export class WorkerService extends Service {
         callback?:((res:any)=>void)|string,
         blocking?:boolean
     ) => {
-        //console.log(route, workerId, callback, this.workers[workerId]);
+
         if(typeof workerId === 'string' && this.workers[workerId]) {
             this.subscribe(workerId, undefined, (res) => {
                 //console.log('res',res);

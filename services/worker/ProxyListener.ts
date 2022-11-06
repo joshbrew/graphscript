@@ -98,7 +98,9 @@ export function initProxyElement(element, worker, id) {
     if( !id ) id = 'proxy'+Math.floor(Math.random()*1000000000000000);
 
     const sendEvent = (data) => {
-      worker.postMessage({route:'handleProxyEvent',args:[data,id]}); //for use with our service syntax
+      if(!worker) {
+        handleProxyEvent(data,id);
+      } else worker.postMessage({route:'handleProxyEvent',args:[data,id]}); //for use with our service syntax
     };
 
     // register an id

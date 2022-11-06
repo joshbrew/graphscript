@@ -95,7 +95,7 @@ export class DOMService extends Service {
         interpreters?:{[key:string]:(template:string,options:ComponentProps) => void}
     ) {
             super();
-            
+            if(options?.services) this.addServices(options.services);
             if(options?.parentNode) parentNode = options.parentNode;
             if(typeof parentNode === 'string') parentNode = document.getElementById(parentNode);
             if(parentNode instanceof HTMLElement) this.parentNode = parentNode;
@@ -105,6 +105,7 @@ export class DOMService extends Service {
             }
 
             //console.log('init domservice', options)
+
             this.setLoaders(this.domloader);
             this.setTree(this);
             if(options) this.init(options);

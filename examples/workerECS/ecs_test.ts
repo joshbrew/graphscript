@@ -224,7 +224,7 @@ let ret = router.setTree({
                                     const OrbitControls = self.OrbitControls;
 
                                     const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
-                                    renderer.setPixelRatio(Math.min(canvas.clientWidth/canvas.clientHeight,2));
+                                    renderer.setPixelRatio(Math.min(canvas.width/canvas.height,2));
 
                                     const fov = 75;
                                     const aspect = canvas.clientWidth / canvas.clientHeight;
@@ -248,7 +248,7 @@ let ret = router.setTree({
 
                                     
                                     canvas.addEventListener('resize', (ev) => {
-                                        renderer.setSize(canvas.width, canvas.height, false);
+                                        renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
                                         if(camera) {
                                             camera.aspect = canvas.clientWidth / canvas.clientHeight;
                                             camera.updateProjectionMatrix();
@@ -295,8 +295,12 @@ let ret = router.setTree({
 
                                     const boids = new Array(nBoids);
 
+
+                                    let arr = new Float32Array(entityCt*3);
+                                    arr.forEach((v,i) => { arr[i] = Math.random()*150 })
+
                                     let geometry = new THREE.BufferGeometry();
-                                    geometry.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(entityCt*3), 3) )
+                                    geometry.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3) )
                                     geometry.setAttribute('color', new THREE.Float32BufferAttribute( colors, 3 ));
 
                                     let pointmat = new THREE.PointsMaterial(
@@ -315,7 +319,7 @@ let ret = router.setTree({
 
                                     scene.add(points);
 
-                                    console.log(points);
+                                    //console.log(points);
 
                                     Object.assign(self, {
                                         renderer,
@@ -381,7 +385,7 @@ let ret = router.setTree({
 
                         function bufferPositions(entities) { // SCOPE REFACTOR: Might actually need to pass self and origin...
 
-                            let positionBuffer = this.graph.run(
+                            let positionBuffer = this._node.graph.run(
                                 'bufferValues',
                                 entities,
                                 'position',
@@ -389,7 +393,7 @@ let ret = router.setTree({
                             );
 
                             return {
-                                entityId:this.graph.entityId, 
+                                entityId:this._node.graph.entityId, 
                                 positions:positionBuffer
                             }; //typedarrays are automatically transferred
                         };
@@ -408,11 +412,13 @@ let ret = router.setTree({
 
                         entities.post('subscribe',[
                             'movement',
+                            undefined,
                             'bufferPositions'
                         ]); //i/o subscription
 
                         entities2.post('subscribe',[
                             'movement',
+                            undefined,
                             'bufferPositions'
                         ]); //i/o subscription
 
@@ -429,43 +435,37 @@ let ret = router.setTree({
                             'updateCanvas'
                         ]);
 
+                        //console.log('entities',entities);
                             
                         entities.run('addEntities',[
                             entitySettings[0].prototype,
                             entitySettings[0].components,
                             entitySettings[0].ct
-                        ]).then((r) => {
-                           
-                        });
+                        ]);
 
                         entities2.run('addEntities',[
                             entitySettings[1].prototype,
                             entitySettings[1].components,
                             entitySettings[1].ct
-                        ]).then((r) => {
-                            
-                        });
+                        ]);
+
                         entities2.run('addEntities',[
                             entitySettings[2].prototype,
                             entitySettings[2].components,
                             entitySettings[2].ct
-                        ]).then((r) => {
-                            
-                        });
+                        ]);
+
                         entities2.run('addEntities',[
                             entitySettings[3].prototype,
                             entitySettings[3].components,
                             entitySettings[3].ct
-                        ]).then((r) => {
-                            
-                        });
+                        ]);
+
                         entities2.run('addEntities',[
                             entitySettings[4].prototype,
                             entitySettings[4].components,
                             entitySettings[4].ct
-                        ]).then((r) => {
-                            
-                        });
+                        ]);
 
                         entities.post('setValue',['entityId',0]);
                         entities.post('animateEntities');
