@@ -238,7 +238,7 @@ export class SSEbackend extends Service {
                             if(typeof body.route === 'string') {
                                 if(body.route.includes('/') && body.route.length > 1) 
                                     body.route = body.route.split('/').pop();
-                                route = this._node.tree[body.route];
+                                route = this.__node.tree[body.route];
                             }
                            
                         }
@@ -247,7 +247,7 @@ export class SSEbackend extends Service {
                         } else if (callbackId && sse.requests[callbackId]) {
                             sse.requests[callbackId](args);
                         }
-                        if(this._node.keepState) this.setState({[path]:body});
+                        if(this.__node.keepState) this.setState({[path]:body});
                     });
                 }
             }

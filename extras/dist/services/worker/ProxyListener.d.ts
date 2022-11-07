@@ -18,14 +18,14 @@ export declare const eventHandlers: {
 };
 export declare function initProxyElement(element: any, worker: any, id: any): any;
 export declare class EventDispatcher {
-    _listeners: any;
+    __listeners: any;
     addEventListener(type: any, listener: any): void;
     hasEventListener(type: any, listener: any): boolean;
     removeEventListener(type: any, listener: any): void;
     dispatchEvent(event: any, target: any): void;
 }
 export declare class ElementProxyReceiver extends EventDispatcher {
-    _listeners: any;
+    __listeners: any;
     proxied: any;
     style: any;
     width: any;

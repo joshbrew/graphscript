@@ -42,7 +42,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
 
                  Object.assign(options, ThreeProps); //install desired props to our canvas's 'self' reference
                  
-                 let renderId = this._node.graph.run('setupCanvas', options); //the the base canvas tools do the rest, all ThreeJS tools are on self, for self contained ThreeJS renders
+                 let renderId = this.__node.graph.run('setupCanvas', options); //the the base canvas tools do the rest, all ThreeJS tools are on self, for self contained ThreeJS renders
                  //you can use the canvas render loop by default, or don't provide a draw function and just use the init and the Three animate() callback
 
                  //let canvasopts = this.graph.CANVASES[renderId] as WorkerCanvas;

@@ -115,11 +115,11 @@ export class Router extends Service {
                 for(const key in options.services) {
                     let opt = (options.services[key] as any);
                     if(opt instanceof Service) {
-                        opt.name = key; opt._node.tag = key;
+                        opt.name = key; opt.__node.tag = key;
                         this.addService(opt, (opt as any).connections, options.syncServices);
                     } else if (typeof opt === 'function') {
                         let service = new opt() as Service; //instantiate a class prototype
-                        (service as any).name = key; service._node.tag = key;
+                        (service as any).name = key; service.__node.tag = key;
                         if(service instanceof Service) 
                             this.addService(
                                 service, 
@@ -130,7 +130,7 @@ export class Router extends Service {
                     else {
                         if (typeof opt?.service === 'function') {
                             let service = new opt.service({name:key}) as Service; //instantiate a class prototype
-                            (service as any).name = key; service._node.tag = key;
+                            (service as any).name = key; service.__node.tag = key;
                             if(service) 
                                 this.addService(
                                     service
@@ -330,7 +330,7 @@ export class Router extends Service {
                     for(const key in this.sources[sourceId as string]) {
                         if(this.sources[sourceId as string][key].service) {
                             if(typeof this.sources[sourceId as string][key].service === 'object') {
-                                if((this.sources[sourceId as string][key].service as Graph)._node.tag === k) {
+                                if((this.sources[sourceId as string][key].service as Graph).__node.tag === k) {
                                     if(this.sources[sourceId as string][key].connectionType && (this.sources[sourceId as string][key].service as any)?.name) {
                                         if(!this.serviceConnections[(this.sources[sourceId as string][key] as any).service.name]) {
                                             this.removeConnection(this.sources[sourceId as string][key]); //some auto cleanup
@@ -477,7 +477,7 @@ export class Router extends Service {
                     }
                 }
             }
-            if(typeof options === 'string' && this._node.nodes.get(options)) options = {connection:this._node.nodes.get(options)};
+            if(typeof options === 'string' && this.__node.nodes.get(options)) options = {connection:this.__node.nodes.get(options)};
         } 
         if(!options || typeof options === 'string') return undefined;
 
@@ -492,10 +492,10 @@ export class Router extends Service {
                         return node[message.method]?.(...message.args)
                     } else return node[message.method]?.(message.args)
                 } else {
-                    if(!node._node.operator) return;
+                    if(!node.__operator) return;
                     if(Array.isArray(message.args)) {
-                        return node._node.operator(...message.args)
-                    } else return node._node.operator(message.args)
+                        return node.__operator(...message.args)
+                    } else return node.__operator(message.args)
                 }
             }
             settings.request = async (message:any,method?:string) => {
@@ -504,23 +504,23 @@ export class Router extends Service {
                         return node[method]?.(...message.args)
                     } else return node[method]?.(message.args)
                 } else {
-                    if(!node._node.operator) return;
+                    if(!node.__operator) return;
                     if(Array.isArray(message.args)) {
-                        return node._node.operator(...message.args)
-                    } else return node._node.operator(message.args)
+                        return node.__operator(...message.args)
+                    } else return node.__operator(message.args)
                 }
             }
             settings.post = async (route?:string, args?:any, method?:string) => {
-                if(route && node._node.graph.get(route)) {
-                    let n = node._node.graph.get(route);
+                if(route && node.__node.graph.get(route)) {
+                    let n = node.__node.graph.get(route);
                     if(method) {
                         if(Array.isArray(args)) {
                             return n[method]?.(...args)
                         } else return n[method]?.(args)
                     } else {
                         if(Array.isArray(args)) {
-                            return n._node.operator(...args)
-                        } else return n._node.operator(args)
+                            return n.__operator(...args)
+                        } else return n.__operator(args)
                     }
                 }
                 else {
@@ -530,30 +530,30 @@ export class Router extends Service {
                         } else return node[method]?.(args)
                     } else {
                         if(Array.isArray(args)) {
-                            return node._node.operator(...args)
-                        } else return node._node.operator(args)
+                            return node.__operator(...args)
+                        } else return node.__operator(args)
                     }
                 }
             }
             settings.run = settings.post as any;
             settings.subscribe = async (route:string|undefined, callback:((res:any)=>void)) => {
-                return node._subscribe(callback,route) as number;
+                return node.__subscribe(callback,route) as number;
             };
             settings.unsubscribe = async (route:any, sub:number) => {
-                return node._unsubscribe(sub,undefined,route) as boolean;
+                return node.__unsubscribe(sub,undefined,route) as boolean;
             }
             settings.terminate = () => {
-                node._node.graph.remove(node);
+                node.__node.graph.remove(node);
                 return true;
             }
             settings.onclose = options.onclose;
             if(settings.onclose) {
                 let oldondelete;
-                if(node._node.ondelete) oldondelete = node._node.ondelete;
-                node._node.ondelete = (n:GraphNode) => { if(settings.onclose) settings.onclose(settings,n); if(oldondelete) oldondelete(n); }
+                if(node.__node.ondelete) oldondelete = node.__node.ondelete;
+                node.__node.ondelete = (n:GraphNode) => { if(settings.onclose) settings.onclose(settings,n); if(oldondelete) oldondelete(n); }
             }
         } else if (options.connection instanceof Graph) {
-            if(options.connection._node.nodes.get('open'))
+            if(options.connection.__node.nodes.get('open'))
                 settings.service = options.connection;
             let graph = settings.connection as Graph;
             settings.send = async (message:ServiceMessage) => {
@@ -565,8 +565,8 @@ export class Router extends Service {
                 if(!message.route) return undefined;
                 if(method) {
                     if(Array.isArray(message.args)) {
-                        return graph._node.nodes.get(message.route)[method]?.(...message.args)
-                    } else return graph._node.nodes.get(message.route)[method]?.(message.args)
+                        return graph.__node.nodes.get(message.route)[method]?.(...message.args)
+                    } else return graph.__node.nodes.get(message.route)[method]?.(message.args)
                 } else {
                     if(Array.isArray(message.args)) {
                         return graph.run(message.route,...message.args)
@@ -933,12 +933,12 @@ export class Router extends Service {
     syncServices = () => {
         for(const name in this.services) { 
             if('users' in this.services[name]) (this.services[name] as Router).users = this.users;
-            this._node.nodes.forEach((n,tag) => {
-                if(!this.services[name]._node.nodes.get(n.tag)) {
-                    this.services[name]._node.nodes.set(n.tag,n);
+            this.__node.nodes.forEach((n,tag) => {
+                if(!this.services[name].__node.nodes.get(n.tag)) {
+                    this.services[name].__node.nodes.set(n.tag,n);
                 } else {
-                    if(!this.services[name]._node.nodes.get(tag) && n?._node.UNIQUE !== this.services[name]._node.nodes.get(n.tag)?._node.UNIQUE) //use the remapped key if it's not the same node
-                        this.services[name]._node.nodes.set(tag,n);
+                    if(!this.services[name].__node.nodes.get(tag) && n?.__node.UNIQUE !== this.services[name].__node.nodes.get(n.tag)?.__node.UNIQUE) //use the remapped key if it's not the same node
+                        this.services[name].__node.nodes.set(tag,n);
                 }
             });
         }

@@ -55,10 +55,10 @@ const GameState = {
 const webappHtml = {
     'app':{
         tagName:'div',
-        _node:{children:{
+        __node:{children:{
             'devices':{
                 tagName:'div',
-                _node:{children:{
+                __node:{children:{
                     'devicediv':{
                         tagName:'div',
                         children:{
@@ -185,7 +185,7 @@ const webappHtml = {
                                                             }
                                                         ],
                                                         callback:'runSubprocess', //the init function will set the _id as an additional argument for runSubprocess which selects existing contexts by _id 
-                                                        _node:{children:{
+                                                        __node:{children:{
                                                             hr_main:{
                                                                 operator:(
                                                                     heartbeat:{
@@ -211,7 +211,7 @@ const webappHtml = {
                                                             }
                                                         ],
                                                         callback:'runSubprocess',
-                                                        _node:{children:{
+                                                        __node:{children:{
                                                             breath_main:{
                                                                 operator:(
                                                                     breath:{
@@ -305,10 +305,10 @@ const webappHtml = {
             },
             'output':{
                 tagName:'div',
-                _node:{children:{
+                __node:{children:{
                     'playsounds':{
                         tagName:'div',
-                        _node:{children:{
+                        __node:{children:{
                             'soundheader':{
                                 tagName:'h4',
                                 innerHTML:'Play a sound to modulate with the HEG'

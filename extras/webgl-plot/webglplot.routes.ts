@@ -7,9 +7,9 @@ export { WebglLineProps, WebglLinePlotProps, WebglLinePlotInfo } //re-export typ
 export const webglPlotRoutes = {
     setupChart:function setupChart(settings:WebglLinePlotProps) {
         console.log('initializing chart', settings)
-        if(!this?._node?.graph?.plotter) {
-            this._node.graph.plotter = new WebglLinePlotUtil();
-            return this._node.graph.plotter.initPlot(settings).settings._id;
+        if(!this?.__node?.graph?.plotter) {
+            this.__node.graph.plotter = new WebglLinePlotUtil();
+            return this.__node.graph.plotter.initPlot(settings).settings._id;
         }
         else {
             globalThis.plotter = new WebglLinePlotUtil();
@@ -31,7 +31,7 @@ export const webglPlotRoutes = {
         {    
             //console.log(parsed);
             if(globalThis.plotter) globalThis.plotter.update(plot,lines,draw);
-            else if(this?._node?.graph?.plotter)this._node.graph.plotter.update(plot,lines,draw);
+            else if(this?.__node?.graph?.plotter)this.__node.graph.plotter.update(plot,lines,draw);
             return true;
         } return false;
     },
@@ -40,8 +40,8 @@ export const webglPlotRoutes = {
     ) {
     
         if(globalThis.plotter) globalThis.plotter.deinitPlot(plot);
-        else if(this?._node?.graph?.plotter)
-            this._node.graph.plotter.deinitPlot(plot);
+        else if(this?.__node?.graph?.plotter)
+            this.__node.graph.plotter.deinitPlot(plot);
     
         return true;
     },
@@ -50,7 +50,7 @@ export const webglPlotRoutes = {
         settings:WebglLinePlotProps
     ) {
         if(globalThis.plotter) globalThis.plotter.reinitPlot(plot,settings);
-        else if(this?._node?.graph?.plotter) this._node.graph.plotter.reinitPlot(plot,settings);
+        else if(this?.__node?.graph?.plotter) this.__node.graph.plotter.reinitPlot(plot,settings);
         return settings._id;
     },
     getChartSettings:function getChartSettings(plotId) {
@@ -58,7 +58,7 @@ export const webglPlotRoutes = {
         let settings;
 
         if(globalThis.plotter) settings = globalThis.plotter.getChartSettings(plotId);
-        else if(this?._node?.graph?.plotter) settings = this._node.graph.plotter.getChartSettings(plotId);
+        else if(this?.__node?.graph?.plotter) settings = this.__node.graph.plotter.getChartSettings(plotId);
         //console.log(settings);
         return settings;
     }

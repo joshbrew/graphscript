@@ -12,11 +12,11 @@ let tree = {
     nodeB:{
         x:3,
         y:4,
-        _node:{
+        __node:{
             children:{
                 nodeC:{
                     z:4,
-                    _node:{
+                    __node:{
                         operator:function(a) { this.z += a; console.log('nodeC z prop added to',this); return this.z; },
                         listeners:{
                             'nodeA.x':function(newX) { console.log('nodeA x prop updated', newX);},
@@ -30,10 +30,10 @@ let tree = {
         }
     },
 
-    nodeD:(a,b,c)=>{ return a+b+c; }, //becomes the ._node.operator prop and calling triggers setState for this tag (or nested tag if a child)
+    nodeD:(a,b,c)=>{ return a+b+c; }, //becomes the .__operator prop and calling triggers setState for this tag (or nested tag if a child)
 
     nodeE:{
-        _node:{
+        __node:{
             loop:1000,
             operator:()=>{console.log('looped!');}
         }
@@ -69,7 +69,7 @@ let graph2 = new Graph({tree:tree2});
 
 let popped = graph.remove('nodeB');
 
-console.log(popped._node.tag, 'popped')
+console.log(popped.__node.tag, 'popped')
 
 graph2.add(popped); //reparent nodeB to the parent graph
 
@@ -77,7 +77,7 @@ console.log('nodeB reparented to graph2',popped,graph2);
 
 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
 
-popped._node.children.nodeC._node.operator(1);
+popped.__children.nodeC.__operator(1);
 
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 

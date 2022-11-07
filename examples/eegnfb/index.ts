@@ -78,13 +78,13 @@ let ctransferred = false;
 const webappHtml = {
     'app':{
         tagName:'div',
-        _node:{children:{
+        __children:{
             'devices':{
                 tagName:'div',
-                _node:{children:{
+                __children:{
                     'devicediv':{
                         tagName:'div',
-                        _node:{children:{
+                        __children:{
                             'connectheader':{
                                 tagName:'h4',
                                 innerHTML:'Connect to an EEG device'
@@ -233,7 +233,8 @@ const webappHtml = {
                                                     renderer: {
                                                         workerUrl:gsworker,
                                                         callback:'updateCanvas', //will pipe data to the canvas animation living alone on this thread
-                                                        _node:{oncreate:(node) => {
+                                                        __node:{oncreate:(node) => {
+
                                                             if(transferred) {
                                                                 let newCanvas = document.createElement('canvas');
                                                                 newCanvas.id = 'waveform';
@@ -273,6 +274,8 @@ const webappHtml = {
                                                                 node.worker.post('setValue',['chartSettings',chartSettings[selected]])
                                                             } 
 
+                                                            console.log(webapp,node);
+
                                                             webapp.run(
                                                                 'workers.transferCanvas', 
                                                                 node.worker.worker,
@@ -285,7 +288,6 @@ const webappHtml = {
                                                                     init:(self:WorkerCanvas, canvas, context) => {
                                                                         //console.log('init', globalThis.Devices);
 
-                                                                        //console.log('canvas transferred', self)
                                                                         let settings = {
                                                                             canvas,
                                                                             _id:self._id,
@@ -347,14 +349,14 @@ const webappHtml = {
                                                         ],
                                                         callback:'runSubprocess',
                                                         blocking:true, //runs async without backing up on bulk dispatches
-                                                        _node:{children:{
+                                                        __children:{
                                                             vrms_main:{
-                                                                _node:{operator:(
+                                                                __operator:(
                                                                     result:any
                                                                 )=>{
                                                                     GameState.latestRMS = result;
                                                                     //console.log('vrms result', result); 
-                                                                }}
+                                                                }
                                                             },
                                                             rmscsv:{
                                                                 workerUrl:gsworker,
@@ -363,7 +365,7 @@ const webappHtml = {
                                                                 callback:'appendCSV',
                                                                 stopped:true //we will press a button to stop/start the csv collection conditionally
                                                             } as WorkerRoute
-                                                        }}
+                                                        }
                                                     } as WorkerRoute,
                                                     csv:{
                                                         workerUrl:gsworker,
@@ -383,7 +385,7 @@ const webappHtml = {
                                                             }
                                                         ],
                                                         callback:'runSubprocess',
-                                                        _node:{children:{
+                                                        __children:{
                                                             coherence:{
                                                                 workerUrl:gsworker,
                                                                 init:'createSubprocess',
@@ -396,9 +398,9 @@ const webappHtml = {
                                                                 ],
                                                                 callback:'runSubprocess',
                                                                 blocking:true, //runs async without backing up on bulk dispatches
-                                                                _node:{children:{
+                                                                __children:{
                                                                     coherence_main:{
-                                                                        _node:{operator:(result:any)=>{
+                                                                        __operator:(result:any)=>{
                                                                             //console.log('coherence result', result); //this algorithm only returns when it detects a beat
                                                                             if(result?.frequencies) 
                                                                                 document.getElementById('dftxaxis').innerHTML = `<span>${result.frequencies[0]}</span><span>${result.frequencies[Math.floor(result.frequencies.length*0.5)]}</span><span>${result.frequencies[result.frequencies.length-1]}</span>`;
@@ -419,12 +421,12 @@ const webappHtml = {
                                                                                 GameState.playing.volume(newVol);
                                                                             }
                                                                         
-                                                                        }}
+                                                                        }
                                                                     } as GraphNodeProperties,
                                                                     crenderer: {
                                                                         workerUrl:gsworker,
                                                                         callback:'updateCanvas', //will pipe data to the canvas animation living alone on this thread
-                                                                        _node:{oncreate:(node) => {
+                                                                        __node:{oncreate:(node) => {
                                                                             //console.log(self,webapp);
                                                                             if(ctransferred) {
                                                                                 let newCanvas = document.createElement('canvas');
@@ -531,9 +533,9 @@ const webappHtml = {
                 
                                                                         //webapp.run('worker.updateChartData')
                                                                     } as WorkerRoute,
-                                                                }}
+                                                                }
                                                             } as WorkerRoute,
-                                                        }}
+                                                        }
                                                     } as WorkerRoute
                                                 }
                                             }
@@ -623,16 +625,16 @@ const webappHtml = {
                                     }
                                 }
                             } as ElementProps
-                        }}
+                        }
                     } as ElementProps
-                }}
+                }
             } as ElementProps,
             'output':{
                 tagName:'div',
-                _node:{children:{
+                __children:{
                     'playsounds':{
                         tagName:'div',
-                        _node:{children:{
+                        __children:{
                             'soundheader':{
                                 tagName:'h4',
                                 innerHTML:'Play a sound to modulate volume with the EEG using the mean Alpha Coherence between channels 0 and 1'
@@ -680,7 +682,7 @@ const webappHtml = {
                                     innerText:'Stop'
                                 }
                             } as ElementProps
-                        }}
+                        }
                     } as ElementProps,
                     'ln0':{
                         tagName:'hr'
@@ -692,7 +694,7 @@ const webappHtml = {
                     'waveformdiv':{
                         tagName:'div',
                         style:{height:'300px'},
-                        _node:{children:{
+                        __children:{
                             'waveform':{
                                 tagName:'canvas',
                                 style:{width:'100%', height:'300px', position:'absolute', zIndex:'1'}
@@ -711,7 +713,7 @@ const webappHtml = {
                                     }
                                 },
                             } as ElementProps,
-                        }}
+                        }
                     },
                     'ln':{
                         tagName:'hr'
@@ -723,7 +725,7 @@ const webappHtml = {
                     'dftdiv':{
                         tagName:'div',
                         style:{height:'300px'},
-                        _node:{children:{
+                        __children:{
                             'dftwaveform':{
                                 tagName:'canvas',
                                 style:{width:'100%', height:'300px', position:'absolute', zIndex:'1'},
@@ -732,7 +734,7 @@ const webappHtml = {
                                 tagName:'canvas',
                                 style:{width:'100%', height:'300px',  position:'absolute', zIndex:'2'},
                             } as ElementProps,
-                        }}
+                        }
                     },
                     'ln2':{
                         tagName:'hr'
@@ -747,7 +749,7 @@ const webappHtml = {
                     'rmsediv':{
                         tagName:'div',
                         innerHTML:`RMSV (mV)`,
-                        children:{
+                        __children:{
                             'rmse':{
                                 tagName:'div'
                             } as ElementProps
@@ -764,9 +766,9 @@ const webappHtml = {
                             visualizeDirectory('data', self);
                         }
                     } as ElementProps,
-                }}
+                }
             } as ElementProps
-        }}
+        }
     } as ElementProps
 }
 

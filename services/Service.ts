@@ -44,10 +44,10 @@ export class Service extends Graph {
             if(typeof services[s] === 'function') services[s] = new (services as any)[s](); //instantiate a constructor
 
             if(services[s] instanceof Service) {
-                (services[s] as Service)._node.nodes.forEach((n,tag) => { 
-                    if(!this._node.nodes.get(n.tag)) {
-                        this._node.nodes.set(n.tag,n);
-                    } else this._node.nodes.set(s+'.'+tag,n);
+                (services[s] as Service).__node.nodes.forEach((n,tag) => { 
+                    if(!this.__node.nodes.get(n.tag)) {
+                        this.__node.nodes.set(n.tag,n);
+                    } else this.__node.nodes.set(s+'.'+tag,n);
                 })
             }
             else if(typeof services[s] === 'object') this.setTree(services[s]); //just a tree
@@ -60,9 +60,9 @@ export class Service extends Graph {
         args?:any
     ) => { //For handling RouteProp or other routes with multiple methods 
         let m = method.toLowerCase(); //lower case is enforced in the route keys
-        let src = this._node.nodes.get(route);
+        let src = this.__node.nodes.get(route);
         if(!src) {
-            src = this._node.tree[route];
+            src = this.__node.tree[route];
         }
         if(src?.[m]) {
             if(!(src[m] instanceof Function)) {
@@ -107,7 +107,7 @@ export class Service extends Graph {
                 return this.handleServiceMessage(args[0]);
             } else if (args[0].node){
                 return this.handleGraphNodeCall(args[0].node, args[0].args);
-            } else if(this._node.keepState) {    
+            } else if(this.__node.keepState) {    
                 if(args[0].route)
                     this.setState({[args[0].route]:args[0].args});
                 if(args[0].node)
@@ -138,7 +138,7 @@ export class Service extends Graph {
                 return this.handleServiceMessage(args[0]);
             } else if (args[0].node){
                 return this.handleGraphNodeCall(args[0].node, args[0].args);
-            } else if(this._node.keepState) {    
+            } else if(this.__node.keepState) {    
                 if(args[0].route)
                     this.setState({[args[0].route]:args[0].args});
                 if(args[0].node)
@@ -179,16 +179,16 @@ export class Service extends Graph {
         callback?:(res:any)=>any|void
     ) => {
         if(source instanceof GraphNode) {
-            if(callback) return source._node.state.subscribeTriggerOnce(source._node.tag,(res)=>{
+            if(callback) return source.__node.state.subscribeTriggerOnce(source.__node.tag,(res)=>{
                 let mod = callback(res); //either a modifier or a void function to do a thing before transmitting the data
                 if(mod !== undefined) this.transmit({route:destination, args:mod, method});
                 else this.transmit({route:destination, args:res, method},endpoint);
             })
-            else return this._node.state.subscribeTriggerOnce(source._node.tag,(res)=>{ 
+            else return this.__node.state.subscribeTriggerOnce(source.__node.tag,(res)=>{ 
                 this.transmit({route:destination, args:res, method},endpoint); });
         }
         else if(typeof source === 'string') 
-            return this._node.state.subscribeTriggerOnce(source,(res)=>{ 
+            return this.__node.state.subscribeTriggerOnce(source,(res)=>{ 
                 this.transmit({route:destination, args:res, method},endpoint); 
             });
     }

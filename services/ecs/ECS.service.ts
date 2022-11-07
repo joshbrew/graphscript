@@ -15,7 +15,7 @@ export type EntityProps = {
 } & (GraphNodeProperties | GraphNode)
 
 export type SystemProps = (GraphNodeProperties & { 
-    operator:(entities:{[key:string]:Entity})=>any,
+    __operator:(entities:{[key:string]:Entity})=>any,
     setupEntities:(entities:{[key:string]:Entity})=>{[key:string]:Entity},
     setupEntity:(entity:Entity)=>Entity
 })|GraphNode
@@ -28,7 +28,7 @@ export type Entity = {
 } & GraphNode
 
 export type System = {
-    operator:(entities:{[key:string]:Entity})=>any,
+    __operator:(entities:{[key:string]:Entity})=>any,
     setupEntities:(entities:{[key:string]:Entity})=>{[key:string]:Entity},
     setupEntity:(entity:Entity)=>Entity,
     remove?:(entity:Entity,entitities:{[key:string]:Entity})=>Entity,
@@ -96,7 +96,7 @@ export class ECSService extends Service {
                 if(filter) {
                     if(debug) debug = performance.now();
                     if(this.entityKeyMap.get(k).length > 0)
-                        (this.systems[k] as GraphNode)._node.operator(
+                        (this.systems[k] as GraphNode).__operator(
                             this.entityMap.get(k)
                         );
                     if(debug) 
@@ -104,7 +104,7 @@ export class ECSService extends Service {
                 } else {
                     if(debug) debug = performance.now();
                     if(this.entityKeyMap.get(k).length > 0)
-                        (this.systems[k] as GraphNode)._node.operator(
+                        (this.systems[k] as GraphNode).__operator(
                             this.entities
                         ); //unfiltered, it's faster to handle this in the system with lots of entities
                     if(debug) 
@@ -168,7 +168,7 @@ export class ECSService extends Service {
                 components
             );
 
-            newEntities[entity._node.tag] = entity;
+            newEntities[entity.__node.tag] = entity;
 
             i++;
         }
@@ -188,24 +188,24 @@ export class ECSService extends Service {
                 components[k] = true;
             })
         }
-        if(!entity._node) entity._node = {};
-        if(entity._node.tag && this.entities[entity._node.tag]) {
+        if(!entity.__node) entity.__node = {};
+        if(entity.__node.tag && this.entities[entity.__node.tag]) {
             this.entityCt++;
-            let tag = entity._node.tag+this.entityCt;
-            while(this.entities[entity._node.tag]) {
+            let tag = entity.__node.tag+this.entityCt;
+            while(this.entities[entity.__node.tag]) {
                 this.entityCt++;
-                entity._node.tag = `${tag}${this.entityCt}`;
+                entity.__node.tag = `${tag}${this.entityCt}`;
             }
-        } else if(!entity._node.tag) entity._node.tag = `entity${Math.floor(Math.random()*1000000000000000)}`;
+        } else if(!entity.__node.tag) entity.__node.tag = `entity${Math.floor(Math.random()*1000000000000000)}`;
 
         this.add(entity);
-        this.entities[entity._node.tag] = this._node.nodes.get(entity._node.tag) as any;
+        this.entities[entity.__node.tag] = this.__node.nodes.get(entity.__node.tag) as any;
 
         //console.log(entity,'added')
 
-        this.setupEntity(this.entities[entity._node.tag])
+        this.setupEntity(this.entities[entity.__node.tag])
 
-        return this.entities[entity._node.tag];
+        return this.entities[entity.__node.tag];
     }
 
     addSystems = (
@@ -214,7 +214,7 @@ export class ECSService extends Service {
     ) => {
 
         for(const key in systems) {
-            systems[key]._node.tag = key;
+            systems[key].__node.tag = key;
             this.addSystem(systems[key],undefined,undefined,undefined,undefined,order)
         }
         return this.systems;
@@ -232,35 +232,35 @@ export class ECSService extends Service {
         const system = this.recursivelyAssign({},prototype) as System;
         if(setupEntities) system.setupEntities = setupEntities;
         if(setupEntity) system.setupEntity = setupEntity;
-        if(operator) system._node.operator = operator;
+        if(operator) system.__operator = operator;
         if(remove) system.remove = remove;
-        if(system._node.tag && this.systems[system._node.tag]) {
+        if(system.__node.tag && this.systems[system.__node.tag]) {
             this.systemCt++;
-            let tag = system._node.tag+this.systemCt;
-            while(this.systems[system._node.tag]) {
+            let tag = system.__node.tag+this.systemCt;
+            while(this.systems[system.__node.tag]) {
                 this.systemCt++;
-                system._node.tag = `${tag}${this.systemCt}`;
+                system.__node.tag = `${tag}${this.systemCt}`;
             }
-        } else if(!system._node.tag) system._node.tag = `system${Math.floor(Math.random()*1000000000000000)}`;
+        } else if(!system.__node.tag) system.__node.tag = `system${Math.floor(Math.random()*1000000000000000)}`;
 
         this.add(system);
 
-        this.systems[system._node.tag] = this._node.nodes.get(system._node.tag) as any;
+        this.systems[system.__node.tag] = this.__node.nodes.get(system.__node.tag) as any;
 
-        if(!this.entityMap.get(system._node.tag)) this.entityMap.set(system._node.tag, {}); //map to track local entities
-        if(!this.entityKeyMap.get(system._node.tag)) this.entityKeyMap.set(system._node.tag, []); //map to track arrays of entity keys to remove redundancy
-        this.systems[system._node.tag].entities = this.entityMap.get(system._node.tag); //shared object ref
-        this.systems[system._node.tag].entityKeys = this.entityKeyMap.get(system._node.tag); //shared key ref
-        if(this.systems[system._node.tag]?.setupEntities && Object.keys(this.entities).length > 1) {
-            let filtered = this.filterObject(this.entities,(key,v)=>{if(v.components[system._node.tag]) return true;});
-            this.systems[system._node.tag].setupEntities(filtered);
-            Object.assign(this.entityMap.get(system._node.tag),filtered);
+        if(!this.entityMap.get(system.__node.tag)) this.entityMap.set(system.__node.tag, {}); //map to track local entities
+        if(!this.entityKeyMap.get(system.__node.tag)) this.entityKeyMap.set(system.__node.tag, []); //map to track arrays of entity keys to remove redundancy
+        this.systems[system.__node.tag].entities = this.entityMap.get(system.__node.tag); //shared object ref
+        this.systems[system.__node.tag].entityKeys = this.entityKeyMap.get(system.__node.tag); //shared key ref
+        if(this.systems[system.__node.tag]?.setupEntities && Object.keys(this.entities).length > 1) {
+            let filtered = this.filterObject(this.entities,(key,v)=>{if(v.components[system.__node.tag]) return true;});
+            this.systems[system.__node.tag].setupEntities(filtered);
+            Object.assign(this.entityMap.get(system.__node.tag),filtered);
         } 
 
-        if(!order) this.order.push(system._node.tag);
+        if(!order) this.order.push(system.__node.tag);
         else this.order = order;
 
-        return this.systems[system._node.tag];
+        return this.systems[system.__node.tag];
     }
 
     setupEntity = (entity:Entity) => {
@@ -268,8 +268,8 @@ export class ECSService extends Service {
             for(const key in entity.components) {
                 if(this.systems[key]) {
                     this.systems[key].setupEntity(entity);
-                    this.entityMap.get(key)[entity._node.tag] = entity;
-                    this.entityKeyMap.get(key).push(entity._node.tag);
+                    this.entityMap.get(key)[entity.__node.tag] = entity;
+                    this.entityKeyMap.get(key).push(entity.__node.tag);
                     // entity.nodes.set(key,this.systems[key]); //this is really probably gonna slow things down when adding/subtracting so we can use the local objects in the service which are pretty straightforward
                     // this.systems[key].nodes.set(entity.tag,entity);
                 }
@@ -281,8 +281,8 @@ export class ECSService extends Service {
         const entity = this.entities[tag];
         for(const key in entity.components) {
             if (this.entityMap.get(key)) {
-                delete this.entityMap.get(key)[entity._node.tag];
-                this.entityKeyMap.get(key).splice(this.entityKeyMap.get(key).indexOf(entity._node.tag),1);
+                delete this.entityMap.get(key)[entity.__node.tag];
+                this.entityKeyMap.get(key).splice(this.entityKeyMap.get(key).indexOf(entity.__node.tag),1);
             }
             if(this.systems[key]?.remove) {
                 this.systems[key].remove(entity,this.entityMap.get(key));

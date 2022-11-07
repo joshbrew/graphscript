@@ -170,7 +170,7 @@ export class E2EEService extends Service {
                 return this.handleServiceMessage(message);
             } else if ((typeof message.node === 'string' || message.node instanceof GraphNode)) {
                 return this.handleGraphNodeCall(message.node, message.args);
-            } else if(this._node.keepState) {    
+            } else if(this.__node.keepState) {    
                 if(message.route)
                     this.setState({[message.route]:message.args});
                 if(message.node)

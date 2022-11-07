@@ -100,7 +100,7 @@ export function transferCanvas(
         canvas:offscreen, 
     }};
 
-    if(this?._node?.graph) this._node.graph.run('initProxyElement', options.canvas, worker, options._id); //initiate an element proxy
+    if(this?.__node?.graph) this.__node.graph.run('initProxyElement', options.canvas, worker, options._id); //initiate an element proxy
     else initProxyElement(options.canvas,worker,options._id);
 
     if(options.draw) {
@@ -171,10 +171,10 @@ export function setDraw(
     _id?:string
 ) {
     let canvasopts;
-    if(this?._node?.graph) {
-        if(_id) canvasopts = this._node.graph.CANVASES?.[settings._id];
-        else if(settings._id) canvasopts = this._node.graph.CANVASES?.[settings._id];
-        else canvasopts = this._node.graph.CANVASES?.[Object.keys(this._node.graph.CANVASES)[0]];
+    if(this?.__node?.graph) {
+        if(_id) canvasopts = this.__node.graph.CANVASES?.[settings._id];
+        else if(settings._id) canvasopts = this.__node.graph.CANVASES?.[settings._id];
+        else canvasopts = this.__node.graph.CANVASES?.[Object.keys(this.__node.graph.CANVASES)[0]];
     } else {
         if(_id) canvasopts = globalThis.CANVASES?.[settings._id];
         else if(settings._id) canvasopts = globalThis.CANVASES?.[settings._id];
@@ -186,7 +186,7 @@ export function setDraw(
             canvasopts.canvas = settings.canvas;
 
             //create an element proxy to add event listener functionality
-            if(this?._node?.graph) this._node.graph.run('makeProxy', canvasopts._id, canvasopts.canvas);
+            if(this?.__node?.graph) this.__node.graph.run('makeProxy', canvasopts._id, canvasopts.canvas);
             else proxyElementWorkerRoutes.makeProxy(canvasopts._id, canvasopts.canvas);
 
             //now the canvas can handle mouse and resize events, more can be implemented
@@ -221,8 +221,8 @@ export function setDraw(
 export function setupCanvas(
     options:CanvasProps
 ){
-    if(this?._node?.graph) {
-        if(!this._node.graph.CANVASES) this._node.graph.CANVASES = {} as {[key:string]:WorkerCanvas};
+    if(this?.__node?.graph) {
+        if(!this.__node.graph.CANVASES) this.__node.graph.CANVASES = {} as {[key:string]:WorkerCanvas};
     }
     else if(!globalThis.CANVASES) globalThis.CANVASES = {} as {[key:string]:WorkerCanvas};
 
@@ -232,18 +232,18 @@ export function setupCanvas(
     typeof options.context === 'string' ? canvasOptions.context = options.canvas.getContext(options.context) : canvasOptions.context = options.context; //get the rendering context based on string passed
     ('animating' in options) ? canvasOptions.animating = options.animating : canvasOptions.animating = true;
 
-    if(this?._node?.graph?.CANVASES[canvasOptions._id]) {
-        this._node.graph.run('setDraw',canvasOptions);
+    if(this?.__node?.graph?.CANVASES[canvasOptions._id]) {
+        this.__node.graph.run('setDraw',canvasOptions);
     } else if(globalThis.CANVASES?.[canvasOptions._id]) {
         setDraw(canvasOptions);
     } else {
-        if(this?._node?.graph) canvasOptions.graph = this._node.graph;
+        if(this?.__node?.graph) canvasOptions.graph = this.__node.graph;
 
-        if(this?._node?.graph) this._node.graph.CANVASES[canvasOptions._id] = canvasOptions;
+        if(this?.__node?.graph) this.__node.graph.CANVASES[canvasOptions._id] = canvasOptions;
         else globalThis.CANVASES[canvasOptions._id] = canvasOptions;
 
         //create an element proxy to add event listener functionality
-        if(this?._node.graph) this._node.graph.run('makeProxy', canvasOptions._id, canvasOptions.canvas);
+        if(this?.__node.graph) this.__node.graph.run('makeProxy', canvasOptions._id, canvasOptions.canvas);
         else proxyElementWorkerRoutes.makeProxy(canvasOptions._id, canvasOptions.canvas);
         //now the canvas can handle mouse and resize events, more can be implemented
   
@@ -337,9 +337,9 @@ export function setupCanvas(
 export function drawFrame(props?:{[key:string]:any},_id?:string) { //can update props when calling draw
     let canvasopts;
 
-    if(this?._node?.graph) {
-        if(!_id) canvasopts = this._node.graph.CANVASES?.[Object.keys(this._node.graph.CANVASES)[0]];
-        else canvasopts = this._node.graph.CANVASES?.[_id];
+    if(this?.__node?.graph) {
+        if(!_id) canvasopts = this.__node.graph.CANVASES?.[Object.keys(this.__node.graph.CANVASES)[0]];
+        else canvasopts = this.__node.graph.CANVASES?.[_id];
     } else {
         if(!_id) canvasopts = globalThis.CANVASES?.[Object.keys(globalThis.CANVASES)[0]];
         else canvasopts = globalThis.CANVASES?.[_id];
@@ -357,9 +357,9 @@ export function drawFrame(props?:{[key:string]:any},_id?:string) { //can update 
 
 export function clearCanvas(_id?:string) {
     let canvasopts;
-    if(this?._node?.graph) {
-        if(!_id) canvasopts = this._node.graph.CANVASES?.[Object.keys(this._node.graph.CANVASES)[0]];
-        else canvasopts = this._node.graph.CANVASES?.[_id];
+    if(this?.__node?.graph) {
+        if(!_id) canvasopts = this.__node.graph.CANVASES?.[Object.keys(this.__node.graph.CANVASES)[0]];
+        else canvasopts = this.__node.graph.CANVASES?.[_id];
     } else {
         if(!_id) canvasopts = globalThis.CANVASES?.[Object.keys(globalThis.CANVASES)[0]];
         else canvasopts = globalThis.CANVASES?.[_id];
@@ -374,9 +374,9 @@ export function clearCanvas(_id?:string) {
 
 export function initCanvas(_id?:string){
     let canvasopts;
-    if(this?._node?.graph) {
-        if(!_id) canvasopts = this._node.graph.CANVASES?.[Object.keys(this._node.graph.CANVASES)[0]];
-        else canvasopts = this._node.graph.CANVASES?.[_id];
+    if(this?.__node?.graph) {
+        if(!_id) canvasopts = this.__node.graph.CANVASES?.[Object.keys(this.__node.graph.CANVASES)[0]];
+        else canvasopts = this.__node.graph.CANVASES?.[_id];
     } else {
         if(!_id) canvasopts = globalThis.CANVASES?.[Object.keys(globalThis.CANVASES)[0]];
         else canvasopts = globalThis.CANVASES?.[_id];
@@ -391,9 +391,9 @@ export function initCanvas(_id?:string){
 
 export function updateCanvas(input?:any,_id?:string){
     let canvasopts;
-    if(this?._node?.graph) {
-        if(!_id) canvasopts = this._node.graph.CANVASES?.[Object.keys(this._node.graph.CANVASES)[0]];
-        else canvasopts = this._node.graph.CANVASES?.[_id];
+    if(this?.__node?.graph) {
+        if(!_id) canvasopts = this.__node.graph.CANVASES?.[Object.keys(this.__node.graph.CANVASES)[0]];
+        else canvasopts = this.__node.graph.CANVASES?.[_id];
     } else {
         if(!_id) canvasopts = globalThis.CANVASES?.[Object.keys(globalThis.CANVASES)[0]];
         else canvasopts = globalThis.CANVASES?.[_id];
@@ -407,9 +407,9 @@ export function updateCanvas(input?:any,_id?:string){
 
 export function setProps(props?:{[key:string]:any},_id?:string,){ //update animation props, e.g. the radius or color of a circle you are drawing with a stored value
     let canvasopts;
-    if(this?._node?.graph) {
-        if(!_id) canvasopts = this._node.graph.CANVASES?.[Object.keys(this._node.graph.CANVASES)[0]];
-        else canvasopts = this._node.graph.CANVASES?.[_id];
+    if(this?.__node?.graph) {
+        if(!_id) canvasopts = this.__node.graph.CANVASES?.[Object.keys(this.__node.graph.CANVASES)[0]];
+        else canvasopts = this.__node.graph.CANVASES?.[_id];
     } else {
         if(!_id) canvasopts = globalThis.CANVASES?.[Object.keys(globalThis.CANVASES)[0]];
         else canvasopts = globalThis.CANVASES?.[_id];
@@ -426,9 +426,9 @@ export function setProps(props?:{[key:string]:any},_id?:string,){ //update anima
 export function startAnim(_id?:string, draw?:string|((this:any,canvas:any,context:any)=>void)){ //run the draw function applied to the animation or provide a new one
 
     let canvasopts;
-    if(this?._node?.graph) {
-        if(!_id) canvasopts = this._node.graph.CANVASES?.[Object.keys(this._node.graph.CANVASES)[0]];
-        else canvasopts = this._node.graph.CANVASES?.[_id];
+    if(this?.__node?.graph) {
+        if(!_id) canvasopts = this.__node.graph.CANVASES?.[Object.keys(this.__node.graph.CANVASES)[0]];
+        else canvasopts = this.__node.graph.CANVASES?.[_id];
     } else {
         if(!_id) canvasopts = globalThis.CANVASES?.[Object.keys(globalThis.CANVASES)[0]];
         else canvasopts = globalThis.CANVASES?.[_id];
@@ -463,9 +463,9 @@ export function startAnim(_id?:string, draw?:string|((this:any,canvas:any,contex
 
 export function stopAnim(_id?:string){
     let canvasopts;
-    if(this?._node?.graph) {
-        if(!_id) canvasopts = this._node.graph.CANVASES?.[Object.keys(this._node.graph.CANVASES)[0]];
-        else canvasopts = this._node.graph.CANVASES?.[_id];
+    if(this?.__node?.graph) {
+        if(!_id) canvasopts = this.__node.graph.CANVASES?.[Object.keys(this.__node.graph.CANVASES)[0]];
+        else canvasopts = this.__node.graph.CANVASES?.[_id];
     } else {
         if(!_id) canvasopts = globalThis.CANVASES?.[Object.keys(globalThis.CANVASES)[0]];
         else canvasopts = globalThis.CANVASES?.[_id];

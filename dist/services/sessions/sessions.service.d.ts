@@ -179,19 +179,19 @@ export declare class SessionsService extends Service {
     getStreamUpdate: (streamName: string) => {};
     getAllStreamUpdates: () => {};
     streamLoop: {
-        _node: {
+        __node: {
             operator: () => {};
         };
         loop: number;
     };
     userUpdateLoop: {
-        _node: {
+        __node: {
             operator: (user: SessionUser) => {};
         };
         loop: number;
     };
     sessionLoop: {
-        _node: {
+        __node: {
             operator: (transmit?: boolean) => any;
         };
         loop: number;

@@ -13,21 +13,21 @@ const router = new Router({
             tree:{
                 'main':{
                     tagName:'div',
-                    _node:{children:{
+                    __node:{children:{
                         'header':{
                             tagName:'h4',
                             innerHTML:`Hello World!`
                         },
                         'webrtc':{
                             tagName:'div',
-                            _node:{children:{
+                            __node:{children:{
                                 'sessioninfo':{
                                     tagName:'div'
                                 },
                                 'myrooms':{
                                     tagName:'div',
                                     style:{borderStyle:'1px solid black'},
-                                    _node:{children:{
+                                    __node:{children:{
                                         'open':{
                                             tagName:'button',
                                             innerText:'Create Peer Connection'
@@ -325,4 +325,4 @@ const router = new Router({
 
 //router.services.sessions.users = router.users;
 
-console.log(router._node.nodes.keys())
+console.log(router.__node.nodes.keys())

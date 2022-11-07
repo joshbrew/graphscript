@@ -140,12 +140,12 @@ export function initProxyElement(element, worker, id) {
 /////////////https://threejsfundamentals.org/threejs/lessons/threejs-offscreencanvas.html
 export class EventDispatcher {
 
-  _listeners:any;
+  __listeners:any;
 
 
 	addEventListener( type, listener ) {
-		if ( this._listeners === undefined ) this._listeners = {};
-		const listeners = this._listeners;
+		if ( this.__listeners === undefined ) this.__listeners = {};
+		const listeners = this.__listeners;
 		if ( listeners[ type ] === undefined ) {
 			listeners[ type ] = [];
 		}
@@ -157,14 +157,14 @@ export class EventDispatcher {
 	}
 
 	hasEventListener( type, listener ) {
-		if ( this._listeners === undefined ) return false;
-		const listeners = this._listeners;
+		if ( this.__listeners === undefined ) return false;
+		const listeners = this.__listeners;
 		return listeners[ type ] !== undefined && listeners[ type ].indexOf( listener ) !== - 1;
 	}
 
 	removeEventListener( type, listener ) {
-		if ( this._listeners === undefined ) return;
-		const listeners = this._listeners;
+		if ( this.__listeners === undefined ) return;
+		const listeners = this.__listeners;
 		const listenerArray = listeners[ type ];
 		if ( listenerArray !== undefined ) {
 			const index = listenerArray.indexOf( listener );
@@ -175,9 +175,9 @@ export class EventDispatcher {
 	}
 
 	dispatchEvent( event, target ) {
-    //console.log(event,this._listeners);
-		if ( this._listeners === undefined ) return;
-		const listeners = this._listeners;
+    //console.log(event,this.__listeners);
+		if ( this.__listeners === undefined ) return;
+		const listeners = this.__listeners;
 		const listenerArray = listeners[ event.type ];
 		if ( listenerArray !== undefined ) {
       if(!target)
@@ -198,7 +198,7 @@ function noop() {
 /////////////https://threejsfundamentals.org/threejs/lessons/threejs-offscreencanvas.html
 export class ElementProxyReceiver extends EventDispatcher  {
 
-  _listeners:any = {};
+  __listeners:any = {};
   proxied:any;
   style:any = {};
   width:any;
@@ -320,11 +320,11 @@ export class ProxyManager {
 
 function makeProxy(id, elm?) {
 
-  if(this?._node?.graph) {
+  if(this?.__node?.graph) {
 
-    if(!this._node.graph.ProxyManager) this._node.graph.ProxyManager = new ProxyManager();
+    if(!this.__node.graph.ProxyManager) this.__node.graph.ProxyManager = new ProxyManager();
 
-    this._node.graph.ProxyManager.makeProxy(id, elm);
+    this.__node.graph.ProxyManager.makeProxy(id, elm);
 
   }
   else {
@@ -335,9 +335,9 @@ function makeProxy(id, elm?) {
     return id;
 }
 function handleProxyEvent( data, id){
-  if(this?._node?.graph) {
-    if(!this._node.graph.ProxyManager) this._node.graph.ProxyManager = new ProxyManager();
-    if(this._node.graph.ProxyManager.handleEvent(data, id)) return data;
+  if(this?.__node?.graph) {
+    if(!this.__node.graph.ProxyManager) this.__node.graph.ProxyManager = new ProxyManager();
+    if(this.__node.graph.ProxyManager.handleEvent(data, id)) return data;
   } else {
     if(!globalThis.ProxyManager) globalThis.ProxyManager = new ProxyManager();
     if(globalThis.ProxyManager.handleEvent(data, id)) return data;

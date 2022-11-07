@@ -178,11 +178,11 @@ export class HTTPbackend extends Service {
                 if(typeof options.pages[url] === 'object') {
                     if((options.pages[url] as any).onrequest) {
                         if(typeof (options.pages[url] as any).onrequest === 'string') {
-                            (options.pages[url] as any).onrequest = this._node.nodes.get((options.pages[url] as any).onrequest);
+                            (options.pages[url] as any).onrequest = this.__node.nodes.get((options.pages[url] as any).onrequest);
                         }
                         if(typeof (options.pages[url] as any).onrequest === 'object') {
-                            if((options.pages[url] as any).onrequest._node?.operator) {
-                                ((options.pages[url] as any).onrequest as GraphNode)._node.operator(options.pages[url], request, response);
+                            if((options.pages[url] as any).onrequest.__operator) {
+                                ((options.pages[url] as any).onrequest as GraphNode).__operator(options.pages[url], request, response);
                             } 
                         } else if(typeof (options.pages[url] as any).onrequest === 'function') {
                             (options.pages[url] as any).onrequest(this,options.pages[url], request, response);
@@ -292,11 +292,11 @@ export class HTTPbackend extends Service {
                     }
                     if((options.pages[url] as any).onrequest) {
                         if(typeof (options.pages[url] as any).onrequest === 'string') {
-                            (options.pages[url] as any).onrequest = this._node.nodes.get((options.pages[url] as any).onrequest);
+                            (options.pages[url] as any).onrequest = this.__node.nodes.get((options.pages[url] as any).onrequest);
                         }
                         if(typeof (options.pages[url] as any).onrequest === 'object') {
-                            if((options.pages[url] as any).onrequest._node?.operator) {
-                                ((options.pages[url] as any).onrequest as GraphNode)._node.operator(options.pages[url], request, response);
+                            if((options.pages[url] as any).onrequest.__operator) {
+                                ((options.pages[url] as any).onrequest as GraphNode).__operator(options.pages[url], request, response);
                             } 
                         } else if(typeof (options.pages[url] as any).onrequest === 'function') {
                             (options.pages[url] as any).onrequest(this,options.pages[url], request, response);
@@ -594,9 +594,9 @@ export class HTTPbackend extends Service {
                     let route;
                     if(served) {
                         let rt = `${served.port}/${message.route}`;
-                        if(this._node.nodes.get(rt)) route = rt
+                        if(this.__node.nodes.get(rt)) route = rt
                     }
-                    if(!route && this._node.nodes.get(message.route)) route = message.route;
+                    if(!route && this.__node.nodes.get(message.route)) route = message.route;
                     
                     if(route) {
                         let res:any;
@@ -648,22 +648,22 @@ export class HTTPbackend extends Service {
                     
                     let route,method,args;
                     if(body?.route){ //if arguments were posted 
-                        route = this._node.tree[body.route];
+                        route = this.__node.tree[body.route];
                         method = body.method;
                         args = body.args;
                         if(!route) {
                             if(typeof body.route === 'string') if(body.route.includes('/') && body.route.length > 1) body.route = body.route.split('/').pop();
-                            route = this._node.tree[body.route];
+                            route = this.__node.tree[body.route];
                         }
                     }
                     if(!route) { //body post did not provide argument so use the request route
                         if (message?.route) {
-                            let route = this._node.tree[message.route];
+                            let route = this.__node.tree[message.route];
                             method = message.method;
                             args = message.args;
                             if(!route) {
                                 if(typeof message.route === 'string') if(message.route.includes('/') && message.route.length > 1) message.route = message.route.split('/').pop() as string;
-                                route = this._node.tree[message.route];
+                                route = this.__node.tree[message.route];
                             }
                         }
                     }
@@ -846,9 +846,9 @@ export class HTTPbackend extends Service {
         if(typeof template === 'string') {
             if(!template.includes('<html')) template = '<!DOCTYPE html><html>'+template+'</html>'; //add a root
         }
-        if(typeof this._node.tree[path] === 'object') {
-            (this._node.tree[path] as any).get = template;
-            this._node.nodes.get(path).get = template;
+        if(typeof this.__node.tree[path] === 'object') {
+            (this.__node.tree[path] as any).get = template;
+            this.__node.nodes.get(path).get = template;
         }
         else this.setTree({
                 [path]: {
@@ -861,9 +861,9 @@ export class HTTPbackend extends Service {
         if(typeof template === 'string') {
             if(!template.includes('<') || (!template.includes('>'))) template = '<div>'+template+'</div>';
         }
-        if(typeof this._node.tree[path] === 'object') {
-            (this._node.tree[path] as any).get = template;
-            this._node.nodes.get(path).get = template;
+        if(typeof this.__node.tree[path] === 'object') {
+            (this.__node.tree[path] as any).get = template;
+            this.__node.nodes.get(path).get = template;
         }
         else this.setTree({
                 [path]: {
@@ -881,8 +881,8 @@ export class HTTPbackend extends Service {
                 for(const key in obj) {
                     appendTemplate(obj,key,res); //recursive append
                 }
-            } else if(this._node.tree[r]?.get) {
-                let toAdd = this._node.tree[r]?.get;
+            } else if(this.__node.tree[r]?.get) {
+                let toAdd = this.__node.tree[r]?.get;
                 if(typeof toAdd === 'function') toAdd = toAdd(obj[r]);
                 if(typeof toAdd === 'string')  {
                     let lastDiv = res.lastIndexOf('<');
@@ -892,8 +892,8 @@ export class HTTPbackend extends Service {
                     } res += toAdd; 
                 }
                 
-            } else if (typeof this._node.tree[r] === 'function') {
-                let routeresult = (this._node.tree[r] as Function)(obj[r]); //template function, pass props
+            } else if (typeof this.__node.tree[r] === 'function') {
+                let routeresult = (this.__node.tree[r] as Function)(obj[r]); //template function, pass props
                 if(typeof routeresult === 'string') {   
                     let lastDiv = res.lastIndexOf('<');
                     if(lastDiv > 0) {
@@ -904,7 +904,7 @@ export class HTTPbackend extends Service {
                     //console.log(lastDiv, res, routeresult)
                 }
                 //console.log(routeresult)
-            } else if (typeof this._node.tree[r] === 'string') res += this._node.tree[r];
+            } else if (typeof this.__node.tree[r] === 'string') res += this.__node.tree[r];
             return res;
         }
 

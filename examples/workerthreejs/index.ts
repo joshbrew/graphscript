@@ -27,7 +27,7 @@ document.body.style.height = '100vh'
 let ret = router.setTree({
     'main':{
         tagName:'div',
-        _node:{children:{
+        __node:{children:{
             'div':{
                 tagName:'div',
                 innerText:'Multithreaded canvases!'

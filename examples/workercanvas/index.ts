@@ -25,7 +25,7 @@ console.log(router);
 let ret = router.setTree({
     'main':{
         tagName:'div',
-        _node:{children:{
+        __node:{children:{
             'div':{
                 tagName:'div',
                 innerText:'Multithreaded canvases!'

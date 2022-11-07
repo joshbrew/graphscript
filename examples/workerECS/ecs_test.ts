@@ -25,7 +25,7 @@ document.body.style.height = '100vh'
 let ret = router.setTree({
     'main':{
         tagName:'div',
-        _node:{children:{
+        __node:{children:{
             'div':{
                 tagName:'div',
                 innerText:'Multithreaded canvases!'
@@ -385,7 +385,7 @@ let ret = router.setTree({
 
                         function bufferPositions(entities) { // SCOPE REFACTOR: Might actually need to pass self and origin...
 
-                            let positionBuffer = this._node.graph.run(
+                            let positionBuffer = this.__node.graph.run(
                                 'bufferValues',
                                 entities,
                                 'position',
@@ -393,7 +393,7 @@ let ret = router.setTree({
                             );
 
                             return {
-                                entityId:this._node.graph.entityId, 
+                                entityId:this.__node.graph.entityId, 
                                 positions:positionBuffer
                             }; //typedarrays are automatically transferred
                         };

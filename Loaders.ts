@@ -3,15 +3,15 @@ import { GraphNode, Graph, GraphNodeProperties } from "./Graph";
 //loaders are triggered just after graphnode creation, after oncreate() is called
 
 /**
- * setting nodeA._node.backward:true propagates operator results to parent
+ * setting nodeA.__node.backward:true propagates operator results to parent
  */
 export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     
-    if(node._node.backward && parent instanceof GraphNode) {
+    if(node.__node.backward && parent instanceof GraphNode) {
 
         graph.setListeners({
-            [parent._node.tag]:{
-                [node._node.tag]:parent
+            [parent.__node.tag]:{
+                [node.__node.tag]:parent
             }
         })
     }
@@ -21,49 +21,49 @@ export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
 
 /**
  * 
- * Specify a timer loop, will stop when node is popped or nodeA._node.isLooping is set false
- * nodeA._node.loop = 100 will loop the operator every 100 milliseconds
+ * Specify a timer loop, will stop when node is popped or nodeA.__node.isLooping is set false
+ * nodeA.__node.loop = 100 will loop the operator every 100 milliseconds
  * 
  * Or 
- * nodeA._node.delay will delay the operator by specified millisecond number and resolve the result as a promise
- * nodeA._node.frame will use requestAnimationFrame to call the function and resolve the result as a promise
+ * nodeA.__node.delay will delay the operator by specified millisecond number and resolve the result as a promise
+ * nodeA.__node.frame will use requestAnimationFrame to call the function and resolve the result as a promise
  * 
  * Use in combination with:
- * nodeA._node.repeat will repeat the operator the specified number of times
- * nodeA._node.recursive will do the same as repeat but will pass in the previous operator call's results 
+ * nodeA.__node.repeat will repeat the operator the specified number of times
+ * nodeA.__node.recursive will do the same as repeat but will pass in the previous operator call's results 
  * 
  * 
  */
 export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //badabadabadabooop
 
-    if(node._node.operator && !node._node.looperSet) {
-        node._node.looperSet = true;
-        if(typeof node._node.delay === 'number') {
-            let fn = node._node.operator;
-            node._node.operator = (...args:any[]) => {
+    if(node.__operator && !node.__node.looperSet) {
+        node.__node.looperSet = true;
+        if(typeof node.__node.delay === 'number') {
+            let fn = node.__operator;
+            node.__operator = (...args:any[]) => {
                 return new Promise((res,rej) => {
-                    setTimeout(async ()=>{res(await fn(...args));},node._node.delay);
+                    setTimeout(async ()=>{res(await fn(...args));},node.__node.delay);
                 });
             }
-        } else if (node._node.frame === true) {
-            let fn = node._node.operator;
-            node._node.operator = (...args:any[]) => {
+        } else if (node.__node.frame === true) {
+            let fn = node.__operator;
+            node.__operator = (...args:any[]) => {
                 return new Promise((res,rej) => {
                     requestAnimationFrame(async ()=>{res(await fn(...args));});
                 });
             }
         }
 
-        if(typeof node._node.repeat === 'number' || typeof node._node.recursive === 'number') {
-            let fn = node._node.operator;
-            node._node.operator = async (...args:any[]) => {
-                let i = node._node.repeat ? node._node.repeat : node._node.recursive; 
+        if(typeof node.__node.repeat === 'number' || typeof node.__node.recursive === 'number') {
+            let fn = node.__operator;
+            node.__operator = async (...args:any[]) => {
+                let i = node.__node.repeat ? node.__node.repeat : node.__node.recursive; 
                 let result;
                 let repeater = async (tick,...inp:any[]) => {
                     while(tick > 0) {
-                        if(node._node.delay || node._node.frame) {
+                        if(node.__node.delay || node.__node.frame) {
                             fn(...inp).then(async (res) => {
-                                if(node._node.recursive) { 
+                                if(node.__node.recursive) { 
                                     await repeater(tick,res);
                                 }
                                 else await repeater(tick,...inp);
@@ -79,24 +79,24 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //bad
             }
         } 
                
-        if(node._node.loop && typeof node._node.loop === 'number') {
+        if(node.__node.loop && typeof node.__node.loop === 'number') {
             
-            if(!('looping' in node._node)) node._node.looping = true
-            node._node.looper = () => {
-                if(node._node.looping) {
-                    node._node.operator();
-                    setTimeout(node._node.looper,node._node.loop);
+            if(!('looping' in node.__node)) node.__node.looping = true
+            node.__node.looper = () => {
+                if(node.__node.looping) {
+                    node.__operator();
+                    setTimeout(node.__node.looper,node.__node.loop);
                 }
             }
-            if(node._node.looping) node._node.looper();
+            if(node.__node.looping) node.__node.looper();
             
             let ondelete = (node) => {
-                if(node._node.looping) node._node.looping = false;
+                if(node.__node.looping) node.__node.looping = false;
             }
 
-            if(typeof node._node.ondelete === 'undefined') node._node.ondelete = [ondelete];
-            else if (typeof node._node.ondelete === 'function') node._node.ondelete = [ondelete,node._node.ondelete];
-            else if (Array.isArray(node._node.ondelete)) node._node.ondelete.unshift(ondelete);
+            if(typeof node.__node.ondelete === 'undefined') node.__node.ondelete = [ondelete];
+            else if (typeof node.__node.ondelete === 'function') node.__node.ondelete = [ondelete,node.__node.ondelete];
+            else if (Array.isArray(node.__node.ondelete)) node.__node.ondelete.unshift(ondelete);
         }
     }
 
@@ -104,92 +104,92 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //bad
 
 /** Animations
  * 
- * nodeA._node.animate = true | () => void, to run the operator or a specified animation function on loop
+ * nodeA.__node.animate = true | () => void, to run the operator or a specified animation function on loop
  * 
  */
 export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node._node.animate === true || node._node.animation) {
-        if(typeof node._node.animate === 'function') node._node.animate = node._node.animate.bind(node);
+    if(node.__node.animate === true || node.__node.animation) {
+        if(typeof node.__node.animate === 'function') node.__node.animate = node.__node.animate.bind(node);
         let anim = (node) => {
-            if(!('animating' in node._node)) node._node.animating = true
-            node._node.animate = () => {
-                if(node._node.animating) {
-                    if(typeof node._node.animate === 'function') node._node.animation();
-                    else node._node.operator();
-                    requestAnimationFrame(node._node.animation);
+            if(!('animating' in node.__node)) node.__node.animating = true
+            node.__node.animate = () => {
+                if(node.__node.animating) {
+                    if(typeof node.__node.animate === 'function') node.__node.animation();
+                    else node.__operator();
+                    requestAnimationFrame(node.__node.animation);
                 }
             }
-            requestAnimationFrame(node._node.animation);
-            if(node._node.animating) node._node.animation();
+            requestAnimationFrame(node.__node.animation);
+            if(node.__node.animating) node.__node.animation();
         }
         requestAnimationFrame(anim);
 
         let ondelete = (node) => {
-            if(node._node.animating) node._node.animating = false;
+            if(node.__node.animating) node.__node.animating = false;
         }
 
-        if(typeof node._node.ondelete === 'undefined') node._node.ondelete = [ondelete];
-        else if (typeof node._node.ondelete === 'function') node._node.ondelete = [ondelete,node._node.ondelete];
-        else if (Array.isArray(node._node.ondelete)) node._node.ondelete.unshift(ondelete);
+        if(typeof node.__node.ondelete === 'undefined') node.__node.ondelete = [ondelete];
+        else if (typeof node.__node.ondelete === 'function') node.__node.ondelete = [ondelete,node.__node.ondelete];
+        else if (Array.isArray(node.__node.ondelete)) node.__node.ondelete.unshift(ondelete);
     }
 }
 
 
 /** Branching operations
  * 
- * nodeA._node.branch = {[key:string]:{if:Function|any, then:Function|any|GraphNode}}
+ * nodeA.__node.branch = {[key:string]:{if:Function|any, then:Function|any|GraphNode}}
  * 
- * nodeA._node.listeners['nodeB.x'] = {
+ * nodeA.__node.listeners['nodeB.x'] = {
  *  callback:(result)=>void, 
  *  branch:{if:Function|any, then:Function|any|GraphNode}
  * }
  * 
  */
 export const branching = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(typeof node._node.branch === 'object' && node._node.operator && !node._node.branchApplied) {
-        let fn = node._node.operator;
-        node._node.branchApplied = true;
-        node._node.operator = ((...args:any[]) => {
+    if(typeof node.__node.branch === 'object' && node.__operator && !node.__node.branchApplied) {
+        let fn = node.__operator;
+        node.__node.branchApplied = true;
+        node.__operator = ((...args:any[]) => {
             let result = fn(...args);
-            for(const key in node._node.branch) { //run branching operations
+            for(const key in node.__node.branch) { //run branching operations
                 let triggered = () => {
-                    if(typeof node._node.branch[key].then === 'function') {
-                        node._node.branch[key].then(result); //trigger a callback
-                    } else if(node._node.branch[key].then instanceof GraphNode && node._node.branch[key].then._node.operator) {
-                        node._node.branch[key].then._node.operator(result); //run a node
-                    } else result = node._node.branch[key].then; //just replace the result in this case
+                    if(typeof node.__node.branch[key].then === 'function') {
+                        node.__node.branch[key].then(result); //trigger a callback
+                    } else if(node.__node.branch[key].then instanceof GraphNode && node.__node.branch[key].then.__operator) {
+                        node.__node.branch[key].then.__operator(result); //run a node
+                    } else result = node.__node.branch[key].then; //just replace the result in this case
                 }
-                if(typeof node._node.branch[key].if === 'function') {
-                    if(node._node.branch[key].if(result)) {
+                if(typeof node.__node.branch[key].if === 'function') {
+                    if(node.__node.branch[key].if(result)) {
                         triggered();
                     }
-                } else if(node._node.branch[key].if === result) {
+                } else if(node.__node.branch[key].if === result) {
                     triggered();
                 } 
             }
             return result;
         });
     }
-    if(node._node.listeners) {
-        for(const key in node._node.listeners) {
-            if(typeof node._node.listeners[key] === 'object') {
-                if(node._node.listeners[key].branch && !node._node.listeners[key].branchApplied) {
-                    let fn = node._node.listeners[key].callback;
+    if(node.__node.listeners) {
+        for(const key in node.__node.listeners) {
+            if(typeof node.__node.listeners[key] === 'object') {
+                if(node.__node.listeners[key].branch && !node.__node.listeners[key].branchApplied) {
+                    let fn = node.__node.listeners[key].callback;
                     
-                    node._node.listeners[key].branchApplied = true;
-                    node._node.listeners.callback = (ret) => {
+                    node.__node.listeners[key].branchApplied = true;
+                    node.__node.listeners.callback = (ret) => {
                         let triggered = () => {
-                            if(typeof node._node.listeners[key].branch.then === 'function') {
-                                node._node.listeners[key].branch.then(ret); //trigger a callback
-                            } else if(node._node.listeners[key].branch.then instanceof GraphNode && node._node.listeners[key].branch.then._node.operator) {
-                                node._node.listeners[key].branch.then._node.operator(ret); //run a node
-                            } else ret = node._node.listeners[key].branch.then; //just replace the result in this case
+                            if(typeof node.__node.listeners[key].branch.then === 'function') {
+                                node.__node.listeners[key].branch.then(ret); //trigger a callback
+                            } else if(node.__node.listeners[key].branch.then instanceof GraphNode && node.__node.listeners[key].branch.then.__operator) {
+                                node.__node.listeners[key].branch.then.__operator(ret); //run a node
+                            } else ret = node.__node.listeners[key].branch.then; //just replace the result in this case
                         }
-                        if(typeof node._node.listeners[key].branch.if === 'function') {
-                            if(node._node.listeners[key].branch.if(ret)) {
+                        if(typeof node.__node.listeners[key].branch.if === 'function') {
+                            if(node.__node.listeners[key].branch.if(ret)) {
                                 triggered();
                             }
-                        } else if(node._node.listeners[key].branch.if === ret) {
+                        } else if(node.__node.listeners[key].branch.if === ret) {
                             triggered();
                         } 
                         return fn(ret);
@@ -202,15 +202,15 @@ export const branching = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => 
 
 /** Trigger listeners oncreate with specific arguments
  * 
- *  nodeA._node.listeners['nodeB.x'] = { callback:(result)=>void, oncreate:any }
+ *  nodeA.__node.listeners['nodeB.x'] = { callback:(result)=>void, oncreate:any }
  * 
  */
 export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node._node.listeners) {
-        for(const key in node._node.listeners) {
-            if(typeof node._node.listeners[key] === 'object') {
-                if(node._node.listeners[key].oncreate) {
-                    node._node.listeners[key].callback(node._node.listeners[key].oncreate);
+    if(node.__node.listeners) {
+        for(const key in node.__node.listeners) {
+            if(typeof node.__node.listeners[key] === 'object') {
+                if(node.__node.listeners[key].oncreate) {
+                    node.__node.listeners[key].callback(node.__node.listeners[key].oncreate);
                 }
             }
         }
@@ -219,15 +219,15 @@ export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,gr
 
 /** Trigger listeners oncreate with specific arguments
  * 
- *  nodeA._node.listeners['nodeB.x'] = { callback:(result)=>void, binding:{any} }
+ *  nodeA.__node.listeners['nodeB.x'] = { callback:(result)=>void, binding:{any} }
  * 
  */
 export const bindListener = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node._node.listeners) {
-        for(const key in node._node.listeners) {
-            if(typeof node._node.listeners[key] === 'object') {
-                if(typeof node._node.listeners[key].binding === 'object') {
-                    node._node.listeners.callback = node._node.listeners.callback.bind(node._node.listeners[key].binding);
+    if(node.__node.listeners) {
+        for(const key in node.__node.listeners) {
+            if(typeof node.__node.listeners[key] === 'object') {
+                if(typeof node.__node.listeners[key].binding === 'object') {
+                    node.__node.listeners.callback = node.__node.listeners.callback.bind(node.__node.listeners[key].binding);
                 }
             }
         }
@@ -237,18 +237,18 @@ export const bindListener = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) 
 
 /**
  * 
- *  nodeA._node.listeners['nodeB.x'] = { callback:(result)=>void, transform:(result)=>any }
+ *  nodeA.__node.listeners['nodeB.x'] = { callback:(result)=>void, transform:(result)=>any }
  * 
  */
 export const transformListenerResult = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node._node.listeners) {
-        for(const key in node._node.listeners) {
-            if(typeof node._node.listeners[key] === 'object') {
-                if(typeof node._node.listeners[key].transform === 'function' && !node._node.listeners[key].transformApplied) {
-                    let fn = node._node.listeners[key].callback;
-                    node._node.listeners[key].transformApplied = true;
-                    node._node.listeners.callback = (ret) => {
-                        ret = node._node.listeners[key].transform(ret)
+    if(node.__node.listeners) {
+        for(const key in node.__node.listeners) {
+            if(typeof node.__node.listeners[key] === 'object') {
+                if(typeof node.__node.listeners[key].transform === 'function' && !node.__node.listeners[key].transformApplied) {
+                    let fn = node.__node.listeners[key].callback;
+                    node.__node.listeners[key].transformApplied = true;
+                    node.__node.listeners.callback = (ret) => {
+                        ret = node.__node.listeners[key].transform(ret)
                         return fn(ret);
                     }
                 }
@@ -258,23 +258,23 @@ export const transformListenerResult = (node:GraphNode,parent:GraphNode|Graph,gr
 }
 
 
-export const substitute_operator = (node:GraphNode & GraphNodeProperties, parent:GraphNode|Graph,graph:Graph) => {
+export const substitute__operator = (node:GraphNode & GraphNodeProperties, parent:GraphNode|Graph,graph:Graph) => {
     //console.log('route', r)
-    if(node.post && !node._node.operator) {
-        node._setOperator(node.post);
-    } else if (!node._node.operator && typeof node.get == 'function') {
-        node._setOperator(node.get);
+    if(node.post && !node.__operator) {
+        node.__setOperator(node.post);
+    } else if (!node.__operator && typeof node.get == 'function') {
+        node.__setOperator(node.get);
     }
     if(node.aliases) {
         node.aliases.forEach((a) => {
-            graph._node.nodes.set(a,node);
+            graph.__node.nodes.set(a,node);
             let ondelete = (node) => {
-                graph._node.nodes.delete(a);
+                graph.__node.nodes.delete(a);
             }
     
-            if(typeof node._node.ondelete === 'undefined') node._node.ondelete = [ondelete];
-            else if (typeof node._node.ondelete === 'function') node._node.ondelete = [ondelete,node._node.ondelete];
-            else if (Array.isArray(node._node.ondelete)) node._node.ondelete.unshift(ondelete);
+            if(typeof node.__node.ondelete === 'undefined') node.__node.ondelete = [ondelete];
+            else if (typeof node.__node.ondelete === 'function') node.__node.ondelete = [ondelete,node.__node.ondelete];
+            else if (Array.isArray(node.__node.ondelete)) node.__node.ondelete.unshift(ondelete);
         })
     }
 }
@@ -288,5 +288,5 @@ export const loaders = {
     triggerListenerOncreate,
     bindListener,
     transformListenerResult,
-    substitute_operator
+    substitute__operator
 }

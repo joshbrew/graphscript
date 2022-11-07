@@ -66,8 +66,8 @@ export class DOMService extends Service {
             // console.log(r)
 
 
-            if((parent._node.tag || parent.id) && (parent.template || parent.context || parent.tagName || parent.element) && (r.template || r.context || r.tagName || r.element) && !r.parentNode) {
-                if(parent._node.tag) r.parentNode = parent._node.tag; 
+            if((parent.__node.tag || parent.id) && (parent.template || parent.context || parent.tagName || parent.element) && (r.template || r.context || r.tagName || r.element) && !r.parentNode) {
+                if(parent.__node.tag) r.parentNode = parent.__node.tag; 
                 if(parent.id) r.parentNode = parent.id;
             }
 
@@ -78,15 +78,15 @@ export class DOMService extends Service {
             }
             else {
                 if(r.template) { //assume its a component node
-                    r.id = props._node.tag;
+                    r.id = props.__node.tag;
                     this.addComponent(r as any,r.generateChildElementNodes);
                 }
                 else if(r.context) { //assume its a canvas node
-                    r.id = props._node.tag;
+                    r.id = props.__node.tag;
                     this.addCanvasComponent(r as any);
                 }
                 else if(r.tagName || r.element) { //assume its an element node
-                    r.id = props._node.tag;
+                    r.id = props.__node.tag;
                     this.addElement(r as any,r.generateChildElementNodes);
                 }
             }
@@ -139,7 +139,7 @@ export class DOMService extends Service {
         let elm:HTMLElement = this.createElement(options);
 
         if(!options.element) options.element = elm;
-        if(!options.operator) options.operator = function (props:{[key:string]:any}){ 
+        if(!options.__operator) options.__operator = function (props:{[key:string]:any}){ 
             if(typeof props === 'object') 
                 for(const key in props) { 
                     if(this.element) {
@@ -167,7 +167,7 @@ export class DOMService extends Service {
 
         this.elements[options.id] = {element:elm, node, parentNode: (options as CompleteOptions).parentNode, divs};
         
-        if(!node._node.ondelete) node._node.ondelete = (node) => { 
+        if(!node.__node.ondelete) node.__node.ondelete = (node) => { 
             elm.remove(); 
             if(options.onremove) options.onremove.call(this.elements[options.id].node, elm, this.elements[options.id]); 
         } //in this case we need to remove the element from the dom via the node and run callbacks here due to elements lacking an 'onremove' event
@@ -205,8 +205,8 @@ export class DOMService extends Service {
 
     updateOptions = (options, element): CompleteOptions => {
 
-        if(!options.id && options._node.tag) options.id = options._node.tag;
-        if(!options._node.tag && options.id) options._node.tag = options.id;
+        if(!options.id && options.__node.tag) options.id = options.__node.tag;
+        if(!options.__node.tag && options.id) options.__node.tag = options.id;
         if(!options.id) options.id = `${options.tagName ?? 'element'}${Math.floor(Math.random()*1000000000000000)}`;
 
         let p = options.parentNode;
@@ -264,12 +264,12 @@ export class DOMService extends Service {
 
 
         let node: GraphNode & DOMRouteProp;
-        if(this._node.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this._node.nodes.get(options.id)?.parentNode === options.parentNode) {
-            node = this._node.nodes.get(options.id);
+        if(this.__node.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.__node.nodes.get(options.id)?.parentNode === options.parentNode) {
+            node = this.__node.nodes.get(options.id);
         } else {
             let parentId = options.parentNode instanceof HTMLElement ? options.parentNode?.id : typeof options.parentNode === 'string' ? options.parentNode : undefined;
             let parent;
-            if(parentId) parent = this._node.nodes.get(parentId);
+            if(parentId) parent = this.__node.nodes.get(parentId);
             node = new GraphNode(
                 options instanceof Graph ? options : Object.assign({},options),
                 parent,
@@ -383,7 +383,7 @@ export class DOMService extends Service {
         }
 
         if(!options.element) options.element = elm;
-        if(!options.operator) options.operator = function op(props:{[key:string]:any}){ 
+        if(!options.__operator) options.__operator = function op(props:{[key:string]:any}){ 
             if(typeof props === 'object') 
                 for(const key in props) { 
                     if(this.element) {
@@ -484,7 +484,7 @@ export class DOMService extends Service {
         this.templates[completeOptions.id] = completeOptions;
 
         if(!options.element) options.element = elm;
-        if(!options.operator) options.operator = function op(props:{[key:string]:any}){ 
+        if(!options.__operator) options.__operator = function op(props:{[key:string]:any}){ 
             if(typeof props === 'object') 
                 for(const key in props) { 
                     if(this.element) {
@@ -542,8 +542,8 @@ export class DOMService extends Service {
             if((element as ComponentInfo|CanvasElementInfo).element) element = (element as ComponentInfo|CanvasElementInfo).element;
          }
         else if(typeof element === 'string' && this.components[element]) {
-            if((this.components[element] as CanvasElementInfo).node._node.isAnimating)
-                (this.components[element] as CanvasElementInfo).node._node.isAnimating = false;
+            if((this.components[element] as CanvasElementInfo).node.__node.isAnimating)
+                (this.components[element] as CanvasElementInfo).node.__node.isAnimating = false;
             if((this.components[element] as ComponentInfo).divs)
                 (this.components[element] as ComponentInfo).divs.forEach((d) => this.terminate(d));
                 
@@ -562,7 +562,7 @@ export class DOMService extends Service {
         }
         
         if(element) {
-            if(this._node.nodes.get((element as any).id)) {
+            if(this.__node.nodes.get((element as any).id)) {
                 this.removeTree((element as any).id);
             }
 

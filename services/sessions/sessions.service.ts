@@ -933,17 +933,17 @@ export class SessionsService extends Service {
 	}
 
     streamLoop = {
-        _node:{operator:this.getAllStreamUpdates},
+        __operator:this.getAllStreamUpdates,
         loop:10
     }
 
     userUpdateLoop = { //this node loop will run separately from the one below it
-        _node:{operator:this.userUpdateCheck}, 
+        __operator:this.userUpdateCheck, 
         loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
     }
 
     sessionLoop = {
-        _node:{operator:this.sessionUpdateCheck}, 
+        __operator:this.sessionUpdateCheck, 
         loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
     }
 

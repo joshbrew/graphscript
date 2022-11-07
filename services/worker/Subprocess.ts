@@ -109,9 +109,9 @@ export const subprocessRoutes = {
         subprocesses:{ //use secondary workers to run processes and report results back to the main thread or other
             [key:string]:SubprocessWorkerProps
         },
-        service?:WorkerService //defaults to this._node.graph (assumed to be workerservice)
+        service?:WorkerService //defaults to this.__node.graph (assumed to be workerservice)
     ) {
-        if(!service) service = this._node.graph;
+        if(!service) service = this.__node.graph;
         if(!service) return undefined;
 
         for(const p in subprocesses) {
@@ -178,17 +178,17 @@ export const subprocessRoutes = {
                     function pipeResults(data){
                         //console.log('piping', data);
                         let inp = data;
-                        if(this._node.graph.otherArgsProxy) inp = [data, ...this._node.graph.otherArgsProxy]
-                        let r = this._node.graph.run(this._node.graph.routeProxy, inp);
+                        if(this.__node.graph.otherArgsProxy) inp = [data, ...this.__node.graph.otherArgsProxy]
+                        let r = this.__node.graph.run(this.__node.graph.routeProxy, inp);
 
                         if(!s.blocking) return new Promise((res) => {
                             if(r instanceof Promise) {
                                 r.then((rr) => {
                                     if(rr !== undefined) {
-                                        let args = rr; if(this._node.graph.otherPipeArgs) args = [rr, ...this._node.graph.otherPipeArgs];
-                                        if(this.workers[this._node.graph.pipePort]) {
+                                        let args = rr; if(this.__node.graph.otherPipeArgs) args = [rr, ...this.__node.graph.otherPipeArgs];
+                                        if(this.workers[this.__node.graph.pipePort]) {
                                             s.blocking = true;
-                                            (this.workers[this._node.graph.pipePort] as WorkerInfo).run(this._node.graph.pipeRoute,args).then((result)=>{
+                                            (this.workers[this.__node.graph.pipePort] as WorkerInfo).run(this.__node.graph.pipeRoute,args).then((result)=>{
                                                 s.blocking = false;
                                                 res(result);
                                             }); //will report to main thread if pipePort undefined (if not set in this init)
@@ -197,14 +197,14 @@ export const subprocessRoutes = {
                                     }
                                 });
                             } else if(r !== undefined) {
-                                let args = r; if(this._node.graph.otherPipeArgs) args = [r, ...this._node.graph.otherPipeArgs];
-                                if(this.workers[this._node.graph.pipePort]){
+                                let args = r; if(this.__node.graph.otherPipeArgs) args = [r, ...this.__node.graph.otherPipeArgs];
+                                if(this.workers[this.__node.graph.pipePort]){
                                     s.blocking = true;
-                                    (this.workers[this._node.graph.pipePort] as WorkerInfo).run(this._node.graph.pipeRoute,args).then((result)=>{
+                                    (this.workers[this.__node.graph.pipePort] as WorkerInfo).run(this.__node.graph.pipeRoute,args).then((result)=>{
                                         s.blocking = false;
                                         res(result); //this really isn't that efficient since the tertiary thread will report back to main thread through this thread. Better would be to proxy the third thread as well
                                     }); //will report to main thread if pipePort undefined (if not set in this init)
-                                }//this.transmit({route:this._node.graph.pipeRoute, args}, this._node.graph.pipePort);   
+                                }//this.transmit({route:this.__node.graph.pipeRoute, args}, this.__node.graph.pipePort);   
                             }
                         });
 
@@ -224,16 +224,16 @@ export const subprocessRoutes = {
                     w,
                     function routeProxy(data:any) {
                         let r;
-                        if(this._node.graph.otherArgsProxy) r = this._node.graph.nodes.get(this._node.graph.routeProxy).operator(data, ...this._node.graph.otherArgsProxy);
-                        else r = this._node.graph.nodes.get(this._node.graph.routeProxy).operator(data);
+                        if(this.__node.graph.otherArgsProxy) r = this.__node.graph.nodes.get(this.__node.graph.routeProxy).__operator(data, ...this.__node.graph.otherArgsProxy);
+                        else r = this.__node.graph.nodes.get(this.__node.graph.routeProxy).__operator(data);
                         
-                        if(this._node.graph.state.triggers[this._node.graph.routeProxy]) {
+                        if(this.__node.graph.state.triggers[this.__node.graph.routeProxy]) {
                             if(r instanceof Promise) {
                                 r.then((rr) => {
-                                    this.setState({[this._node.graph.routeProxy]:rr});
+                                    this.setState({[this.__node.graph.routeProxy]:rr});
                                 })
                             }
-                            else this.setState({[this._node.graph.routeProxy]:r}); //so we can subscribe to the original route
+                            else this.setState({[this.__node.graph.routeProxy]:r}); //so we can subscribe to the original route
                         }
                         return r;
                     },
@@ -286,7 +286,7 @@ export const subprocessRoutes = {
             }
 
             if(s.callback) w.subscribe(s.route, (res) => { //we can change thisfrom the initial definition too
-                if(typeof s.callback === 'string') this._node.graph.run(s.callback,res);
+                if(typeof s.callback === 'string') this.__node.graph.run(s.callback,res);
                 else s.callback(res);
             });
 
@@ -322,18 +322,18 @@ export const subprocessRoutes = {
         structs:{},
         _id?:string
     ) {
-        if(!this._node.graph.ALGORITHMS) this._node.graph.ALGORITHMS = {};
+        if(!this.__node.graph.ALGORITHMS) this.__node.graph.ALGORITHMS = {};
 
-        if(!_id) _id = Object.keys(this._node.graph.ALGORITHMS)[0]; //run the first key if none specified
+        if(!_id) _id = Object.keys(this.__node.graph.ALGORITHMS)[0]; //run the first key if none specified
         if(!_id) return;
 
-        Object.assign(this._node.graph.ALGORITHMS[_id],structs); //e.g. update sample rate or sensitivity
+        Object.assign(this.__node.graph.ALGORITHMS[_id],structs); //e.g. update sample rate or sensitivity
     },
     'createSubprocess': function creatsubprocess( //returns id of algorithm for calling it on server
         options:SubprocessContextProps|string,
         inputs?:{[key:string]:any} //e.g. set the sample rate for this run
     ){
-        if(!this._node.graph.ALGORITHMS) this._node.graph.ALGORITHMS = {};
+        if(!this.__node.graph.ALGORITHMS) this.__node.graph.ALGORITHMS = {};
         if(typeof options === 'string') {
             options = algorithms[options];
         }
@@ -343,7 +343,7 @@ export const subprocessRoutes = {
 
             let ctx;
             if(typeof options?.ondata === 'function') ctx = createSubprocess(options,inputs);
-            if(ctx) this._node.graph.ALGORITHMS[ctx._id] = ctx;
+            if(ctx) this.__node.graph.ALGORITHMS[ctx._id] = ctx;
 
             console.log(ctx,options);
 
@@ -356,22 +356,22 @@ export const subprocessRoutes = {
         data:{[key:string]:any}, 
         _id?:string
     ){
-        if(!this._node.graph.ALGORITHMS) this._node.graph.ALGORITHMS = {};
+        if(!this.__node.graph.ALGORITHMS) this.__node.graph.ALGORITHMS = {};
 
-        if(!_id) _id = Object.keys(this._node.graph.ALGORITHMS)[0]; //run the first key if none specified
+        if(!_id) _id = Object.keys(this.__node.graph.ALGORITHMS)[0]; //run the first key if none specified
 
         if(!_id) return;
-        let res = this._node.graph.ALGORITHMS[_id].run(data); 
+        let res = this.__node.graph.ALGORITHMS[_id].run(data); 
 
         //console.log(_id,data,res);
-        //console.log(this._node.graph.ALGORITHMS[_id]);
+        //console.log(this.__node.graph.ALGORITHMS[_id]);
         if(res !== undefined) {
             if(Array.isArray(res)) {
                 let pass:any[] = [];
                 res.forEach((r) => {
                     if(r !== undefined) {
                         pass.push(r);
-                        this._node.graph.setState({[_id as string]:r});
+                        this.__node.graph.setState({[_id as string]:r});
                     }
                 });
                 if(pass.length > 0) {
@@ -379,7 +379,7 @@ export const subprocessRoutes = {
                 }
             }
             else {
-                this._node.graph.setState({[_id as string]:res}); 
+                this.__node.graph.setState({[_id as string]:res}); 
                 return res;
             }
         }

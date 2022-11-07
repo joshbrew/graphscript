@@ -7,7 +7,7 @@ export declare const Systems: {
             [key: string]: Entity;
         };
         setupEntity: (entity: Entity) => Entity;
-        _node: {
+        __node: {
             tag: string;
             operator: (entities: {
                 [key: string]: Entity;
@@ -269,7 +269,7 @@ export declare const Systems: {
             [key: string]: Entity;
         };
         setupEntity: (entity: Entity) => Entity;
-        _node: {
+        __node: {
             tag: string;
             operator: (entities: {
                 [key: string]: Entity;
@@ -290,7 +290,7 @@ export declare const Systems: {
             [key: string]: Entity;
         };
         setupEntity: (entity: Entity) => Entity;
-        _node: {
+        __node: {
             tag: string;
             operator: (entities: {
                 [key: string]: Entity;
@@ -314,7 +314,7 @@ export declare const Systems: {
         };
         setupEntities: (entities: any) => any;
         setupEntity: (entity: Entity) => Entity;
-        _node: {
+        __node: {
             tag: string;
             operator: (entities: {
                 [key: string]: Entity;
@@ -329,7 +329,7 @@ export declare const Systems: {
             [key: string]: Entity;
         }) => void;
         setupEntity: (entity: Entity) => Entity;
-        _node: {
+        __node: {
             tag: string;
             operator: (entities: {
                 [key: string]: Entity;

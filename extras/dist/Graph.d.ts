@@ -1,7 +1,7 @@
 import { EventHandler } from "./services/EventHandler";
 export declare const state: EventHandler;
 export declare type GraphNodeProperties = {
-    _node?: {
+    __node?: {
         tag?: string;
         state?: EventHandler;
         operator?: ((...args: any[]) => any) | string;
@@ -51,22 +51,22 @@ export declare type GraphOptions = {
     [key: string]: any;
 };
 export declare class GraphNode {
-    _node: {
+    __node: {
         [key: string]: any;
     };
     constructor(properties: any, parent?: {
         [key: string]: any;
     }, graph?: Graph);
-    _subscribe: (callback: string | GraphNode | ((res: any) => void), key?: string, subInput?: boolean) => any;
-    _subscribeState: (callback: string | GraphNode | ((res: any) => void)) => any;
-    _unsubscribe: (sub?: number, key?: string, subInput?: boolean) => any;
-    _setOperator: (fn: (...args: any[]) => any) => any;
+    __subscribe: (callback: string | GraphNode | ((res: any) => void), key?: string, subInput?: boolean) => any;
+    __subscribeState: (callback: string | GraphNode | ((res: any) => void)) => any;
+    __unsubscribe: (sub?: number, key?: string, subInput?: boolean) => any;
+    __setOperator: (fn: (...args: any[]) => any) => any;
     _addLocalState(props?: {
         [key: string]: any;
     }): void;
 }
 export declare class Graph {
-    _node: {
+    __node: {
         tag: string;
         state: EventHandler;
         nodes: Map<string, GraphNode | any>;

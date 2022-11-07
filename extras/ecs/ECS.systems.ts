@@ -9,7 +9,7 @@ export const Systems = {
         setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[this._node.tag]) continue;
+                if(entity.components) if(!entity.components[this.__node.tag]) continue;
 
                 this.setupEntity(entity);
             }
@@ -26,7 +26,7 @@ export const Systems = {
 
             return entity;
         },
-        _node:{
+        __node:{
             tag:'collision',
             operator:function( entities:{[key:string]:Entity}){
 
@@ -34,20 +34,20 @@ export const Systems = {
 
             for(let i = 0; i < keys.length; i++) {
                 const entity1 = entities[keys[i]];
-                if(entity1.components) if(!entity1.components[this._node.tag] || !entity1.collisionEnabled) continue;
+                if(entity1.components) if(!entity1.components[this.__node.tag] || !entity1.collisionEnabled) continue;
                 if(!entity1.collisionEnabled) continue;
                 for(let j = 0; j < keys.length; j++) {
                     if(i === j) continue;
                     const entity2 = entities[keys[j]];
-                    if(entity2.components) if(!entity2.components[this._node.tag]) continue;
+                    if(entity2.components) if(!entity2.components[this.__node.tag]) continue;
                     if(!entity2.collisionEnabled) continue;
                  
                     let colliding = Systems.collision.collisionCheck(entity1 as any,entity2 as any); //returns distance from origin if colliding (to reduce redundancy later)
                     if(colliding !== false) {
                         if(!entity1.colliding) entity1.colliding = {}
                         if(!entity2.colliding) entity2.colliding = {}
-                        entity1.colliding[entity2._node.tag] = colliding;
-                        entity2.colliding[entity1._node.tag] = colliding;
+                        entity1.colliding[entity2.__node.tag] = colliding;
+                        entity2.colliding[entity1.__node.tag] = colliding;
                     }
                 }
             }
@@ -716,7 +716,7 @@ export const Systems = {
         setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[this._node.tag]) continue;
+                if(entity.components) if(!entity.components[this.__node.tag]) continue;
                 this.setupEntity(entity);
             }
 
@@ -750,7 +750,7 @@ export const Systems = {
 
             return entity;
         },
-        _node:{
+        __node:{
             tag:'collider',
             operator: function (entities:{[key:string]:Entity}) {
 
@@ -758,7 +758,7 @@ export const Systems = {
 
             for(let i = 0; i < keys.length; i++) {
                 const entity1 = entities[keys[i]];
-                if(entity1.components) if(!entity1.components[this._node.tag] || !entity1.collisionEnabled) continue;
+                if(entity1.components) if(!entity1.components[this.__node.tag] || !entity1.collisionEnabled) continue;
                 
                 if(entity1.useBoundingBox) this.checkBoundingBox(entity1); 
                 
@@ -770,7 +770,7 @@ export const Systems = {
                         const entity2 = entities[key2];
                         if(entity1.colliding[key2] === false) {
                             delete entity1.colliding[key2] 
-                            delete entity2.colliding[entity1._node.tag]; 
+                            delete entity2.colliding[entity1.__node.tag]; 
                             continue;
                         }
                         if(!entity2.collisionEnabled) continue;
@@ -787,7 +787,7 @@ export const Systems = {
                             }
                             else {
                                 this.resolveSphereCollisions(entity1,entity2,entity1.colliding[key2]);
-                                delete entity2.colliding[entity1._node.tag]; //both resolved
+                                delete entity2.colliding[entity1.__node.tag]; //both resolved
                             }
                         }
                         //}
@@ -795,7 +795,7 @@ export const Systems = {
                         //else if(entity2.collisionType === 'box')
                         //this.resolveBoxCollision(entity1,entity2);
                         
-                        delete entity1.colliding[entity2._node.tag];
+                        delete entity1.colliding[entity2.__node.tag];
                     }
                     
                     delete entity1.colliding;
@@ -958,10 +958,10 @@ export const Systems = {
                 }
 
             }
-            //if(!entity1.collidedWith[entity2._node.tag] && !entity1.prevCollidedWith[entity2._node.tag]) {
+            //if(!entity1.collidedWith[entity2.__node.tag] && !entity1.prevCollidedWith[entity2.__node.tag]) {
             //}
-            // entity1.collidedWith[entity2._node.tag] = entity2._node.tag;
-            // entity2.collidedWith[entity1._node.tag] = entity1._node.tag;
+            // entity1.collidedWith[entity2.__node.tag] = entity2.__node.tag;
+            // entity2.collidedWith[entity1.__node.tag] = entity1.__node.tag;
         }
     },// as SystemProps,
     nbody:{ //gravitational attraction
@@ -970,7 +970,7 @@ export const Systems = {
         setupEntities:function (entities:{[key:string]:Entity}){
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[this._node.tag]) continue;
+                if(entity.components) if(!entity.components[this.__node.tag]) continue;
 
                 this.setupEntity(entity);
             }
@@ -989,7 +989,7 @@ export const Systems = {
         
             return entity;
         },
-        _node:{
+        __node:{
             tag:'nbody',
             operator:function(entities:{[key:string]:Entity}){
 
@@ -997,7 +997,7 @@ export const Systems = {
 
             for(let i = 0; i < keys.length; i++) {
                 const entity = entities[keys[i]];
-                if(entity.components) if(!entity.components[this._node.tag]) continue;
+                if(entity.components) if(!entity.components[this.__node.tag]) continue;
                 if(!entity.mass) continue;
                 
                 let nSearched = 0;
@@ -1006,7 +1006,7 @@ export const Systems = {
                     let randKey = keys[Math.floor(Math.random()*keys.length)];
                     nSearched++;
                     const entity2 = entities[randKey];
-                    if(entity2.components) if(!entity2.components[this._node.tag]) continue nested;
+                    if(entity2.components) if(!entity2.components[this.__node.tag]) continue nested;
                     if(!entity2.mass || !entity2.isAttractor) continue nested;
 
                     this.attract(
@@ -1130,7 +1130,7 @@ export const Systems = {
 
             return entity;
         },
-        _node:{
+        __node:{
             tag:'boid',
             operator:function (entities:{[key:string]:Entity}){
             
@@ -1333,7 +1333,7 @@ export const Systems = {
         setupEntities:function (entities:{[key:string]:Entity}){ //install needed data structures to entities
             for(const key in entities) {
                 const entity = entities[key];
-                if(entity.components) if(!entity.components[this._node.tag]) continue;
+                if(entity.components) if(!entity.components[this.__node.tag]) continue;
 
                 this.setupEntity(entity);
             }
@@ -1351,7 +1351,7 @@ export const Systems = {
 
             return entity;
         },
-        _node:{
+        __node:{
             tag:'movement',
             operator:function(entities:{[key:string]:Entity}){
             let now = performance.now();
@@ -1362,7 +1362,7 @@ export const Systems = {
 
             for(let i = 0; i < keys.length; i++) {
                 const entity = entities[keys[i]];
-                if(entity.components) if(!entity.components[this._node.tag]) continue;
+                if(entity.components) if(!entity.components[this.__node.tag]) continue;
                 if(entity.fixed) continue;
                 
                 if(entity.mass) { //F = ma, F in Newtons, m in kg, a in m/s^2
