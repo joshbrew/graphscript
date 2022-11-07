@@ -94,17 +94,17 @@ export class WorkerService extends Service {
                 rt.worker?.terminate();
             }
             let oldondelete;
-            if(rt.__node.ondelete) oldondelete = rt.__node.ondelete;  
+            if(rt.__ondisconnected) oldondelete = rt.__ondisconnected;  
             
             let od = (n) => {
                 if(oldondelete) oldondelete(n);
                 ondelete(n);
             }
 
-            if(rt.__node.ondelete) {
-                if(Array.isArray(rt.__node.ondelete)) rt.__node.ondelete.push(od);
-                else rt.__node.ondelete = [od,rt.__node.ondelete];
-            } else rt.__node.ondelete = [od];
+            if(rt.__ondisconnected) {
+                if(Array.isArray(rt.__ondisconnected)) rt.__ondisconnected.push(od);
+                else rt.__ondisconnected = [od,rt.__ondisconnected];
+            } else rt.__ondisconnected = [od];
         }
 
         rt.worker = worker;

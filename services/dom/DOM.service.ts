@@ -167,7 +167,7 @@ export class DOMService extends Service {
 
         this.elements[options.id] = {element:elm, node, parentNode: (options as CompleteOptions).parentNode, divs};
         
-        if(!node.__node.ondelete) node.__node.ondelete = (node) => { 
+        if(!node.__ondisconnected) node.__ondisconnected = (node) => { 
             elm.remove(); 
             if(options.onremove) options.onremove.call(this.elements[options.id].node, elm, this.elements[options.id]); 
         } //in this case we need to remove the element from the dom via the node and run callbacks here due to elements lacking an 'onremove' event

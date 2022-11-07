@@ -94,9 +94,7 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //bad
                 if(node.__node.looping) node.__node.looping = false;
             }
 
-            if(typeof node.__node.ondelete === 'undefined') node.__node.ondelete = [ondelete];
-            else if (typeof node.__node.ondelete === 'function') node.__node.ondelete = [ondelete,node.__node.ondelete];
-            else if (Array.isArray(node.__node.ondelete)) node.__node.ondelete.unshift(ondelete);
+            node.__addDisconnected(ondelete);
         }
     }
 
@@ -128,9 +126,7 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
             if(node.__node.animating) node.__node.animating = false;
         }
 
-        if(typeof node.__node.ondelete === 'undefined') node.__node.ondelete = [ondelete];
-        else if (typeof node.__node.ondelete === 'function') node.__node.ondelete = [ondelete,node.__node.ondelete];
-        else if (Array.isArray(node.__node.ondelete)) node.__node.ondelete.unshift(ondelete);
+        node.__addDisconnected(ondelete);
     }
 }
 
@@ -272,9 +268,7 @@ export const substitute__operator = (node:GraphNode & GraphNodeProperties, paren
                 graph.__node.nodes.delete(a);
             }
     
-            if(typeof node.__node.ondelete === 'undefined') node.__node.ondelete = [ondelete];
-            else if (typeof node.__node.ondelete === 'function') node.__node.ondelete = [ondelete,node.__node.ondelete];
-            else if (Array.isArray(node.__node.ondelete)) node.__node.ondelete.unshift(ondelete);
+            node.__addDisconnected(ondelete);
         })
     }
 }

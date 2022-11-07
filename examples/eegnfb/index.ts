@@ -233,7 +233,7 @@ const webappHtml = {
                                                     renderer: {
                                                         workerUrl:gsworker,
                                                         callback:'updateCanvas', //will pipe data to the canvas animation living alone on this thread
-                                                        __node:{oncreate:(node) => {
+                                                        __onconnected:(node) => {
 
                                                             if(transferred) {
                                                                 let newCanvas = document.createElement('canvas');
@@ -333,7 +333,7 @@ const webappHtml = {
                                                                     }
                                                             });
                                                             transferred = true;
-                                                        }}
+                                                        }
                                                         //webapp.run('worker.updateChartData')
                                                     } as WorkerRoute,
                                                     vrms:{
@@ -426,7 +426,7 @@ const webappHtml = {
                                                                     crenderer: {
                                                                         workerUrl:gsworker,
                                                                         callback:'updateCanvas', //will pipe data to the canvas animation living alone on this thread
-                                                                        __node:{oncreate:(node) => {
+                                                                        __onconnected:(node) => {
                                                                             //console.log(self,webapp);
                                                                             if(ctransferred) {
                                                                                 let newCanvas = document.createElement('canvas');
@@ -529,7 +529,7 @@ const webappHtml = {
                                                                                     }
                                                                             });
                                                                             ctransferred = true;
-                                                                        }}
+                                                                        }
                 
                                                                         //webapp.run('worker.updateChartData')
                                                                     } as WorkerRoute,

@@ -124,9 +124,9 @@ export class GraphNode {
                     properties.__node.nodes.forEach((n) => {parent.__node.nodes.set(properties.__node.tag+'.'+n.__node.tag,n)});
 
                     let ondelete = () => { properties.__node.nodes.forEach((n) => {parent.__node.nodes.delete(properties.__node.tag+'.'+n.__node.tag)}); }
-                    if(Array.isArray(this.__node.ondelete)) { this.__node.ondelete.push(ondelete); }
-                    else if (this.__node.ondelete) { this.__node.ondelete = [ondelete,this.__node.ondelete] }
-                    else this.__node.ondelete = [ondelete];
+                    if(Array.isArray(this.__ondisconnected)) { this.__ondisconnected.push(ondelete); }
+                    else if (this.__ondisconnected) { this.__ondisconnected = [ondelete,this.__ondisconnected] }
+                    else this.__ondisconnected = [ondelete];
 
                 }
             }
@@ -139,16 +139,11 @@ export class GraphNode {
             if(properties.__operator && parent instanceof GraphNode && parent.__operator) {
                 let sub = parent.__subscribe(this);
                 let ondelete = () => { parent?.__unsubscribe(sub);}
-                if(Array.isArray(this.__node.ondelete)) { this.__node.ondelete.push(ondelete); }
-                else if (this.__node.ondelete) { this.__node.ondelete = [ondelete,this.__node.ondelete] }
-                else this.__node.ondelete = [ondelete];
+                
             }
             if(properties instanceof Graph) this.__node.source = properties; //keep tabs on source graphs passed to make nodes
 
-            if(!graph) {
-                if(typeof this.__node.oncreate === 'function') { this.__node.oncreate(this); }
-                else if (Array.isArray(this.__node.oncreate)) { this.__node.oncreate.forEach((o:Function) => { o(this); }) }
-            }
+            
         }
     }
 
@@ -264,6 +259,29 @@ __addLocalState(props?:{[key:string]:any}) {
         }
     }
 }
+
+__addOnconnected(callback:(node)=>void) {
+    if(Array.isArray(this.__ondisconnected)) { this.__onconnected.push(callback); }
+    else if (typeof this.__onconnected === 'function') { this.__onconnected = [callback,this.__onconnected] }
+    else this.__onconnected = callback;
+}
+
+__addDisconnected(callback:(node)=>void) {
+    if(Array.isArray(this.__ondisconnected)) { this.__ondisconnected.push(callback); }
+    else if (typeof this.__ondisconnected === 'function') { this.__ondisconnected = [callback,this.__ondisconnected] }
+    else this.__ondisconnected = callback;
+}
+
+__callConnected(node=this) {
+    if(typeof this.__onconnected === 'function') { this.__onconnected(this); }
+    else if (Array.isArray(this.__onconnected)) { this.__onconnected.forEach((o:Function) => { o(this); }) }
+}
+
+__callDisconnected(node=this) {
+    if(typeof this.__ondisconnected === 'function') this.__ondisconnected(this);
+    else if (Array.isArray(this.__ondisconnected)) { this.__ondisconnected.forEach((o:Function) => {o(this)}); }
+}
+
 }
 
 export class Graph {
@@ -355,14 +373,11 @@ export class Graph {
                 this.recursiveSet(node.__children, node, listeners);
             }
     
-            if(node.__node.tree) this.setTree(node.__node.tree);
-    
             //now setup event listeners
             this.setListeners(listeners);
     
-            if(typeof node.__node.oncreate === 'function') { node.__node.oncreate(node); }
-            else if (Array.isArray(node.__node.oncreate)) { node.__node.oncreate.forEach((o:Function) => { o(node); })} 
-    
+            node.__callConnected();
+
             return node;
 
         }
@@ -399,10 +414,7 @@ export class Graph {
                     this.recursiveSet(node.__children, node, listeners);
                 }
 
-                if(node.__node.tree) this.setTree(node.__node.tree);
-
-                if(typeof node.__node.oncreate === 'function') { node.__node.oncreate(node); }
-                else if (Array.isArray(node.__node.oncreate)) { node.__node.oncreate.forEach((o:Function) => { o(node); }) }
+                node.__callConnected();
             }
         } 
         return listeners;
@@ -421,8 +433,7 @@ export class Graph {
                 this.clearListeners(node);
             }
 
-            if(typeof node.__node.ondelete === 'function') node.__node.ondelete(node);
-            else if (Array.isArray(node.__node.ondelete)) { node.__node.ondelete.forEach((o:Function) => {o(node)}); }
+            node.__callDisconnected();
  
             const recursiveRemove = (t) => {
                 for(const key in t) {
@@ -439,8 +450,7 @@ export class Graph {
                         this.clearListeners(t[key]);
                     }
 
-                    if(typeof t[key]?.__node?.ondelete === 'function') t[key].__node.ondelete(t[key]);
-                    else if (Array.isArray(t[key]?.__node.ondelete)) { t[key]?.__node.ondelete.forEach((o:Function) => {o(node)}); }
+                    t[key].__callDisconnected();
                    
                     if(t[key].__children) {
                         recursiveRemove(t[key].__children);
@@ -520,7 +530,7 @@ export class Graph {
                     this.unsubscribe(n,undefined,node.__listeners[key].sub, node.__listeners[key].inputState);
                 }
 
-                //console.log('unsubscribed', key)
+                console.log('unsubscribed', key)
                 delete node.__listeners[key];
             }
         }
@@ -567,10 +577,7 @@ export class Graph {
                 //console.log('unsubscribed', key)
             }
 
-            if(nd.__node.ondelete) {
-                if(Array.isArray(nd.__node.ondelete)) {nd.__node.ondelete.push(ondelete);}
-                else nd.__node.ondelete = [ondelete,nd.__node.ondelete];
-            } else nd.__node.ondelete = [ondelete];
+            nd.__addDisconnected(ondelete);
         } else if (typeof node === 'string') {
             if(typeof callback === 'string') callback = this.get(callback);
             if(callback instanceof GraphNode && callback.__operator) {
@@ -580,10 +587,7 @@ export class Graph {
                     //console.log('unsubscribed', key)
                 }
     
-                if(callback.__node.ondelete) {
-                    if(Array.isArray(callback.__node.ondelete)) {callback.__node.ondelete.push(ondelete);}
-                    else callback.__node.ondelete = [ondelete,callback.__node.ondelete];
-                } else callback.__node.ondelete = [ondelete];
+                callback.__addDisconnected(ondelete);
             }
             else if (typeof callback === 'function') sub = this.__node.state.subscribeTrigger(node as string, callback); 
         }
