@@ -481,17 +481,17 @@ export function stopAnim(_id?:string){
 //load on front and backend
 export const workerCanvasRoutes = {
     ...proxyElementWorkerRoutes,
-    Renderer,
-    transferCanvas,
-    setupCanvas,
-    setDraw,
-    drawFrame,
-    clearCanvas,
-    initCanvas,
-    updateCanvas,
-    setProps,
-    startAnim,
-    stopAnim
+    Renderer:Renderer,
+    transferCanvas:transferCanvas,
+    setupCanvas:setupCanvas,
+    setDraw:setDraw,
+    drawFrame:drawFrame,
+    clearCanvas:clearCanvas,
+    initCanvas:initCanvas,
+    updateCanvas:updateCanvas,
+    setProps:setProps,
+    startAnim:startAnim,
+    stopAnim:stopAnim
 };
 
 function parseFunctionFromText(method='') {

@@ -1,5 +1,5 @@
 import { Graph, GraphNode } from "../../Graph"
-import { Service, ServiceMessage, ServiceOptions } from "../Service2"
+import { Service, ServiceMessage, ServiceOptions } from "../Service"
 
 /*
 Goals of router:
@@ -330,7 +330,7 @@ export class Router extends Service {
                     for(const key in this.sources[sourceId as string]) {
                         if(this.sources[sourceId as string][key].service) {
                             if(typeof this.sources[sourceId as string][key].service === 'object') {
-                                if((this.sources[sourceId as string][key].service as Graph).tag === k) {
+                                if((this.sources[sourceId as string][key].service as Graph)._node.tag === k) {
                                     if(this.sources[sourceId as string][key].connectionType && (this.sources[sourceId as string][key].service as any)?.name) {
                                         if(!this.serviceConnections[(this.sources[sourceId as string][key] as any).service.name]) {
                                             this.removeConnection(this.sources[sourceId as string][key]); //some auto cleanup
@@ -492,9 +492,10 @@ export class Router extends Service {
                         return node[message.method]?.(...message.args)
                     } else return node[message.method]?.(message.args)
                 } else {
+                    if(!node._node.operator) return;
                     if(Array.isArray(message.args)) {
-                        return node.run(...message.args)
-                    } else return node.run(message.args)
+                        return node._node.operator(...message.args)
+                    } else return node._node.operator(message.args)
                 }
             }
             settings.request = async (message:any,method?:string) => {
@@ -503,22 +504,23 @@ export class Router extends Service {
                         return node[method]?.(...message.args)
                     } else return node[method]?.(message.args)
                 } else {
+                    if(!node._node.operator) return;
                     if(Array.isArray(message.args)) {
-                        return node.run(...message.args)
-                    } else return node.run(message.args)
+                        return node._node.operator(...message.args)
+                    } else return node._node.operator(message.args)
                 }
             }
             settings.post = async (route?:string, args?:any, method?:string) => {
-                if(route && node.get(route)) {
-                    let n = node.get(route);
+                if(route && node._node.graph.get(route)) {
+                    let n = node._node.graph.get(route);
                     if(method) {
                         if(Array.isArray(args)) {
                             return n[method]?.(...args)
                         } else return n[method]?.(args)
                     } else {
                         if(Array.isArray(args)) {
-                            return n.run(...args)
-                        } else return n.run(args)
+                            return n._node.operator(...args)
+                        } else return n._node.operator(args)
                     }
                 }
                 else {
@@ -528,30 +530,30 @@ export class Router extends Service {
                         } else return node[method]?.(args)
                     } else {
                         if(Array.isArray(args)) {
-                            return node.run(...args)
-                        } else return node.run(args)
+                            return node._node.operator(...args)
+                        } else return node._node.operator(args)
                     }
                 }
             }
             settings.run = settings.post as any;
             settings.subscribe = async (route:string|undefined, callback:((res:any)=>void)) => {
-                return node.subscribe(callback,route) as number;
+                return node._subscribe(callback,route) as number;
             };
             settings.unsubscribe = async (route:any, sub:number) => {
-                return node.unsubscribe(sub,route) as boolean;
+                return node._unsubscribe(sub,undefined,route) as boolean;
             }
             settings.terminate = () => {
-                node.graph.remove(node);
+                node._node.graph.remove(node);
                 return true;
             }
             settings.onclose = options.onclose;
             if(settings.onclose) {
                 let oldondelete;
-                if(node.ondelete) oldondelete = node.ondelete;
-                node.ondelete = (n:GraphNode) => { if(settings.onclose) settings.onclose(settings,n); if(oldondelete) oldondelete(n); }
+                if(node._node.ondelete) oldondelete = node._node.ondelete;
+                node._node.ondelete = (n:GraphNode) => { if(settings.onclose) settings.onclose(settings,n); if(oldondelete) oldondelete(n); }
             }
         } else if (options.connection instanceof Graph) {
-            if(options.connection.nodes.get('open'))
+            if(options.connection._node.nodes.get('open'))
                 settings.service = options.connection;
             let graph = settings.connection as Graph;
             settings.send = async (message:ServiceMessage) => {
@@ -563,8 +565,8 @@ export class Router extends Service {
                 if(!message.route) return undefined;
                 if(method) {
                     if(Array.isArray(message.args)) {
-                        return graph.nodes.get(message.route)[method]?.(...message.args)
-                    } else return graph.nodes.get(message.route)[method]?.(message.args)
+                        return graph._node.nodes.get(message.route)[method]?.(...message.args)
+                    } else return graph._node.nodes.get(message.route)[method]?.(message.args)
                 } else {
                     if(Array.isArray(message.args)) {
                         return graph.run(message.route,...message.args)
@@ -587,10 +589,10 @@ export class Router extends Service {
             }
             settings.run = settings.post as any;
             settings.subscribe = async (route:string|GraphNode, callback:((res:any)=>void)) => {
-                return graph.subscribe(route,callback) as number;
+                return graph.subscribe(route,undefined,callback) as number;
             };
             settings.unsubscribe = async (route:any, sub:number) => {
-                return graph.unsubscribe(route,sub) as boolean;
+                return graph.unsubscribe(route,undefined,sub) as boolean;
             }
             settings.terminate = (n) => {
                 graph.remove(n);
@@ -676,7 +678,7 @@ export class Router extends Service {
             settings.source = options.source;
         }
         else if(!settings.source && options.service) {
-            settings.source = typeof options.service === 'object' ? options.service.name : undefined;
+            settings.source = typeof options.service === 'object' ? (options.service as any)?.name : undefined;
         } else if (!settings.source && (settings.connection instanceof GraphNode || settings.connection instanceof Graph)) {
             settings.source = 'local';
             if(!this.order.indexOf('local')) this.order.unshift('local'); 
@@ -935,7 +937,7 @@ export class Router extends Service {
                 if(!this.services[name]._node.nodes.get(n.tag)) {
                     this.services[name]._node.nodes.set(n.tag,n);
                 } else {
-                    if(!this.services[name]._node.nodes.get(tag) && n._UNIQUE !== this.services[name]._node.nodes.get(n.tag)._UNIQUE) //use the remapped key if it's not the same node
+                    if(!this.services[name]._node.nodes.get(tag) && n?._node.UNIQUE !== this.services[name]._node.nodes.get(n.tag)?._node.UNIQUE) //use the remapped key if it's not the same node
                         this.services[name]._node.nodes.set(tag,n);
                 }
             });

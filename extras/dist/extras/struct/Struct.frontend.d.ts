@@ -1,6 +1,6 @@
 import { DataTablet } from './datastructures/index';
 import { Data, ProfileStruct, AuthorizationStruct, GroupStruct, DataStruct, EventStruct, ChatroomStruct, CommentStruct, Struct } from './datastructures/types';
-import { Routes, Service, ServiceOptions } from '../../services/Service';
+import { Service } from '../../services/Service';
 import { User } from '../../services/router/Router';
 export declare const randomId: (prefix?: any) => string;
 export declare const pseudoObjectId: (m?: Math, d?: DateConstructor, h?: number, s?: (s: any) => string) => string;
@@ -10,7 +10,7 @@ export declare class StructFrontend extends Service {
     tablet: DataTablet;
     collections: Map<string, any>;
     id: string;
-    constructor(options?: ServiceOptions, user?: Partial<User>);
+    constructor(options?: any, user?: Partial<User>);
     setupUser(userinfo: Partial<User>, callback?: (currentUser: any) => void): Promise<any>;
     baseServerCallback: (data: any) => void;
     onResult(data: any): void;
@@ -90,5 +90,4 @@ export declare class StructFrontend extends Service {
         _id: string;
         replies: any[];
     }, authorId?: string, message?: string, attachments?: string | Data[], updateServer?: boolean) => Promise<any[] | CommentStruct>;
-    routes: Routes;
 }

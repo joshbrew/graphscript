@@ -1,4 +1,4 @@
-import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 export declare type RequestOptions = {
     method: string;
     url: string | URL;
@@ -21,9 +21,8 @@ export declare class HTTPfrontend extends Service {
     static request: (options: RequestOptions) => XMLHttpRequest;
     GET: (url?: string | URL, type?: XMLHttpRequestResponseType, mimeType?: string | undefined) => Promise<unknown>;
     POST: (message: any | ServiceMessage, url?: string | URL, type?: XMLHttpRequestResponseType, mimeType?: string | undefined) => Promise<unknown>;
-    transmit: (message: any | ServiceMessage, url: string | URL) => any;
+    transmit: (message: any | ServiceMessage, url: string | URL) => Promise<unknown>;
     transponder: (url: string | URL, message: any | ServiceMessage | undefined, type?: XMLHttpRequestResponseType, mimeType?: string) => Promise<unknown>;
     listen: (path?: string | undefined | '0', fetched?: (clone: Response, args: any[], response: Response) => Promise<void>) => string;
     stopListening: (path: string | 0 | undefined, listener?: string) => void;
-    routes: Routes;
 }

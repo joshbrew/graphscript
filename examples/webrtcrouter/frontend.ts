@@ -7,26 +7,27 @@ import { WebSocketProps, WSSfrontend } from '../../services/wss/WSS.browser';
 import { DOMService } from '../../services/dom/DOM.service';
 
 const router = new Router({
-    routes:{
+    order:['webrtc','wss','sse'],
+    services:{
         'dom': new DOMService({
-            routes:{
+            tree:{
                 'main':{
                     tagName:'div',
-                    children:{
+                    _node:{children:{
                         'header':{
                             tagName:'h4',
                             innerHTML:`Hello World!`
                         },
                         'webrtc':{
                             tagName:'div',
-                            children:{
+                            _node:{children:{
                                 'sessioninfo':{
                                     tagName:'div'
                                 },
                                 'myrooms':{
                                     tagName:'div',
                                     style:{borderStyle:'1px solid black'},
-                                    children:{
+                                    _node:{children:{
                                         'open':{
                                             tagName:'button',
                                             innerText:'Create Peer Connection'
@@ -34,22 +35,17 @@ const router = new Router({
                                         'myrooms':{
                                             tagName:'div'
                                         }
-                                    }
+                                    }}
                                 },
                                 'otherrooms':{
                                     tagName:'div'
                                 }
-                            }
+                            }}
                         }
                     }
-                }
+                }}
             }
-        })
-    },
-    loadDefaultRoutes:true,
-    syncServices:true,
-    order:['webrtc','wss','sse'],
-    services:{
+        }),
         'http':HTTPfrontend,
         'sessions':SessionsService,
         'sse':{
@@ -84,7 +80,7 @@ const router = new Router({
                             user.rooms = {};
                             user.localrtc = {};
 
-                            router.subscribe('joinSession', (res) => {
+                            router.subscribe('joinSession', undefined, (res) => {
                                 console.log('joinSession fired', res);
                                 (document.getElementById('sessioninfo') as HTMLElement).innerHTML = `Joined: ${JSON.stringify(res)}`;
                                 if(res?.settings.name === 'webrtcrooms'){
@@ -329,4 +325,4 @@ const router = new Router({
 
 //router.services.sessions.users = router.users;
 
-console.log(router.nodes.keys())
+console.log(router._node.nodes.keys())

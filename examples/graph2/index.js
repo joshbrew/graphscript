@@ -1,5 +1,5 @@
 
-import { Graph } from "../../Graph2";
+import { Graph } from "../../Graph";
 import { loaders } from "../../Loaders";
 import * as nodeA from './nodes/nodeA.js'
 

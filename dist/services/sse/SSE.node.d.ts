@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import { Session, SessionState, Channel } from 'better-sse';
 import http from 'http';
 import https from 'https';
@@ -71,8 +71,7 @@ export declare class SSEbackend extends Service {
     transmit: (data: string | ServiceMessage, path?: string, eventName?: string, sessionId?: string) => boolean;
     request: (message: any, path: string, method?: string, sessionId?: string, eventName?: string) => Promise<any>;
     runRequest: (message: any, path: string, callbackId: string | number, sessionId?: string) => any;
-    subscribeSSE: (route: string, path: string, sessionId?: string, eventName?: string) => number;
-    subscribeToSSE: (route: string, path: string, callback?: string | ((res: any) => void), sessionId?: string, eventName?: string) => Promise<number> | Promise<number>[];
+    subscribeSSE: (route: string, path: string, sessionId?: string, eventName?: string, key?: string) => any;
+    subscribeToSSE: (route: string, path: string, callback?: string | ((res: any) => void), sessionId?: string, eventName?: string, key?: string) => Promise<number> | Promise<number>[];
     terminate: (sse: string | SSEChannelInfo) => boolean;
-    routes: Routes;
 }

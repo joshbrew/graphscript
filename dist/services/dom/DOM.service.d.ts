@@ -1,14 +1,8 @@
 import { DOMElement } from "./DOMElement";
-import { Graph, GraphNode, GraphNodeProperties, OperatorType } from '../../Graph';
-import { RouteProp, Service, ServiceOptions } from "../Service";
+import { Graph, GraphNode } from '../../Graph';
+import { Service, ServiceOptions } from "../Service";
 import { CompleteOptions, ElementInfo, ElementProps, ComponentProps, ComponentInfo, CanvasElementProps, CanvasOptions, CanvasElementInfo } from './types/index';
 export declare type DOMRouteProp = ElementProps | ComponentProps | CanvasElementProps;
-export declare type DOMServiceRoute = GraphNode | GraphNodeProperties | Graph | OperatorType | ((...args: any[]) => any | void) | ({
-    aliases?: string[];
-} & GraphNodeProperties) | RouteProp | DOMRouteProp;
-export declare type DOMRoutes = {
-    [key: string]: DOMServiceRoute;
-};
 export declare class DOMService extends Service {
     loadDefaultRoutes: boolean;
     keepState: boolean;
@@ -18,8 +12,9 @@ export declare class DOMService extends Service {
         md: (template: string, options: ComponentProps) => void;
         jsx: (template: any, options: ComponentProps) => void;
     };
-    customRoutes: ServiceOptions["customRoutes"];
-    customChildren: ServiceOptions["customChildren"];
+    domloader: {
+        dom: (r: DOMRouteProp & GraphNode, parent: GraphNode & DOMRouteProp, graph: Graph, tree: any, props: any) => void;
+    };
     constructor(options?: ServiceOptions, parentNode?: HTMLElement, interpreters?: {
         [key: string]: (template: string, options: ComponentProps) => void;
     });
@@ -36,11 +31,10 @@ export declare class DOMService extends Service {
     createElement: (options: ElementProps) => HTMLElement;
     updateOptions: (options: any, element: any) => CompleteOptions;
     resolveParentNode: (elm: any, parentNode: any, options: any, oncreate?: any) => void;
-    resolveGraphNode: (element: any, options: any) => GraphNode;
+    resolveGraphNode: (element: any, options: any) => GraphNode & DOMRouteProp;
     addComponent: (options: ComponentProps, generateChildElementNodes?: boolean) => ComponentInfo;
     addCanvasComponent: (options: CanvasOptions) => CanvasElementInfo;
     terminate: (element: string | DOMElement | HTMLElement | ComponentInfo | CanvasElementInfo) => boolean;
-    defaultRoutes: DOMRoutes;
 }
 /**
  * Usage

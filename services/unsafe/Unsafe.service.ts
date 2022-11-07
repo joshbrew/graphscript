@@ -1,4 +1,4 @@
-import { parseFunctionFromText } from "../../Graph"
+import { parseFunctionFromText } from "../utils"
 import { Graph } from "../../Graph"
 import { Service } from "../Service";
 

@@ -10,12 +10,11 @@ declare var WorkerGlobalScope;
 
 if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
     const worker = new WorkerService({
-        routes:[
+        services:{
             //GPUService as any,
             workerCanvasRoutes,
             unsafeRoutes //allows dynamic route loading
-        ],
-        includeClassName:false
+        }
     });
 
     console.log(worker)

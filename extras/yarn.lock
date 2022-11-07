@@ -55,6 +55,11 @@
     "esbuild" "~0.14.49"
     "ws" "^8.5.0"
 
+"web-worker@^1.2.0":
+  "integrity" "sha512-PgF341avzqyx60neE9DD+XS26MMNMoUQRz9NOZwW32nPQrF6p77f1htcnjBSEV8BGMKZ16choqUG4hyI0Hx7mA=="
+  "resolved" "https://registry.npmjs.org/web-worker/-/web-worker-1.2.0.tgz"
+  "version" "1.2.0"
+
 "webgl-plot-utils@~0.3.8":
   "integrity" "sha512-NerHDByA+NGq47ffFhoS0iLPiasjutaqyz6LCQUNdwJw+v/fITvSUcov+j2BHZY5pS2G8NDpApPDtZlfVgpojQ=="
   "resolved" "https://registry.npmjs.org/webgl-plot-utils/-/webgl-plot-utils-0.3.8.tgz"

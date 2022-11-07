@@ -1,9 +1,9 @@
 /// <reference types="node" />
-import { RouteProp, Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import * as http from 'http';
 import * as https from 'https';
 import * as path from 'path';
-import { GraphNode } from "../../Graph";
+import { GraphNode, GraphNodeProperties } from "../../Graph";
 export declare type ServerProps = {
     host: string;
     port: number;
@@ -20,7 +20,7 @@ export declare type ServerProps = {
             inject?: {
                 [key: string]: {} | null;
             } | string[] | string | ((...args: any) => any);
-        } & RouteProp);
+        } & GraphNodeProperties);
     };
     protocol?: 'http' | 'https';
     type?: 'httpserver' | string;
@@ -117,5 +117,11 @@ export declare class HTTPbackend extends Service {
     buildPage: (pageStructure: string | string[] | {
         [key: string]: any;
     } | ((...args: any) => any), baseTemplate: string) => string;
-    routes: Routes;
+    GET: (url: string | URL | http.RequestOptions) => Promise<Buffer>;
+    POST: (url: string | URL, data: any, headers?: {
+        [key: string]: any;
+        'Content-Type'?: string;
+        'Content-Length'?: number;
+    }) => http.ClientRequest;
+    hotreload: (socketURL?: string | URL) => string;
 }

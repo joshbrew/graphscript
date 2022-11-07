@@ -1,4 +1,4 @@
-import { HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "graphscript-node";//"../../index.node"//"graphscript-node";
+import { HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "../../index.node"//"graphscript-node";
 import { Router } from '../../services/router/Router';
 
 function exitHandler(options, exitCode) {
@@ -34,7 +34,7 @@ let server = router.run(
             '/':{
                 template:`<div>Nice...</div>`,
                 onrequest:(self,node,req,res)=>{ 
-                    node.get = `<h3>Hello World!! The Time: ${new Date(Date.now()).toISOString()}</h3>`  
+                    (node as any).get = `<h3>Hello World!! The Time: ${new Date(Date.now()).toISOString()}</h3>`  
                 }
             },
             'config':{
@@ -63,7 +63,7 @@ let server = router.run(
 
 if(server instanceof Promise) server.then((served:ServerInfo) => { //this function returns a promise so we can use .then, only explicitly async or promise-returning functions can be awaited or .then'd for good performance!
     
-    console.log(router.nodes.keys());
+    console.log(router._node.nodes.keys());
 
     const socketserver = router.run(
         'wss.setupWSS',

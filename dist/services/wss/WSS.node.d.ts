@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { Routes, Service, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import WebSocket, { WebSocketServer } from 'ws';
 import http from 'http';
 import https from 'https';
@@ -86,7 +86,7 @@ export declare class WSSbackend extends Service {
     terminate: (ws: WebSocketServer | WebSocket | string) => boolean;
     request: (message: ServiceMessage | any, ws: WebSocket, _id: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, ws: WebSocket | string, callbackId: string | number) => any;
-    subscribeSocket: (route: string, socket: WebSocket | string) => number;
-    subscribeToSocket: (route: string, socketId: string, callback?: string | ((res: any) => void)) => Promise<any>;
-    routes: Routes;
+    subscribeSocket: (route: string, socket: WebSocket | string, key?: string) => any;
+    subscribeToSocket: (route: string, socketId: string, callback?: string | ((res: any) => void), key?: string) => Promise<any>;
+    open: (options: SocketServerProps | SocketProps) => SocketServerInfo | SocketInfo;
 }

@@ -1,4 +1,4 @@
-import { Service, Routes, ServiceOptions, ServiceMessage } from "../Service";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 export declare type EventSourceProps = {
     url: string;
     events: {
@@ -44,8 +44,7 @@ export declare class SSEfrontend extends Service {
     transmit: (message: any | ServiceMessage, url: string | URL) => Promise<unknown>;
     request: (message: ServiceMessage | any, url: string, method?: string, sessionId?: string) => Promise<unknown>;
     runRequest: (message: any, url: string | any, callbackId: string | number, sessionId?: string) => any;
-    subscribeSSE: (route: string, url: string) => number;
-    subscribeToSSE: (route: string, url: string, callback?: string | ((res: any) => void), sessionId?: string) => Promise<any>;
+    subscribeSSE: (route: string, url: string, key?: string) => any;
+    subscribeToSSE: (route: string, url: string, callback?: string | ((res: any) => void), sessionId?: string, key?: string) => Promise<any>;
     terminate: (sse: EventSourceInfo | EventSource | string) => void;
-    routes: Routes;
 }

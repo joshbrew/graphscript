@@ -1,5 +1,5 @@
-import { GraphOptions } from "../../Graph2";
-import { Service, ServiceMessage, ServiceOptions } from "../Service2";
+import { GraphOptions } from "../../Graph";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 
 export type WebRTCProps = {
     _id?:string,

@@ -1,5 +1,5 @@
 
-import { Service, ServiceMessage, ServiceOptions } from "../Service2";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 
 export type WebSocketProps = {
     host:string,

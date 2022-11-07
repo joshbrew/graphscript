@@ -1,11 +1,11 @@
-import { GraphNode } from '../../Graph';
-import { Service, ServiceOptions, RouteProp, Routes } from '../Service';
-export declare type EntityProps = ({
+import { GraphNode, GraphNodeProperties } from '../../Graph';
+import { Service, ServiceOptions } from '../Service';
+export declare type EntityProps = {
     components: {
         [key: string]: any;
     };
-} & RouteProp) | GraphNode;
-export declare type SystemProps = (RouteProp & {
+} & (GraphNodeProperties | GraphNode);
+export declare type SystemProps = (GraphNodeProperties & {
     operator: (entities: {
         [key: string]: Entity;
     }) => any;
@@ -20,6 +20,7 @@ export declare type Entity = {
     components: {
         [key: string]: any;
     };
+    [key: string]: any;
 } & GraphNode;
 export declare type System = {
     operator: (entities: {
@@ -47,6 +48,7 @@ export declare type ECSOptions = {
         [key: string]: SystemProps;
     };
     order?: string[];
+    [key: string]: any;
 } & ServiceOptions;
 export declare class ECSService extends Service {
     entities: {
@@ -65,7 +67,7 @@ export declare class ECSService extends Service {
     systemCt: number;
     constructor(options?: ECSOptions);
     updateEntities: (order?: string[], filter?: boolean, debug?: any) => void;
-    animate: (filter?: boolean, order?: string[]) => void;
+    animateEntities: (filter?: boolean, order?: string[]) => void;
     stop: () => void;
     start: (filter?: boolean) => void;
     addEntities: (prototype: EntityProps, components?: {
@@ -106,5 +108,4 @@ export declare class ECSService extends Service {
     }, property: string, keys?: string[] | {
         [key: string]: any;
     }, buffer?: ArrayBufferLike) => ArrayBufferLike;
-    routes: Routes;
 }

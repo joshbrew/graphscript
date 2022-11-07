@@ -1,5 +1,5 @@
 import { HTTPfrontend, RequestOptions } from "../http/HTTP.browser";
-import { Service, ServiceMessage, ServiceOptions } from "../Service2";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 
 export type EventSourceProps = {
     url:string,

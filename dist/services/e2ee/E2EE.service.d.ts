@@ -1,4 +1,4 @@
-import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 export declare class E2EEService extends Service {
     name: string;
     keys: {
@@ -27,5 +27,4 @@ export declare class E2EEService extends Service {
     decryptRoute: (message: ServiceMessage | string, keyId: string) => string | ServiceMessage;
     transmit: (message: ServiceMessage | string, keyId?: string) => any;
     receive: (message: ServiceMessage | string, keyId?: string) => any;
-    routes: Routes;
 }

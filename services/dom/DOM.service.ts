@@ -1,6 +1,6 @@
 import { DOMElement } from "./DOMElement"; //https://github.com/joshbrew/DOMElement <---- this is the special sauce
-import { Graph, GraphNode } from '../../Graph2';
-import { Service, ServiceOptions } from "../Service2";
+import { Graph, GraphNode } from '../../Graph';
+import { Service, ServiceOptions } from "../Service";
 
 import {CompleteOptions, ElementInfo, ElementProps, ComponentProps, ComponentInfo, CanvasElementProps, CanvasOptions, CanvasElementInfo} from './types/index';
 
@@ -65,6 +65,7 @@ export class DOMService extends Service {
         'dom':(r:DOMRouteProp & GraphNode, parent:GraphNode & DOMRouteProp, graph:Graph, tree:any, props:any) => {
             // console.log(r)
 
+
             if((parent._node.tag || parent.id) && (parent.template || parent.context || parent.tagName || parent.element) && (r.template || r.context || r.tagName || r.element) && !r.parentNode) {
                 if(parent._node.tag) r.parentNode = parent._node.tag; 
                 if(parent.id) r.parentNode = parent.id;
@@ -77,12 +78,15 @@ export class DOMService extends Service {
             }
             else {
                 if(r.template) { //assume its a component node
+                    r.id = props._node.tag;
                     this.addComponent(r as any,r.generateChildElementNodes);
                 }
                 else if(r.context) { //assume its a canvas node
+                    r.id = props._node.tag;
                     this.addCanvasComponent(r as any);
                 }
                 else if(r.tagName || r.element) { //assume its an element node
+                    r.id = props._node.tag;
                     this.addElement(r as any,r.generateChildElementNodes);
                 }
             }
@@ -201,7 +205,7 @@ export class DOMService extends Service {
 
     updateOptions = (options, element): CompleteOptions => {
 
-        if(!options.id && options.tag) options.id = options.tag;
+        if(!options.id && options._node.tag) options.id = options._node.tag;
         if(!options._node.tag && options.id) options._node.tag = options.id;
         if(!options.id) options.id = `${options.tagName ?? 'element'}${Math.floor(Math.random()*1000000000000000)}`;
 

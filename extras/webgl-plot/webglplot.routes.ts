@@ -7,8 +7,14 @@ export { WebglLineProps, WebglLinePlotProps, WebglLinePlotInfo } //re-export typ
 export const webglPlotRoutes = {
     setupChart:function setupChart(settings:WebglLinePlotProps) {
         console.log('initializing chart', settings)
-        if(!this.graph.plotter) this.graph.plotter = new WebglLinePlotUtil();
-        return this.graph.plotter.initPlot(settings).settings._id;
+        if(!this?._node?.graph?.plotter) {
+            this._node.graph.plotter = new WebglLinePlotUtil();
+            return this._node.graph.plotter.initPlot(settings).settings._id;
+        }
+        else {
+            globalThis.plotter = new WebglLinePlotUtil();
+            return globalThis.plotter.initPlot(settings).settings._id;
+        }
     },
     updateChartData:function updateChartData(
         plot:WebglLinePlotInfo|string, 
@@ -24,25 +30,35 @@ export const webglPlotRoutes = {
         if(typeof lines === 'object')
         {    
             //console.log(parsed);
-            this.graph.plotter.update(plot,lines,draw);
+            if(globalThis.plotter) globalThis.plotter.update(plot,lines,draw);
+            else if(this?._node?.graph?.plotter)this._node.graph.plotter.update(plot,lines,draw);
             return true;
         } return false;
     },
     clearChart:function clearChart(
         plot:WebglLinePlotInfo|string
     ) {
-       this.graph.plotter.deinitPlot(plot);
+    
+        if(globalThis.plotter) globalThis.plotter.deinitPlot(plot);
+        else if(this?._node?.graph?.plotter)
+            this._node.graph.plotter.deinitPlot(plot);
+    
         return true;
     },
     resetChart:function resetChart(
         plot:WebglLinePlotInfo|string,
         settings:WebglLinePlotProps
     ) {
-       this.graph.plotter.reinitPlot(plot,settings);
+        if(globalThis.plotter) globalThis.plotter.reinitPlot(plot,settings);
+        else if(this?._node?.graph?.plotter) this._node.graph.plotter.reinitPlot(plot,settings);
         return settings._id;
     },
     getChartSettings:function getChartSettings(plotId) {
-        let settings = this.graph.plotter.getChartSettings(plotId);
+
+        let settings;
+
+        if(globalThis.plotter) settings = globalThis.plotter.getChartSettings(plotId);
+        else if(this?._node?.graph?.plotter) settings = this._node.graph.plotter.getChartSettings(plotId);
         //console.log(settings);
         return settings;
     }

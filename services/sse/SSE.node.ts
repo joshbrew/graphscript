@@ -1,4 +1,4 @@
-import { Service, ServiceMessage, ServiceOptions } from "../Service2";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import {createSession, createChannel, Session, SessionState, Channel} from 'better-sse'; //third party lib. SSEs really just push notifications to an http endpoint but it's minimal overhead
 import http from 'http'
 import https from 'https'

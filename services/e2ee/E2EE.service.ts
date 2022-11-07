@@ -1,7 +1,7 @@
 //End to end encryption using sjcl and keygen stuff, should involve webworkers 
 
-import { GraphNode } from "../../Graph2";
-import { Service, ServiceMessage, ServiceOptions } from "../Service2";
+import { GraphNode } from "../../Graph";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import sjcl from "./sjcl"; //stanford javascript cryptography library, super minimal!
 
 //End to end encryption service, this will redirect transmits/receives through an encoder/decoder framework

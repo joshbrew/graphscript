@@ -1,9 +1,9 @@
-import { Service, ServiceMessage, ServiceOptions } from "../Service2";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import * as http from 'http'
 import * as https from 'https'
 import * as fs from 'fs'
 import * as path from 'path'
-import { GraphNode, GraphNodeProperties } from "../../Graph2";
+import { GraphNode, GraphNodeProperties } from "../../Graph";
 
 
 export type ServerProps = {

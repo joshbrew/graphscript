@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { ChildProcess, Serializable } from 'child_process';
-import { Routes, Service, ServiceMessage, ServiceOptions } from '../Service';
-import { GraphNodeProperties } from '../../Graph';
+import { Service, ServiceMessage, ServiceOptions } from '../Service';
+import { Graph, GraphNode, GraphNodeProperties } from '../../Graph';
 export declare type CMDRoute = {
     command: string | ChildProcess;
     args?: string[];
@@ -39,14 +39,15 @@ export declare class CMDService extends Service {
     connections: {
         processes: any;
     };
-    customRoutes: ServiceOptions['customRoutes'];
+    subprocessloader: {
+        process: (node: CMDRoute & GraphNode, parent: GraphNode, graph: Graph, tree: any, properties: any) => void;
+    };
     constructor(options?: ServiceOptions);
     createProcess: (properties: CMDRoute) => CMDRoute;
     abort: (childprocess: ChildProcess | CMDInfo) => boolean;
     send: (childprocess: ChildProcess, data: Serializable) => boolean;
     request: (message: ServiceMessage | any, processId: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, callbackId: string | number, childprocess?: ChildProcess | string) => any;
-    subscribeProcess(route: string, childprocess: ChildProcess | string): number;
-    subscribeToProcess(route: string, processId: string, callback?: ((res: any) => void) | string): any;
-    routes: Routes;
+    subscribeProcess(route: string, childprocess: ChildProcess | string, key?: string): any;
+    subscribeToProcess(route: string, processId: string, callback?: ((res: any) => void) | string, key?: string): any;
 }

@@ -1,5 +1,5 @@
-import { GraphNode, GraphNodeProperties } from '../../Graph2';
-import { Service, ServiceOptions } from '../Service2';
+import { GraphNode, GraphNodeProperties } from '../../Graph';
+import { Service, ServiceOptions } from '../Service';
 
 //Entity Component System Service
 

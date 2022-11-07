@@ -1,5 +1,5 @@
-import { GraphNode } from "../../Graph2";
-import { Service, ServiceMessage, ServiceOptions } from "../Service2";
+import { GraphNode } from "../../Graph";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 
 
 export type RequestOptions = { //frontend request options (not http or https)

@@ -1,6 +1,6 @@
 //gpujs implementation. all of this can and should be optimized and built upon but it's just functional
 
-import { Service } from "../../services/Service2";
+import { Service } from "../../services/Service";
 import {gpuUtils} from 'gpujsutils'//'../node_modules/gpujsutils/src/gpuUtils'
 import {Math2} from 'brainsatplay-math'
 import { parseFunctionFromText } from "../../services/utils";

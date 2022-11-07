@@ -1,23 +1,23 @@
 //@ts-nocheck
 
 //resources
-import { DOMService, WorkerCanvas, GraphNodeProperties } from 'graphscript'//'../../index';
+import { DOMService, WorkerCanvas, GraphNodeProperties } from '../../index';
 import { 
     initDevice, 
     workers, 
     filterPresets, 
     FilterSettings, 
     chartSettings 
-} from 'device-decoder'////'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder';
+} from '../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder';
 
 
-import { setSignalControls } from 'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'//'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
+import { setSignalControls } from '../../extras/webgl-plot/webglplot.routes'//'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
 
-import gsworker from 'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
-import { Devices } from 'device-decoder.third-party'//'../../../device_debugger/src/devices/third_party/index'//'device-decoder.third-party'
+import gsworker from '../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
+import { Devices } from '../../../device_debugger/src/devices/third_party/index'//'device-decoder.third-party'
 
 import { Howl, Howler } from 'howler';
-import { visualizeDirectory } from 'graphscript-services.storage'//'../../extras/index.storage.services'//'graphscript-services/storage/BFS_CSV';
+import { visualizeDirectory } from '../../extras/index.storage.services'//'graphscript-services/storage/BFS_CSV';
 
 
 import './index.css'
@@ -69,7 +69,7 @@ const GameState = {
 
 
 const webapp = new DOMService();
-webapp.load(workers); //merge the worker service provided by device-decoder for convenience
+webapp.addServices({workers}); //merge the worker service provided by device-decoder for convenience
 
 let transferred = false; //did we transfer a canvas already
 let ctransferred = false;
@@ -78,13 +78,13 @@ let ctransferred = false;
 const webappHtml = {
     'app':{
         tagName:'div',
-        children:{
+        _node:{children:{
             'devices':{
                 tagName:'div',
-                children:{
+                _node:{children:{
                     'devicediv':{
                         tagName:'div',
-                        children:{
+                        _node:{children:{
                             'connectheader':{
                                 tagName:'h4',
                                 innerHTML:'Connect to an EEG device'
@@ -199,6 +199,8 @@ const webappHtml = {
                                                     //data returned from decoder thread, ready for 
                                                     //outputelm.innerText = JSON.stringify(data);
                                                     //console.log(data)
+
+                                                    //console.log(data);
                                                     GameState.latestRaw = data;
 
                                                     let rmskeys = Object.keys(GameState.latestRMS); //1 second RMS average used as predicted value for getting the error
@@ -221,18 +223,17 @@ const webappHtml = {
                                                         });
                                                         GameState.sampleError.timestamp = GameState.latestRaw.timestamp;
                                                         // if(recording) {
-                                                        //     info.routes.rmscsv.worker.post('appendCSV',GameState.sampleError)
+                                                        //     info.tree.rmscsv.worker.post('appendCSV',GameState.sampleError)
                                                         // }
                                                         requestAnimationFrame(rmseanim);
                                                     }
                                                 },
 
-                                                routes:{ //top level routes subscribe to device output thread directly (and workers in top level routes will not use main thread)
+                                                tree:{ //top level tree subscribe to device output thread directly (and workers in top level tree will not use main thread)
                                                     renderer: {
                                                         workerUrl:gsworker,
                                                         callback:'updateCanvas', //will pipe data to the canvas animation living alone on this thread
-                                                        oncreate:(self) => {
-                                                            //console.log(self,webapp);
+                                                        _node:{oncreate:(node) => {
                                                             if(transferred) {
                                                                 let newCanvas = document.createElement('canvas');
                                                                 newCanvas.id = 'waveform';
@@ -267,15 +268,14 @@ const webappHtml = {
                                                             overlay.width = canvas?.clientWidth;
                                                             overlay.height = canvas?.clientHeight;
 
-
-                                                            if(chartSettings[selected]) {
-                                                                console.log(chartSettings[selected])
-                                                                self.worker.post('setValue',['chartSettings',chartSettings[selected]])
+                                                            //console.log(node,webapp);
+                                                            if(chartSettings[selected]) {;
+                                                                node.worker.post('setValue',['chartSettings',chartSettings[selected]])
                                                             } 
 
                                                             webapp.run(
-                                                                'worker.transferCanvas', 
-                                                                self.worker.worker,
+                                                                'workers.transferCanvas', 
+                                                                node.worker.worker,
                                                                 {
                                                                     canvas,
                                                                     //context:undefined,
@@ -285,6 +285,7 @@ const webappHtml = {
                                                                     init:(self:WorkerCanvas, canvas, context) => {
                                                                         //console.log('init', globalThis.Devices);
 
+                                                                        //console.log('canvas transferred', self)
                                                                         let settings = {
                                                                             canvas,
                                                                             _id:self._id,
@@ -330,8 +331,7 @@ const webappHtml = {
                                                                     }
                                                             });
                                                             transferred = true;
-                                                        }
-
+                                                        }}
                                                         //webapp.run('worker.updateChartData')
                                                     } as WorkerRoute,
                                                     vrms:{
@@ -347,14 +347,14 @@ const webappHtml = {
                                                         ],
                                                         callback:'runSubprocess',
                                                         blocking:true, //runs async without backing up on bulk dispatches
-                                                        children:{
+                                                        _node:{children:{
                                                             vrms_main:{
-                                                                operator:(
+                                                                _node:{operator:(
                                                                     result:any
                                                                 )=>{
                                                                     GameState.latestRMS = result;
                                                                     //console.log('vrms result', result); 
-                                                                }
+                                                                }}
                                                             },
                                                             rmscsv:{
                                                                 workerUrl:gsworker,
@@ -363,7 +363,7 @@ const webappHtml = {
                                                                 callback:'appendCSV',
                                                                 stopped:true //we will press a button to stop/start the csv collection conditionally
                                                             } as WorkerRoute
-                                                        }
+                                                        }}
                                                     } as WorkerRoute,
                                                     csv:{
                                                         workerUrl:gsworker,
@@ -383,7 +383,7 @@ const webappHtml = {
                                                             }
                                                         ],
                                                         callback:'runSubprocess',
-                                                        children:{
+                                                        _node:{children:{
                                                             coherence:{
                                                                 workerUrl:gsworker,
                                                                 init:'createSubprocess',
@@ -396,9 +396,9 @@ const webappHtml = {
                                                                 ],
                                                                 callback:'runSubprocess',
                                                                 blocking:true, //runs async without backing up on bulk dispatches
-                                                                children:{
+                                                                _node:{children:{
                                                                     coherence_main:{
-                                                                        operator:(result:any)=>{
+                                                                        _node:{operator:(result:any)=>{
                                                                             //console.log('coherence result', result); //this algorithm only returns when it detects a beat
                                                                             if(result?.frequencies) 
                                                                                 document.getElementById('dftxaxis').innerHTML = `<span>${result.frequencies[0]}</span><span>${result.frequencies[Math.floor(result.frequencies.length*0.5)]}</span><span>${result.frequencies[result.frequencies.length-1]}</span>`;
@@ -419,12 +419,12 @@ const webappHtml = {
                                                                                 GameState.playing.volume(newVol);
                                                                             }
                                                                         
-                                                                        }
+                                                                        }}
                                                                     } as GraphNodeProperties,
                                                                     crenderer: {
                                                                         workerUrl:gsworker,
                                                                         callback:'updateCanvas', //will pipe data to the canvas animation living alone on this thread
-                                                                        oncreate:(self) => {
+                                                                        _node:{oncreate:(node) => {
                                                                             //console.log(self,webapp);
                                                                             if(ctransferred) {
                                                                                 let newCanvas = document.createElement('canvas');
@@ -462,8 +462,8 @@ const webappHtml = {
                                                                             // } 
                 
                                                                             webapp.run(
-                                                                                'worker.transferCanvas', 
-                                                                                self.worker.worker,
+                                                                                'workers.transferCanvas', 
+                                                                                node.worker.worker,
                                                                                 {
                                                                                     canvas,
                                                                                     context:undefined,
@@ -494,7 +494,7 @@ const webappHtml = {
                 
                                                                                         let r = self.graph.run('setupChart', settings);
 
-                                                                                        console.log(settings);
+                                                                                        //console.log(settings, self);
                                                                                         
                                                                                         canvas.addEventListener('resize',()=>{ 
                                                                                             canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight;
@@ -527,17 +527,19 @@ const webappHtml = {
                                                                                     }
                                                                             });
                                                                             ctransferred = true;
-                                                                        }
+                                                                        }}
                 
                                                                         //webapp.run('worker.updateChartData')
                                                                     } as WorkerRoute,
-                                                                }
+                                                                }}
                                                             } as WorkerRoute,
-                                                        }
+                                                        }}
                                                     } as WorkerRoute
                                                 }
                                             }
                                         );
+
+                                        //console.log(info);
 
                                         if(info) {
                                             console.log('session', info);
@@ -552,8 +554,8 @@ const webappHtml = {
 
                                             let cap;
                                             let csvmenu;
-                                            if(typeof info.routes === 'object') {
-                                                if(info.routes.csv) {
+                                            if(typeof info.tree === 'object') {
+                                                if(workers.get('csv')) {
                                                     
                                                     csvmenu = document.getElementById('csvmenu');
                                                     
@@ -561,7 +563,7 @@ const webappHtml = {
                                                     cap.innerHTML = `Record ${selected} (${mode})`;
                                                     let onclick = () => {
                                                         recording = true;
-                                                        info.routes.csv.worker.post(
+                                                        workers.get('csv').worker.post(
                                                             'createCSV',
                                                             [
                                                                 `data/${new Date().toISOString()}_${selected}_${mode}.csv`,
@@ -570,7 +572,7 @@ const webappHtml = {
                                                                 1000/Devices[mode][selected].sps
                                                             ]
                                                         );
-                                                        info.routes.vrms.children.rmscsv.worker.post(
+                                                        workers.get('vrms.rmscsv').worker.post(
                                                             'createCSV',
                                                             [
                                                                 `data/${new Date().toISOString()}_RMS_${selected}_${mode}.csv`,
@@ -578,13 +580,13 @@ const webappHtml = {
                                                                 50 //buffer between writes to idb
                                                             ]
                                                         );
-                                                        info.routes.csv.worker.start();
-                                                        info.routes.vrms.children.rmscsv.worker.start();
+                                                        workers.get('csv').worker.start();
+                                                        workers.get('vrms.rmscsv').worker.start();
                                                         cap.innerHTML = `Stop recording ${selected} (${mode})`;
                                                         cap.onclick = () => {
                                                             recording = false;
-                                                            info.routes.csv.worker.stop();
-                                                            info.routes.vrms.children.rmscsv.worker.stop();
+                                                            workers.get('csv').worker.stop();
+                                                            workers.get('vrms.rmscsv').worker.stop();
                                                             visualizeDirectory('data', csvmenu);
                                                             cap.innerHTML = `Record ${selected} (${mode})`;
                                                             cap.onclick = onclick;
@@ -600,7 +602,7 @@ const webappHtml = {
                                                             document.getElementById('waveformcontrols'),
                                                             'waveform',
                                                             info.workers.streamworker,
-                                                            info.routes.renderer.worker 
+                                                            workers.get('renderer').worker 
                                                         )
                                                         document.getElementById('waveformcontrols').style.display = '';
                                                     }
@@ -621,16 +623,16 @@ const webappHtml = {
                                     }
                                 }
                             } as ElementProps
-                        }
+                        }}
                     } as ElementProps
-                }
+                }}
             } as ElementProps,
             'output':{
                 tagName:'div',
-                children:{
+                _node:{children:{
                     'playsounds':{
                         tagName:'div',
-                        children:{
+                        _node:{children:{
                             'soundheader':{
                                 tagName:'h4',
                                 innerHTML:'Play a sound to modulate volume with the EEG using the mean Alpha Coherence between channels 0 and 1'
@@ -678,7 +680,7 @@ const webappHtml = {
                                     innerText:'Stop'
                                 }
                             } as ElementProps
-                        }
+                        }}
                     } as ElementProps,
                     'ln0':{
                         tagName:'hr'
@@ -690,7 +692,7 @@ const webappHtml = {
                     'waveformdiv':{
                         tagName:'div',
                         style:{height:'300px'},
-                        children:{
+                        _node:{children:{
                             'waveform':{
                                 tagName:'canvas',
                                 style:{width:'100%', height:'300px', position:'absolute', zIndex:'1'}
@@ -709,7 +711,7 @@ const webappHtml = {
                                     }
                                 },
                             } as ElementProps,
-                        }
+                        }}
                     },
                     'ln':{
                         tagName:'hr'
@@ -721,7 +723,7 @@ const webappHtml = {
                     'dftdiv':{
                         tagName:'div',
                         style:{height:'300px'},
-                        children:{
+                        _node:{children:{
                             'dftwaveform':{
                                 tagName:'canvas',
                                 style:{width:'100%', height:'300px', position:'absolute', zIndex:'1'},
@@ -730,7 +732,7 @@ const webappHtml = {
                                 tagName:'canvas',
                                 style:{width:'100%', height:'300px',  position:'absolute', zIndex:'2'},
                             } as ElementProps,
-                        }
+                        }}
                     },
                     'ln2':{
                         tagName:'hr'
@@ -762,12 +764,12 @@ const webappHtml = {
                             visualizeDirectory('data', self);
                         }
                     } as ElementProps,
-                }
+                }}
             } as ElementProps
-        }
+        }}
     } as ElementProps
 }
 
-webapp.load(webappHtml);
+webapp.setTree(webappHtml);
 
 

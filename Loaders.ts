@@ -1,4 +1,4 @@
-import { GraphNode, Graph, GraphNodeProperties } from "./Graph2";
+import { GraphNode, Graph, GraphNodeProperties } from "./Graph";
 
 //loaders are triggered just after graphnode creation, after oncreate() is called
 
@@ -108,23 +108,19 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //bad
  * 
  */
 export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node._node.animate === true) {
+    if(node._node.animate === true || node._node.animation) {
         if(typeof node._node.animate === 'function') node._node.animate = node._node.animate.bind(node);
         let anim = (node) => {
-            if(node._node.animate) {
-                if(!('animating' in node._node)) node._node.animating = true
-                if(!node._node.animation) {
-                    node._node.animation = () => {
-                        if(node._node.animating) {
-                            if(typeof node._node.animate === 'function') node._node.animate();
-                            else node._node.operator();
-                            requestAnimationFrame(node._node.animation);
-                        }
-                    }
+            if(!('animating' in node._node)) node._node.animating = true
+            node._node.animate = () => {
+                if(node._node.animating) {
+                    if(typeof node._node.animate === 'function') node._node.animation();
+                    else node._node.operator();
                     requestAnimationFrame(node._node.animation);
-                    if(node._node.animating) node._node.animation();
                 }
             }
+            requestAnimationFrame(node._node.animation);
+            if(node._node.animating) node._node.animation();
         }
         requestAnimationFrame(anim);
 

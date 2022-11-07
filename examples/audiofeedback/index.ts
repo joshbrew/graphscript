@@ -1,7 +1,7 @@
 //@ts-nocheck
 
 //resources
-import { DOMService } from 'graphscript'//'graphscript'//'../../index'////'../../index';
+import { DOMService } from '../../index'////'../../index';
 import {initDevice, Devices, gsworker, filterPresets} from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
 import { Howl, Howler } from 'howler';
 import { visualizeDirectory } from 'graphscript-services/storage/BFS_CSV'//'../../extras/storage/BFS_CSV'
@@ -55,10 +55,10 @@ const GameState = {
 const webappHtml = {
     'app':{
         tagName:'div',
-        children:{
+        _node:{children:{
             'devices':{
                 tagName:'div',
-                children:{
+                _node:{children:{
                     'devicediv':{
                         tagName:'div',
                         children:{
@@ -185,7 +185,7 @@ const webappHtml = {
                                                             }
                                                         ],
                                                         callback:'runSubprocess', //the init function will set the _id as an additional argument for runSubprocess which selects existing contexts by _id 
-                                                        children:{
+                                                        _node:{children:{
                                                             hr_main:{
                                                                 operator:(
                                                                     heartbeat:{
@@ -199,7 +199,7 @@ const webappHtml = {
                                                                     console.log('heartrate result', heartbeat); //this algorithm only returns when it detects a beat
                                                                 }
                                                             }
-                                                        }
+                                                        }}
                                                     },
                                                     breath:{
                                                         workerUrl:gsworker,
@@ -211,7 +211,7 @@ const webappHtml = {
                                                             }
                                                         ],
                                                         callback:'runSubprocess',
-                                                        children:{
+                                                        _node:{children:{
                                                             breath_main:{
                                                                 operator:(
                                                                     breath:{
@@ -225,7 +225,7 @@ const webappHtml = {
                                                                     console.log('breath detect result', breath); //this algorithm only returns when it detects a beat
                                                                 }
                                                             }
-                                                        }
+                                                        }}
                                                     },
                                                     csv:{
                                                         workerUrl:gsworker,
@@ -301,14 +301,14 @@ const webappHtml = {
                             } as ElementProps
                         }
                     }
-                }
+                }}
             },
             'output':{
                 tagName:'div',
-                children:{
+                _node:{children:{
                     'playsounds':{
                         tagName:'div',
-                        children:{
+                        _node:{children:{
                             'soundheader':{
                                 tagName:'h4',
                                 innerHTML:'Play a sound to modulate with the HEG'
@@ -356,7 +356,7 @@ const webappHtml = {
                                     innerText:'Stop'
                                 }
                             } as ElementProps
-                        }
+                        }}
                     } as ElementProps,
                     'stats':{
                         tagName:'table',
@@ -473,11 +473,12 @@ const webappHtml = {
                             visualizeDirectory('data', self);
                         }
                     } as ElementProps,
-                }
+                }}
             } as ElementProps
-        }
+        }}
     } as ElementProps
-}
+} 
+
 
 
 const webapp = new DOMService({

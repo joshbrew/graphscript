@@ -132,7 +132,7 @@ let session = (router.services.sessions as SessionsService).openSharedSession(
 
 router.run('sessions.sessionLoop');
 
-router.subscribe('addUser', (user:User) => {
+router.subscribe('addUser', undefined, (user:User) => {
     console.log('new user!', user._id)
     if(typeof user === 'object') {
         let joined = (router.services.sessions as SessionsService).joinSession('webrtcrooms', user._id);

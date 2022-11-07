@@ -1,4 +1,4 @@
-import { Service, Routes, ServiceMessage, ServiceOptions } from "../Service";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 export declare type WebRTCProps = {
     _id?: string;
     channels?: {
@@ -72,7 +72,6 @@ export declare class WebRTCfrontend extends Service {
     terminate: (rtc: RTCPeerConnection | WebRTCInfo | string) => boolean;
     request: (message: ServiceMessage | any, channel: RTCDataChannel, _id: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, channel: RTCDataChannel | string, callbackId: string | number) => any;
-    subscribeRTC: (route: string, rtcId: string, channel: string | RTCDataChannel) => number;
-    subscribeToRTC: (route: string, rtcId: string, channelId: string, callback?: string | ((res: any) => void)) => Promise<any>;
-    routes: Routes;
+    subscribeRTC: (route: string, rtcId: string, channel: string | RTCDataChannel, key?: string) => any;
+    subscribeToRTC: (route: string, rtcId: string, channelId: string, callback?: string | ((res: any) => void), key?: string) => Promise<any>;
 }

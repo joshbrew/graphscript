@@ -1,6 +1,6 @@
-import { Service, ServiceMessage, ServiceOptions } from "../Service2";
+import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import Worker from 'web-worker' //cross platform for node and browser
-import { Graph, GraphNode, GraphNodeProperties } from "../../Graph2";
+import { Graph, GraphNode, GraphNodeProperties } from "../../Graph";
 
 declare var WorkerGlobalScope;
 
@@ -94,15 +94,21 @@ export class WorkerService extends Service {
                 rt.worker?.terminate();
             }
             let oldondelete;
-            if(rt.ondelete) oldondelete = rt.ondelete;  
+            if(rt._node.ondelete) oldondelete = rt._node.ondelete;  
             
-            rt.ondelete = (n) => {
+            let od = (n) => {
                 if(oldondelete) oldondelete(n);
                 ondelete(n);
             }
+
+            if(rt._node.ondelete) {
+                if(Array.isArray(rt._node.ondelete)) rt._node.ondelete.push(od);
+                else rt._node.ondelete = [od,rt._node.ondelete];
+            } else rt._node.ondelete = [od];
         }
 
         rt.worker = worker;
+        console.log(rt);
 
         //requires unsafeRoutes on the worker (enabled on the default worker)
         if(rt.transferFunctions) {
@@ -166,10 +172,11 @@ export class WorkerService extends Service {
         'workers':(node: WorkerRoute & GraphNode, parent:WorkerRoute & GraphNode, graph:Graph, tree:any) => {
             let rt = node as WorkerRoute;
             if(rt?.worker || rt?.workerId || (rt as WorkerRoute)?.workerUrl) { //each set of props with a worker will instantiate a new worker, else you can use the same worker elsewhere by passing the corresponding tag
-                
+
                 if(!node.parentRoute && parent?.callback) node.parentRoute = parent?.callback;
             
                 let worker = this.loadWorkerRoute(rt, rt._node.tag);
+                //console.log('new worker')
                 if(worker) {
                     if(!rt.parentRoute && (rt._node.parent as any)?.callback) rt.parentRoute = (rt._node.parent as any).callback;
                     if(rt._node.parent && !rt.portId){ 
@@ -177,7 +184,7 @@ export class WorkerService extends Service {
                             if(rt._node.tag !== rt._node.parent && worker._id !== rt._node.parent)
                                 rt.portId = this.establishMessageChannel(worker, rt._node.parent) as string; 
                         }
-                        else if(rt._node.tag !== rt._node.parent._node.tag && worker._id !== rt._node.parent.tag) {
+                        else if(rt._node.tag !== rt._node.parent?._node?.tag && worker._id !== rt._node.parent.tag) {
                             rt.portId = this.establishMessageChannel(worker, (rt._node.parent as any).worker) as string; 
                         }
                     };
@@ -186,50 +193,51 @@ export class WorkerService extends Service {
                             if(typeof rt._node.parent === 'string' && rt._node.parent === worker._id) {
                                 worker.run('subscribe', [rt.parentRoute, undefined, rt.callback]);
                             }
-                            else if(rt._node.tag === rt._node.parent?._node.tag || worker._id === rt._node.parent?._node.tag) {
+                            else if(rt._node.tag === rt._node.parent?._node?.tag || worker._id === rt._node.parent?._node?.tag) {
                                 worker.run('subscribe', [rt.parentRoute, undefined, rt.callback]);
                             }
                             else worker.run('subscribeToWorker', [rt.parentRoute, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
                                 worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
                             });
                         }
-                        if(!(typeof rt._node.parent === 'string' && rt._node.parent === worker._id) && !(rt._node.tag === rt._node.parent._node.tag || worker._id === rt._node.parent._node.tag)) 
+                        if(!(typeof rt._node.parent === 'string' && rt._node.parent === worker._id) && !(rt._node.tag === rt._node.parent?._node?.tag || worker._id === rt._node.parent?._node?.tag)) 
                             worker.workerSubs[rt.parentRoute+rt.portId] = {sub:null, route:rt.parentRoute, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
                     } else if (rt._node.parent) {
                         if(typeof rt._node.parent === 'string') {
                             if(!rt.stopped) {
-                                if(rt.parent === worker._id) {
-                                    worker.run('subscribe', [rt.parent, undefined, rt.callback]);
+                                if(rt._node.parent === worker._id) {
+                                    worker.run('subscribe', [rt._node.parent, undefined, rt.callback]);
                                 }
-                                else worker.run('subscribeToWorker', [rt.parent, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
-                                    worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
+                                else  worker.run('subscribeToWorker', [rt._node.parent, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
+                                    worker.workerSubs[rt._node.parent+rt.portId].sub = sub;
                                 });
                             }
-                            if(!(typeof rt._node.parent === 'string' && rt.parent === worker._id)) 
-                                worker.workerSubs[rt.parentRoute+rt.portId] = {sub:null, route:rt.parentRoute, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
-                        } else if(rt._node.parent?._node.tag) {
+                            if(!(typeof rt._node.parent === 'string' && rt._node.parent === worker._id)) 
+                                worker.workerSubs[rt+rt.portId] = {sub:null, route:worker._id, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
+                           
+                        } else if(rt._node.parent?._node?.tag && rt._node.parent?.worker) {
+                            //console.log(rt);
                             if(!rt.stopped) {
                                 if(rt._node.tag === rt._node.parent._node.tag || worker._id === rt._node.parent._node.tag) {
                                     worker.run('subscribe', [rt._node.parent._node.tag, undefined, rt.callback]);
                                 }
                                 else worker.run('subscribeToWorker', [rt._node.parent._node.tag, rt.portId, rt.callback, rt.blocking]).then((sub)=>{ //if no callback specified it will simply setState on the receiving thread according to the portId
-                                    worker.workerSubs[rt.parentRoute+rt.portId].sub = sub;
+                                    worker.workerSubs[rt._node.parent._node.tag+rt.portId].sub = sub;
                                 });
                             }
-                            if(!(rt._node.tag === rt._node.parent_node.tag || worker._id === rt._node.parent._node.tag)) 
-                                worker.workerSubs[rt.parentRoute+rt.portId] = {sub:null, route:rt.parentRoute, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
+                            if(!(rt._node.tag === rt._node.parent?._node?.tag || worker._id === rt._node.parent?._node?.tag)) 
+                                worker.workerSubs[rt._node.parent._node.tag+rt.portId] = {sub:null, route:rt._node.parent._node.tag, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
                         }
                     }
 
                 }
-            } else if(rt.parent && rt.parentRoute) {
-                if(typeof rt.parent === 'string' && (tree[rt.parent] as any)?.worker) {
-                    ((tree[rt.parent] as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt.tag, rt.blocking);
-                } else if((rt.parent as any)?.worker) {
-                    ((rt.parent as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt.tag, rt.blocking);
+            } else if(rt._node.parent && rt.parentRoute) {
+                if(typeof rt._node.parent === 'string' && (tree[rt._node.parent] as any)?.worker) {
+                    ((tree[rt._node.parent] as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt._node.tag, rt.blocking);
+                } else if((rt._node.parent as any)?.worker) {
+                    ((rt._node.parent as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt._node.tag, rt.blocking);
                 }
             }
-
             //console.log(rt);
             return rt;
         }
@@ -522,9 +530,11 @@ export class WorkerService extends Service {
         let onclose;
         if(typeof worker === 'string') {
             let obj = this.workers[worker];
-            if(obj) delete this.workers[worker];
-            worker = obj.worker;
-            if(obj.onclose) onclose = obj.onclose;
+            if(obj) {
+                delete this.workers[worker];
+                worker = obj.worker;
+                if(obj.onclose) onclose = obj.onclose;
+            }
         }
         if(worker instanceof Worker) {
             worker.terminate();
@@ -634,6 +644,8 @@ export class WorkerService extends Service {
 
         let callback:(res:any) => void;
 
+        //console.log('subscribeWorker', route, worker, blocking);
+
         if(blocking) {
 
             let blocked = false;
@@ -665,7 +677,7 @@ export class WorkerService extends Service {
         }
         else {
             callback = (res:any) => {
-                //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
+                
                 //console.log('subscription triggered for', route, 'to', worker instanceof Worker ? worker : 'window', 'result:', res);
                 if(res instanceof Promise) {
                     res.then((r) => {

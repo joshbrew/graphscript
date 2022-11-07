@@ -1,6 +1,6 @@
 import { DataTablet, DS } from './datastructures/index'
 import { Data, ProfileStruct, AuthorizationStruct, GroupStruct, DataStruct, EventStruct, ChatroomStruct, CommentStruct, Struct } from './datastructures/types';
-import { Service } from '../../services/Service2';
+import { Service } from '../../services/Service';
 import { User } from '../../services/router/Router';
 
 export const randomId = (prefix?) => ((prefix) ? `${prefix}` : '')  + Math.floor(1000000000000000*Math.random())

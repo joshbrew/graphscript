@@ -346,9 +346,9 @@ function handleProxyEvent( data, id){
 
 //just load these into the worker service front and back. These are integrated in the worker canvas routes as well
 export const proxyElementWorkerRoutes = {
-    initProxyElement,
-    makeProxy,
-    handleProxyEvent
+    initProxyElement:initProxyElement,
+    makeProxy:makeProxy,
+    handleProxyEvent:handleProxyEvent
 } 
 
 

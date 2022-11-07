@@ -1,5 +1,5 @@
 import { stringifyFast } from "../utils";
-import { Service, ServiceOptions } from "../Service2";
+import { Service, ServiceOptions } from "../Service";
 import { User } from "../router/Router";
 
 //parse from this object/endpoint and send to that object/endpoint, e.g. single users

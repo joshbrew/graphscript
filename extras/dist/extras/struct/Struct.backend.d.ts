@@ -1,6 +1,6 @@
 import ObjectID from "bson-objectid";
 import { AuthorizationStruct, GroupStruct, ProfileStruct } from "./datastructures/types";
-import { Routes, Service, ServiceOptions } from "../../services/Service";
+import { Service } from "../../services/Service";
 import { User } from '../../services/router/Router';
 export declare const toObjectID: (str: any) => any;
 export declare const getStringId: (mongoid: string | ObjectID) => string;
@@ -24,7 +24,7 @@ export declare class StructBackend extends Service {
     collections: CollectionsType;
     mode: 'local' | 'mongodb' | string;
     useAuths: boolean;
-    constructor(options?: ServiceOptions, dboptions?: {
+    constructor(options?: any, dboptions?: {
         users?: {
             [key: string]: User;
         };
@@ -73,7 +73,7 @@ export declare class StructBackend extends Service {
         };
     }>;
     getMongoUsersByIds(user: Partial<ProfileStruct>, userIds?: any[]): Promise<ProfileStruct[]>;
-    getMongoUsersByRoles(user: Partial<ProfileStruct>, role: string): Promise<ProfileStruct[]>;
+    getMongoUsersByRole(user: Partial<ProfileStruct>, role: string): Promise<ProfileStruct[]>;
     getMongoDataByIds(user: Partial<ProfileStruct>, structIds: string[], ownerId: string | undefined, collection: string | undefined): Promise<any[]>;
     getMongoData(user: Partial<ProfileStruct>, collection: string | undefined, ownerId: string | undefined, dict?: any | undefined, limit?: number, skip?: number): Promise<any[]>;
     getAllUserMongoData(user: Partial<ProfileStruct>, ownerId: any, excluded?: any[]): Promise<any[]>;
@@ -94,6 +94,5 @@ export declare class StructBackend extends Service {
     setLocalData(structs: any): void;
     getLocalData(collection: any, query?: any): any;
     deleteLocalData(struct: any): boolean;
-    routes: Routes;
 }
 export {};
