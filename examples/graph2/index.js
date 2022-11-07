@@ -12,30 +12,27 @@ let tree = {
     nodeB:{
         x:3,
         y:4,
-        __node:{
-            children:{
+        __children:{
                 nodeC:{
                     z:4,
-                    __node:{
-                        operator:function(a) { this.z += a; console.log('nodeC z prop added to',this); return this.z; },
-                        listeners:{
-                            'nodeA.x':function(newX) { console.log('nodeA x prop updated', newX);},
-                            'nodeA.jump':function(jump) { 
-                                console.log('nodeA ', jump);
-                            }
+                    __operator:function(a) { this.z += a; console.log('nodeC z prop added to',this); return this.z; },
+                    __listeners:{
+                        'nodeA.x':function(newX) { console.log('nodeA x prop updated', newX);},
+                        'nodeA.jump':function(jump) { 
+                            console.log('nodeA ', jump);
                         }
                     }
                 }
             }
-        }
+        
     },
 
     nodeD:(a,b,c)=>{ return a+b+c; }, //becomes the .__operator prop and calling triggers setState for this tag (or nested tag if a child)
 
     nodeE:{
+        __operator:()=>{console.log('looped!');},
         __node:{
             loop:1000,
-            operator:()=>{console.log('looped!');}
         }
     }
 
