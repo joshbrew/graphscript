@@ -176,7 +176,6 @@ export class WorkerService extends Service {
                 if(!node.parentRoute && parent?.callback) node.parentRoute = parent?.callback;
             
                 let worker = this.loadWorkerRoute(rt, rt.__node.tag);
-                //console.log('new worker')
                 if(worker) {
                     if(!rt.parentRoute && (rt.__parent as any)?.callback) rt.parentRoute = (rt.__parent as any).callback;
                     if(rt.__parent && !rt.portId){ 
@@ -644,7 +643,7 @@ export class WorkerService extends Service {
 
         let callback:(res:any) => void;
 
-        //console.log('subscribeWorker', route, worker, blocking);
+        console.log('subscribeWorker', route, worker, blocking);
 
         if(blocking) {
 
@@ -716,6 +715,8 @@ export class WorkerService extends Service {
         callback?:((res:any)=>void)|string,
         blocking?:boolean
     ) => {
+
+        console.log('subscribeToWorker',route);
 
         if(typeof workerId === 'string' && this.workers[workerId]) {
             this.subscribe(workerId, undefined, (res) => {

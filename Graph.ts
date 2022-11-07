@@ -84,12 +84,12 @@ export class GraphNode {
         if(typeof properties === 'object') {
             if (typeof properties.__node === 'string') {
                 //copy
-                if(graph?.get(properties.__node)) {
-                    properties = graph.get(properties.__node);
+                if(graph?.get(properties.__node.tag)) {
+                    properties = graph.get(properties.__node.tag);
                 } else properties.__node = {}
             } else if(!properties.__node) properties.__node = {};
 
-            if(!properties.__node?.parent && parent) properties.__parent = parent;
+            if(!properties.__parent && parent) properties.__parent = parent;
             if(graph) properties.__node.graph = graph;
 
             if(properties.__operator) {
