@@ -127,10 +127,10 @@ export class WorkerService extends Service {
                 rt.__operator = (...args) => {
                     //console.log('operator', args)
                     if(rt.callback) {
-                        if(!this.__node.nodes.get(rt.__node.tag)?.children) worker.post(rt.callback,args);
+                        if(!this.__node.nodes.get(rt.__node.tag)?.__children) worker.post(rt.callback,args);
                         else return worker.run(rt.callback,args);
                     } else {
-                        if(!this.__node.nodes.get(rt.__node.tag)?.children) worker.send(args);
+                        if(!this.__node.nodes.get(rt.__node.tag)?.__children) worker.send(args);
                         else return worker.request(args);
                     }
                 }
