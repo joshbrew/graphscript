@@ -156,7 +156,7 @@ export class GraphNode {
     __subscribe = (callback:string|GraphNode|((res)=>void), key?:string, subInput?:boolean) => {
         if(key) {
             if(!this.__node.localState) {
-                this._addLocalState(this);
+                this.__addLocalState(this);
             }
              
             if(typeof callback === 'string') {
@@ -215,7 +215,7 @@ export class GraphNode {
 
     
 // added to GraphNode and Graph
-_addLocalState(props?:{[key:string]:any}) {
+__addLocalState(props?:{[key:string]:any}) {
     if(!props) return;
     if(!this.__node.localState) {
         this.__node.localState = {};
