@@ -10,11 +10,11 @@ export type GraphNodeProperties = {
     __operator?:((...args:any[])=>any)|string,
     __children?:{[key:string]:GraphNodeProperties},
     __listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void}},
+    __onconnected?:((node)=>void|((node)=>void)[]),
+    __ondisconnected?:((node)=>void|((node)=>void)[]),
     __node?:{
         tag?:string,
         state?:EventHandler,
-        oncreate?:Function|Function[],
-        ondelete?:Function|Function[],
         inputState?:boolean //we can track inputs on a node, subscribe to state with 'input' on the end of the tag or 'tag.prop' 
         [key:string]:any
     },
@@ -124,9 +124,7 @@ export class GraphNode {
                     properties.__node.nodes.forEach((n) => {parent.__node.nodes.set(properties.__node.tag+'.'+n.__node.tag,n)});
 
                     let ondelete = () => { properties.__node.nodes.forEach((n) => {parent.__node.nodes.delete(properties.__node.tag+'.'+n.__node.tag)}); }
-                    if(Array.isArray(this.__ondisconnected)) { this.__ondisconnected.push(ondelete); }
-                    else if (this.__ondisconnected) { this.__ondisconnected = [ondelete,this.__ondisconnected] }
-                    else this.__ondisconnected = [ondelete];
+                    this.__addDisconnected(ondelete);
 
                 }
             }
@@ -139,6 +137,7 @@ export class GraphNode {
             if(properties.__operator && parent instanceof GraphNode && parent.__operator) {
                 let sub = parent.__subscribe(this);
                 let ondelete = () => { parent?.__unsubscribe(sub);}
+                this.__addDisconnected(ondelete);
                 
             }
             if(properties instanceof Graph) this.__node.source = properties; //keep tabs on source graphs passed to make nodes

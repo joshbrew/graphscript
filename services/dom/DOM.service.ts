@@ -404,7 +404,7 @@ export class DOMService extends Service {
         
         let node = this.resolveGraphNode(elm, options);
 
-        if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }
+        node.__addDisconnected((node) => { (elm as DOMElement).delete(); });
 
 
         this.components[completeOptions.id] = {
@@ -504,7 +504,7 @@ export class DOMService extends Service {
 
         let node = this.resolveGraphNode(elm, options);
 
-        if(!node.ondelete) node.ondelete = (node) => { (elm as DOMElement).delete(); }
+        node.__addDisconnected((node) => { (elm as DOMElement).delete(); });
 
         let canvas = elm.querySelector('canvas');
         if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object

@@ -78,7 +78,7 @@ export class WorkerService extends Service {
         }
     }
 
-    loadWorkerRoute = (rt:WorkerRoute,routeKey:string) => {
+    loadWorkerRoute = (rt:WorkerRoute & GraphNode,routeKey:string) => {
         if(rt.workerUrl) rt.url = rt.workerUrl;
         if(rt.workerId) rt.__node.tag = rt.workerId;
         if(!rt.__node.tag) rt.__node.tag = routeKey;
@@ -93,18 +93,7 @@ export class WorkerService extends Service {
             let ondelete = (rt) => { //removing the original route will trigger ondelete
                 rt.worker?.terminate();
             }
-            let oldondelete;
-            if(rt.__ondisconnected) oldondelete = rt.__ondisconnected;  
-            
-            let od = (n) => {
-                if(oldondelete) oldondelete(n);
-                ondelete(n);
-            }
-
-            if(rt.__ondisconnected) {
-                if(Array.isArray(rt.__ondisconnected)) rt.__ondisconnected.push(od);
-                else rt.__ondisconnected = [od,rt.__ondisconnected];
-            } else rt.__ondisconnected = [od];
+            rt.__addDisconnected(ondelete);
         }
 
         rt.worker = worker;
