@@ -29,7 +29,7 @@ export declare const animate: (node: GraphNode, parent: GraphNode | Graph, graph
  *
  * nodeA.__node.branch = {[key:string]:{if:Function|any, then:Function|any|GraphNode}}
  *
- * nodeA.__node.listeners['nodeB.x'] = {
+ * nodeA.__listeners['nodeB.x'] = {
  *  callback:(result)=>void,
  *  branch:{if:Function|any, then:Function|any|GraphNode}
  * }
@@ -38,19 +38,19 @@ export declare const animate: (node: GraphNode, parent: GraphNode | Graph, graph
 export declare const branching: (node: GraphNode, parent: GraphNode | Graph, graph: Graph) => void;
 /** Trigger listeners oncreate with specific arguments
  *
- *  nodeA.__node.listeners['nodeB.x'] = { callback:(result)=>void, oncreate:any }
+ *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, oncreate:any }
  *
  */
 export declare const triggerListenerOncreate: (node: GraphNode, parent: GraphNode | Graph, graph: Graph) => void;
 /** Trigger listeners oncreate with specific arguments
  *
- *  nodeA.__node.listeners['nodeB.x'] = { callback:(result)=>void, binding:{any} }
+ *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, binding:{any} }
  *
  */
 export declare const bindListener: (node: GraphNode, parent: GraphNode | Graph, graph: Graph) => void;
 /**
  *
- *  nodeA.__node.listeners['nodeB.x'] = { callback:(result)=>void, transform:(result)=>any }
+ *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, transform:(result)=>any }
  *
  */
 export declare const transformListenerResult: (node: GraphNode, parent: GraphNode | Graph, graph: Graph) => void;

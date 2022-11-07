@@ -139,7 +139,7 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
  * 
  * nodeA.__node.branch = {[key:string]:{if:Function|any, then:Function|any|GraphNode}}
  * 
- * nodeA.__node.listeners['nodeB.x'] = {
+ * nodeA.__listeners['nodeB.x'] = {
  *  callback:(result)=>void, 
  *  branch:{if:Function|any, then:Function|any|GraphNode}
  * }
@@ -170,26 +170,26 @@ export const branching = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => 
             return result;
         });
     }
-    if(node.__node.listeners) {
-        for(const key in node.__node.listeners) {
-            if(typeof node.__node.listeners[key] === 'object') {
-                if(node.__node.listeners[key].branch && !node.__node.listeners[key].branchApplied) {
-                    let fn = node.__node.listeners[key].callback;
+    if(node.__listeners) {
+        for(const key in node.__listeners) {
+            if(typeof node.__listeners[key] === 'object') {
+                if(node.__listeners[key].branch && !node.__listeners[key].branchApplied) {
+                    let fn = node.__listeners[key].callback;
                     
-                    node.__node.listeners[key].branchApplied = true;
-                    node.__node.listeners.callback = (ret) => {
+                    node.__listeners[key].branchApplied = true;
+                    node.__listeners.callback = (ret) => {
                         let triggered = () => {
-                            if(typeof node.__node.listeners[key].branch.then === 'function') {
-                                node.__node.listeners[key].branch.then(ret); //trigger a callback
-                            } else if(node.__node.listeners[key].branch.then instanceof GraphNode && node.__node.listeners[key].branch.then.__operator) {
-                                node.__node.listeners[key].branch.then.__operator(ret); //run a node
-                            } else ret = node.__node.listeners[key].branch.then; //just replace the result in this case
+                            if(typeof node.__listeners[key].branch.then === 'function') {
+                                ret = node.__listeners[key].branch.then(ret); //trigger a callback
+                            } else if(node.__listeners[key].branch.then instanceof GraphNode && node.__listeners[key].branch.then.__operator) {
+                                ret = node.__listeners[key].branch.then.__operator(ret); //run a node
+                            } else ret = node.__listeners[key].branch.then; //just replace the result in this case
                         }
-                        if(typeof node.__node.listeners[key].branch.if === 'function') {
-                            if(node.__node.listeners[key].branch.if(ret)) {
+                        if(typeof node.__listeners[key].branch.if === 'function') {
+                            if(node.__listeners[key].branch.if(ret)) {
                                 triggered();
                             }
-                        } else if(node.__node.listeners[key].branch.if === ret) {
+                        } else if(node.__listeners[key].branch.if === ret) {
                             triggered();
                         } 
                         return fn(ret);
@@ -202,15 +202,15 @@ export const branching = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => 
 
 /** Trigger listeners oncreate with specific arguments
  * 
- *  nodeA.__node.listeners['nodeB.x'] = { callback:(result)=>void, oncreate:any }
+ *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, oncreate:any }
  * 
  */
 export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node.__node.listeners) {
-        for(const key in node.__node.listeners) {
-            if(typeof node.__node.listeners[key] === 'object') {
-                if(node.__node.listeners[key].oncreate) {
-                    node.__node.listeners[key].callback(node.__node.listeners[key].oncreate);
+    if(node.__listeners) {
+        for(const key in node.__listeners) {
+            if(typeof node.__listeners[key] === 'object') {
+                if(node.__listeners[key].oncreate) {
+                    node.__listeners[key].callback(node.__listeners[key].oncreate);
                 }
             }
         }
@@ -219,15 +219,15 @@ export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,gr
 
 /** Trigger listeners oncreate with specific arguments
  * 
- *  nodeA.__node.listeners['nodeB.x'] = { callback:(result)=>void, binding:{any} }
+ *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, binding:{[key:string]:any} }
  * 
  */
 export const bindListener = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node.__node.listeners) {
-        for(const key in node.__node.listeners) {
-            if(typeof node.__node.listeners[key] === 'object') {
-                if(typeof node.__node.listeners[key].binding === 'object') {
-                    node.__node.listeners.callback = node.__node.listeners.callback.bind(node.__node.listeners[key].binding);
+    if(node.__listeners) {
+        for(const key in node.__listeners) {
+            if(typeof node.__listeners[key] === 'object') {
+                if(typeof node.__listeners[key].binding === 'object') {
+                    node.__listeners.callback = node.__listeners.callback.bind(node.__listeners[key].binding);
                 }
             }
         }
@@ -237,18 +237,18 @@ export const bindListener = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) 
 
 /**
  * 
- *  nodeA.__node.listeners['nodeB.x'] = { callback:(result)=>void, transform:(result)=>any }
+ *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, transform:(result)=>any }
  * 
  */
 export const transformListenerResult = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node.__node.listeners) {
-        for(const key in node.__node.listeners) {
-            if(typeof node.__node.listeners[key] === 'object') {
-                if(typeof node.__node.listeners[key].transform === 'function' && !node.__node.listeners[key].transformApplied) {
-                    let fn = node.__node.listeners[key].callback;
-                    node.__node.listeners[key].transformApplied = true;
-                    node.__node.listeners.callback = (ret) => {
-                        ret = node.__node.listeners[key].transform(ret)
+    if(node.__listeners) {
+        for(const key in node.__listeners) {
+            if(typeof node.__listeners[key] === 'object') {
+                if(typeof node.__listeners[key].transform === 'function' && !node.__listeners[key].transformApplied) {
+                    let fn = node.__listeners[key].callback;
+                    node.__listeners[key].transformApplied = true;
+                    node.__listeners.callback = (ret) => {
+                        ret = node.__listeners[key].transform(ret)
                         return fn(ret);
                     }
                 }

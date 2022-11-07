@@ -164,7 +164,7 @@ export class GraphNode {
                 else callback = this.__node.graph.nodes.get(callback);
             }
             if(typeof callback === 'function') {
-                return this.__node.events.subscribeTrigger(subInput ? key+'input' : subInput, callback);
+                return this.__node.events.subscribeTrigger(subInput ? key+'input' : key, callback);
             } else if((callback as GraphNode)?.__node) return this.__node.events.subscribeTrigger(subInput ? key+'input' : key, (state:any)=>{ if((callback as any).__operator) (callback as any).__operator(state); })
             
         }
@@ -207,7 +207,7 @@ export class GraphNode {
             } else if(result !== undefined) this.__node.state.setValue(this.__node.tag,result);
             return result;
         } 
-        this.default = this.__operator;
+        this.default = this.__operator; //for escode related stuff
         if(typeof this.__node.initial === 'object') this.__node.initial.default = this.__operator;
 
         return this.__operator;
@@ -314,8 +314,8 @@ export class Graph {
                 let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
                 for(const l in this.__node.loaders) { this.__node.loaders[l](node,this,this,tree,tree); } //run any passes on the nodes to set things up further
                 this.__node.nodes.set(node.__node.tag,node);
-                if(node.__node.listeners) {
-                    listeners[node.__node.tag] = node.__node.listeners;
+                if(node.__listeners) {
+                    listeners[node.__node.tag] = node.__listeners;
                 } //now the tree can specify nodes
             }
         }
@@ -347,12 +347,12 @@ export class Graph {
             //console.log('old:',properties.__node,'new:',node.__node);
             
             if(node.__listeners) {
-                listeners[node.__node.tag] = node.__node.listeners;
+                listeners[node.__node.tag] = node.__listeners;
             }
     
             if(node.__children) {
                 node.__children = Object.assign({},node.__children);
-                this.recursiveSet(node.__children,node,listeners);
+                this.recursiveSet(node.__children, node, listeners);
             }
     
             if(node.__node.tree) this.setTree(node.__node.tree);
@@ -392,7 +392,7 @@ export class Graph {
                 this.__node.tree[node.__node.tag] = p; //reference the original props by tag in the tree for children
                 this.set(node.__node.tag,node);
                 if(node.__listeners) {
-                    listeners[node.__node.tag] = node.__node.listeners;
+                    listeners[node.__node.tag] = node.__listeners;
                 }
                 else if(node.__children) {
                     node.__children = Object.assign({},node.__children);
@@ -474,6 +474,7 @@ export class Graph {
 
     setListeners = (listeners:{[key:string]:{[key:string]:any}}) => {
         //now setup event listeners
+        //console.log(listeners)
         for(const key in listeners) {
             let node = this.get(key);
             if(typeof listeners[key] === 'object') {
@@ -487,6 +488,7 @@ export class Graph {
                         let tag = k.substring(0,k.lastIndexOf('.'));
                         n = this.get(tag);
                         if(n) {
+                            //console.log('found',n,k,key);
                             sub = this.subscribe(n, k.substring(k.lastIndexOf('.')+1), listeners[key][k].callback, listeners[key][k].inputState );
                             if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState:listeners[key][k]?.inputState };
                             node.__listeners[k].sub = sub;
@@ -504,15 +506,15 @@ export class Graph {
     clearListeners = (node:GraphNode|string,listener?:string) => {
         if(typeof node === 'string') node = this.get(node) as GraphNode;
         if(node?.__listeners) {
-            //console.log(node?.__node.listeners);
-            //console.log(node.__node.listeners);
+            //console.log(node?.__listeners);
+            //console.log(node.__listeners);
             for(const key in node.__listeners) {
                 if(listener && key !== listener) continue; 
                 if(typeof node.__listeners[key].sub !== 'number') continue;
                 let n = this.get(key);
                 if(!n) {
                     n = this.get(key.substring(0,key.lastIndexOf('.')));
-                    //console.log(key.substring(0,key.lastIndexOf('.')),key,n,node.__node.listeners[key]);
+                    //console.log(key.substring(0,key.lastIndexOf('.')),key,n,node.__listeners[key]);
                     if(n) this.unsubscribe(n,key.substring(key.lastIndexOf('.')+1),node.__listeners[key].sub, node.__listeners[key].inputState);
                 } else {
                     this.unsubscribe(n,undefined,node.__listeners[key].sub, node.__listeners[key].inputState);
@@ -550,10 +552,13 @@ export class Graph {
         node:GraphNode|string, key:string|undefined, callback:string|GraphNode|((res:any)=>void), subInput?:boolean
     ) => {
 
-        let nd;
+        let nd = node;
         if(!(node instanceof GraphNode)) nd = this.get(node);
 
         let sub;
+
+        //console.log(node,nd);
+
         if(nd instanceof GraphNode) {
             sub = nd.__subscribe(callback,key,subInput);
 
