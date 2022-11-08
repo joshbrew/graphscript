@@ -28,7 +28,8 @@ export const Systems = {
         },
         __node:{
             tag:'collision',
-            operator:function( entities:{[key:string]:Entity}){
+        },
+        __operator:function( entities:{[key:string]:Entity}){
 
             let keys = this.entityKeys;
 
@@ -53,7 +54,7 @@ export const Systems = {
             }
             return entities;
             //now resolve the collisions e.g. relative displacement + mass-force vectors to pass to the movement system
-        }},
+        },
         collisionCheck:(
             body1:{
                 position:{x:number,y:number,z:number},
@@ -750,9 +751,7 @@ export const Systems = {
 
             return entity;
         },
-        __node:{
-            tag:'collider',
-            operator: function (entities:{[key:string]:Entity}) {
+        __operator: function (entities:{[key:string]:Entity}) {
 
             let keys = this.entityKeys;
 
@@ -802,7 +801,10 @@ export const Systems = {
                 }
             }
             return entities;
-        }},
+        },
+        __node:{
+            tag:'collider',
+        },
         checkBoundingBox:(entity)=>{
 
             //console.log('before',entity.position);
@@ -989,9 +991,7 @@ export const Systems = {
         
             return entity;
         },
-        __node:{
-            tag:'nbody',
-            operator:function(entities:{[key:string]:Entity}){
+        __operator:function(entities:{[key:string]:Entity}){
 
             let keys = this.entityKeys;
 
@@ -1021,7 +1021,10 @@ export const Systems = {
             }
 
             return entities;
-        }},
+        },
+        __node:{
+            tag:'nbody',
+        },
         attract:function(
             body1,
             body2,
@@ -1130,9 +1133,7 @@ export const Systems = {
 
             return entity;
         },
-        __node:{
-            tag:'boid',
-            operator:function (entities:{[key:string]:Entity}){
+        __operator:function (entities:{[key:string]:Entity}){
             
             let now = performance.now();
             let timeStep = now - this.lastTime
@@ -1326,9 +1327,15 @@ export const Systems = {
             //console.timeEnd('boidloop')
             //console.log('nloops', nloops, timeStep)
             return entities;
-        }
-    }},// as SystemProps,
+        },
+        __node:{
+            tag:'boid',
+        }// as SystemProps,
+    },
     movement:{ //update force/acceleration/velocity/position vectors
+        __node:{
+            tag:'movement',
+        }, //as SystemProps,
         lastTime:performance.now(),
         setupEntities:function (entities:{[key:string]:Entity}){ //install needed data structures to entities
             for(const key in entities) {
@@ -1351,9 +1358,7 @@ export const Systems = {
 
             return entity;
         },
-        __node:{
-            tag:'movement',
-            operator:function(entities:{[key:string]:Entity}){
+        __operator:function(entities:{[key:string]:Entity}){
             let now = performance.now();
             let timeStep = (now - this.lastTime) * 0.001;
             this.lastTime = now; 
@@ -1407,7 +1412,7 @@ export const Systems = {
 
             return entities;
         }
-    }} //as SystemProps,
+    }
     //materials:{} as SystemProps, //
 } //as {[key:string]:SystemProps & {[key:string]:any}}
 

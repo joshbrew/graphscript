@@ -204,8 +204,6 @@ let ret = router.setTree({
     
                         renderer.post('setValue',['entitySettings',entitySettings]);
 
-                        console.log('transferring canvas')
-                        console.log(router.__node.nodes.get('transferCanvas'))
                         const controls:WorkerCanvasControls = router.run(
                             'transferCanvas', 
                             renderer.worker, 

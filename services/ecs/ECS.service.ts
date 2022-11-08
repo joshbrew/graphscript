@@ -117,6 +117,7 @@ export class ECSService extends Service {
     }
 
     animateEntities = (filter:boolean=true,order?:string[]) => {
+        //console.log('animate entities')
         if(!this.animating) {
             this.animating = true;
             if(typeof requestAnimationFrame !== 'undefined') {

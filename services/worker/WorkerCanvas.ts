@@ -127,7 +127,7 @@ export function transferCanvas(
         delete options.transfer;
     }
 
-    console.log(worker,message);
+    //console.log(worker,message);
 
     worker.postMessage(message,transfer);
 

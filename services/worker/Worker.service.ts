@@ -97,7 +97,7 @@ export class WorkerService extends Service {
         }
 
         rt.worker = worker;
-        console.log(rt);
+        //console.log(rt);
 
         //requires unsafeRoutes on the worker (enabled on the default worker)
         if(rt.transferFunctions) {
@@ -632,7 +632,7 @@ export class WorkerService extends Service {
 
         let callback:(res:any) => void;
 
-        console.log('subscribeWorker', route, worker, blocking);
+        //console.log('subscribeWorker', route, worker, blocking);
 
         if(blocking) {
 
@@ -705,7 +705,7 @@ export class WorkerService extends Service {
         blocking?:boolean
     ) => {
 
-        console.log('subscribeToWorker',route);
+        //console.log('subscribeToWorker',route);
 
         if(typeof workerId === 'string' && this.workers[workerId]) {
             this.subscribe(workerId, undefined, (res) => {

@@ -45,8 +45,8 @@ export class Service extends Graph {
             if((services[s] as Service)?.__node?.loaders) Object.assign(this.__node.loaders,(services[s] as Service).__node.loaders); 
             if(services[s] instanceof Service) {
                 (services[s] as Service).__node.nodes.forEach((n,tag) => { 
-                    if(!this.__node.nodes.get(n.tag)) {
-                        this.__node.nodes.set(n.tag,n);
+                    if(!this.__node.nodes.get(tag)) {
+                        this.__node.nodes.set(tag,n);
                     } else this.__node.nodes.set(s+'.'+tag,n);
                 })
             }
