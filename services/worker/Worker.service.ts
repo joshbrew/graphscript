@@ -164,7 +164,7 @@ export class WorkerService extends Service {
 
                 if(!node.parentRoute && parent?.callback) node.parentRoute = parent?.callback;
             
-                let worker = this.loadWorkerRoute(rt, rt.__node.tag);
+                let worker = this.loadWorkerRoute(rt as any, rt.__node.tag);
                 if(worker) {
                     if(!rt.parentRoute && (rt.__parent as any)?.callback) rt.parentRoute = (rt.__parent as any).callback;
                     if(rt.__parent && !rt.portId){ 

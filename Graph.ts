@@ -388,7 +388,7 @@ export class Graph {
         for(const key in t) {
             let p = t[key];
             if(Array.isArray(p)) continue;
-            if(typeof p === 'function') p = {__node:{ operator:p }} 
+            if(typeof p === 'function') p = { __operator:p }; 
             else if (typeof p === 'string') p = this.__node.tree[p];
             else if (typeof p === 'boolean') p = this.__node.tree[key];
             // else if (typeof p.default === 'function') {

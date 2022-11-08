@@ -25,7 +25,7 @@ document.body.style.height = '100vh'
 let ret = router.setTree({
     'main':{
         tagName:'div',
-        __node:{children:{
+        __children:{
             'div':{
                 tagName:'div',
                 innerText:'Multithreaded canvases!'
@@ -204,6 +204,8 @@ let ret = router.setTree({
     
                         renderer.post('setValue',['entitySettings',entitySettings]);
 
+                        console.log('transferring canvas')
+                        console.log(router.__node.nodes.get('transferCanvas'))
                         const controls:WorkerCanvasControls = router.run(
                             'transferCanvas', 
                             renderer.worker, 
@@ -480,7 +482,7 @@ let ret = router.setTree({
                     workers.terminate(info.entities2._id);
                 }        
             } as ElementProps      
-        }} 
+        } 
     } as ElementProps
 });
 

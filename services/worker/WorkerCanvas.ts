@@ -88,6 +88,7 @@ export function transferCanvas(
     route?:string //we can reroute from the default 'setupCanvas' e.g. for other rendering init processes like in threejs
 ) {
 
+
     if(!options) return undefined;
     if(!options._id) options._id = `canvas${Math.floor(Math.random()*1000000000000000)}`;
 
@@ -126,7 +127,7 @@ export function transferCanvas(
         delete options.transfer;
     }
 
-    //console.log(worker,message);
+    console.log(worker,message);
 
     worker.postMessage(message,transfer);
 

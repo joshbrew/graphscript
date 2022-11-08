@@ -73,7 +73,6 @@ export type RouterOptions = {
             }, //configure new connections after adding the relevant services?
         } //can be a service constructor
     }
-    syncServices?:boolean,
     order?:string[],
     [key:string]:any
 } & ServiceOptions
@@ -116,15 +115,14 @@ export class Router extends Service {
                     let opt = (options.services[key] as any);
                     if(opt instanceof Service) {
                         opt.name = key; opt.__node.tag = key;
-                        this.addService(opt, (opt as any).connections, options.syncServices);
+                        this.addService(opt, (opt as any).connections);
                     } else if (typeof opt === 'function') {
                         let service = new opt() as Service; //instantiate a class prototype
                         (service as any).name = key; service.__node.tag = key;
                         if(service instanceof Service) 
                             this.addService(
                                 service, 
-                                (service as any).connections, 
-                                options.syncServices
+                                (service as any).connections
                             );
                     }
                     else {
@@ -140,8 +138,7 @@ export class Router extends Service {
                         else if(opt?.service instanceof Service) {
                             opt.service.name = key; opt.service.tag = key;
                             this.addService(
-                                opt.service, 
-                                options.syncServices
+                                opt.service
                             );
                         }
                         if(typeof opt?.service === 'object') {
@@ -727,12 +724,10 @@ export class Router extends Service {
     addService = (
         service:Service,
         connections?:any, //the object on the service we want to associate connections with
-        syncServices?:boolean,
         source?:string,
         order?:string[],
     ) => {
         //console.log(service)
-        this.setTree(service);
         this.services[service.name] = service;
         if(connections) {
             if(typeof connections === 'string') this.addServiceConnections(service,connections,source);
@@ -742,7 +737,6 @@ export class Router extends Service {
                 }
             }
         }
-        if(syncServices) this.syncServices(); //maps all uncommon nodes to each service 
         if(order) this.order = order;
         else {
             if(!this.order) this.order = [];
@@ -924,21 +918,6 @@ export class Router extends Service {
                 });
             });
             return res;
-        }
-    }
-
-    //tie node references together across service node maps so they can call each other's relative routes
-    syncServices = () => {
-        for(const name in this.services) { 
-            if('users' in this.services[name]) (this.services[name] as Router).users = this.users;
-            this.__node.nodes.forEach((n,tag) => {
-                if(!this.services[name].__node.nodes.get(n.tag)) {
-                    this.services[name].__node.nodes.set(n.tag,n);
-                } else {
-                    if(!this.services[name].__node.nodes.get(tag) && n?.__node.UNIQUE !== this.services[name].__node.nodes.get(n.tag)?.__node.UNIQUE) //use the remapped key if it's not the same node
-                        this.services[name].__node.nodes.set(tag,n);
-                }
-            });
         }
     }
 
