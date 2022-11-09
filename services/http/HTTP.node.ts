@@ -174,6 +174,7 @@ export class HTTPbackend extends Service {
 
             let url = (request as any).url.slice(1);
             if(!url) url = '/';
+            console.log(options)
             if(options.pages) {
                 if(typeof options.pages[url] === 'object') {
                     if((options.pages[url] as any).onrequest) {
@@ -366,8 +367,8 @@ export class HTTPbackend extends Service {
         let input = message;
         if(typeof input === 'object') input = JSON.stringify(input);
 
-        if(typeof options === 'string' && message) return this.post(options,message);
-        else if(typeof options === 'string') return this.get(options);
+        if(typeof options === 'string' && message) return this.POST(options,message);
+        else if(typeof options === 'string') return this.GET(options);
         
         if(!options) { //fill a generic post request for the first server if none provided
             let server = this.servers[Object.keys(this.servers)[0]];
@@ -737,7 +738,7 @@ export class HTTPbackend extends Service {
         return req;
     }
 
-    post = (
+    POST = (
         url:string|URL,
         data:any,
         headers?:{
@@ -778,7 +779,7 @@ export class HTTPbackend extends Service {
         return req;
     }
 
-    get = (url:string|URL|http.RequestOptions) => {
+    GET = (url:string|URL|http.RequestOptions) => {
         return new Promise<Buffer>((resolve, reject) => {
         
             let client = http;
@@ -922,8 +923,6 @@ export class HTTPbackend extends Service {
         return result;
     }
 
-    GET = this.get;
-    POST = this.post;
     hotreload = (socketURL:string|URL=`http://localhost:8080/wss`) => { 
             
         if(socketURL instanceof URL) socketURL = socketURL.toString();

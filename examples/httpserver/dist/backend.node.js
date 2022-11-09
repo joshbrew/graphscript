@@ -4386,7 +4386,7 @@ var Graph = class {
       return this.__node.nodes.get(tag);
     };
     this.set = (tag, node) => {
-      this.__node.nodes.set(tag, node);
+      return this.__node.nodes.set(tag, node);
     };
     this.getProps = (node, getInitial) => {
       if (typeof node === "string")
@@ -4756,7 +4756,7 @@ var Service = class extends Graph {
     this.pipe = (source, destination, endpoint, method, callback) => {
       if (source instanceof GraphNode) {
         if (callback)
-          return this.subscribe(source, void 0, (res) => {
+          return this.subscribe(source, (res) => {
             let mod = callback(res);
             if (mod !== void 0)
               this.transmit({ route: destination, args: mod, method });
@@ -4764,11 +4764,11 @@ var Service = class extends Graph {
               this.transmit({ route: destination, args: res, method }, endpoint);
           });
         else
-          return this.subscribe(source, void 0, (res) => {
+          return this.subscribe(source, (res) => {
             this.transmit({ route: destination, args: res, method }, endpoint);
           });
       } else if (typeof source === "string")
-        return this.subscribe(source, void 0, (res) => {
+        return this.subscribe(source, (res) => {
           this.transmit({ route: destination, args: res, method }, endpoint);
         });
     };
@@ -5214,6 +5214,7 @@ var HTTPbackend = class extends Service {
           let url = request.url.slice(1);
           if (!url)
             url = "/";
+          console.log(options);
           if (options.pages) {
             if (typeof options.pages[url] === "object") {
               if (options.pages[url].onrequest) {
@@ -5362,9 +5363,9 @@ var HTTPbackend = class extends Service {
       if (typeof input === "object")
         input = JSON.stringify(input);
       if (typeof options === "string" && message)
-        return this.post(options, message);
+        return this.POST(options, message);
       else if (typeof options === "string")
-        return this.get(options);
+        return this.GET(options);
       if (!options) {
         let server2 = this.servers[Object.keys(this.servers)[0]];
         options = {
@@ -5658,7 +5659,7 @@ var HTTPbackend = class extends Service {
       req.end();
       return req;
     };
-    this.post = (url, data, headers) => {
+    this.POST = (url, data, headers) => {
       let urlstring = url;
       if (urlstring instanceof URL)
         urlstring = url.toString();
@@ -5688,7 +5689,7 @@ var HTTPbackend = class extends Service {
       );
       return req;
     };
-    this.get = (url) => {
+    this.GET = (url) => {
       return new Promise((resolve, reject) => {
         let client = http;
         let urlstring = url;
@@ -5798,8 +5799,6 @@ var HTTPbackend = class extends Service {
         result += pageStructure();
       return result;
     };
-    this.GET = this.get;
-    this.POST = this.post;
     this.hotreload = (socketURL = `http://localhost:8080/wss`) => {
       if (socketURL instanceof URL)
         socketURL = socketURL.toString();
@@ -7108,8 +7107,8 @@ var Router = class extends Service {
           }
         };
         settings.post = async (route, args, method) => {
-          if (route && graph.get(route)) {
-            let n = graph.get(route);
+          if (route && graph.GET(route)) {
+            let n = graph.GET(route);
             if (method) {
               if (Array.isArray(args)) {
                 return n[method]?.(...args);
