@@ -529,7 +529,7 @@ export class Graph {
                     this.unsubscribe(n,undefined,node.__listeners[key].sub, node.__listeners[key].inputState);
                 }
 
-                console.log('unsubscribed', key)
+                //console.log('unsubscribed', key)
                 delete node.__listeners[key];
             }
         }
