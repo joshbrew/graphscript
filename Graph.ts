@@ -398,6 +398,7 @@ export class Graph {
                 p = Object.assign({},p); //make sure we don't mutate the original object
                 if(!p.__node) p.__node = {};
                 if(!p.__node.tag) p.__node.tag = key;
+
                 if(this.get(p.__node.tag) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
                 let props = Object.assign({},p); props.__node = Object.assign({},p.__node);
                 let node = new GraphNode(props,parent,this);
