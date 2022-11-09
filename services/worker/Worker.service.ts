@@ -160,9 +160,9 @@ export class WorkerService extends Service {
     workerloader:any = {
         'workers':(node: WorkerRoute & GraphNode, parent:WorkerRoute & GraphNode, graph:Graph, tree:any) => {
             let rt = node as WorkerRoute;
+            if(!node.parentRoute && (parent?.callback && parent?.worker)) node.parentRoute = parent?.callback;
             if(rt?.worker || rt?.workerId || (rt as WorkerRoute)?.workerUrl) { //each set of props with a worker will instantiate a new worker, else you can use the same worker elsewhere by passing the corresponding tag
 
-                if(!node.parentRoute && parent?.callback) node.parentRoute = parent?.callback;
             
                 let worker = this.loadWorkerRoute(rt as any, rt.__node.tag);
                 if(worker) {

@@ -274,10 +274,9 @@ const webappHtml = {
                                                                 node.worker.post('setValue',['chartSettings',chartSettings[selected]])
                                                             } 
 
-                                                            console.log(webapp,node);
 
                                                             webapp.run(
-                                                                'workers.transferCanvas', 
+                                                                'transferCanvas', 
                                                                 node.worker.worker,
                                                                 {
                                                                     canvas,
@@ -401,7 +400,9 @@ const webappHtml = {
                                                                 __children:{
                                                                     coherence_main:{
                                                                         __operator:(result:any)=>{
+                                                                            console.log('result', result);
                                                                             //console.log('coherence result', result); //this algorithm only returns when it detects a beat
+                                                                            if(!result?.frequencies) return;
                                                                             if(result?.frequencies) 
                                                                                 document.getElementById('dftxaxis').innerHTML = `<span>${result.frequencies[0]}</span><span>${result.frequencies[Math.floor(result.frequencies.length*0.5)]}</span><span>${result.frequencies[result.frequencies.length-1]}</span>`;
                                                                         
@@ -464,7 +465,7 @@ const webappHtml = {
                                                                             // } 
                 
                                                                             webapp.run(
-                                                                                'workers.transferCanvas', 
+                                                                                'transferCanvas', 
                                                                                 node.worker.worker,
                                                                                 {
                                                                                     canvas,
