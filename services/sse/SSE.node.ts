@@ -442,11 +442,10 @@ export class SSEbackend extends Service {
         route:string, 
         path:string, 
         sessionId?:string,
-        eventName?:string,
-        key?:string
+        eventName?:string
     ) => {
         if(this.servers[path]) {
-            return this.subscribe(route, key, (res) => {
+            return this.subscribe(route, (res) => {
                 this.servers[path].send({args:res, callbackId:route}, eventName, sessionId);
             })
         }
@@ -457,12 +456,11 @@ export class SSEbackend extends Service {
         path:string, 
         callback?:string|((res:any)=>void), 
         sessionId?:string,
-        eventName?:string,
-        key?:string
+        eventName?:string
     ) => {
         if(this.servers[path]) {
 
-            this.subscribe(path,key,(res) => {
+            this.subscribe(path,(res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[path]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node
@@ -483,9 +481,9 @@ export class SSEbackend extends Service {
                 }
             } else {
                 let promises:Promise<number>[] = [];
-                for(const key in this.servers[path].sessions) {
+                for(const k in this.servers[path].sessions) {
                     promises.push(
-                        this.eventsources[key].run(
+                        this.eventsources[k].run(
                             'subscribeSSE', 
                             {route:'subscribeSSE',args:[route,path]}, 
                             undefined, 

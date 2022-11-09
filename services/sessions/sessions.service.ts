@@ -343,9 +343,9 @@ export class SessionsService extends Service {
         } 
 
         if(typeof session.onopen === 'function') {
-            let sub = this.subscribe('joinSession',undefined,(res) => {
+            let sub = this.subscribe('joinSession',(res) => {
                 if(res._id === (session as any)._id) (session as any).onopen(session, userId);
-                this.unsubscribe('joinSession', undefined, sub as number);
+                this.unsubscribe('joinSession', sub as number);
             })
         }
 
@@ -860,7 +860,7 @@ export class SessionsService extends Service {
 
 		// if(!settings.callback) settings.callback = this.STREAMALLLATEST;
 
-        this.subscribe('streamName', undefined, (res:any)=>{ 
+        this.subscribe('streamName', (res:any)=>{ 
             if(this.streamSettings[streamName].onupdate) 
                 (this.streamSettings[streamName] as any).onupdate(res,this.streamSettings[streamName]); 
         });

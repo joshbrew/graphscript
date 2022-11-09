@@ -2,84 +2,46 @@
 # yarn lockfile v1
 
 
-"better-sse@^0.7.1":
-  "integrity" "sha512-2t7XGg6hQFNwtmFXKi6/jyY5K0/4fa5UoOqVSYG2W/AFbVCt8gPnFw2LHM9ude91a8KhoXtRt9zOwpVZ5f5K5g=="
-  "resolved" "https://registry.npmjs.org/better-sse/-/better-sse-0.7.1.tgz"
-  "version" "0.7.1"
+"better-sse@~0.8.0":
+  "integrity" "sha512-ymOse8R0L+R2S1W85yOGkkc+yTzAmo52S4erjxPyBVwpqjpS+X228BG7hDwgKsGV/D51YhCYd+eaDwJ+sL5JhA=="
+  "resolved" "https://registry.npmjs.org/better-sse/-/better-sse-0.8.0.tgz"
+  "version" "0.8.0"
 
-"brainsatplay-data@^0.0.48":
-  "integrity" "sha512-3xJ4C5ts0z6dKTkaEI0LrHO443gphOj/OAP9JfZARZXE5MO+kMsOIlvAgijeP7ty4btZtg7MNEEacwIBXREgbQ=="
-  "resolved" "https://registry.npmjs.org/brainsatplay-data/-/brainsatplay-data-0.0.48.tgz"
-  "version" "0.0.48"
-  dependencies:
-    "brainsatplay-math" "^0.0.2"
+"brainsatplay-math@~0.0.25":
+  "integrity" "sha512-J2s+/4osnjVVqqKVwuCuYbr9eGhXF4eFsGq/ImPIHICx0+1hJHoUN1XVCyiC8rOM7Nf0/8mmtVknzEeayVc7sQ=="
+  "resolved" "https://registry.npmjs.org/brainsatplay-math/-/brainsatplay-math-0.0.25.tgz"
+  "version" "0.0.25"
 
-"brainsatplay-math@^0.0.2":
-  "integrity" "sha512-7fjUfcmR2TcHtRh9jCds1WF1HZWhvvDytE6ngrkOUnMTQTbrDs0iAcp8NjMEiHumJRjcaD/c6PN60wIY0rjQaQ=="
-  "resolved" "https://registry.npmjs.org/brainsatplay-math/-/brainsatplay-math-0.0.2.tgz"
-  "version" "0.0.2"
-
-"brainsatplay-math@^0.0.22":
-  "integrity" "sha512-er+7fobi+bgtuiaN5Pcg0cpOfl/d5hrM8W8sF5lnX9VWhcs2TvyG3J0UV+pozGYSBvtqij7Evs4HhhFIh3cfbQ=="
-  "resolved" "https://registry.npmjs.org/brainsatplay-math/-/brainsatplay-math-0.0.22.tgz"
-  "version" "0.0.22"
-
-"bson-objectid@^2.0.3":
+"bson-objectid@~2.0.3":
   "integrity" "sha512-WYwVtY9yqk179EPMNuF3vcxufdrGLEo2XwqdRVbfLVe9X6jLt7WKZQgP+ObOcprakBGbHxzl76tgTaieqsH29g=="
   "resolved" "https://registry.npmjs.org/bson-objectid/-/bson-objectid-2.0.3.tgz"
   "version" "2.0.3"
 
-"bufferutil@^4.0.1":
-  "integrity" "sha512-jduaYOYtnio4aIAyc6UbvPCVcgq7nYpVnucyxr6eCYg/Woad9Hf/oxxBRDnGGjPfjUm6j5O/uBWhIu4iLebFaw=="
-  "resolved" "https://registry.npmjs.org/bufferutil/-/bufferutil-4.0.6.tgz"
-  "version" "4.0.6"
+"graphscript-node@~0.1.41":
+  "integrity" "sha512-kllGNQcRkaUIOgBwY5XJhMabN/Fk9w0sSPWiBRqV7zdk3AWZjnxq19Wljkq0Mu8dkzftsBH5fJ6GOpp034Q5Sg=="
+  "resolved" "https://registry.npmjs.org/graphscript-node/-/graphscript-node-0.1.49.tgz"
+  "version" "0.1.49"
   dependencies:
-    "node-gyp-build" "^4.3.0"
+    "better-sse" "~0.8.0"
+    "brainsatplay-math" "~0.0.25"
+    "bson-objectid" "~2.0.3"
+    "web-worker" "~1.2.0"
+    "ws" "~8.9.0"
 
-"gpujsutils@^1.0.8":
-  "integrity" "sha512-hn74yMSZrT4pf4nlS3SRZvUe7UaGCs3KYoi/dqhTJk3Gho2M9SScj7BHewTcNI1M2UonTkcaR/CA1KgXxekfVQ=="
-  "resolved" "https://registry.npmjs.org/gpujsutils/-/gpujsutils-1.0.10.tgz"
-  "version" "1.0.10"
-
-"graphscript-node@~0.0.159":
-  "integrity" "sha512-V8bIUT5Rm+PLwPaeiCgdujMarTyapfuNuJb1bQHh2jpJ7Jln27CuhRjs+v5Dr7sNRaooVUUehODZfleWl2DSoA=="
-  "resolved" "https://registry.npmjs.org/graphscript-node/-/graphscript-node-0.0.164.tgz"
-  "version" "0.0.164"
-  dependencies:
-    "better-sse" "^0.7.1"
-    "brainsatplay-data" "^0.0.48"
-    "brainsatplay-math" "^0.0.22"
-    "bson-objectid" "^2.0.3"
-    "gpujsutils" "^1.0.8"
-    "web-worker" "^1.2.0"
-    "ws" "^8.7.0"
-
-"node-gyp-build@^4.3.0":
-  "integrity" "sha512-2iGbaQBV+ITgCz76ZEjmhUKAKVf7xfY1sRl4UiKQspfZMH2h06SyhNsnSVy50cwkFQDGLyif6m/6uFXHkOZ6rg=="
-  "resolved" "https://registry.npmjs.org/node-gyp-build/-/node-gyp-build-4.5.0.tgz"
-  "version" "4.5.0"
-
-"tinybuild@file:../../../tinybuild":
-  "resolved" "file:../../../tinybuild"
-  "version" "0.3.175"
+"tinybuild@file:../../../../../AppData/Roaming/npm/node_modules/tinybuild":
+  "resolved" "file:../../../../../AppData/Roaming/npm/node_modules/tinybuild"
+  "version" "0.3.190"
   dependencies:
     "chokidar" "~3.5.3"
     "esbuild" "~0.14.49"
     "ws" "^8.5.0"
 
-"utf-8-validate@^5.0.2":
-  "integrity" "sha512-Yek7dAy0v3Kl0orwMlvi7TPtiCNrdfHNd7Gcc/pLq4BLXqfAmd0J7OWMizUQnTTJsyjKn02mU7anqwfmUP4J8Q=="
-  "resolved" "https://registry.npmjs.org/utf-8-validate/-/utf-8-validate-5.0.9.tgz"
-  "version" "5.0.9"
-  dependencies:
-    "node-gyp-build" "^4.3.0"
-
-"web-worker@^1.2.0":
+"web-worker@~1.2.0":
   "integrity" "sha512-PgF341avzqyx60neE9DD+XS26MMNMoUQRz9NOZwW32nPQrF6p77f1htcnjBSEV8BGMKZ16choqUG4hyI0Hx7mA=="
   "resolved" "https://registry.npmjs.org/web-worker/-/web-worker-1.2.0.tgz"
   "version" "1.2.0"
 
-"ws@^8.7.0":
-  "integrity" "sha512-bGy2JzvzkPowEJV++hF07hAD6niYSr0JzBNo/J29WsB57A2r7Wlc1UFcTR9IzrPvuNVO4B8LGqF8qcpsVOhJCA=="
-  "resolved" "https://registry.npmjs.org/ws/-/ws-8.8.1.tgz"
-  "version" "8.8.1"
+"ws@~8.9.0":
+  "integrity" "sha512-Ja7nszREasGaYUYCI2k4lCKIRTt+y7XuqVoHR44YpI49TtryyqbqvDMn5eqfW7e6HzTukDRIsXqzVHScqRcafg=="
+  "resolved" "https://registry.npmjs.org/ws/-/ws-8.9.0.tgz"
+  "version" "8.9.0"

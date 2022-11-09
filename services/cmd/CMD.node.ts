@@ -228,7 +228,7 @@ export class CMDService extends Service {
         if(typeof childprocess === 'string' && this.processes[childprocess]) {
             childprocess = this.processes[childprocess].process;
         }
-        return this.subscribe(route, key, (res:any) => {
+        return this.subscribe(route, (res:any) => {
             //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
             if(res instanceof Promise) {
                 res.then((r) => {
@@ -242,7 +242,7 @@ export class CMDService extends Service {
 
     subscribeToProcess(route:string, processId:string, callback?:((res:any)=>void)|string, key?:string) {
         if(typeof processId === 'string' && this.processes[processId]) {
-            this.subscribe(processId, key, (res) => {
+            this.subscribe(processId, (res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[processId]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node

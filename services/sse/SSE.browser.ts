@@ -266,15 +266,15 @@ export class SSEfrontend extends Service {
         return res;
     }
 
-    subscribeSSE = (route:string,url:string,key?:string) => {
-        return this.subscribe(route,key,(res) => {
+    subscribeSSE = (route:string,url:string,key?:string,subInput?:boolean) => {
+        return this.subscribe(route,(res) => {
             this.POST(res,url,'json');
-        })
+        },key,subInput)
     }
     
-    subscribeToSSE = (route:string, url:string, callback?:string|((res:any)=>void), sessionId?:string,key?:string) => {
+    subscribeToSSE = (route:string, url:string, callback?:string|((res:any)=>void), sessionId?:string, key?:string, subInput?:boolean) => {
         if(url) {
-            this.subscribe(url,key,(res) => {
+            this.subscribe(url,(res) => {
                 let msg = JSON.parse(res);
                 if(msg?.callbackId === route) {
                     if(!callback) this.setState({[url]:msg.args}); //just set state
@@ -285,7 +285,7 @@ export class SSEfrontend extends Service {
                 }
             });
 
-            return this.eventsources[url].run('subscribeSSE',[route,url,sessionId])
+            return this.eventsources[url].run('subscribeSSE',[route,url,sessionId,key,subInput]);
         } 
     }
 

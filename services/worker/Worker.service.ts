@@ -695,7 +695,7 @@ export class WorkerService extends Service {
             else worker = this.workers[worker].worker;
         } //else we are subscribing to window
 
-        return this.subscribe(route,undefined,callback);
+        return this.subscribe(route,callback);
     }
 
     subscribeToWorker = (
@@ -708,7 +708,7 @@ export class WorkerService extends Service {
         //console.log('subscribeToWorker',route);
 
         if(typeof workerId === 'string' && this.workers[workerId]) {
-            this.subscribe(workerId, undefined, (res) => {
+            this.subscribe(workerId, (res) => {
                 //console.log('res',res);
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[workerId]:res.args}); //just set state

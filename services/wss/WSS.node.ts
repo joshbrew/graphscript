@@ -540,7 +540,7 @@ export class WSSbackend extends Service {
         return res;
     }
 
-    subscribeSocket = (route:string, socket:WebSocket|string, key?:string) => {
+    subscribeSocket = (route:string, socket:WebSocket|string, key?:string, subInput?:boolean) => {
         if(typeof socket === 'string') {
             if(this.sockets[socket]) socket = this.sockets[socket].socket;
             else {
@@ -552,7 +552,7 @@ export class WSSbackend extends Service {
         }
     
         if(typeof socket === 'object')
-            return this.subscribe(route, key, (res:any) => {
+            return this.subscribe(route, (res:any) => {
                 //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
                 if((socket as WebSocket).readyState === (socket as WebSocket).OPEN) {
                     if(res instanceof Promise) {
@@ -563,12 +563,12 @@ export class WSSbackend extends Service {
                         (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
                     }
                 } 
-            });
+            },key,subInput);
     } 
 
-    subscribeToSocket = (route:string, socketId:string, callback?:string|((res:any)=>void), key?:string) => {
+    subscribeToSocket = (route:string, socketId:string, callback?:string|((res:any)=>void), key?:string, subInput?:boolean) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
-            this.subscribe(socketId, key, (res) => {
+            this.subscribe(socketId, (res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[socketId]:res.args});
                     else if(typeof callback === 'string') { //just set state 
@@ -577,7 +577,7 @@ export class WSSbackend extends Service {
                     else callback(res.args);
                 }
             })
-            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId]});
+            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId,key,subInput]});
         }
     }
 

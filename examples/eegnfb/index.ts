@@ -400,7 +400,7 @@ const webappHtml = {
                                                                 __children:{
                                                                     coherence_main:{
                                                                         __operator:(result:any)=>{
-                                                                            console.log('result', result);
+                                                                            //console.log('result', result);
                                                                             //console.log('coherence result', result); //this algorithm only returns when it detects a beat
                                                                             if(!result?.frequencies) return;
                                                                             if(result?.frequencies) 

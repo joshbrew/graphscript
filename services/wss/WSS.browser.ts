@@ -294,13 +294,13 @@ export class WSSfrontend extends Service {
         return res;
     }
 
-    subscribeSocket = (route:string, socket:WebSocket|string, key?:string) => {
+    subscribeSocket = (route:string, socket:WebSocket|string, key?:string, subInput?:boolean) => {
         if(typeof socket === 'string' && this.sockets[socket]) {
             socket = this.sockets[socket].socket;
         }
 
         if(typeof socket === 'object')
-            return this.subscribe(route, key, (res:any) => {
+            return this.subscribe(route, (res:any) => {
                 //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
                 if((socket as WebSocket).readyState === (socket as WebSocket).OPEN) {
                     if(res instanceof Promise) {
@@ -311,12 +311,12 @@ export class WSSfrontend extends Service {
                         (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
                     }
                 }
-            });
+            },key,subInput);
     } 
 
-    subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string, key?:string) => {
+    subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string, key?:string, subInput?:boolean) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
-            this.subscribe(socketId, key, (res) => {
+            this.subscribe(socketId, (res) => {
                 let msg = JSON.parse(res);
                 if(msg?.callbackId === route) {
                     if(!callback) this.setState({[socketId]:msg.args}); //just set state
@@ -326,7 +326,7 @@ export class WSSfrontend extends Service {
                     else callback(msg.args);
                 }
             });
-            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId]});
+            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId,key,subInput]});
         }
     }
 

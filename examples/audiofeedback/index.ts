@@ -55,13 +55,13 @@ const GameState = {
 const webappHtml = {
     'app':{
         tagName:'div',
-        __node:{children:{
+        __children:{
             'devices':{
                 tagName:'div',
-                __node:{children:{
+                __children:{
                     'devicediv':{
                         tagName:'div',
-                        children:{
+                        __children:{
                             'connectheader':{
                                 tagName:'h4',
                                 innerHTML:'Connect to an HEG device'
@@ -187,7 +187,7 @@ const webappHtml = {
                                                         callback:'runSubprocess', //the init function will set the _id as an additional argument for runSubprocess which selects existing contexts by _id 
                                                         __node:{children:{
                                                             hr_main:{
-                                                                operator:(
+                                                                __operator:(
                                                                     heartbeat:{
                                                                         bpm: number,
                                                                         change: number, //i.e. HRV
@@ -213,7 +213,7 @@ const webappHtml = {
                                                         callback:'runSubprocess',
                                                         __node:{children:{
                                                             breath_main:{
-                                                                operator:(
+                                                                __operator:(
                                                                     breath:{
                                                                         bpm: number,
                                                                         change: number,
@@ -301,14 +301,14 @@ const webappHtml = {
                             } as ElementProps
                         }
                     }
-                }}
+                }
             },
             'output':{
                 tagName:'div',
-                __node:{children:{
+                __children:{
                     'playsounds':{
                         tagName:'div',
-                        __node:{children:{
+                        __children:{
                             'soundheader':{
                                 tagName:'h4',
                                 innerHTML:'Play a sound to modulate with the HEG'
@@ -356,7 +356,7 @@ const webappHtml = {
                                     innerText:'Stop'
                                 }
                             } as ElementProps
-                        }}
+                        }
                     } as ElementProps,
                     'stats':{
                         tagName:'table',
@@ -473,9 +473,9 @@ const webappHtml = {
                             visualizeDirectory('data', self);
                         }
                     } as ElementProps,
-                }}
+                }
             } as ElementProps
-        }}
+        }
     } as ElementProps
 } 
 

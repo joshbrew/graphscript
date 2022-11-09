@@ -154,7 +154,7 @@ export class WebRTCfrontend extends Service {
                         }
                     }
 
-                    sub = this.subscribe(options._id,undefined,ondata);
+                    sub = this.subscribe(options._id,ondata);
 
                     //(options.channels[firstChannel] as RTCDataChannel).addEventListener('message',onmessage)
                     this.transmit(req, options._id,options.channels[firstChannel] as RTCDataChannel);
@@ -180,7 +180,7 @@ export class WebRTCfrontend extends Service {
                         }
                     }
 
-                    sub = this.subscribe(options._id,undefined,ondata);
+                    sub = this.subscribe(options._id,ondata);
                     this.transmit(req, options._id,options.channels[firstChannel] as RTCDataChannel);
                 });
             }
@@ -500,7 +500,7 @@ export class WebRTCfrontend extends Service {
         if(typeof channel === 'string' && this.rtc[rtcId]) {
             channel = this.rtc[rtcId].channels[channel] as RTCDataChannel;
         }
-        return this.subscribe(route, key, (res:any) => {
+        return this.subscribe(route, (res:any) => {
             //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
             if(res instanceof Promise) {
                 res.then((r) => {
@@ -509,7 +509,7 @@ export class WebRTCfrontend extends Service {
             } else {
                 (channel as RTCDataChannel).send(JSON.stringify({args:res, callbackId:route}));
             }
-        });
+        },  key);
     } 
 
     subscribeToRTC = (route:string, rtcId:string, channelId:string, callback?:string|((res:any)=>void),key?:string) => {
@@ -518,7 +518,7 @@ export class WebRTCfrontend extends Service {
             let channel = c.channels[channelId];
 
             if(channel) {
-                this.subscribe(rtcId,  key, (res) => {
+                this.subscribe(rtcId, (res) => {
                     if(res?.callbackId === route) {
                         if(!callback) this.setState({[rtcId]:res.args}); //just set state
                         else if(typeof callback === 'string') { //run a local node
@@ -526,7 +526,7 @@ export class WebRTCfrontend extends Service {
                         }
                         else callback(res.args);
                     }
-                })
+                }, key);
                 return c.request({route:'subscribeRTC', args:[route,channelId]});
             }
         }

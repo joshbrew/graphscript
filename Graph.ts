@@ -498,12 +498,12 @@ export class Graph {
                         n = this.get(tag);
                         if(n) {
                             //console.log('found',n,k,key);
-                            sub = this.subscribe(n, k.substring(k.lastIndexOf('.')+1), listeners[key][k].callback, listeners[key][k].inputState );
+                            sub = this.subscribe(n,  listeners[key][k].callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState );
                             if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState:listeners[key][k]?.inputState };
                             node.__listeners[k].sub = sub;
                         }
                     } else {
-                        sub = this.subscribe(n, undefined, listeners[key][k].callback, listeners[key][k].inputState);
+                        sub = this.subscribe(n, listeners[key][k].callback, undefined, listeners[key][k].inputState);
                         if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState };
                         node.__listeners[k].sub = sub;
                     }
@@ -524,9 +524,9 @@ export class Graph {
                 if(!n) {
                     n = this.get(key.substring(0,key.lastIndexOf('.')));
                     //console.log(key.substring(0,key.lastIndexOf('.')),key,n,node.__listeners[key]);
-                    if(n) this.unsubscribe(n,key.substring(key.lastIndexOf('.')+1),node.__listeners[key].sub, node.__listeners[key].inputState);
+                    if(n) this.unsubscribe(n,node.__listeners[key].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key].inputState);
                 } else {
-                    this.unsubscribe(n,undefined,node.__listeners[key].sub, node.__listeners[key].inputState);
+                    this.unsubscribe(n,node.__listeners[key].sub, undefined, node.__listeners[key].inputState);
                 }
 
                 //console.log('unsubscribed', key)
@@ -558,7 +558,7 @@ export class Graph {
     }
 
     subscribe = (
-        node:GraphNode|string, key:string|undefined, callback:string|GraphNode|((res:any)=>void), subInput?:boolean
+        node:GraphNode|string, callback:string|GraphNode|((res:any)=>void), key?:string|undefined, subInput?:boolean
     ) => {
 
         let nd = node;
@@ -593,7 +593,7 @@ export class Graph {
         return sub;
     }
 
-    unsubscribe = ( node:GraphNode|string, key?:string, sub?:number, subInput?:boolean) => {
+    unsubscribe = ( node:GraphNode|string, sub?:number, key?:string, subInput?:boolean) => {
         if(node instanceof GraphNode) {
             //console.log(node,node.__unsubscribe);
             return node.__unsubscribe(sub,key,subInput);

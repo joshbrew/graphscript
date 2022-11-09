@@ -584,10 +584,10 @@ export class Router extends Service {
             }
             settings.run = settings.post as any;
             settings.subscribe = async (route:string|GraphNode, callback:((res:any)=>void)) => {
-                return graph.subscribe(route,undefined,callback) as number;
+                return graph.subscribe(route,callback) as number;
             };
             settings.unsubscribe = async (route:any, sub:number) => {
-                return graph.unsubscribe(route,undefined,sub) as boolean;
+                return graph.unsubscribe(route,sub) as boolean;
             }
             settings.terminate = (n) => {
                 graph.remove(n);
@@ -842,7 +842,6 @@ export class Router extends Service {
         relay:string|ConnectionInfo, //the router we are trying to relay messages through
         endpoint:string, //the endpoint on the router that we want to subscribe to through the router
         callback:string|((res:any)=>void),
-        key?:string,
         ...args:any[]
     ) => {
         if(typeof relay === 'string') {
@@ -852,7 +851,7 @@ export class Router extends Service {
         if(typeof relay === 'object')
             return new Promise((res,rej) => {
                 (relay as any).run('routeConnections',[route,endpoint,(relay as any)._id,...args]).then((sub) => {
-                    this.subscribe(endpoint, key, (res) => {
+                    this.subscribe(endpoint, (res) => {
                         if(res?.callbackId === route) {
                             if(!callback) this.setState({[endpoint]:res.args});
                             else if(typeof callback === 'string') { //just set state 

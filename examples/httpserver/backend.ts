@@ -19,13 +19,11 @@ const router = new Router({
         'http':HTTPbackend,
         'wss':WSSbackend,
         'sse':SSEbackend
-    },
-    syncServices:true,
-    loadDefaultRoutes:true
+    }
 });
 
 let server = router.run(
-    'http.setupServer',
+    'setupServer',
     {
         protocol:'http',
         host:'localhost',
@@ -66,7 +64,7 @@ if(server instanceof Promise) server.then((served:ServerInfo) => { //this functi
     console.log(router.__node.nodes.keys());
 
     const socketserver = router.run(
-        'wss.setupWSS',
+        'setupWSS',
         {
             server:served.server,
             host:served.host,
@@ -79,7 +77,7 @@ if(server instanceof Promise) server.then((served:ServerInfo) => { //this functi
     );
     
     const hotreload = router.run(
-        'wss.setupWSS',
+        'setupWSS',
         {
             server:served.server,
             host:served.host,
@@ -92,7 +90,7 @@ if(server instanceof Promise) server.then((served:ServerInfo) => { //this functi
     );
 
     const sseinfo = router.run(
-        'sse.setupSSE',
+        'setupSSE',
         {
             server:served.server,
             path:'sse',
