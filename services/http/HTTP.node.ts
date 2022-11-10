@@ -112,7 +112,7 @@ export class HTTPbackend extends Service {
         requestListener?:http.RequestListener,
         onStarted?:()=>void
     )=>{
-        console.log(options);
+        //console.log(options);
         if(options.pages) {
             for(const key in options.pages) {
                 if (typeof options.pages[key] === 'string') {
@@ -174,19 +174,19 @@ export class HTTPbackend extends Service {
 
             let url = (request as any).url.slice(1);
             if(!url) url = '/';
-            console.log(options)
+            //console.log(options)
             if(options.pages) {
                 if(typeof options.pages[url] === 'object') {
                     if((options.pages[url] as any).onrequest) {
                         if(typeof (options.pages[url] as any).onrequest === 'string') {
-                            (options.pages[url] as any).onrequest = this.__node.nodes.get((options.pages[url] as any).onrequest);
+                            (options.pages[url] as any).onrequest = this.__node.nodes.get((url).onrequest);
                         }
                         if(typeof (options.pages[url] as any).onrequest === 'object') {
                             if((options.pages[url] as any).onrequest.__operator) {
                                 ((options.pages[url] as any).onrequest as GraphNode).__operator(options.pages[url], request, response);
                             } 
                         } else if(typeof (options.pages[url] as any).onrequest === 'function') {
-                            (options.pages[url] as any).onrequest(this,options.pages[url], request, response);
+                            (options.pages[url] as any).onrequest(this, this.__node.nodes.get(options.port + '/' + url), request, response);
                         }
                     }
                     if((options.pages[url] as any).redirect) {
@@ -461,6 +461,7 @@ export class HTTPbackend extends Service {
             else if (typeof (served as any).pages._all.inject === 'string' || typeof (served as any).pages._all.inject === 'number') 
                 templateString += (served as any).pages._all.inject;
         }  
+        
         return templateString;
     }
 
@@ -677,7 +678,7 @@ export class HTTPbackend extends Service {
                             res = this.handleGraphNodeCall(body.node, body.args);
                         }
                         else res = this.handleServiceMessage({route, args:args, method:method});
-                        
+
                         if(res instanceof Promise) {
                             res.then((r) => {
                                 this.withResult(response,r,message);
@@ -875,9 +876,7 @@ export class HTTPbackend extends Service {
 
     buildPage = (pageStructure:{[key:string]:{}|null|any} | string[] | string | ((...args:any)=>any), baseTemplate:string) => { //construct a page from available components, child component templates will be inserted before the last '<' symbol or at end of the previous string depending
         let result = ``; if(baseTemplate) result += baseTemplate;
-
         let appendTemplate = (obj:{[key:string]:{}|null|any}|string[],r:string|any, res:string) => {
-            //console.log(obj,r,res)
             if(typeof obj[r] === 'object') {
                 for(const key in obj) {
                     appendTemplate(obj,key,res); //recursive append
@@ -893,8 +892,10 @@ export class HTTPbackend extends Service {
                     } res += toAdd; 
                 }
                 
-            } else if (typeof this.__node.tree[r] === 'function') {
-                let routeresult = (this.__node.tree[r] as Function)(obj[r]); //template function, pass props
+            } else if (typeof this.__node.tree[r] === 'function' || this.__node.tree[r]?.__operator) {
+                let routeresult;
+                if(this.__node.tree[r]?.__operator) routeresult = this.__node.tree[r].__operator(obj[r]); 
+                else routeresult = (this.__node.tree[r] as Function)(obj[r]); //template function, pass props
                 if(typeof routeresult === 'string') {   
                     let lastDiv = res.lastIndexOf('<');
                     if(lastDiv > 0) {
@@ -904,7 +905,6 @@ export class HTTPbackend extends Service {
                     else res += routeresult;
                     //console.log(lastDiv, res, routeresult)
                 }
-                //console.log(routeresult)
             } else if (typeof this.__node.tree[r] === 'string') res += this.__node.tree[r];
             return res;
         }

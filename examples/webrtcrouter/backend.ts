@@ -106,9 +106,7 @@ const router = new Router({
             }
         }
     },
-    loadDefaultRoutes:true,
     order:['sse','wss'],//prefer certain connection sources in a certain order, defaults to load order (if appropriate callbacks are available for subscription)
-    syncServices:true
 }); //on frontend we want to prefer wss first as sse is POST-reliant from browser
 
 //router.services.sessions.users = router.users;
@@ -132,7 +130,7 @@ let session = (router.services.sessions as SessionsService).openSharedSession(
 
 router.run('sessions.sessionLoop');
 
-router.subscribe('addUser', undefined, (user:User) => {
+router.subscribe('addUser', (user:User) => {
     console.log('new user!', user._id)
     if(typeof user === 'object') {
         let joined = (router.services.sessions as SessionsService).joinSession('webrtcrooms', user._id);

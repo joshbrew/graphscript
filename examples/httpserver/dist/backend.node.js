@@ -4658,6 +4658,8 @@ var substitute__operator = (node, parent, graph) => {
   } else if (!node.__operator && typeof node.get == "function") {
     node.__setOperator(node.get);
   }
+  if (!node.get && node.__operator)
+    node.get = node.__operator;
   if (node.aliases) {
     node.aliases.forEach((a) => {
       graph.__node.nodes.set(a, node);
@@ -5161,7 +5163,6 @@ var HTTPbackend = class extends Service {
       port: 8080,
       startpage: "index.html"
     }, requestListener, onStarted) => {
-      console.log(options);
       if (options.pages) {
         for (const key in options.pages) {
           if (typeof options.pages[key] === "string") {
@@ -5214,19 +5215,18 @@ var HTTPbackend = class extends Service {
           let url = request.url.slice(1);
           if (!url)
             url = "/";
-          console.log(options);
           if (options.pages) {
             if (typeof options.pages[url] === "object") {
               if (options.pages[url].onrequest) {
                 if (typeof options.pages[url].onrequest === "string") {
-                  options.pages[url].onrequest = this.__node.nodes.get(options.pages[url].onrequest);
+                  options.pages[url].onrequest = this.__node.nodes.get(url.onrequest);
                 }
                 if (typeof options.pages[url].onrequest === "object") {
                   if (options.pages[url].onrequest.__operator) {
                     options.pages[url].onrequest.__operator(options.pages[url], request, response);
                   }
                 } else if (typeof options.pages[url].onrequest === "function") {
-                  options.pages[url].onrequest(this, options.pages[url], request, response);
+                  options.pages[url].onrequest(this, this.__node.nodes.get(options.port + "/" + url), request, response);
                 }
               }
               if (options.pages[url].redirect) {
@@ -5771,8 +5771,12 @@ var HTTPbackend = class extends Service {
             }
             res += toAdd;
           }
-        } else if (typeof this.__node.tree[r] === "function") {
-          let routeresult = this.__node.tree[r](obj[r]);
+        } else if (typeof this.__node.tree[r] === "function" || this.__node.tree[r]?.__operator) {
+          let routeresult;
+          if (this.__node.tree[r]?.__operator)
+            routeresult = this.__node.tree[r].__operator(obj[r]);
+          else
+            routeresult = this.__node.tree[r](obj[r]);
           if (typeof routeresult === "string") {
             let lastDiv = res.lastIndexOf("<");
             if (lastDiv > 0) {
@@ -7064,11 +7068,11 @@ var Router = class extends Service {
           }
         };
         settings.run = settings.post;
-        settings.subscribe = async (route, callback) => {
-          return node.__subscribe(callback, route);
+        settings.subscribe = async (callback) => {
+          return node.__subscribe(callback);
         };
-        settings.unsubscribe = async (route, sub) => {
-          return node.__unsubscribe(sub, void 0, route);
+        settings.unsubscribe = async (sub) => {
+          return node.__unsubscribe(sub);
         };
         settings.terminate = () => {
           node.__node.graph.remove(node);
@@ -7107,8 +7111,8 @@ var Router = class extends Service {
           }
         };
         settings.post = async (route, args, method) => {
-          if (route && graph.GET(route)) {
-            let n = graph.GET(route);
+          if (route && graph.get(route)) {
+            let n = graph.get(route);
             if (method) {
               if (Array.isArray(args)) {
                 return n[method]?.(...args);
@@ -7258,7 +7262,7 @@ var Router = class extends Service {
         }
       }
     };
-    this.addService = (service, connections, source, order) => {
+    this.routeService = (service, connections, source, order) => {
       this.services[service.name] = service;
       if (connections) {
         if (typeof connections === "string")
@@ -7446,30 +7450,21 @@ var Router = class extends Service {
           if (opt instanceof Service) {
             opt.name = key;
             opt.__node.tag = key;
-            this.addService(opt, opt.connections);
+            this.routeService(opt, opt.connections);
           } else if (typeof opt === "function") {
             let service = new opt();
             service.name = key;
             service.__node.tag = key;
             if (service instanceof Service)
-              this.addService(
+              this.routeService(
                 service,
                 service.connections
               );
           } else {
-            if (typeof opt?.service === "function") {
-              let service = new opt.service({ name: key });
-              service.name = key;
-              service.__node.tag = key;
-              if (service)
-                this.addService(
-                  service
-                );
-              opt.service = service;
-            } else if (opt?.service instanceof Service) {
+            if (opt?.service instanceof Service) {
               opt.service.name = key;
               opt.service.tag = key;
-              this.addService(
+              this.routeService(
                 opt.service
               );
             }
@@ -7561,7 +7556,6 @@ var server = router.run(
 );
 if (server instanceof Promise)
   server.then((served) => {
-    console.log(router.__node.nodes.keys());
     const socketserver = router.run(
       "setupWSS",
       {

@@ -13,21 +13,21 @@ const router = new Router({
             tree:{
                 'main':{
                     tagName:'div',
-                    __node:{children:{
+                    __children:{
                         'header':{
                             tagName:'h4',
                             innerHTML:`Hello World!`
                         },
                         'webrtc':{
                             tagName:'div',
-                            __node:{children:{
+                            __children:{
                                 'sessioninfo':{
                                     tagName:'div'
                                 },
                                 'myrooms':{
                                     tagName:'div',
                                     style:{borderStyle:'1px solid black'},
-                                    __node:{children:{
+                                    __children:{
                                         'open':{
                                             tagName:'button',
                                             innerText:'Create Peer Connection'
@@ -35,15 +35,15 @@ const router = new Router({
                                         'myrooms':{
                                             tagName:'div'
                                         }
-                                    }}
+                                    }
                                 },
                                 'otherrooms':{
                                     tagName:'div'
                                 }
-                            }}
+                            }
                         }
                     }
-                }}
+                }
             }
         }),
         'http':HTTPfrontend,
@@ -80,7 +80,7 @@ const router = new Router({
                             user.rooms = {};
                             user.localrtc = {};
 
-                            router.subscribe('joinSession', undefined, (res) => {
+                            router.subscribe('joinSession', (res) => {
                                 console.log('joinSession fired', res);
                                 (document.getElementById('sessioninfo') as HTMLElement).innerHTML = `Joined: ${JSON.stringify(res)}`;
                                 if(res?.settings.name === 'webrtcrooms'){

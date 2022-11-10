@@ -115,29 +115,20 @@ export class Router extends Service {
                     let opt = (options.services[key] as any);
                     if(opt instanceof Service) {
                         opt.name = key; opt.__node.tag = key;
-                        this.addService(opt, (opt as any).connections);
+                        this.routeService(opt, (opt as any).connections);
                     } else if (typeof opt === 'function') {
                         let service = new opt() as Service; //instantiate a class prototype
                         (service as any).name = key; service.__node.tag = key;
                         if(service instanceof Service) 
-                            this.addService(
+                            this.routeService(
                                 service, 
                                 (service as any).connections
                             );
                     }
                     else {
-                        if (typeof opt?.service === 'function') {
-                            let service = new opt.service({name:key}) as Service; //instantiate a class prototype
-                            (service as any).name = key; service.__node.tag = key;
-                            if(service) 
-                                this.addService(
-                                    service
-                                );
-                                opt.service = service;
-                        }
-                        else if(opt?.service instanceof Service) {
+                        if(opt?.service instanceof Service) {
                             opt.service.name = key; opt.service.tag = key;
-                            this.addService(
+                            this.routeService(
                                 opt.service
                             );
                         }
@@ -533,11 +524,11 @@ export class Router extends Service {
                 }
             }
             settings.run = settings.post as any;
-            settings.subscribe = async (route:string|undefined, callback:((res:any)=>void)) => {
-                return node.__subscribe(callback,route) as number;
+            settings.subscribe = async (callback:((res:any)=>void)) => {
+                return node.__subscribe(callback) as number;
             };
-            settings.unsubscribe = async (route:any, sub:number) => {
-                return node.__unsubscribe(sub,undefined,route) as boolean;
+            settings.unsubscribe = async (sub:number) => {
+                return node.__unsubscribe(sub) as boolean;
             }
             settings.terminate = () => {
                 node.__node.graph.remove(node);
@@ -721,7 +712,7 @@ export class Router extends Service {
         }
     }
 
-    addService = (
+    routeService = (
         service:Service,
         connections?:any, //the object on the service we want to associate connections with
         source?:string,

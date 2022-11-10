@@ -22,6 +22,7 @@ const router = new Router({
     }
 });
 
+
 let server = router.run(
     'setupServer',
     {
@@ -61,7 +62,7 @@ let server = router.run(
 
 if(server instanceof Promise) server.then((served:ServerInfo) => { //this function returns a promise so we can use .then, only explicitly async or promise-returning functions can be awaited or .then'd for good performance!
     
-    console.log(router.__node.nodes.keys());
+    //console.log(router.__node.nodes.keys());
 
     const socketserver = router.run(
         'setupWSS',
