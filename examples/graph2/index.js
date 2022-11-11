@@ -56,6 +56,8 @@ graph.run('nodeB.nodeC', 4); //should trigger nodeA listener
 
 graph.get('nodeA').jump(); //should trigger nodeC listener
 
+console.log(JSON.stringify(graph.__node.state.triggers));
+
 console.log('graph1',graph);
 
 let tree2 = {
