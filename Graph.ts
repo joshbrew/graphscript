@@ -52,7 +52,6 @@ export class GraphNode {
         // graph: undefined as any,
         // children: undefined as any,
         // localState: undefined as any,
-        // events: undefined as any,
         // oncreate:undefined as any, //function or array of functions
         // ondelete:undefined as any, //function or array of functions
         // listeners:undefined as any, //e.g. { 'nodeA.x':(newX)=>{console.log('nodeA.x changed:',x)}  }
@@ -158,8 +157,8 @@ export class GraphNode {
                 else callback = this.__node.graph.nodes.get(callback);
             }
             if(typeof callback === 'function') {
-                return this.__node.events.subscribeTrigger(subInput ? key+'input' : key, callback);
-            } else if((callback as GraphNode)?.__node) return this.__node.events.subscribeTrigger(subInput ? key+'input' : key, (state:any)=>{ if((callback as any).__operator) (callback as any).__operator(state); })
+                return this.__node.state.subscribeTrigger(subInput ? this.__node.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, callback);
+            } else if((callback as GraphNode)?.__node) return this.__node.state.subscribeTrigger(subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, (state:any)=>{ if((callback as any).__operator) (callback as any).__operator(state); })
             
         }
         else {
@@ -187,14 +186,14 @@ export class GraphNode {
     
     //unsub the callback
     __unsubscribe = (sub?:number, key?:string, subInput?:boolean) => {
-        if(key && this.__node.events) return this.__node.events.unsubscribeTrigger(subInput ? key+'input' : key, sub);
+        if(key) return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, sub);
         else return this.__node.state.unsubscribeTrigger(subInput ? this.__node.tag+'input' : this.__node.tag, sub);
     }
 
     __setOperator = (fn:(...args:any[])=>any) => {
         fn = fn.bind(this);
         this.__operator = (...args) => {
-            if(this.__node.inputState) this.__node.events.setValue(this.__node.tag+'input',args);
+            if(this.__node.inputState) this.__node.state.setValue(this.__node.tag+'input',args);
             let result = fn(...args);
             if(typeof result?.then === 'function') {
                 result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.tag,res ) }).catch(console.error);
@@ -214,20 +213,17 @@ __addLocalState(props?:{[key:string]:any}) {
     if(!this.__node.localState) {
         this.__node.localState = {};
     }
-    if(!this.__node.events) {
-        this.__node.events = new EventHandler(this.__node.localState);
-    }
     let localState = this.__node.localState;
     for (let k in props) {
         if(typeof props[k] === 'function') {
             if(!k.startsWith('_')) {
                 let fn = props[k].bind(this) as Function;
                 props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
-                    if(this.__node.inputState) this.__node.events.setValue(k+'input',args);
+                    if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'.'+k+'input',args);
                     let result = fn(...args);
                     if(typeof result?.then === 'function') {
-                        result.then((res)=>{ this.__node.events.setValue( k, res ) }).catch(console.error);
-                    } else this.__node.events.setValue(k,result);
+                        result.then((res)=>{ this.__node.state.setValue( this.__node.unique+'.'+k, res ) }).catch(console.error);
+                    } else this.__node.state.setValue(this.__node.unique+'.'+k,result);
                     return result;
                 }
                 this[k] = props[k]; 
@@ -244,7 +240,7 @@ __addLocalState(props?:{[key:string]:any}) {
                     if(this.__node.state.triggers[this.__node.unique]) {
                         this.__node.state.setValue(this.__node.unique,this); //trigger subscriptions, if any
                     }
-                    this.__node.events.setValue(k,v); //this will update localState and trigger local key subscriptions
+                    this.__node.state.setValue(this.__node.unique+'.'+k,v); //this will update localState and trigger local key subscriptions
                 },
                 enumerable: true,
                 configurable: true
