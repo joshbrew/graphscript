@@ -165,7 +165,7 @@ export class GraphNode {
             } else if((callback as GraphNode)?.__node) {
                 sub = this.__node.state.subscribeTrigger(subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, (state:any)=>{ if((callback as any).__operator) (callback as any).__operator(state); })
                   
-                this.__node.state.triggers[(subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key)].source = this.__node.unique;
+                this.__node.state.triggers[(subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key)].source = this.__node.tag;
                 this.__node.state.triggers[(subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key)].target = (callback as GraphNode).__node.unique;
             }
         }
@@ -191,12 +191,12 @@ export class GraphNode {
         let sub;
         if(typeof callback === 'function') {
             sub = this.__node.state.subscribeTrigger(this.__node.unique, callback);
-            this.__node.state.triggers[this.__node.unique].source = this.__node.unique;
+            this.__node.state.triggers[this.__node.unique].source = this.__node.tag;
             this.__node.state.triggers[this.__node.unique].target = callback.name;
         } else if((callback as GraphNode)?.__node) {
             sub = this.__node.state.subscribeTrigger(this.__node.unique, (state:any)=>{ if((callback as any)?.__operator) (callback as any).__operator(state); });
             
-            this.__node.state.triggers[this.__node.unique].source = this.__node.unique;
+            this.__node.state.triggers[this.__node.unique].source = this.__node.tag;
             this.__node.state.triggers[this.__node.unique].target = (callback as GraphNode).__node.unique;
         }
         return sub;
@@ -514,12 +514,12 @@ export class Graph {
                         if(n) {
                             //console.log('found',n,k,key);
                             sub = this.subscribe(n,  listeners[key][k].callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState );
-                            if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState:listeners[key][k]?.inputState };
+                            if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState:listeners[key][k]?.inputState, source: k.substring(k.lastIndexOf('.')+1) };
                             node.__listeners[k].sub = sub;
                         }
                     } else {
                         sub = this.subscribe(n, listeners[key][k].callback, undefined, listeners[key][k].inputState);
-                        if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState };
+                        if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState, source: k.substring(k.lastIndexOf('.')+1) };
                         node.__listeners[k].sub = sub;
                     }
                 }
@@ -596,7 +596,7 @@ export class Graph {
             if(typeof callback === 'string') callback = this.get(callback);
             if(callback instanceof GraphNode && callback.__operator) {
                 sub = this.__node.state.subscribeTrigger(this.get(node).__node.unique, callback.__operator); 
-                this.__node.state.triggers[this.get(node).__node.unique].source = this.get(node).__node.unique;
+                this.__node.state.triggers[this.get(node).__node.unique].source = node;
                 this.__node.state.triggers[this.get(node).__node.unique].target = callback.__node.unique;
                 let ondelete = () => {
                     this.__node.state.unsubscribeTrigger(this.get(node).__node.unique,sub)
@@ -607,7 +607,7 @@ export class Graph {
             }
             else if (typeof callback === 'function') {
                 sub = this.__node.state.subscribeTrigger(this.get(node).__node.unique as string, callback); 
-                this.__node.state.triggers[this.get(node).__node.unique].source = this.get(node).__node.unique;
+                this.__node.state.triggers[this.get(node).__node.unique].source = node;
                 this.__node.state.triggers[this.get(node).__node.unique].target = callback.name;
             }
         }
