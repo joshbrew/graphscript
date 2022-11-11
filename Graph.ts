@@ -105,6 +105,7 @@ export class GraphNode {
                 }
                 if(typeof properties.__operator === 'function') 
                     properties.__operator = this.__setOperator(properties.__operator);
+                
             }
 
             if(!properties.__node.tag) {
@@ -142,6 +143,19 @@ export class GraphNode {
                 this.__addDisconnected(ondelete);
                 
             }
+            else if (typeof properties.default === 'function' && !properties.__operator) { //make it so the node is subscribable
+                let fn = properties.default.bind(this);
+                this.default = (...args) => {
+                    if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'input',args);
+                    let result = fn(...args);
+                    if(typeof result?.then === 'function') {
+                        result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.unique,res ) }).catch(console.error);
+                    } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
+                    return result;
+                } 
+                properties.default = this.default;
+            }
+            
             if(properties instanceof Graph) this.__node.source = properties; //keep tabs on source graphs passed to make nodes
 
             
