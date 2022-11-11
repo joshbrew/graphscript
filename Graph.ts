@@ -167,8 +167,8 @@ export class GraphNode {
                 else callback = this.__node.graph.nodes.get(callback);
             }
             if(typeof callback === 'function') {
-                return this.__node.state.subscribeTrigger(subInput ? this.__node.tag+'input' : this.__node.tag, callback);
-            } else if((callback as GraphNode)?.__node) return this.__node.state.subscribeTrigger(subInput ? this.__node.tag+'input' : this.__node.tag, (res:any)=>{ if((callback as any).__operator) (callback as any).__operator(res); })
+                return this.__node.state.subscribeTrigger(subInput ? this.__node.unique+'input' : this.__node.unique, callback);
+            } else if((callback as GraphNode)?.__node) return this.__node.state.subscribeTrigger(subInput ? this.__node.unique+'input' : this.__node.unique, (res:any)=>{ if((callback as any).__operator) (callback as any).__operator(res); })
         
         }
     }
@@ -187,17 +187,17 @@ export class GraphNode {
     //unsub the callback
     __unsubscribe = (sub?:number, key?:string, subInput?:boolean) => {
         if(key) return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, sub);
-        else return this.__node.state.unsubscribeTrigger(subInput ? this.__node.tag+'input' : this.__node.tag, sub);
+        else return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique+'input' : this.__node.unique, sub);
     }
 
     __setOperator = (fn:(...args:any[])=>any) => {
         fn = fn.bind(this);
         this.__operator = (...args) => {
-            if(this.__node.inputState) this.__node.state.setValue(this.__node.tag+'input',args);
+            if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'input',args);
             let result = fn(...args);
             if(typeof result?.then === 'function') {
-                result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.tag,res ) }).catch(console.error);
-            } else if(result !== undefined) this.__node.state.setValue(this.__node.tag,result);
+                result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.unique,res ) }).catch(console.error);
+            } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
             return result;
         } 
         this.default = this.__operator; //for escode related stuff
@@ -576,15 +576,15 @@ export class Graph {
         } else if (typeof node === 'string') {
             if(typeof callback === 'string') callback = this.get(callback);
             if(callback instanceof GraphNode && callback.__operator) {
-                sub = this.__node.state.subscribeTrigger(node as string, callback.__operator); 
+                sub = this.__node.state.subscribeTrigger(this.get(node).__node.unique as string, callback.__operator); 
                 let ondelete = () => {
-                    this.__node.state.unsubscribeTrigger(node as string,sub)
+                    this.__node.state.unsubscribeTrigger(this.get(node).__node.unique as string,sub)
                     //console.log('unsubscribed', key)
                 }
     
                 callback.__addDisconnected(ondelete);
             }
-            else if (typeof callback === 'function') sub = this.__node.state.subscribeTrigger(node as string, callback); 
+            else if (typeof callback === 'function') sub = this.__node.state.subscribeTrigger(this.get(node).__node.unique as string, callback); 
         }
         return sub;
     }
