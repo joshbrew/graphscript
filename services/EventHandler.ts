@@ -58,6 +58,11 @@ export class EventHandler {
         }
         sub = this.subscribeTrigger(key,changed);
     }
+    getTrigger = (key,sub) => {
+        for(const s in this.triggers[key]) {
+            if(this.triggers[key][s].idx === sub) return this.triggers[key][s];
+        }
+    }
 
 }
 
