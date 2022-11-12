@@ -550,12 +550,12 @@ export class Graph {
                         if(n) {
                             //console.log('found',n,k,key);
                             sub = this.subscribe(n,  listeners[key][k].callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState , key, k);
-                            if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState:listeners[key][k]?.inputState, source: k.substring(k.lastIndexOf('.')+1) };
+                            if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState:listeners[key][k]?.inputState };
                             node.__listeners[k].sub = sub;
                         }
                     } else {
                         sub = this.subscribe(n, listeners[key][k].callback, undefined, listeners[key][k].inputState, key, k);
-                        if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState, source: k.substring(k.lastIndexOf('.')+1) };
+                        if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState };
                         node.__listeners[k].sub = sub;
                     }
                 }
