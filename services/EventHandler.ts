@@ -44,7 +44,10 @@ export class EventHandler {
                         return true;
                     }
                 });
+
                 if(obj) triggers.splice(idx,1);
+                
+                if(this.onRemoved) this.onRemoved(obj);
                 return true;
             }
         }
@@ -63,7 +66,7 @@ export class EventHandler {
             if(this.triggers[key][s].idx === sub) return this.triggers[key][s];
         }
     }
-
+    onRemoved;
 }
 
 

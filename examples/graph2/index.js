@@ -41,20 +41,21 @@ let tree = {
 let graph = new Graph({
     tree,
     loaders:{
-        'escompose': (node,parent,graph) =>{
-            console.log('escompose loader', node, parent, graph);
-        },
+        // 'escompose': (node,parent,graph) =>{
+        //     console.log('escompose loader', node, parent, graph);
+        // },
         ...loaders
     }
 });
 
 nodeAInstance.x = 1;
 
-graph.get('nodeB').x += 1; //should trigger nodeA listener
+graph.get('nodeB').x += 1; //should trigger nodeA listener jump()
 
 graph.run('nodeB.nodeC', 4); //should trigger nodeA listener
 
 graph.get('nodeA').jump(); //should trigger nodeC listener
+graph.run('nodeA.jump'); //same
 
 console.log(JSON.stringify(graph.__node.state.triggers));
 
@@ -69,7 +70,9 @@ let graph2 = new Graph({tree:tree2});
 let popped = graph.remove('nodeB');
 
 console.log(JSON.stringify(graph.__node.state.triggers));
+
 console.log(popped.__node.tag, 'popped')
+
 graph.get('nodeA').jump(); //should trigger nodeC listener
 
 graph2.add(popped); //reparent nodeB to the parent graph
