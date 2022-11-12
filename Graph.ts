@@ -170,7 +170,8 @@ export class GraphNode {
             }
              
             if(typeof callback === 'string') {
-                if(this.__node.graph) callback = this.__node.graph.get(callback);
+                if(typeof this[callback] === 'function') callback = this[callback];
+                else if(this.__node.graph) callback = this.__node.graph.get(callback);
                 else callback = this.__node.graph.nodes.get(callback);
             }
             let sub;
@@ -609,7 +610,6 @@ export class Graph {
 
             nd.__addDisconnected(ondelete);
         } else if (typeof node === 'string') {
-            if(typeof callback === 'string') callback = this.get(callback);
             if(callback instanceof GraphNode && callback.__operator) {
                 sub = (this.get(node) as GraphNode).__subscribe(callback.__operator,undefined,undefined,target,bound); 
                 let ondelete = () => {
@@ -619,10 +619,9 @@ export class Graph {
     
                 callback.__addDisconnected(ondelete);
             }
-            else if (typeof callback === 'function') {
+            else if (typeof callback === 'function' || typeof callback === 'string') {
                 sub = (this.get(node) as GraphNode).__subscribe(callback,undefined,undefined,target,bound); 
                 this.__node.state.getTrigger(this.get(node).__node.unique,sub).source = node;
-                this.__node.state.getTrigger(this.get(node).__node.unique,sub).target = target ? target : callback.name;
             }
         }
         return sub;
