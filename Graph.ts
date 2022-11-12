@@ -163,7 +163,7 @@ export class GraphNode {
     }
 
     //subscribe an output or input with an arbitrary callback
-    __subscribe = (callback:string|GraphNode|((res)=>void), key?:string, subInput?:boolean, target?:string, bound?:string) => {
+    __subscribe = (callback:string|GraphNode|((res)=>void), key?:string, subInput?:boolean, bound?:string, target?:string) => {
         if(key) {
             if(!this.__node.localState) {
                 this.__addLocalState(this);
