@@ -171,8 +171,14 @@ export class GraphNode {
              
             if(typeof callback === 'string') {
                 if(typeof this[callback] === 'function') callback = this[callback];
-                else if(this.__node.graph) callback = this.__node.graph.get(callback);
-                else callback = this.__node.graph.nodes.get(callback);
+                else if(this.__node.graph) {
+                    let fn = this.__node.graph.get(callback);
+                    if(callback.includes('.')) {
+                        let n = this.__node.graph.get(callback.substring(callback.lastIndexOf('.')+1))
+                        if(n) fn = n[fn];
+                        if(typeof fn === 'function') callback = fn;
+                    }
+                }
             }
             let sub;
             
@@ -192,6 +198,8 @@ export class GraphNode {
                 trigger.target = target ? target : (callback as GraphNode).__node.unique;
                 trigger.bound = bound ? bound : undefined;
             }
+
+            return sub;
         }
         else {
             if(typeof callback === 'string') {
@@ -605,7 +613,6 @@ export class Graph {
            
             let ondelete = () => {
                 (nd as GraphNode).__unsubscribe(sub,key,subInput);
-                //console.log('unsubscribed', key)
             }
 
             nd.__addDisconnected(ondelete);
@@ -621,6 +628,7 @@ export class Graph {
             }
             else if (typeof callback === 'function' || typeof callback === 'string') {
                 sub = (this.get(node) as GraphNode).__subscribe(callback,undefined,undefined,target,bound); 
+                
                 this.__node.state.getTrigger(this.get(node).__node.unique,sub).source = node;
             }
         }
@@ -629,7 +637,6 @@ export class Graph {
 
     unsubscribe = ( node:GraphNode|string, sub?:number, key?:string, subInput?:boolean) => {
         if(node instanceof GraphNode) {
-            //console.log(node,node.__unsubscribe);
             return node.__unsubscribe(sub,key,subInput);
         }
         else return this.get(node)?.__unsubscribe(sub,key,subInput);

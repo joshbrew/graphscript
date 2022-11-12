@@ -68,6 +68,7 @@ let graph2 = new Graph({tree:tree2});
 
 let popped = graph.remove('nodeB');
 
+console.log(JSON.stringify(graph.__node.state.triggers));
 console.log(popped.__node.tag, 'popped')
 graph.get('nodeA').jump(); //should trigger nodeC listener
 
