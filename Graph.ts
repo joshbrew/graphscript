@@ -189,15 +189,17 @@ export class GraphNode {
                 sub = this.__node.state.subscribeTrigger(k, callback);
                 let trigger = this.__node.state.getTrigger(k,sub);
                 trigger.source = this.__node.tag;
+                if(key) trigger.key = key;
                 trigger.target = target ? target : callback.name;
-                trigger.bound = bound ? bound : undefined;
+                if(bound) trigger.bound = bound;
             } else if((callback as GraphNode)?.__node) {
                 sub = this.__node.state.subscribeTrigger(k, (state:any)=>{ if((callback as any).__operator) (callback as any).__operator(state); })
                   
                 let trigger = this.__node.state.getTrigger(k,sub);
                 trigger.source = this.__node.tag;
+                if(key) trigger.key = key;
                 trigger.target = target ? target : (callback as GraphNode).__node.unique;
-                trigger.bound = bound ? bound : undefined;
+                if(bound) trigger.bound = bound;
             }
 
             return sub;
@@ -213,15 +215,17 @@ export class GraphNode {
                 sub = this.__node.state.subscribeTrigger(k, callback);
                 let trigger = this.__node.state.getTrigger(k,sub);
                 trigger.source = this.__node.tag;
+                if(key) trigger.key = key;
                 trigger.target = target ? target : callback.name;
-                trigger.bound = bound ? bound : undefined;
+                if(bound) trigger.bound = bound;
             } else if((callback as GraphNode)?.__node) {
                 sub = this.__node.state.subscribeTrigger(k, (res:any)=>{ if((callback as any).__operator) (callback as any).__operator(res); })
                 
                 let trigger = this.__node.state.getTrigger(k,sub);
                 trigger.source = this.__node.tag;
+                if(key) trigger.key = key;
                 trigger.target = target ? target : (callback as GraphNode).__node.unique;
-                trigger.bound = bound ? bound : undefined;
+                if(bound) trigger.bound = bound;
             }
             return sub;
         }
