@@ -180,7 +180,7 @@ export class GraphNode {
                 
                 sub = this.__node.state.subscribeTrigger(k, callback);
                 this.__node.state.getTrigger(k,sub).source = this.__node.tag;
-                this.__node.state.getTrigger(k,sub).target = target ? target : callback.name;
+                this.__node.state.getTrigger(k,sub).target = target ? target + ' ' + callback.name  : callback.name;
             } else if((callback as GraphNode)?.__node) {
                 sub = this.__node.state.subscribeTrigger(k, (state:any)=>{ if((callback as any).__operator) (callback as any).__operator(state); })
                   
@@ -198,7 +198,7 @@ export class GraphNode {
             if(typeof callback === 'function') {
                 sub = this.__node.state.subscribeTrigger(k, callback);
                 this.__node.state.getTrigger(k,sub).source = this.__node.tag;
-                this.__node.state.getTrigger(k,sub).target = target ? target : callback.name;
+                this.__node.state.getTrigger(k,sub).target = target ? target + ' ' + callback.name : callback.name;
             } else if((callback as GraphNode)?.__node) {
                 sub = this.__node.state.subscribeTrigger(k, (res:any)=>{ if((callback as any).__operator) (callback as any).__operator(res); })
                 
@@ -614,7 +614,7 @@ export class Graph {
             else if (typeof callback === 'function') {
                 sub = (this.get(node) as GraphNode).__subscribe(callback,undefined,undefined,target); 
                 this.__node.state.getTrigger(this.get(node).__node.unique,sub).source = node;
-                this.__node.state.getTrigger(this.get(node).__node.unique,sub).target = target ? target : callback.name;
+                this.__node.state.getTrigger(this.get(node).__node.unique,sub).target = target ? target + callback.name : callback.name;
             }
         }
         return sub;
