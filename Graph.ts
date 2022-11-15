@@ -285,9 +285,6 @@ __addLocalState(props?:{[key:string]:any}) {
                     return localState[k];
                 },
                 set: (v) => {
-                    if(this.__node.state.triggers[this.__node.unique]) {
-                        this.__node.state.setValue(this.__node.unique,this); //trigger subscriptions, if any
-                    }
                     if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,v); //this will update localState and trigger local key subscriptions
                     localState[k] = v;
                 },
