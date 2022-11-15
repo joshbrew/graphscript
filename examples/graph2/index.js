@@ -15,11 +15,11 @@ let tree = {
         __children:{
                 nodeC:{
                     z:4,
-                    __operator:function(a) { this.z += a; console.log('nodeC z prop added to',this); return this.z; },
+                    __operator:function(a) { this.z += a; console.log('nodeC: nodeC z prop added to',this); return this.z; },
                     __listeners:{
-                        'nodeA.x':function(newX) { console.log('nodeA x prop updated', newX);},
+                        'nodeA.x':function(newX) { console.log('nodeC: nodeA x prop updated', newX);},
                         'nodeA.jump':function(jump) { 
-                            console.log('nodeA ', jump);
+                            console.log('nodeC: nodeA ', jump);
                         }
                     }
                 }
@@ -53,6 +53,8 @@ nodeAInstance.x = 1;
 graph.get('nodeB').x += 1; //should trigger nodeA listener jump()
 
 graph.run('nodeB.nodeC', 4); //should trigger nodeA listener
+
+graph.get('nodeB.nodeC').z += 1;
 
 graph.get('nodeA').jump(); //should trigger nodeC listener
 graph.run('nodeA.jump'); //same

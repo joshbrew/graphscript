@@ -141,7 +141,6 @@ export class GraphNode {
                 let sub = parent.__subscribe(this);
                 let ondelete = () => { parent?.__unsubscribe(sub);}
                 this.__addDisconnected(ondelete);
-                
             }
             else if (typeof properties.default === 'function' && !properties.__operator) { //make it so the node is subscribable
                 let fn = properties.default.bind(this);
@@ -153,6 +152,7 @@ export class GraphNode {
                     } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
                     return result;
                 } 
+
                 properties.default = this.default;
             }
             
@@ -524,8 +524,8 @@ export class Graph {
             let nd = this.get(node);
             if(!nd && node.includes('.')) {
                 nd = this.get(node.substring(0,node.lastIndexOf('.')));
-                if(typeof nd?.[node.substring(node.lastIndexOf('.')+1)] === 'function') nd[node.substring(node.lastIndexOf('.')+1)](...args);
-            }
+                if(typeof nd?.[node.substring(node.lastIndexOf('.')+1)] === 'function') return nd[node.substring(node.lastIndexOf('.')+1)](...args);
+            } else return nd.__operator(...args);
         }
         if((node as GraphNode)?.__operator) {
             return (node as GraphNode)?.__operator(...args);
@@ -541,7 +541,8 @@ export class Graph {
                 for(const k in listeners[key]) {
                     let n = this.get(k);
                     let sub;
-                    listeners[key][k] = { callback:listeners[key][k] };
+                    console.log('listener',k, 'for', key, 'k first part:', k.substring(0,k.lastIndexOf('.')), '; k second part:', k.substring(k.lastIndexOf('.')+1));
+                    if( typeof listeners[key][k] === 'function' ) listeners[key][k] = { callback:listeners[key][k] };
                     if( typeof listeners[key][k].callback === 'function') listeners[key][k].callback = listeners[key][k].callback.bind(node);
                     if(typeof node.__listeners !== 'object') node.__listeners = {}; //if we want to subscribe a node with listeners that doesn't predeclare them
                     if(!n) {
