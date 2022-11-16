@@ -168,11 +168,15 @@ export class GraphNode {
 
         const subscribeToFunction = (k, setTarget = (callback, target?) => callback, triggerCallback=callback) => {
             let sub = this.__node.state.subscribeTrigger(k, triggerCallback);
+
+            // Add details to trigger
             let trigger = this.__node.state.getTrigger(k,sub);
+            trigger.sub = sub;
             trigger.source = this.__node.tag;
             if(key) trigger.key = key;
             trigger.target = setTarget(callback) // Non-string value
             if(bound) trigger.bound = bound;
+
             return sub
         }
 
@@ -218,21 +222,18 @@ export class GraphNode {
             let sub;
             let k = subInput ? this.__node.unique+'input' : this.__node.unique;
             if(typeof callback === 'function') sub = subscribeToFunction(k)
-            else if((callback as GraphNode)?.__node) {
-                sub = this.__node.state.subscribeTrigger(k, (res:any)=>{ if((callback as any).__operator) (callback as any).__operator(res); })
-                
-                let trigger = this.__node.state.getTrigger(k,sub);
-                trigger.source = this.__node.tag;
-                if(key) trigger.key = key;
-                trigger.target = target ? target : (callback as GraphNode).__node.unique;
-                if(bound) trigger.bound = bound;
-            }
+            else if((callback as GraphNode)?.__node) sub = subscribeToFunction(k, 
+                (callback, target) => target ? target : (callback as GraphNode).__node.unique,
+                (state:any)=>{ if((callback as any).__operator) (callback as any).__operator(state); }
+            )
+
             return sub;
         }
     }
     
     //unsub the callback
     __unsubscribe = (sub?:number, key?:string, subInput?:boolean) => {
+
         if(key) {
             return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, sub);
         }
@@ -530,8 +531,9 @@ export class Graph {
     }
 
     setListeners = (listeners:{[key:string]:{[key:string]:any}}) => {
+
+        
         //now setup event listeners
-        //console.log(listeners)
         for(const key in listeners) {
             let node = this.get(key);
             if(typeof listeners[key] === 'object') {
