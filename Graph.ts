@@ -182,12 +182,12 @@ export class GraphNode {
                 let n = this.__node.graph.get(callback.substring(0,callback.lastIndexOf('.')))
                 let key = callback.substring(callback.lastIndexOf('.')+1);
                 if(n && typeof n[key] === 'function') callback = (...args) => { return n[key](...args); };
-                console.log(n, fn);
+                //console.log(n, fn);
             }
         }
 
         if(key) {
-            console.log(key,this.__node.tag, 'callback:', callback);
+           // console.log(key,this.__node.tag, 'callback:', callback);
             if(!this.__node.localState) {
                 this.__addLocalState(this);
             }
