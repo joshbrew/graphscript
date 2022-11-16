@@ -182,11 +182,12 @@ export class GraphNode {
                 let n = this.__node.graph.get(callback.substring(0,callback.lastIndexOf('.')))
                 let key = callback.substring(callback.lastIndexOf('.')+1);
                 if(n && typeof n[key] === 'function') callback = (...args) => { return n[key](...args); };
-                console.log(n, fn);
+                //console.log(n, fn);
             }
         }
 
         if(key) {
+            //console.log(key,this.__node.tag, 'callback:', callback);
             if(!this.__node.localState) {
                 this.__addLocalState(this);
             }
@@ -538,16 +539,14 @@ export class Graph {
                 for(const k in listeners[key]) {
                     let n = this.get(k);
                     let sub;
-                    console.log('listener',k, 'for', key, 'k first part:', k.substring(0,k.lastIndexOf('.')), '; k second part:', k.substring(k.lastIndexOf('.')+1));
-                    if( typeof listeners[key][k] === 'function' ) listeners[key][k] = { callback:listeners[key][k] };
+                    if( typeof listeners[key][k] !== 'object' ) listeners[key][k] = { callback:listeners[key][k] };
                     if( typeof listeners[key][k].callback === 'function') listeners[key][k].callback = listeners[key][k].callback.bind(node);
                     if(typeof node.__listeners !== 'object') node.__listeners = {}; //if we want to subscribe a node with listeners that doesn't predeclare them
                     if(!n) {
                         let tag = k.substring(0,k.lastIndexOf('.'));
                         n = this.get(tag);
                         if(n) {
-                            //console.log('found',n,k,key);
-                            sub = this.subscribe(n,  listeners[key][k].callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState , key, k);
+                            sub = this.subscribe(n,  listeners[key][k].callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState, key, k);
                             if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState:listeners[key][k]?.inputState };
                             node.__listeners[k].sub = sub;
                         }
@@ -556,6 +555,7 @@ export class Graph {
                         if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState };
                         node.__listeners[k].sub = sub;
                     }
+                    console.log(sub);
                 }
             }
         }
@@ -618,7 +618,8 @@ export class Graph {
         //console.log(node,nd);
 
         if(nd instanceof GraphNode) {
-            if(typeof callback === 'string' && target) callback = target + '.' + callback;
+            if(typeof callback === 'string' && target) callback = this.get(target)?.[callback];
+            if(!callback) return;
             sub = nd.__subscribe(callback,key,subInput,target,bound);
            
             let ondelete = () => {

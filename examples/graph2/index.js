@@ -51,6 +51,7 @@ let graph = new Graph({
 nodeAInstance.x = 1;
 
 graph.get('nodeB').x += 1; //should trigger nodeA listener jump()
+console.log('nodeA should have jumped when nodeB changed ^^')
 
 graph.run('nodeB.nodeC', 4); //should trigger nodeA listener
 
