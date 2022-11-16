@@ -182,12 +182,12 @@ export class GraphNode {
                 let n = this.__node.graph.get(callback.substring(0,callback.lastIndexOf('.')))
                 let key = callback.substring(callback.lastIndexOf('.')+1);
                 if(n && typeof n[key] === 'function') callback = (...args) => { return n[key](...args); };
-                //console.log(n, fn);
+                console.log(n, fn);
             }
         }
 
         if(key) {
-            //console.log(key,this.__node.tag, 'callback:', callback);
+            console.log(key,this.__node.tag, 'callback:', callback);
             if(!this.__node.localState) {
                 this.__addLocalState(this);
             }
@@ -555,7 +555,7 @@ export class Graph {
                         if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState };
                         node.__listeners[k].sub = sub;
                     }
-                    console.log(sub);
+                    //console.log(sub);
                 }
             }
         }
@@ -616,10 +616,12 @@ export class Graph {
         let sub;
 
         //console.log(node,nd);
+        if(typeof callback === 'string' && target) {
+            let method = this.get(target)?.[callback];
+            if(typeof method === 'function') callback = method;
+        }
 
         if(nd instanceof GraphNode) {
-            if(typeof callback === 'string' && target) callback = this.get(target)?.[callback];
-            if(!callback) return;
             sub = nd.__subscribe(callback,key,subInput,target,bound);
            
             let ondelete = () => {
