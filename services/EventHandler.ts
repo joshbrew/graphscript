@@ -28,7 +28,7 @@ export class EventHandler {
             }
             let l = this.triggers[key].length;
 
-            this.triggers[key].push({idx:l, onchange});
+            this.triggers[key].push({sub:l, onchange});
             return this.triggers[key].length-1;
         } else return undefined;
     }
@@ -37,15 +37,15 @@ export class EventHandler {
         if (triggers){
             if(!sub) delete this.triggers[key];
             else {
-                let idx = undefined;
+                let sub = undefined;
                 let obj = triggers.find((o,i)=>{
-                    if(o.idx===sub) {
-                        idx = i;
+                    if(o.sub===sub) {
+                        sub = i;
                         return true;
                     }
                 });
 
-                if(obj) triggers.splice(idx,1);
+                if(obj) triggers.splice(sub,1);
                 
                 if(this.onRemoved) this.onRemoved(obj);
                 return true;
@@ -63,7 +63,7 @@ export class EventHandler {
     }
     getTrigger = (key,sub) => {
         for(const s in this.triggers[key]) {
-            if(this.triggers[key][s].idx === sub) return this.triggers[key][s];
+            if(this.triggers[key][s].sub === sub) return this.triggers[key][s];
         }
     }
     onRemoved;

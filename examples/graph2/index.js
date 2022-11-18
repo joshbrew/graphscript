@@ -30,7 +30,7 @@ let tree = {
     nodeD:(a,b,c)=>{ return a+b+c; }, //becomes the .__operator prop and calling triggers setState for this tag (or nested tag if a child)
 
     nodeE:{
-        __operator:()=>{console.log('looped!');},
+        __operator:()=>{console.log('looped!'); return true;},
         __node:{
             loop:1000,
         }

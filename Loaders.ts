@@ -42,7 +42,8 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //bad
             let fn = node.__operator;
             node.__operator = (...args:any[]) => {
                 return new Promise((res,rej) => {
-                    setTimeout(async ()=>{res(await fn(...args));},node.__node.delay);
+                    setTimeout(async ()=>{
+                        res(await fn(...args));},node.__node.delay);
                 });
             }
         } else if (node.__node.frame === true) {
