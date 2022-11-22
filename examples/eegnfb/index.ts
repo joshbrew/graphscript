@@ -8,13 +8,13 @@ import {
     filterPresets, 
     FilterSettings, 
     chartSettings 
-} from '../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder';
+} from 'device-decoder'//'../../../device_debugger/src/device.frontend'//
 
 
 import { setSignalControls } from '../../extras/webgl-plot/webglplot.routes'//'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
 
-import gsworker from '../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker'//'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
-import { Devices } from '../../../device_debugger/src/devices/third_party/index'//'device-decoder.third-party'
+import gsworker from 'device-decoder/stream.big.worker'//'../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
+import { Devices } from 'device-decoder.third-party' // '../../../device_debugger/src/devices/third_party/index'//
 
 import { Howl, Howler } from 'howler';
 import { visualizeDirectory } from '../../extras/index.storage.services'//'graphscript-services/storage/BFS_CSV';
@@ -70,6 +70,7 @@ const GameState = {
 
 const webapp = new DOMService();
 webapp.addServices({workers}); //merge the worker service provided by device-decoder for convenience
+
 
 let transferred = false; //did we transfer a canvas already
 let ctransferred = false;
@@ -274,6 +275,7 @@ const webappHtml = {
                                                                 node.worker.post('setValue',['chartSettings',chartSettings[selected]])
                                                             } 
 
+                                                            console.log('webapp',webapp);
 
                                                             webapp.run(
                                                                 'transferCanvas', 

@@ -114,13 +114,13 @@ export class Router extends Service {
                 for(const key in options.graph) {
                     let opt = (options.graph[key] as any);
                     if (typeof opt === 'function') opt = new opt() as Service; //instantiate a class prototype
-                    if(opt instanceof Service) {
+                    if(opt?.__node?.nodes) {
                         opt.name = key; opt.__node.tag = key;
                         this.addServices({[opt.name]:opt});
                         this.routeService(opt, (opt as any).connections);
                     } else {
                         if(typeof opt?.service === 'function') opt.service = new opt.service();
-                        if(opt?.service instanceof Service) {
+                        if(opt?.service?.__node?.nodes) {
                             opt.service.name = key; opt.service.__node.tag = key;
                             this.addServices({[opt.service.name]:opt.service});
                             this.routeService(
@@ -769,7 +769,7 @@ export class Router extends Service {
         if(typeof service === 'string') {
             service = this.services[service];
         }
-        if(service instanceof Service) {
+        if(service?.__node.nodes) {
             let connection = service.run('open', options, ...args);
             if(connection instanceof Promise) {
                 return connection.then(async (info) => {

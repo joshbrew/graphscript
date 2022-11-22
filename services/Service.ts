@@ -44,7 +44,7 @@ export class Service extends Graph {
             if(typeof services[s] === 'function') services[s] = new (services as any)[s](); //instantiate a constructor
             if((services[s] as Service)?.__node?.loaders) 
                 Object.assign(this.__node.loaders,(services[s] as Service).__node.loaders); 
-            if(services[s] instanceof Service) {
+            if((services[s] as Service)?.__node?.nodes) {
                 (services[s] as Service).__node.nodes.forEach((n,tag) => { 
                     if(!this.get(tag)) {
                         this.set(tag,n);
