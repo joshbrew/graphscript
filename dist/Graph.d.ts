@@ -94,7 +94,6 @@ export declare class Graph {
     add: (properties: any, parent?: GraphNode | string) => GraphNode;
     recursiveSet: (t: any, parent: any, listeners?: {}) => {};
     remove: (node: GraphNode | string, clearListeners?: boolean) => string | GraphNode;
-    removeTree: (tree: any) => void;
     run: (node: string | GraphNode, ...args: any[]) => any;
     setListeners: (listeners: {
         [key: string]: {
@@ -102,8 +101,9 @@ export declare class Graph {
         };
     }) => void;
     clearListeners: (node: GraphNode | string, listener?: string) => void;
-    get: (tag: any) => any;
-    set: (tag: any, node: any) => Map<string, any>;
+    get: (tag: string) => any;
+    set: (tag: string, node: GraphNode) => Map<string, any>;
+    delete: (tag: string) => boolean;
     getProps: (node: GraphNode | string, getInitial?: boolean) => void;
     subscribe: (node: GraphNode | string, callback: string | GraphNode | ((res: any) => void), key?: string | undefined, subInput?: boolean, target?: string, bound?: string) => any;
     unsubscribe: (node: GraphNode | string, sub?: number, key?: string, subInput?: boolean) => any;

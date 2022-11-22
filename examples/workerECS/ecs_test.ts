@@ -392,6 +392,7 @@ let ret = router.setTree({
                                 ['x','y','z'] //or for arrays could be the array values
                             );
 
+
                             return {
                                 entityId:this.__node.graph.entityId, 
                                 positions:positionBuffer
@@ -410,15 +411,13 @@ let ret = router.setTree({
                             'bufferPositions'
                         );
 
-                        entities.post('subscribe',[
+                        entities.post('ECSService.subscribe',[
                             'movement',
-                            undefined,
                             'bufferPositions'
                         ]); //i/o subscription
 
-                        entities2.post('subscribe',[
+                        entities2.post('ECSService.subscribe',[
                             'movement',
-                            undefined,
                             'bufferPositions'
                         ]); //i/o subscription
 

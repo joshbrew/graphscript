@@ -266,7 +266,7 @@ export const substitute__operator = (node:GraphNode & GraphNodeProperties, paren
         node.get = node.__operator;
     } if(node.aliases) {
         node.aliases.forEach((a) => {
-            graph.__node.nodes.set(a,node);
+            graph.set(a,node);
             let ondelete = (node) => {
                 graph.__node.nodes.delete(a);
             }

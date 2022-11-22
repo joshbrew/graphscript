@@ -185,7 +185,7 @@ const webappHtml = {
                                                             }
                                                         ],
                                                         callback:'runSubprocess', //the init function will set the _id as an additional argument for runSubprocess which selects existing contexts by _id 
-                                                        __node:{children:{
+                                                        __children:{
                                                             hr_main:{
                                                                 __operator:(
                                                                     heartbeat:{
@@ -199,7 +199,7 @@ const webappHtml = {
                                                                     console.log('heartrate result', heartbeat); //this algorithm only returns when it detects a beat
                                                                 }
                                                             }
-                                                        }}
+                                                        }
                                                     },
                                                     breath:{
                                                         workerUrl:gsworker,
@@ -211,7 +211,7 @@ const webappHtml = {
                                                             }
                                                         ],
                                                         callback:'runSubprocess',
-                                                        __node:{children:{
+                                                        __children:{
                                                             breath_main:{
                                                                 __operator:(
                                                                     breath:{
@@ -225,7 +225,7 @@ const webappHtml = {
                                                                     console.log('breath detect result', breath); //this algorithm only returns when it detects a beat
                                                                 }
                                                             }
-                                                        }}
+                                                        }
                                                     },
                                                     csv:{
                                                         workerUrl:gsworker,

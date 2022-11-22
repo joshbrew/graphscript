@@ -710,7 +710,6 @@ export class WorkerService extends Service {
         subInput?:boolean
     ) => {
 
-
         if(typeof workerId === 'string' && this.workers[workerId]) {
             this.__node.state.subscribeTrigger(workerId, (res) => {
                 if(res?.callbackId === route) {

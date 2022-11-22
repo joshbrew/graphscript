@@ -39,17 +39,34 @@ export class Service extends Graph {
         this.setTree(this);
     }
 
-    addServices(services:{[key:string]:Service|Function|{[key:string]:any}}) {
+    addServices = (services:{[key:string]:Service|Function|{[key:string]:any}}) => {
         for(const s in services) {
             if(typeof services[s] === 'function') services[s] = new (services as any)[s](); //instantiate a constructor
             if((services[s] as Service)?.__node?.loaders) 
                 Object.assign(this.__node.loaders,(services[s] as Service).__node.loaders); 
             if(services[s] instanceof Service) {
                 (services[s] as Service).__node.nodes.forEach((n,tag) => { 
-                    if(!this.__node.nodes.get(tag)) {
-                        this.__node.nodes.set(tag,n);
-                    } else this.__node.nodes.set(s+'.'+tag,n);
-                })
+                    if(!this.get(tag)) {
+                        this.set(tag,n);
+                    } else this.set(s+'.'+tag,n);
+                });
+
+                this.__node.nodes.forEach((n,k) => { if(!(services[s] as Service).__node.nodes.get(k)) (services[s] as Service).__node.nodes.set(k,n) })
+
+                let set = this.set;
+
+                this.set = (tag:string,node:GraphNode) => {
+                    (services[s] as Service).set(tag,node);
+                    return set(tag,node);
+                }
+
+                let del = this.delete;
+
+                this.delete = (tag:string) => {
+                    (services[s] as Service).delete(tag);
+                    return del(tag);
+                }
+
             }
             else if(typeof services[s] === 'object') {
                 this.setTree(services[s]); //just a tree

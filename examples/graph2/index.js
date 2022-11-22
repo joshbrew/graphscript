@@ -33,6 +33,7 @@ let tree = {
         __operator:()=>{console.log('looped!'); return true;},
         __node:{
             loop:1000,
+            looping:true
         }
     }
 

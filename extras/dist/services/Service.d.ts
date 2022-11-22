@@ -17,11 +17,11 @@ export declare type ServiceOptions = GraphOptions & {
 export declare class Service extends Graph {
     name: string;
     constructor(options?: ServiceOptions);
-    addServices(services: {
-        [key: string]: Service | Function | {
+    addServices: (services: {
+        [key: string]: Function | Service | {
             [key: string]: any;
         };
-    }): void;
+    }) => void;
     handleMethod: (route: string, method: string, args?: any) => any;
     handleServiceMessage(message: ServiceMessage): any;
     handleGraphNodeCall(route: string | GraphNode, args: any): any;

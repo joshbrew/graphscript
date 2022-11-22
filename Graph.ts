@@ -139,7 +139,7 @@ export class GraphNode {
 
                 if(parent.__node.mapGraphs) {
                     //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
-                    properties.__node.nodes.forEach((n) => {parent.__node.nodes.set(properties.__node.tag+'.'+n.__node.tag,n)});
+                    properties.__node.nodes.forEach((n) => {parent.set(properties.__node.tag+'.'+n.__node.tag,n)});
 
                     let ondelete = () => { properties.__node.nodes.forEach((n) => {parent.__node.nodes.delete(properties.__node.tag+'.'+n.__node.tag)}); }
                     this.__addDisconnected(ondelete);
@@ -437,7 +437,7 @@ export class Graph {
             else if (!this.get(tree.__node.tag)) {
                 let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
                 for(const l in this.__node.loaders) { this.__node.loaders[l](node,this,this,tree,tree); } //run any passes on the nodes to set things up further
-                this.__node.nodes.set(node.__node.tag,node);
+                this.set(node.__node.tag,node);
                 if(node.__listeners) {
                     listeners[node.__node.tag] = node.__listeners;
                 } //now the tree can specify nodes
@@ -466,7 +466,7 @@ export class Graph {
         if(!props.__node?.tag || !this.get(props.__node.tag)) {
             let node = new GraphNode(props, parent as GraphNode, this);
             for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,this.__node.tree,properties); } //run any passes on the nodes to set things up further
-            this.__node.nodes.set(node.__node.tag,node);
+            this.set(node.__node.tag,node);
             this.__node.tree[node.__node.tag] = properties; //reference the original props by tag in the tree for children
             //console.log('old:',properties.__node,'new:',node.__node);
             
@@ -532,7 +532,7 @@ export class Graph {
         if(typeof node === 'string') node = this.get(node);
 
         if(node instanceof GraphNode) {
-            this.__node.nodes.delete(node.__node.tag);
+            this.delete(node.__node.tag);
             delete this.__node.tree[node.__node.tag];
 
             if(clearListeners) {
@@ -544,9 +544,9 @@ export class Graph {
             const recursiveRemove = (t) => {
                 for(const key in t) {
                     this.unsubscribe(t[key]);
-                    this.__node.nodes.delete(t[key].__node.tag);
+                    this.delete(t[key].__node.tag);
                     delete this.__node.tree[t[key].__node.tag]
-                    this.__node.nodes.delete(key);
+                    this.delete(key);
                     delete this.__node.tree[key]
 
                     //console.log(key, 'removing child',t[key]);
@@ -578,8 +578,6 @@ export class Graph {
 
         return node;
     }
-
-    removeTree = (tree:any) => {}
 
     run = (node:string|GraphNode, ...args:any[]) => {
         if(typeof node === 'string') {
@@ -649,8 +647,9 @@ export class Graph {
         }
     }
 
-    get = (tag) => { return this.__node.nodes.get(tag); };
-    set = (tag,node) => { return this.__node.nodes.set(tag,node); };
+    get = (tag:string) => { return this.__node.nodes.get(tag); };
+    set = (tag:string,node:GraphNode) => { return this.__node.nodes.set(tag,node); };
+    delete = (tag:string) => { return this.__node.nodes.delete(tag); }
 
     getProps = (node:GraphNode|string, getInitial?:boolean) => {
         if(typeof node === 'string') node = this.get(node);
@@ -680,10 +679,15 @@ export class Graph {
 
         let sub;
 
-        if(typeof callback === 'string' && target) {
-            let method = this.get(target)?.[callback];
-            if(typeof method === 'function') callback = method;
-        }
+        if(typeof callback === 'string') {
+
+            //console.log(node, callback, this.__node.nodes.keys());
+
+            if(target) {
+                let method = this.get(target)?.[callback];
+                if(typeof method === 'function') callback = method;
+            } else callback = this.get(callback)?.__operator;
+        } 
 
         if(nd instanceof GraphNode) {
             sub = nd.__subscribe(callback,key,subInput,target,bound);
