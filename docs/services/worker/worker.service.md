@@ -149,7 +149,7 @@ console.log(router)
 let ret = router.load({
     'main':{
         tagName:'div',
-        children:{
+        __children:{
             'div':{
                 tagName:'div',
                 innerText:'Multithreaded canvases!'
@@ -213,10 +213,10 @@ declare var WorkerGlobalScope;
 
 if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
     const worker = new WorkerService({
-        routes:[
+        tree:[
             //GPUService as any,
-            workerCanvasRoutes,
-            unsafeRoutes //allows dynamic route loading
+            ...workerCanvasRoutes,
+            ...unsafeRoutes //allows dynamic route loading
         ],
         includeClassName:false
     });

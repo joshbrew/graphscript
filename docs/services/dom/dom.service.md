@@ -71,7 +71,7 @@ dom.load({
     'testdiv':{
         tagName:'div',
         style:{backgroundColor:'black', color:'white' }, //style this div using CSS objects
-        children:{
+        __children:{
             'testcomponent':{
                 tagName:'my-component', //custom web component tag! Once one is created you can reuse it elsewhere in the tree as an element
                 styles:`
