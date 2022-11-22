@@ -12,7 +12,7 @@ Routers have additional important options on top of the base service. They other
 ```ts
 
 export type RouterOptions = ServiceOptions & {
-    services?:{
+    graph?:{
         [key:string]:Service|any|{
             service:Service|any,
             connections:string[]|{[key:string]:any},
@@ -139,7 +139,7 @@ import { SessionsService } from "../../services/streaming/sessions.service";
 import { scriptBoilerPlate } from "../../services/http/boilerplate";
 
 const router = new Router({
-    services:{
+    graph:{
         'sessions':SessionsService,
         'wss':WSSbackend,
         'sse':SSEbackend,
@@ -223,9 +223,7 @@ const router = new Router({
             }
         }
     },
-    loadDefaultRoutes:true,
     order:['sse','wss'],//prefer certain connection sources in a certain order, defaults to load order (if appropriate callbacks are available for subscription)
-    syncServices:true
 }); //on frontend we want to prefer wss first as sse is POST-reliant from browser
 
 //router.services.sessions.users = router.users;
