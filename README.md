@@ -15,18 +15,20 @@ For happy code!
 
 
 
-`npm i graphscript` ~230kb dist
+`npm i graphscript` ~195kb dist
 
 For node.js
-`npm i graphscript-node` ~280 dist
+`npm i graphscript-node` ~215Kb dist
 
-Core only (only core classes plus unsafe and router services which are minimal) ~47kb dist
+Core only (only core classes plus unsafe and router services which are minimal) ~20Kb dist
 `npm i graphscript-core`
 
 For additional services (currently gpu.js service and the compiled worker dataurl as `gsworker` (or use `graphscript/dist/Worker`))
 `npm i graphscript-services`
 
 # READMEs:
+
+Need to redo these after some major formatting changes...
 
 ## * [Graphs and GraphNodes](https://github.com/brainsatplay/graphscript/blob/master/docs/Graph.md)
 ## * [Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md)

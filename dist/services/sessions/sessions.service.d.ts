@@ -109,7 +109,7 @@ export declare class SessionsService extends Service {
             [key: string]: SharedSessionProps;
         };
     };
-    constructor(options: ServiceOptions, users?: {
+    constructor(options?: ServiceOptions, users?: {
         [key: string]: SessionUser;
     });
     getSessionInfo: (sessionId?: string, userId?: string) => {
@@ -179,21 +179,21 @@ export declare class SessionsService extends Service {
     getStreamUpdate: (streamName: string) => {};
     getAllStreamUpdates: () => {};
     streamLoop: {
+        __operator: () => {};
         __node: {
-            operator: () => {};
+            loop: number;
         };
-        loop: number;
     };
     userUpdateLoop: {
+        __operator: (user: SessionUser) => {};
         __node: {
-            operator: (user: SessionUser) => {};
+            loop: number;
         };
-        loop: number;
     };
     sessionLoop: {
+        __operator: (transmit?: boolean) => any;
         __node: {
-            operator: (transmit?: boolean) => any;
+            loop: number;
         };
-        loop: number;
     };
 }

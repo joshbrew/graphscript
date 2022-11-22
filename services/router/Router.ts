@@ -58,9 +58,9 @@ export type ConnectionInfo = {
 }
 
 export type RouterOptions = {
-    services?:{
-        [key:string]:Service|any|{
-            service:Service|any,
+    graph?:{
+        [key:string]:Service|Graph|any|{
+            service:Service|Graph|any,
             connections:string[]|{[key:string]:any},
             config?:{ //configure connections per service
                 [key:string]:{ //configure multiple connection instances using the generic 'open' function
@@ -110,24 +110,19 @@ export class Router extends Service {
         if(options) {
             if(options.order) this.order = options.order;
 
-            if(options.services) {
-                for(const key in options.services) {
-                    let opt = (options.services[key] as any);
+            if(options.graph) {
+                for(const key in options.graph) {
+                    let opt = (options.graph[key] as any);
+                    if (typeof opt === 'function') opt = new opt() as Service; //instantiate a class prototype
                     if(opt instanceof Service) {
                         opt.name = key; opt.__node.tag = key;
+                        this.addServices({[opt.name]:opt});
                         this.routeService(opt, (opt as any).connections);
-                    } else if (typeof opt === 'function') {
-                        let service = new opt() as Service; //instantiate a class prototype
-                        (service as any).name = key; service.__node.tag = key;
-                        if(service instanceof Service) 
-                            this.routeService(
-                                service, 
-                                (service as any).connections
-                            );
-                    }
-                    else {
+                    } else {
+                        if(typeof opt?.service === 'function') opt.service = new opt.service();
                         if(opt?.service instanceof Service) {
-                            opt.service.name = key; opt.service.tag = key;
+                            opt.service.name = key; opt.service.__node.tag = key;
+                            this.addServices({[opt.service.name]:opt.service});
                             this.routeService(
                                 opt.service
                             );
@@ -276,7 +271,6 @@ export class Router extends Service {
                 }
             });
             if(pass) {
-                //console.log(user._id,connectionIds)
                 user.send({
                     route:'addUser',
                     args:[
@@ -720,6 +714,13 @@ export class Router extends Service {
     ) => {
         //console.log(service)
         this.services[service.name] = service;
+        if(service.__node?.nodes) this.__node.nodes.forEach((n,k) => {
+            if(!service.__node?.nodes.get(k)) 
+            {
+                service.__node?.nodes.set(k,n);
+            } else service.__node?.nodes.set(this.name + '.' + k,n);
+        });
+        if(service.users) service.users = this.users; //needed for sessions service rn, should find more elegant solution
         if(connections) {
             if(typeof connections === 'string') this.addServiceConnections(service,connections,source);
             else {
@@ -842,7 +843,7 @@ export class Router extends Service {
         if(typeof relay === 'object')
             return new Promise((res,rej) => {
                 (relay as any).run('routeConnections',[route,endpoint,(relay as any)._id,...args]).then((sub) => {
-                    this.subscribe(endpoint, (res) => {
+                    this.__node.state.subscribeTrigger(endpoint, (res) => {
                         if(res?.callbackId === route) {
                             if(!callback) this.setState({[endpoint]:res.args});
                             else if(typeof callback === 'string') { //just set state 

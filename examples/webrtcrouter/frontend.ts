@@ -8,7 +8,7 @@ import { DOMService } from '../../services/dom/DOM.service';
 
 const router = new Router({
     order:['webrtc','wss','sse'],
-    services:{
+    graph:{
         'dom': new DOMService({
             tree:{
                 'main':{
@@ -79,6 +79,8 @@ const router = new Router({
 
                             user.rooms = {};
                             user.localrtc = {};
+
+                            console.log(user);
 
                             router.subscribe('joinSession', (res) => {
                                 console.log('joinSession fired', res);

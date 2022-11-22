@@ -34,7 +34,7 @@ export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
  * 
  * 
  */
-export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //badabadabadabooop
+export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
 
     if(node.__operator && !node.__node.looperSet) {
         node.__node.looperSet = true;
@@ -82,14 +82,15 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{ //bad
                
         if(node.__node.loop && typeof node.__node.loop === 'number') {
             
-            if(!('looping' in node.__node)) node.__node.looping = true
-            node.__node.looper = () => {
+            let fn = node.__operator;
+            node.__operator = (...args) => {
+                if(!('looping' in node.__node)) node.__node.looping = true;
                 if(node.__node.looping) {
-                    node.__operator();
-                    setTimeout(node.__node.looper,node.__node.loop);
+                    fn(...args);
+                    setTimeout(()=>{node.__operator(...args)},node.__node.loop);
                 }
             }
-            if(node.__node.looping) node.__node.looper();
+            if(node.__node.looping) node.__operator();
             
             let ondelete = (node) => {
                 if(node.__node.looping) node.__node.looping = false;
@@ -110,15 +111,15 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     if(node.__node.animate === true || node.__node.animation) {
         if(typeof node.__node.animate === 'function') node.__node.animate = node.__node.animate.bind(node);
         let anim = (node) => {
-            if(!('animating' in node.__node)) node.__node.animating = true
-            node.__node.animate = () => {
+            let fn = node.__operator;
+            node.__operator = (...args) => {
+                if(!('animating' in node.__node)) node.__node.animating = true;
                 if(node.__node.animating) {
-                    if(typeof node.__node.animate === 'function') node.__node.animation();
-                    else node.__operator();
-                    requestAnimationFrame(node.__node.animation);
+                    if(typeof node.__node.animate === 'function') node.__node.animate(...args);
+                    else fn(...args);
+                    requestAnimationFrame(()=>{node.__operator(...args);});
                 }
             }
-            requestAnimationFrame(node.__node.animation);
             if(node.__node.animating) node.__node.animation();
         }
         requestAnimationFrame(anim);

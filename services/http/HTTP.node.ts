@@ -127,11 +127,13 @@ export class HTTPbackend extends Service {
         }
 
         if(options.protocol === 'https') {
-            return this.setupHTTPSserver(options as any,requestListener, onStarted);
+            return this.setupHTTPSserver(options as any, requestListener, onStarted);
         }
         else
             return this.setupHTTPserver(options, requestListener, onStarted);
     }
+    
+    open = this.setupServer;
 
     //insecure server
     setupHTTPserver = (

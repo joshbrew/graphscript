@@ -208,6 +208,8 @@ export class WSSfrontend extends Service {
         return this.sockets[address];
     }
 
+    open = this.openWS;
+
     transmit = (
         data:string | ArrayBufferLike | Blob | ArrayBufferView | ServiceMessage, 
         ws:WebSocket
@@ -316,7 +318,7 @@ export class WSSfrontend extends Service {
 
     subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string, key?:string, subInput?:boolean) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
-            this.subscribe(socketId, (res) => {
+            this.__node.state.subscribeTrigger(socketId, (res) => {
                 let msg = JSON.parse(res);
                 if(msg?.callbackId === route) {
                     if(!callback) this.setState({[socketId]:msg.args}); //just set state

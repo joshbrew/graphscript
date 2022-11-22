@@ -9,11 +9,11 @@ export declare const Systems: {
         setupEntity: (entity: Entity) => Entity;
         __node: {
             tag: string;
-            operator: (entities: {
-                [key: string]: Entity;
-            }) => {
-                [key: string]: Entity;
-            };
+        };
+        __operator: (entities: {
+            [key: string]: Entity;
+        }) => {
+            [key: string]: Entity;
         };
         collisionCheck: (body1: {
             [key: string]: any;
@@ -269,13 +269,13 @@ export declare const Systems: {
             [key: string]: Entity;
         };
         setupEntity: (entity: Entity) => Entity;
+        __operator: (entities: {
+            [key: string]: Entity;
+        }) => {
+            [key: string]: Entity;
+        };
         __node: {
             tag: string;
-            operator: (entities: {
-                [key: string]: Entity;
-            }) => {
-                [key: string]: Entity;
-            };
         };
         checkBoundingBox: (entity: any) => void;
         resolveBoxCollision: (body1: Entity, box: Entity, negate?: boolean) => void;
@@ -290,13 +290,13 @@ export declare const Systems: {
             [key: string]: Entity;
         };
         setupEntity: (entity: Entity) => Entity;
+        __operator: (entities: {
+            [key: string]: Entity;
+        }) => {
+            [key: string]: Entity;
+        };
         __node: {
             tag: string;
-            operator: (entities: {
-                [key: string]: Entity;
-            }) => {
-                [key: string]: Entity;
-            };
         };
         attract: (body1: any, body2: any, dist?: number, G?: any, vecn?: {
             x: number;
@@ -314,28 +314,28 @@ export declare const Systems: {
         };
         setupEntities: (entities: any) => any;
         setupEntity: (entity: Entity) => Entity;
+        __operator: (entities: {
+            [key: string]: Entity;
+        }) => {
+            [key: string]: Entity;
+        };
         __node: {
             tag: string;
-            operator: (entities: {
-                [key: string]: Entity;
-            }) => {
-                [key: string]: Entity;
-            };
         };
     };
     movement: {
+        __node: {
+            tag: string;
+        };
         lastTime: number;
         setupEntities: (entities: {
             [key: string]: Entity;
         }) => void;
         setupEntity: (entity: Entity) => Entity;
-        __node: {
-            tag: string;
-            operator: (entities: {
-                [key: string]: Entity;
-            }) => {
-                [key: string]: Entity;
-            };
+        __operator: (entities: {
+            [key: string]: Entity;
+        }) => {
+            [key: string]: Entity;
         };
     };
 };

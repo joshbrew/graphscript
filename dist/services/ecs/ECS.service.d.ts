@@ -6,7 +6,7 @@ export declare type EntityProps = {
     };
 } & (GraphNodeProperties | GraphNode);
 export declare type SystemProps = (GraphNodeProperties & {
-    operator: (entities: {
+    __operator: (entities: {
         [key: string]: Entity;
     }) => any;
     setupEntities: (entities: {
@@ -23,7 +23,7 @@ export declare type Entity = {
     [key: string]: any;
 } & GraphNode;
 export declare type System = {
-    operator: (entities: {
+    __operator: (entities: {
         [key: string]: Entity;
     }) => any;
     setupEntities: (entities: {

@@ -44,10 +44,11 @@ export declare class CMDService extends Service {
     };
     constructor(options?: ServiceOptions);
     createProcess: (properties: CMDRoute) => CMDRoute;
+    open: (properties: CMDRoute) => CMDRoute;
     abort: (childprocess: ChildProcess | CMDInfo) => boolean;
     send: (childprocess: ChildProcess, data: Serializable) => boolean;
     request: (message: ServiceMessage | any, processId: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, callbackId: string | number, childprocess?: ChildProcess | string) => any;
-    subscribeProcess(route: string, childprocess: ChildProcess | string, key?: string): any;
-    subscribeToProcess(route: string, processId: string, callback?: ((res: any) => void) | string, key?: string): any;
+    subscribeProcess(route: string, childprocess: ChildProcess | string, key?: string, subInput?: boolean): any;
+    subscribeToProcess(route: string, processId: string, callback?: ((res: any) => void) | string, key?: string, subInput?: boolean): any;
 }

@@ -39,9 +39,9 @@ export declare type ConnectionInfo = {
     onclose?: (connection: ConnectionInfo, ...args: any[]) => void;
 };
 export declare type RouterOptions = {
-    services?: {
-        [key: string]: Service | any | {
-            service: Service | any;
+    graph?: {
+        [key: string]: Service | Graph | any | {
+            service: Service | Graph | any;
             connections: string[] | {
                 [key: string]: any;
             };
@@ -56,7 +56,6 @@ export declare type RouterOptions = {
             };
         };
     };
-    syncServices?: boolean;
     order?: string[];
     [key: string]: any;
 } & ServiceOptions;
@@ -113,15 +112,14 @@ export declare class Router extends Service {
         [key: string]: any;
         _id: string;
     }, terminate?: boolean) => boolean;
-    addService: (service: Service, connections?: any, syncServices?: boolean, source?: string, order?: string[]) => void;
+    routeService: (service: Service, connections?: any, source?: string, order?: string[]) => void;
     addServiceConnections: (service: Service | string, connectionsKey: any, source?: string) => {};
     openConnection: (service: string | Service, options: {
         [key: string]: any;
     }, source?: string, ...args: any[]) => Promise<void | ConnectionInfo>;
     terminate: (connection: string | ConnectionInfo) => boolean;
-    subscribeThroughConnection: (route: string, relay: string | ConnectionInfo, endpoint: string, callback: string | ((res: any) => void), key?: string, ...args: any[]) => Promise<unknown>;
+    subscribeThroughConnection: (route: string, relay: string | ConnectionInfo, endpoint: string, callback: string | ((res: any) => void), ...args: any[]) => Promise<unknown>;
     routeConnections: (route: string, transmitter: string | ConnectionInfo, receiver: string | ConnectionInfo, ...args: any[]) => Promise<number>;
-    syncServices: () => void;
     setUserData: (user: string | User, data: string | {
         [key: string]: any;
     }) => boolean;

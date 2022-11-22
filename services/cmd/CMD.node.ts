@@ -170,6 +170,8 @@ export class CMDService extends Service {
         return newprocess;
     }
 
+    open = this.createProcess;
+
     abort = (childprocess:ChildProcess|CMDInfo) => {
         if((childprocess as CMDInfo).controller) 
             (childprocess as CMDInfo).controller.abort();
@@ -224,7 +226,7 @@ export class CMDService extends Service {
         return res;
     }
 
-    subscribeProcess(route:string, childprocess:ChildProcess|string,key?:string) {
+    subscribeProcess(route:string, childprocess:ChildProcess|string,key?:string, subInput?:boolean) {
         if(typeof childprocess === 'string' && this.processes[childprocess]) {
             childprocess = this.processes[childprocess].process;
         }
@@ -237,12 +239,12 @@ export class CMDService extends Service {
             } else {
                 (childprocess as ChildProcess).send(JSON.stringify({args:res, callbackId:route}));
             }
-        });
+        },key,subInput);
     } 
 
-    subscribeToProcess(route:string, processId:string, callback?:((res:any)=>void)|string, key?:string) {
+    subscribeToProcess(route:string, processId:string, callback?:((res:any)=>void)|string, key?:string, subInput?:boolean) {
         if(typeof processId === 'string' && this.processes[processId]) {
-            this.subscribe(processId, (res) => {
+            this.__node.state.subscribeTrigger(processId, (res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[processId]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node
@@ -251,7 +253,7 @@ export class CMDService extends Service {
                     else callback(res.args);
                 }
             });
-            return this.processes[processId].request(JSON.stringify({route:'subscribeSocket', args:[route,processId]}));
+            return this.processes[processId].request(JSON.stringify({route:'subscribeSocket', args:[route,processId,key,subInput]}));
         }
     }
 

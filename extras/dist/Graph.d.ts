@@ -1,20 +1,21 @@
 import { EventHandler } from "./services/EventHandler";
 export declare const state: EventHandler;
 export declare type GraphNodeProperties = {
+    __props?: Function | GraphNodeProperties;
+    __operator?: ((...args: any[]) => any) | string;
+    __children?: {
+        [key: string]: GraphNodeProperties;
+    };
+    __listeners?: {
+        [key: string]: ((result: any) => void) | {
+            callback: (result: any) => void;
+        };
+    };
+    __onconnected?: ((node: any) => void | ((node: any) => void)[]);
+    __ondisconnected?: ((node: any) => void | ((node: any) => void)[]);
     __node?: {
         tag?: string;
         state?: EventHandler;
-        operator?: ((...args: any[]) => any) | string;
-        children?: {
-            [key: string]: GraphNodeProperties;
-        };
-        oncreate?: Function | Function[];
-        ondelete?: Function | Function[];
-        listeners?: {
-            [key: string]: ((result: any) => void) | {
-                callback: (result: any) => void;
-            };
-        };
         inputState?: boolean;
         [key: string]: any;
     };
@@ -54,18 +55,28 @@ export declare class GraphNode {
     __node: {
         [key: string]: any;
     };
+    __children?: any;
+    __operator?: any;
+    __listeners?: any;
+    __props?: any;
+    [key: string]: any;
     constructor(properties: any, parent?: {
         [key: string]: any;
     }, graph?: Graph);
-    __subscribe: (callback: string | GraphNode | ((res: any) => void), key?: string, subInput?: boolean) => any;
-    __subscribeState: (callback: string | GraphNode | ((res: any) => void)) => any;
+    __subscribe: (callback: string | GraphNode | ((res: any) => void), key?: string, subInput?: boolean, bound?: string, target?: string) => any;
     __unsubscribe: (sub?: number, key?: string, subInput?: boolean) => any;
     __setOperator: (fn: (...args: any[]) => any) => any;
-    _addLocalState(props?: {
+    __addLocalState(props?: {
         [key: string]: any;
     }): void;
+    __proxyObject: (obj: any) => void;
+    __addOnconnected(callback: (node: any) => void): void;
+    __addDisconnected(callback: (node: any) => void): void;
+    __callConnected(node?: this): void;
+    __callDisconnected(node?: this): void;
 }
 export declare class Graph {
+    [key: string]: any;
     __node: {
         tag: string;
         state: EventHandler;
@@ -92,10 +103,10 @@ export declare class Graph {
     }) => void;
     clearListeners: (node: GraphNode | string, listener?: string) => void;
     get: (tag: any) => any;
-    set: (tag: any, node: any) => void;
+    set: (tag: any, node: any) => Map<string, any>;
     getProps: (node: GraphNode | string, getInitial?: boolean) => void;
-    subscribe: (node: GraphNode | string, key: string | undefined, callback: string | GraphNode | ((res: any) => void), subInput?: boolean) => any;
-    unsubscribe: (node: GraphNode | string, key?: string, sub?: number, subInput?: boolean) => any;
+    subscribe: (node: GraphNode | string, callback: string | GraphNode | ((res: any) => void), key?: string | undefined, subInput?: boolean, target?: string, bound?: string) => any;
+    unsubscribe: (node: GraphNode | string, sub?: number, key?: string, subInput?: boolean) => any;
     setState: (update: {
         [key: string]: any;
     }) => void;

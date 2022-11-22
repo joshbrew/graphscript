@@ -7,6 +7,7 @@ export const state = new EventHandler();
 
 
 export type GraphNodeProperties = {
+    __props?:Function|GraphNodeProperties,
     __operator?:((...args:any[])=>any)|string,
     __children?:{[key:string]:GraphNodeProperties},
     __listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void}},
@@ -32,7 +33,13 @@ export type GraphProperties = {
 
 export type GraphOptions = {
     tree?:{[key:string]:any},
-    loaders?:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties)=>void},
+    loaders?:{[key:string]:(
+        node:GraphNode,
+        parent:Graph|GraphNode,
+        graph:Graph,
+        tree:any,
+        properties:GraphNodeProperties
+    )=>void},
     state?:EventHandler,
     childrenKey?:string,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
@@ -61,6 +68,7 @@ export class GraphNode {
     __children?;
     __operator?;
     __listeners?;
+    __props?;
 
     [key:string]:any
     
@@ -82,6 +90,13 @@ export class GraphNode {
         }
         
         if(typeof properties === 'object') {
+            if(properties.__props) { //e.g. some generic javascript object or class constructor that we want to proxy. Functions passed here are treated as constructors. E.g. pass an HTML canvas element for the node then set this.width on the node to set the canvas width  
+                if (typeof properties.__props === 'function') properties.__props = new properties.__props();
+                if (typeof properties.__props === 'object') {
+                    this.__proxyObject(properties.__props);
+                }
+            }
+
             if (typeof properties.__node === 'string') {
                 //copy
                 if(graph?.get(properties.__node.tag)) {
@@ -135,7 +150,7 @@ export class GraphNode {
             properties.__node.initial = properties; //original object or function
 
             properties.__node = Object.assign(this.__node,properties.__node);
-            Object.assign(this,properties);
+            for(const key in properties) { this[key] = properties[key]; }
 
             if(properties.__operator && parent instanceof GraphNode && parent.__operator) {
                 let sub = parent.__subscribe(this);
@@ -164,7 +179,6 @@ export class GraphNode {
 
     //subscribe an output or input with an arbitrary callback
     __subscribe = (callback:string|GraphNode|((res)=>void), key?:string, subInput?:boolean, bound?:string, target?:string) => {
-
 
         const subscribeToFunction = (k, setTarget = (callback, target?) => callback, triggerCallback=callback) => {
             let sub = this.__node.state.subscribeTrigger(k, triggerCallback);
@@ -255,78 +269,128 @@ export class GraphNode {
         return this.__operator;
     }
 
-    
-// added to GraphNode and Graph
-__addLocalState(props?:{[key:string]:any}) {
-    if(!props) return;
-    if(!this.__node.localState) {
-        this.__node.localState = {};
-    }
-    let localState = this.__node.localState;
-    for (let k in props) {
-        if(typeof props[k] === 'function') {
-            if(!k.startsWith('_')) {
-                let fn = props[k].bind(this) as Function;
-                props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
-                    if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'.'+k+'input',args);
-                    let result = fn(...args);
-                    if(typeof result?.then === 'function') {
-                        result.then((res)=>{ this.__node.state.setValue( this.__node.unique+'.'+k, res ) }).catch(console.error);
-                    } else this.__node.state.setValue(this.__node.unique+'.'+k,result);
-                    return result;
+    __addLocalState(props?:{[key:string]:any}) {
+        if(!props) return;
+        if(!this.__node.localState) {
+            this.__node.localState = {};
+        }
+        let localState = this.__node.localState;
+        for (let k in props) {
+            if(this.__props && this.__props[k]) continue; //already given a local state, continue
+            if(typeof props[k] === 'function') {
+                if(!k.startsWith('_')) {
+                    let fn = props[k].bind(this) as Function;
+                    props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
+                        if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'.'+k+'input',args);
+                        let result = fn(...args);
+                        if(typeof result?.then === 'function') {
+                            if(this.__node.state.triggers[this.__node.unique+'.'+k]) result.then((res)=>{ this.__node.state.setValue( this.__node.unique+'.'+k, res ) }).catch(console.error);
+                        } else if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,result);
+                        return result;
+                    }
+                    this[k] = props[k]; 
                 }
-                this[k] = props[k]; 
+            } else {
+                localState[k] = props[k];
+                //console.log(k, localState[k]);
+
+                let definition = {
+                    get: () => {
+                        return localState[k];
+                    },
+                    set: (v) => {
+                        localState[k] = v;
+                        if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,v); //this will update localState and trigger local key subscriptions
+                    },
+                    enumerable: true,
+                    configurable: true
+                } as any;
+
+                Object.defineProperty(this, k, definition);
+                
+                const ogProps = this.__node.initial;
+                let dec = Object.getOwnPropertyDescriptor(ogProps,k);
+                if(dec === undefined || dec?.configurable) Object.defineProperty(ogProps, k, definition);
             }
-        } else {
-            localState[k] = props[k];
-            //console.log(k, localState[k]);
-
-            let definition = {
-                get: () => {
-                    return localState[k];
-                },
-                set: (v) => {
-                    if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,v); //this will update localState and trigger local key subscriptions
-                    localState[k] = v;
-                },
-                enumerable: true,
-                configurable: true
-            } as any;
-
-            Object.defineProperty(this, k, definition);
-            
-            const ogProps = this.__node.initial;
-            let dec = Object.getOwnPropertyDescriptor(ogProps,k);
-            if(dec === undefined || dec?.configurable) Object.defineProperty(ogProps, k, definition);
         }
     }
-}
 
-__addOnconnected(callback:(node)=>void) {
-    if(Array.isArray(this.__ondisconnected)) { this.__onconnected.push(callback); }
-    else if (typeof this.__onconnected === 'function') { this.__onconnected = [callback,this.__onconnected] }
-    else this.__onconnected = callback;
-}
+    //we can proxy an original object and function outputs on the node
+    __proxyObject = (obj) => {
+        function getAllProperties(obj){ //https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
+            var allProps = []
+            , curr = obj
+            do{
+                if(curr.constructor?.name === 'Object') continue;
+                var props = Object.getOwnPropertyNames(curr)
+                props.forEach(function(prop){
+                    if (allProps.indexOf(prop) === -1)
+                        allProps.push(prop)
+                })
+            }while(curr = Object.getPrototypeOf(curr))
+            return allProps;
+        }
 
-__addDisconnected(callback:(node)=>void) {
-    if(Array.isArray(this.__ondisconnected)) { this.__ondisconnected.push(callback); }
-    else if (typeof this.__ondisconnected === 'function') { this.__ondisconnected = [callback,this.__ondisconnected] }
-    else this.__ondisconnected = callback;
-}
+        let allProps = getAllProperties(obj);
 
-__callConnected(node=this) {
-    if(typeof this.__onconnected === 'function') { this.__onconnected(this); }
-    else if (Array.isArray(this.__onconnected)) { this.__onconnected.forEach((o:Function) => { o(this); }) }
-}
+        for(const k of allProps) {
+            if(typeof this[k] === 'undefined') {
+                if(typeof obj[k] === 'function') {
+                    this[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
+                        if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'.'+k+'input',args);
+                        let result = obj[k](...args);
+                        if(this.__node.state.triggers[this.__node.unique+'.'+k]) {
+                            if(typeof result?.then === 'function') {
+                                result.then((res)=>{ this.__node.state.setValue( this.__node.unique+'.'+k, res ) }).catch(console.error);
+                            } else this.__node.state.setValue(this.__node.unique+'.'+k,result);
+                        }
+                        return result;
+                    }
+                } else {
 
-__callDisconnected(node=this) {
-    if(typeof this.__ondisconnected === 'function') this.__ondisconnected(this);
-    else if (Array.isArray(this.__ondisconnected)) { this.__ondisconnected.forEach((o:Function) => {o(this)}); }
-}
+                    let definition = {
+                        get:()=>{return obj[k]},
+                        set:(value) => { 
+                            obj[k] = value;
+                            if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,value);
+                        },
+                        enumerable: true,
+                        configurable: true
+                    }
+
+                    Object.defineProperty(this, k, definition);
+                }
+            }  
+        }
+    }
+
+    __addOnconnected(callback:(node)=>void) {
+        if(Array.isArray(this.__ondisconnected)) { this.__onconnected.push(callback); }
+        else if (typeof this.__onconnected === 'function') { this.__onconnected = [callback,this.__onconnected] }
+        else this.__onconnected = callback;
+    }
+
+    __addDisconnected(callback:(node)=>void) {
+        if(Array.isArray(this.__ondisconnected)) { this.__ondisconnected.push(callback); }
+        else if (typeof this.__ondisconnected === 'function') { this.__ondisconnected = [callback,this.__ondisconnected] }
+        else this.__ondisconnected = callback;
+    }
+
+    __callConnected(node=this) {
+        if(typeof this.__onconnected === 'function') { this.__onconnected(this); }
+        else if (Array.isArray(this.__onconnected)) { this.__onconnected.forEach((o:Function) => { o(this); }) }
+    }
+
+    __callDisconnected(node=this) {
+        if(typeof this.__ondisconnected === 'function') this.__ondisconnected(this);
+        else if (Array.isArray(this.__ondisconnected)) { this.__ondisconnected.forEach((o:Function) => {o(this)}); }
+    }
 
 }
 
 export class Graph {
+
+    [key:string]:any;
 
     __node:{
         tag:string,
@@ -523,7 +587,7 @@ export class Graph {
             if(!nd && node.includes('.')) {
                 nd = this.get(node.substring(0,node.lastIndexOf('.')));
                 if(typeof nd?.[node.substring(node.lastIndexOf('.')+1)] === 'function') return nd[node.substring(node.lastIndexOf('.')+1)](...args);
-            } else return nd.__operator(...args);
+            } else if(nd?.__operator) return nd.__operator(...args);
         }
         if((node as GraphNode)?.__operator) {
             return (node as GraphNode)?.__operator(...args);
@@ -616,7 +680,6 @@ export class Graph {
 
         let sub;
 
-        //console.log(node,nd);
         if(typeof callback === 'string' && target) {
             let method = this.get(target)?.[callback];
             if(typeof method === 'function') callback = method;
@@ -631,19 +694,24 @@ export class Graph {
 
             nd.__addDisconnected(ondelete);
         } else if (typeof node === 'string') {
-            if(callback instanceof GraphNode && callback.__operator) {
-                sub = (this.get(node) as GraphNode).__subscribe(callback.__operator,key,subInput,target,bound); 
-                let ondelete = () => {
-                    this.get(node).__unsubscribe(sub)
-                    //console.log('unsubscribed', key)
+            if(this.get(node)) {
+                if(callback instanceof GraphNode && callback.__operator) {
+                    sub = (this.get(node) as GraphNode).__subscribe(callback.__operator,key,subInput,target,bound); 
+                    let ondelete = () => {
+                        this.get(node).__unsubscribe(sub)
+                        //console.log('unsubscribed', key)
+                    }
+        
+                    callback.__addDisconnected(ondelete);
                 }
-    
-                callback.__addDisconnected(ondelete);
-            }
-            else if (typeof callback === 'function' || typeof callback === 'string') {
-                sub = (this.get(node) as GraphNode).__subscribe(callback,key,subInput,target,bound); 
-                
-                this.__node.state.getTrigger(this.get(node).__node.unique,sub).source = node;
+                else if (typeof callback === 'function' || typeof callback === 'string') {
+                    sub = (this.get(node) as GraphNode).__subscribe(callback,key,subInput,target,bound); 
+                    
+                    this.__node.state.getTrigger(this.get(node).__node.unique,sub).source = node;
+                }
+            } else {
+                if(typeof callback === 'string') callback = this.__node.nodes.get(callback).__operator; 
+                if(typeof callback === 'function') sub = this.__node.state.subscribeTrigger(node, callback);
             }
         }
         return sub;

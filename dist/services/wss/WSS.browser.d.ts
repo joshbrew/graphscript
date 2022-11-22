@@ -38,10 +38,11 @@ export declare class WSSfrontend extends Service {
     };
     constructor(options?: ServiceOptions);
     openWS: (options?: WebSocketProps) => WebSocketInfo;
+    open: (options?: WebSocketProps) => WebSocketInfo;
     transmit: (data: string | ArrayBufferLike | Blob | ArrayBufferView | ServiceMessage, ws: WebSocket) => boolean;
     terminate: (ws: WebSocket | string) => boolean;
     request: (message: ServiceMessage | any, ws: WebSocket, _id: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, ws: WebSocket | string, callbackId: string | number) => any;
-    subscribeSocket: (route: string, socket: WebSocket | string, key?: string) => any;
-    subscribeToSocket: (route: string, socketId: string, callback?: string | ((res: any) => void), key?: string) => Promise<any>;
+    subscribeSocket: (route: string, socket: WebSocket | string, key?: string, subInput?: boolean) => any;
+    subscribeToSocket: (route: string, socketId: string, callback?: string | ((res: any) => void), key?: string, subInput?: boolean) => Promise<any>;
 }

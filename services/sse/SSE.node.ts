@@ -284,6 +284,8 @@ export class SSEbackend extends Service {
 
     }
 
+    open = this.setupSSE;
+
     streamIterable = (
         path:string,
         iterable:Iterable<any>|AsyncIterable<any>,
@@ -459,8 +461,7 @@ export class SSEbackend extends Service {
         eventName?:string
     ) => {
         if(this.servers[path]) {
-
-            this.subscribe(path,(res) => {
+            this.__node.state.subscribeTrigger(path,(res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[path]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node

@@ -1,6 +1,7 @@
 import { stringifyFast } from "../utils";
 import { Service, ServiceOptions } from "../Service";
 import { User } from "../router/Router";
+import { loaders } from "../../Loaders";
 
 //parse from this object/endpoint and send to that object/endpoint, e.g. single users
 export type PrivateSessionProps = {
@@ -95,8 +96,9 @@ export class SessionsService extends Service {
         shared:{}
     }
 
-    constructor(options:ServiceOptions, users?:{[key:string]:SessionUser}) {
+    constructor(options?:ServiceOptions, users?:{[key:string]:SessionUser}) {
         super(options);
+        this.setLoaders(loaders);
         this.setTree(this);
         if(users) this.users = users;
     }
@@ -667,6 +669,7 @@ export class SessionsService extends Service {
 
     //e.g. run on frontend
     userUpdateCheck = (user:SessionUser) => {
+        //console.log('checking',user, this);
         if(user.sessions) {
             const updateObj = this.getUpdatedUserData(user);
 
@@ -860,7 +863,7 @@ export class SessionsService extends Service {
 
 		// if(!settings.callback) settings.callback = this.STREAMALLLATEST;
 
-        this.subscribe('streamName', (res:any)=>{ 
+        this.subscribe(streamName, (res:any)=>{ 
             if(this.streamSettings[streamName].onupdate) 
                 (this.streamSettings[streamName] as any).onupdate(res,this.streamSettings[streamName]); 
         });
@@ -934,17 +937,17 @@ export class SessionsService extends Service {
 
     streamLoop = {
         __operator:this.getAllStreamUpdates,
-        loop:10
+        __node:{loop:10}
     }
 
     userUpdateLoop = { //this node loop will run separately from the one below it
         __operator:this.userUpdateCheck, 
-        loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
+        __node:{loop:10}//this will set state each iteration so we can trigger subscriptions on session updates :O
     }
 
     sessionLoop = {
         __operator:this.sessionUpdateCheck, 
-        loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
+        __node:{loop:10}//this will set state each iteration so we can trigger subscriptions on session updates :O
     }
 
 

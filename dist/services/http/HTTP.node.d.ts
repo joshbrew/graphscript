@@ -68,6 +68,7 @@ export declare class HTTPbackend extends Service {
     });
     onStarted: (protocol: 'http' | 'https' | string, host: string, port: number) => void;
     setupServer: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
+    open: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
     setupHTTPserver: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
     setupHTTPSserver: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
     transmit: (message: any | ServiceMessage, options: string | {
@@ -104,12 +105,12 @@ export declare class HTTPbackend extends Service {
         redirect?: string;
     }) => Promise<unknown>;
     request: (options: ReqOptions | any, send?: any, ondata?: (chunk: any) => void, onend?: () => void) => http.ClientRequest;
-    post: (url: string | URL, data: any, headers?: {
+    POST: (url: string | URL, data: any, headers?: {
         [key: string]: any;
         'Content-Type'?: string;
         'Content-Length'?: number;
     }) => http.ClientRequest;
-    get: (url: string | URL | http.RequestOptions) => Promise<Buffer>;
+    GET: (url: string | URL | http.RequestOptions) => Promise<Buffer>;
     terminate: (served: string | ServerInfo) => void;
     getRequestBody(req: http.IncomingMessage): Promise<Buffer>;
     addPage: (path: string, template: string) => void;
@@ -117,11 +118,5 @@ export declare class HTTPbackend extends Service {
     buildPage: (pageStructure: string | string[] | {
         [key: string]: any;
     } | ((...args: any) => any), baseTemplate: string) => string;
-    GET: (url: string | URL | http.RequestOptions) => Promise<Buffer>;
-    POST: (url: string | URL, data: any, headers?: {
-        [key: string]: any;
-        'Content-Type'?: string;
-        'Content-Length'?: number;
-    }) => http.ClientRequest;
     hotreload: (socketURL?: string | URL) => string;
 }

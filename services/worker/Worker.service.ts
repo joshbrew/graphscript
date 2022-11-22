@@ -220,10 +220,11 @@ export class WorkerService extends Service {
 
                 }
             } else if(rt.__parent && rt.parentRoute) {
+                console.log(rt);
                 if(typeof rt.__parent === 'string' && (tree[rt.__parent] as any)?.worker) {
-                    ((tree[rt.__parent] as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt.__node.tag, rt.blocking);
+                    ((tree[rt.__parent] as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt.__operator, rt.blocking);
                 } else if((rt.__parent as any)?.worker) {
-                    ((rt.__parent as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt.__node.tag, rt.blocking);
+                    ((rt.__parent as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt.__operator, rt.blocking);
                 }
             }
             //console.log(rt);
@@ -627,7 +628,9 @@ export class WorkerService extends Service {
     subscribeWorker = (
         route:string, 
         worker:WorkerInfo|Worker|string|MessagePort, 
-        blocking?:boolean //requires a WorkerInfo object 
+        blocking?:boolean, //requires a WorkerInfo object 
+        key?:string,
+        subInput?:boolean
     ) => {
 
         let callback:(res:any) => void;
@@ -695,21 +698,21 @@ export class WorkerService extends Service {
             else worker = this.workers[worker].worker;
         } //else we are subscribing to window
 
-        return this.subscribe(route,callback);
+        return this.subscribe(route,callback,key,subInput);
     }
 
     subscribeToWorker = (
         route:string, 
         workerId:string, 
         callback?:((res:any)=>void)|string,
-        blocking?:boolean
+        blocking?:boolean,
+        key?:string,
+        subInput?:boolean
     ) => {
 
-        //console.log('subscribeToWorker',route);
 
         if(typeof workerId === 'string' && this.workers[workerId]) {
-            this.subscribe(workerId, (res) => {
-                //console.log('res',res);
+            this.__node.state.subscribeTrigger(workerId, (res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[workerId]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node
@@ -718,7 +721,7 @@ export class WorkerService extends Service {
                     else callback(res.args);
                 }
             });
-            return this.workers[workerId].run('subscribeWorker', [route, workerId, blocking]);
+            return this.workers[workerId].run('subscribeWorker', [route, workerId, blocking, key, subInput]);
         }
     }
 

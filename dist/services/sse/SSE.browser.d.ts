@@ -40,11 +40,12 @@ export declare class SSEfrontend extends Service {
     };
     constructor(options?: ServiceOptions);
     openSSE: (options: EventSourceProps) => EventSourceInfo;
+    open: (options: EventSourceProps) => EventSourceInfo;
     POST: (message: any | ServiceMessage, url?: string | URL, type?: XMLHttpRequestResponseType, mimeType?: string | undefined) => Promise<unknown>;
     transmit: (message: any | ServiceMessage, url: string | URL) => Promise<unknown>;
     request: (message: ServiceMessage | any, url: string, method?: string, sessionId?: string) => Promise<unknown>;
     runRequest: (message: any, url: string | any, callbackId: string | number, sessionId?: string) => any;
-    subscribeSSE: (route: string, url: string, key?: string) => any;
-    subscribeToSSE: (route: string, url: string, callback?: string | ((res: any) => void), sessionId?: string, key?: string) => Promise<any>;
+    subscribeSSE: (route: string, url: string, key?: string, subInput?: boolean) => any;
+    subscribeToSSE: (route: string, url: string, callback?: string | ((res: any) => void), sessionId?: string, key?: string, subInput?: boolean) => Promise<any>;
     terminate: (sse: EventSourceInfo | EventSource | string) => void;
 }

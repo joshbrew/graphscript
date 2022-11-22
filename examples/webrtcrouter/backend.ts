@@ -19,7 +19,7 @@ import { SessionsService } from "../../services/sessions/sessions.service";
 import { scriptBoilerPlate } from "../../services/http/boilerplate";
 
 const router = new Router({
-    services:{
+    graph:{
         'sessions':SessionsService,
         'wss':WSSbackend,
         'sse':SSEbackend,
@@ -52,6 +52,8 @@ const router = new Router({
                         }
                     },
                     onopen:(served)=>{
+
+                        console.log('server opened!');
 
                         router.openConnection(
                             'wss',
@@ -111,6 +113,8 @@ const router = new Router({
 
 //router.services.sessions.users = router.users;
 
+//console.log(Object.keys(router.services));
+
 router.addUser({
     _id:'admin'
 });
@@ -128,10 +132,10 @@ let session = (router.services.sessions as SessionsService).openSharedSession(
     'admin'
 );
 
-router.run('sessions.sessionLoop');
+router.run('sessionLoop');
 
 router.subscribe('addUser', (user:User) => {
-    console.log('new user!', user._id)
+    console.log('new user!', user._id);
     if(typeof user === 'object') {
         let joined = (router.services.sessions as SessionsService).joinSession('webrtcrooms', user._id);
         if(joined) {
@@ -140,4 +144,4 @@ router.subscribe('addUser', (user:User) => {
     }
 });
 
-//console.log('router nodes',router.nodes.keys(),'\n\n wss nodes',router.services.wss.nodes.keys())
+//console.log('router nodes',router.__node.nodes.keys())

@@ -44,7 +44,7 @@ export declare const branching: (node: GraphNode, parent: GraphNode | Graph, gra
 export declare const triggerListenerOncreate: (node: GraphNode, parent: GraphNode | Graph, graph: Graph) => void;
 /** Trigger listeners oncreate with specific arguments
  *
- *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, binding:{any} }
+ *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, binding:{[key:string]:any} }
  *
  */
 export declare const bindListener: (node: GraphNode, parent: GraphNode | Graph, graph: Graph) => void;

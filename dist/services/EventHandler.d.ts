@@ -12,4 +12,6 @@ export declare class EventHandler {
     subscribeTrigger: (key: string, onchange: (res: any) => void) => number;
     unsubscribeTrigger: (key: string, sub?: number) => boolean;
     subscribeTriggerOnce: (key: string, onchange: (res: any) => void) => void;
+    getTrigger: (key: any, sub: any) => any;
+    onRemoved: any;
 }

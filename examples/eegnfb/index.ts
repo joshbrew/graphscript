@@ -354,7 +354,6 @@ const webappHtml = {
                                                                     result:any
                                                                 )=>{
                                                                     GameState.latestRMS = result;
-                                                                    //console.log('vrms result', result); 
                                                                 }
                                                             },
                                                             rmscsv:{

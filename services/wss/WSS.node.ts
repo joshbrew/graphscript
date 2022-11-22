@@ -90,6 +90,12 @@ export class WSSbackend extends Service {
         this.setTree(this);
     }
 
+    open = (options:SocketServerProps | SocketProps) => {
+        if((options as SocketServerProps)?.server) {
+            return this.setupWSS(options as SocketServerProps);
+        } else return this.openWS(options as SocketProps);
+    }
+
     setupWSS = (
         options:SocketServerProps,
     ) => {
@@ -287,6 +293,7 @@ export class WSSbackend extends Service {
             socket.on('message', (data:any)=> {
                 if(ArrayBuffer.isView(data)) data = data.toString();
                 this.receive(data,socket,this.sockets[address]); 
+                //console.log('socket received',data,Array.from(this.__node.nodes.keys()));
                 if(options.keepState) {
                     this.setState({[address]:data});
                 }
@@ -568,7 +575,7 @@ export class WSSbackend extends Service {
 
     subscribeToSocket = (route:string, socketId:string, callback?:string|((res:any)=>void), key?:string, subInput?:boolean) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
-            this.subscribe(socketId, (res) => {
+            this.__node.state.subscribeTrigger(socketId, (res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[socketId]:res.args});
                     else if(typeof callback === 'string') { //just set state 
@@ -580,11 +587,5 @@ export class WSSbackend extends Service {
             return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId,key,subInput]});
         }
     }
-
-    open = (options:SocketServerProps|SocketProps) => {
-        if((options as SocketServerProps).server) return this.setupWSS(options as SocketServerProps);
-        else return this.openWS(options as SocketProps);
-    }
-
 
 }

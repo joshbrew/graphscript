@@ -66,12 +66,13 @@ export declare class SSEbackend extends Service {
     };
     constructor(options?: ServiceOptions);
     setupSSE: (options: SSEProps) => false | SSEChannelInfo;
+    open: (options: SSEProps) => false | SSEChannelInfo;
     streamIterable: (path: string, iterable: Iterable<any> | AsyncIterable<any>, sessionId?: string, eventName?: string) => Promise<void> | Promise<void>[];
     streamReadable: (path: string, readable: Readable, sessionId?: string, eventName?: string) => Promise<boolean> | Promise<boolean>[];
     transmit: (data: string | ServiceMessage, path?: string, eventName?: string, sessionId?: string) => boolean;
     request: (message: any, path: string, method?: string, sessionId?: string, eventName?: string) => Promise<any>;
     runRequest: (message: any, path: string, callbackId: string | number, sessionId?: string) => any;
-    subscribeSSE: (route: string, path: string, sessionId?: string, eventName?: string, key?: string) => any;
-    subscribeToSSE: (route: string, path: string, callback?: string | ((res: any) => void), sessionId?: string, eventName?: string, key?: string) => Promise<number> | Promise<number>[];
+    subscribeSSE: (route: string, path: string, sessionId?: string, eventName?: string) => any;
+    subscribeToSSE: (route: string, path: string, callback?: string | ((res: any) => void), sessionId?: string, eventName?: string) => Promise<number> | Promise<number>[];
     terminate: (sse: string | SSEChannelInfo) => boolean;
 }

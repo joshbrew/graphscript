@@ -3894,7 +3894,7 @@ var EventHandler = class {
           this.triggers[key] = [];
         }
         let l = this.triggers[key].length;
-        this.triggers[key].push({ idx: l, onchange });
+        this.triggers[key].push({ sub: l, onchange });
         return this.triggers[key].length - 1;
       } else
         return void 0;
@@ -3905,15 +3905,17 @@ var EventHandler = class {
         if (!sub)
           delete this.triggers[key];
         else {
-          let idx = void 0;
+          let sub2 = void 0;
           let obj = triggers.find((o, i) => {
-            if (o.idx === sub) {
-              idx = i;
+            if (o.sub === sub2) {
+              sub2 = i;
               return true;
             }
           });
           if (obj)
-            triggers.splice(idx, 1);
+            triggers.splice(sub2, 1);
+          if (this.onRemoved)
+            this.onRemoved(obj);
           return true;
         }
       }
@@ -3925,6 +3927,12 @@ var EventHandler = class {
         this.unsubscribeTrigger(key, sub);
       };
       sub = this.subscribeTrigger(key, changed);
+    };
+    this.getTrigger = (key, sub) => {
+      for (const s in this.triggers[key]) {
+        if (this.triggers[key][s].sub === sub)
+          return this.triggers[key][s];
+      }
     };
     if (typeof data === "object")
       this.data = data;
@@ -3940,24 +3948,53 @@ var GraphNode = class {
       unique: `${Math.random()}`,
       state
     };
-    this.__subscribe = (callback, key, subInput) => {
+    this.__subscribe = (callback, key, subInput, bound, target) => {
+      const subscribeToFunction = (k, setTarget = (callback2, target2) => callback2, triggerCallback = callback) => {
+        let sub = this.__node.state.subscribeTrigger(k, triggerCallback);
+        let trigger = this.__node.state.getTrigger(k, sub);
+        trigger.source = this.__node.tag;
+        if (key)
+          trigger.key = key;
+        trigger.target = setTarget(callback);
+        if (bound)
+          trigger.bound = bound;
+        return sub;
+      };
+      const subscribeToGraph = (callback2) => {
+        let fn = this.__node.graph.get(callback2);
+        if (!fn && callback2.includes(".")) {
+          let n = this.__node.graph.get(callback2.substring(0, callback2.lastIndexOf(".")));
+          let key2 = callback2.substring(callback2.lastIndexOf(".") + 1);
+          if (n && typeof n[key2] === "function")
+            callback2 = (...args) => {
+              return n[key2](...args);
+            };
+        }
+      };
       if (key) {
         if (!this.__node.localState) {
           this.__addLocalState(this);
         }
         if (typeof callback === "string") {
-          if (this.__node.graph)
-            callback = this.__node.graph.get(callback);
-          else
-            callback = this.__node.graph.nodes.get(callback);
+          if (typeof this[callback] === "function")
+            callback = this[callback];
+          else if (this.__node.graph)
+            subscribeToGraph(callback);
         }
-        if (typeof callback === "function") {
-          return this.__node.events.subscribeTrigger(subInput ? key + "input" : key, callback);
-        } else if (callback?.__node)
-          return this.__node.events.subscribeTrigger(subInput ? key + "input" : key, (state2) => {
-            if (callback.__operator)
-              callback.__operator(state2);
-          });
+        let sub;
+        let k = subInput ? this.__node.unique + "." + key + "input" : this.__node.unique + "." + key;
+        if (typeof callback === "function")
+          sub = subscribeToFunction(k);
+        else if (callback?.__node)
+          sub = subscribeToFunction(
+            k,
+            (callback2, target2) => target2 ? target2 : callback2.__node.unique,
+            (state2) => {
+              if (callback.__operator)
+                callback.__operator(state2);
+            }
+          );
+        return sub;
       } else {
         if (typeof callback === "string") {
           if (this.__node.graph)
@@ -3965,60 +4002,50 @@ var GraphNode = class {
           else
             callback = this.__node.graph.nodes.get(callback);
         }
-        if (typeof callback === "function") {
-          return this.__node.state.subscribeTrigger(subInput ? this.__node.tag + "input" : this.__node.tag, callback);
-        } else if (callback?.__node)
-          return this.__node.state.subscribeTrigger(subInput ? this.__node.tag + "input" : this.__node.tag, (res) => {
-            if (callback.__operator)
-              callback.__operator(res);
-          });
+        let sub;
+        let k = subInput ? this.__node.unique + "input" : this.__node.unique;
+        if (typeof callback === "function")
+          sub = subscribeToFunction(k);
+        else if (callback?.__node)
+          sub = subscribeToFunction(
+            k,
+            (callback2, target2) => target2 ? target2 : callback2.__node.unique,
+            (state2) => {
+              if (callback.__operator)
+                callback.__operator(state2);
+            }
+          );
+        return sub;
       }
-    };
-    this.__subscribeState = (callback) => {
-      if (typeof callback === "string") {
-        if (this.__node.graph)
-          callback = this.__node.graph.get(callback);
-        else
-          callback = this.__node.graph.nodes.get(callback);
-      }
-      if (typeof callback === "function") {
-        return this.__node.state.subscribeTrigger(this.__node.unique, callback);
-      } else if (callback?.__node)
-        return this.__node.state.subscribeTrigger(this.__node.unique, (state2) => {
-          if (callback?.__operator)
-            callback.__operator(state2);
-        });
     };
     this.__unsubscribe = (sub, key, subInput) => {
-      if (key && this.__node.events)
-        return this.__node.events.unsubscribeTrigger(subInput ? key + "input" : key, sub);
-      else
-        return this.__node.state.unsubscribeTrigger(subInput ? this.__node.tag + "input" : this.__node.tag, sub);
+      if (key) {
+        return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique + "." + key + "input" : this.__node.unique + "." + key, sub);
+      } else
+        return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique + "input" : this.__node.unique, sub);
     };
     this.__setOperator = (fn) => {
       fn = fn.bind(this);
       this.__operator = (...args) => {
         if (this.__node.inputState)
-          this.__node.events.setValue(this.__node.tag + "input", args);
+          this.__node.state.setValue(this.__node.unique + "input", args);
         let result = fn(...args);
         if (typeof result?.then === "function") {
           result.then((res) => {
             if (res !== void 0)
-              this.__node.state.setValue(this.__node.tag, res);
+              this.__node.state.setValue(this.__node.unique, res);
           }).catch(console.error);
         } else if (result !== void 0)
-          this.__node.state.setValue(this.__node.tag, result);
+          this.__node.state.setValue(this.__node.unique, result);
         return result;
       };
-      this.default = this.__operator;
-      if (typeof this.__node.initial === "object")
-        this.__node.initial.default = this.__operator;
       return this.__operator;
     };
     if (typeof properties === "function") {
       properties = {
         __operator: properties,
         __node: {
+          forward: true,
           tag: properties.name
         }
       };
@@ -4037,8 +4064,9 @@ var GraphNode = class {
         properties.__node = {};
       if (!properties.__parent && parent)
         properties.__parent = parent;
-      if (graph)
+      if (graph) {
         properties.__node.graph = graph;
+      }
       if (properties.__operator) {
         if (typeof properties.__operator === "string") {
           if (graph) {
@@ -4084,6 +4112,22 @@ var GraphNode = class {
           parent?.__unsubscribe(sub);
         };
         this.__addDisconnected(ondelete);
+      } else if (typeof properties.default === "function" && !properties.__operator) {
+        let fn = properties.default.bind(this);
+        this.default = (...args) => {
+          if (this.__node.inputState)
+            this.__node.state.setValue(this.__node.unique + "input", args);
+          let result = fn(...args);
+          if (typeof result?.then === "function") {
+            result.then((res) => {
+              if (res !== void 0)
+                this.__node.state.setValue(this.__node.unique, res);
+            }).catch(console.error);
+          } else if (result !== void 0)
+            this.__node.state.setValue(this.__node.unique, result);
+          return result;
+        };
+        properties.default = this.default;
       }
       if (properties instanceof Graph)
         this.__node.source = properties;
@@ -4095,9 +4139,6 @@ var GraphNode = class {
     if (!this.__node.localState) {
       this.__node.localState = {};
     }
-    if (!this.__node.events) {
-      this.__node.events = new EventHandler(this.__node.localState);
-    }
     let localState = this.__node.localState;
     for (let k in props) {
       if (typeof props[k] === "function") {
@@ -4105,14 +4146,14 @@ var GraphNode = class {
           let fn = props[k].bind(this);
           props[k] = (...args) => {
             if (this.__node.inputState)
-              this.__node.events.setValue(k + "input", args);
+              this.__node.state.setValue(this.__node.unique + "." + k + "input", args);
             let result = fn(...args);
             if (typeof result?.then === "function") {
               result.then((res) => {
-                this.__node.events.setValue(k, res);
+                this.__node.state.setValue(this.__node.unique + "." + k, res);
               }).catch(console.error);
             } else
-              this.__node.events.setValue(k, result);
+              this.__node.state.setValue(this.__node.unique + "." + k, result);
             return result;
           };
           this[k] = props[k];
@@ -4124,10 +4165,9 @@ var GraphNode = class {
             return localState[k];
           },
           set: (v) => {
-            if (this.__node.state.triggers[this.__node.unique]) {
-              this.__node.state.setValue(this.__node.unique, this);
-            }
-            this.__node.events.setValue(k, v);
+            if (this.__node.state.triggers[this.__node.unique + "." + k])
+              this.__node.state.setValue(this.__node.unique + "." + k, v);
+            localState[k] = v;
           },
           enumerable: true,
           configurable: true
@@ -4324,8 +4364,15 @@ var Graph = class {
     this.removeTree = (tree) => {
     };
     this.run = (node, ...args) => {
-      if (typeof node === "string")
-        node = this.get(node);
+      if (typeof node === "string") {
+        let nd = this.get(node);
+        if (!nd && node.includes(".")) {
+          nd = this.get(node.substring(0, node.lastIndexOf(".")));
+          if (typeof nd?.[node.substring(node.lastIndexOf(".") + 1)] === "function")
+            return nd[node.substring(node.lastIndexOf(".") + 1)](...args);
+        } else
+          return nd.__operator(...args);
+      }
       if (node?.__operator) {
         return node?.__operator(...args);
       }
@@ -4337,22 +4384,23 @@ var Graph = class {
           for (const k in listeners[key]) {
             let n = this.get(k);
             let sub;
-            if (typeof listeners[key][k] === "function")
+            if (typeof listeners[key][k] !== "object")
               listeners[key][k] = { callback: listeners[key][k] };
-            listeners[key][k].callback = listeners[key][k].callback.bind(node);
+            if (typeof listeners[key][k].callback === "function")
+              listeners[key][k].callback = listeners[key][k].callback.bind(node);
             if (typeof node.__listeners !== "object")
               node.__listeners = {};
             if (!n) {
               let tag = k.substring(0, k.lastIndexOf("."));
               n = this.get(tag);
               if (n) {
-                sub = this.subscribe(n, listeners[key][k].callback, k.substring(k.lastIndexOf(".") + 1), listeners[key][k].inputState);
+                sub = this.subscribe(n, listeners[key][k].callback, k.substring(k.lastIndexOf(".") + 1), listeners[key][k].inputState, key, k);
                 if (typeof node.__listeners[k] !== "object")
                   node.__listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState };
                 node.__listeners[k].sub = sub;
               }
             } else {
-              sub = this.subscribe(n, listeners[key][k].callback, void 0, listeners[key][k].inputState);
+              sub = this.subscribe(n, listeners[key][k].callback, void 0, listeners[key][k].inputState, key, k);
               if (typeof node.__listeners[k] !== "object")
                 node.__listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState };
               node.__listeners[k].sub = sub;
@@ -4405,28 +4453,40 @@ var Graph = class {
         }
       }
     };
-    this.subscribe = (node, callback, key, subInput) => {
+    this.subscribe = (node, callback, key, subInput, target, bound) => {
       let nd = node;
       if (!(node instanceof GraphNode))
         nd = this.get(node);
       let sub;
+      if (typeof callback === "string" && target) {
+        let method = this.get(target)?.[callback];
+        if (typeof method === "function")
+          callback = method;
+      }
       if (nd instanceof GraphNode) {
-        sub = nd.__subscribe(callback, key, subInput);
+        sub = nd.__subscribe(callback, key, subInput, target, bound);
         let ondelete = () => {
           nd.__unsubscribe(sub, key, subInput);
         };
         nd.__addDisconnected(ondelete);
       } else if (typeof node === "string") {
-        if (typeof callback === "string")
-          callback = this.get(callback);
-        if (callback instanceof GraphNode && callback.__operator) {
-          sub = this.__node.state.subscribeTrigger(node, callback.__operator);
-          let ondelete = () => {
-            this.__node.state.unsubscribeTrigger(node, sub);
-          };
-          callback.__addDisconnected(ondelete);
-        } else if (typeof callback === "function")
-          sub = this.__node.state.subscribeTrigger(node, callback);
+        if (this.get(node)) {
+          if (callback instanceof GraphNode && callback.__operator) {
+            sub = this.get(node).__subscribe(callback.__operator, key, subInput, target, bound);
+            let ondelete = () => {
+              this.get(node).__unsubscribe(sub);
+            };
+            callback.__addDisconnected(ondelete);
+          } else if (typeof callback === "function" || typeof callback === "string") {
+            sub = this.get(node).__subscribe(callback, key, subInput, target, bound);
+            this.__node.state.getTrigger(this.get(node).__node.unique, sub).source = node;
+          }
+        } else {
+          if (typeof callback === "string")
+            callback = this.__node.nodes.get(callback).__operator;
+          if (typeof callback === "function")
+            sub = this.__node.state.subscribeTrigger(node, callback);
+        }
       }
       return sub;
     };
@@ -4780,7 +4840,7 @@ var Service = class extends Graph {
     this.pipeOnce = (source, destination, endpoint, method, callback) => {
       if (source instanceof GraphNode) {
         if (callback)
-          return source.__node.state.subscribeTriggerOnce(source.__node.tag, (res) => {
+          return source.__node.state.subscribeTriggerOnce(source.__node.unique, (res) => {
             let mod = callback(res);
             if (mod !== void 0)
               this.transmit({ route: destination, args: mod, method });
@@ -4788,11 +4848,11 @@ var Service = class extends Graph {
               this.transmit({ route: destination, args: res, method }, endpoint);
           });
         else
-          return this.__node.state.subscribeTriggerOnce(source.__node.tag, (res) => {
+          return this.__node.state.subscribeTriggerOnce(source.__node.unique, (res) => {
             this.transmit({ route: destination, args: res, method }, endpoint);
           });
       } else if (typeof source === "string")
-        return this.__node.state.subscribeTriggerOnce(source, (res) => {
+        return this.__node.state.subscribeTriggerOnce(this.__node.nodes.get(source).__node.unique, (res) => {
           this.transmit({ route: destination, args: res, method }, endpoint);
         });
     };
@@ -6183,7 +6243,7 @@ var SSEbackend = class extends Service {
     };
     this.subscribeToSSE = (route, path2, callback, sessionId, eventName) => {
       if (this.servers[path2]) {
-        this.subscribe(path2, (res) => {
+        this.__node.state.subscribeTrigger(path2, (res) => {
           if (res?.callbackId === route) {
             if (!callback)
               this.setState({ [path2]: res.args });
@@ -6715,7 +6775,7 @@ var WSSbackend = class extends Service {
     };
     this.subscribeToSocket = (route, socketId, callback, key, subInput) => {
       if (typeof socketId === "string" && this.sockets[socketId]) {
-        this.subscribe(socketId, (res) => {
+        this.__node.state.subscribeTrigger(socketId, (res) => {
           if (res?.callbackId === route) {
             if (!callback)
               this.setState({ [socketId]: res.args });

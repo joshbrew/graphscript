@@ -79,6 +79,7 @@ export declare class WSSbackend extends Service {
         };
     };
     constructor(options?: ServiceOptions);
+    open: (options: SocketServerProps | SocketProps) => SocketServerInfo | SocketInfo;
     setupWSS: (options: SocketServerProps) => SocketServerInfo;
     openWS: (options: SocketProps) => SocketInfo;
     transmit: (message: string | ArrayBufferLike | Blob | ArrayBufferView | Buffer[] | ServiceMessage, ws: WebSocketServer | WebSocket) => void;
@@ -86,7 +87,6 @@ export declare class WSSbackend extends Service {
     terminate: (ws: WebSocketServer | WebSocket | string) => boolean;
     request: (message: ServiceMessage | any, ws: WebSocket, _id: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, ws: WebSocket | string, callbackId: string | number) => any;
-    subscribeSocket: (route: string, socket: WebSocket | string, key?: string) => any;
-    subscribeToSocket: (route: string, socketId: string, callback?: string | ((res: any) => void), key?: string) => Promise<any>;
-    open: (options: SocketServerProps | SocketProps) => SocketServerInfo | SocketInfo;
+    subscribeSocket: (route: string, socket: WebSocket | string, key?: string, subInput?: boolean) => any;
+    subscribeToSocket: (route: string, socketId: string, callback?: string | ((res: any) => void), key?: string, subInput?: boolean) => Promise<any>;
 }

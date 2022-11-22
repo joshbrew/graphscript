@@ -27,10 +27,10 @@
     "async" "^2.1.4"
     "pako" "^1.0.4"
 
-"bson-objectid@~2.0.3":
-  "integrity" "sha512-WYwVtY9yqk179EPMNuF3vcxufdrGLEo2XwqdRVbfLVe9X6jLt7WKZQgP+ObOcprakBGbHxzl76tgTaieqsH29g=="
-  "resolved" "https://registry.npmjs.org/bson-objectid/-/bson-objectid-2.0.3.tgz"
-  "version" "2.0.3"
+"bson-objectid@~2.0.4":
+  "integrity" "sha512-vgnKAUzcDoa+AeyYwXCoHyF2q6u/8H46dxu5JN+4/TZeq/Dlinn0K6GvxsCLb3LHUJl0m/TLiEK31kUwtgocMQ=="
+  "resolved" "https://registry.npmjs.org/bson-objectid/-/bson-objectid-2.0.4.tgz"
+  "version" "2.0.4"
 
 "gpujsutils@~1.0.12":
   "integrity" "sha512-Zu6k59yavNqprmGGlrZT7fEVVex1Y5MWH/Eq7N5Mx8FrYRotmhtf2H4lAtlX9kR+TxffW51JUruJXnFOEvUg4Q=="
@@ -60,10 +60,10 @@
   "resolved" "https://registry.npmjs.org/web-worker/-/web-worker-1.2.0.tgz"
   "version" "1.2.0"
 
-"webgl-plot-utils@~0.3.8":
-  "integrity" "sha512-NerHDByA+NGq47ffFhoS0iLPiasjutaqyz6LCQUNdwJw+v/fITvSUcov+j2BHZY5pS2G8NDpApPDtZlfVgpojQ=="
-  "resolved" "https://registry.npmjs.org/webgl-plot-utils/-/webgl-plot-utils-0.3.8.tgz"
-  "version" "0.3.8"
+"webgl-plot-utils@~0.3.13":
+  "integrity" "sha512-uXUK4kmau2HZYrZ3gGy3olKnmYAXNAMfEIzuzD28pxQrmerxZPm73scyxeTph65l06W9gJwAB4OTDWrD5n4MWg=="
+  "resolved" "https://registry.npmjs.org/webgl-plot-utils/-/webgl-plot-utils-0.3.13.tgz"
+  "version" "0.3.13"
   dependencies:
     "webgl-plot" "~0.7.0"
 

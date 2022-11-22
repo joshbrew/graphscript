@@ -42,7 +42,8 @@ export class Service extends Graph {
     addServices(services:{[key:string]:Service|Function|{[key:string]:any}}) {
         for(const s in services) {
             if(typeof services[s] === 'function') services[s] = new (services as any)[s](); //instantiate a constructor
-            if((services[s] as Service)?.__node?.loaders) Object.assign(this.__node.loaders,(services[s] as Service).__node.loaders); 
+            if((services[s] as Service)?.__node?.loaders) 
+                Object.assign(this.__node.loaders,(services[s] as Service).__node.loaders); 
             if(services[s] instanceof Service) {
                 (services[s] as Service).__node.nodes.forEach((n,tag) => { 
                     if(!this.__node.nodes.get(tag)) {
@@ -50,7 +51,9 @@ export class Service extends Graph {
                     } else this.__node.nodes.set(s+'.'+tag,n);
                 })
             }
-            else if(typeof services[s] === 'object') this.setTree(services[s]); //just a tree
+            else if(typeof services[s] === 'object') {
+                this.setTree(services[s]); //just a tree
+            }
         }
     }
 
@@ -199,7 +202,7 @@ export class Service extends Graph {
     recursivelyAssign = recursivelyAssign;
     spliceTypedArray = spliceTypedArray;
     ping = ()=>{ //define functions, graph props, etc. All methods defined in a route object are callable
-        console.log('pinged');//this.transmit('pong');
+        console.log('pinged!');//this.transmit('pong');
         return 'pong';
     }
     echo = (...args:any)=>{ //this transmits input arguments, so to echo on a specific service do e.g. 'wss/echo'

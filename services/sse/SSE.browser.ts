@@ -179,6 +179,8 @@ export class SSEfrontend extends Service {
         return sse;
     }
 
+    open = this.openSSE;
+
     POST = (
         message:any|ServiceMessage, 
         url:string|URL='http://localhost:8080/echo', 
@@ -274,7 +276,7 @@ export class SSEfrontend extends Service {
     
     subscribeToSSE = (route:string, url:string, callback?:string|((res:any)=>void), sessionId?:string, key?:string, subInput?:boolean) => {
         if(url) {
-            this.subscribe(url,(res) => {
+            this.__node.state.subscribeTrigger(url,(res) => {
                 let msg = JSON.parse(res);
                 if(msg?.callbackId === route) {
                     if(!callback) this.setState({[url]:msg.args}); //just set state
