@@ -20,7 +20,7 @@ For happy code!
 For node.js
 `npm i graphscript-node` ~215Kb dist
 
-Core only (only core classes plus unsafe and router services which are minimal) ~20Kb dist
+Core (Graph and Loaders only) ~17Kb dist
 `npm i graphscript-core`
 
 For additional services (currently gpu.js service and the compiled worker dataurl as `gsworker` (or use `graphscript/dist/Worker`))
