@@ -62,7 +62,7 @@ export class DOMService extends Service {
     }
 
     domloader = {
-        'dom':(r:DOMRouteProp & GraphNode, parent:GraphNode & DOMRouteProp, graph:Graph, tree:any, props:any) => {
+        'dom':(r:DOMRouteProp & GraphNode, parent:GraphNode & DOMRouteProp, graph:Graph, tree:any, props:any,key:string) => {
             // console.log(r)
 
 
@@ -78,15 +78,15 @@ export class DOMService extends Service {
             }
             else {
                 if(r.template) { //assume its a component node
-                    r.id = props.__node.tag;
+                    r.id = key;
                     this.addComponent(r as any,r.generateChildElementNodes);
                 }
                 else if(r.context) { //assume its a canvas node
-                    r.id = props.__node.tag;
+                    r.id = key;
                     this.addCanvasComponent(r as any);
                 }
                 else if(r.tagName || r.element) { //assume its an element node
-                    r.id = props.__node.tag;
+                    r.id = key;
                     this.addElement(r as any,r.generateChildElementNodes);
                 }
             }

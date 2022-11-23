@@ -1,7 +1,7 @@
 //@ts-nocheck
 
 //resources
-import { DOMService, WorkerCanvas, GraphNodeProperties } from '../../index';
+import { DOMService, WorkerCanvas, GraphNodeProperties, loaders } from '../../index';
 import { 
     initDevice, 
     workers, 
@@ -68,7 +68,7 @@ const GameState = {
 }
 
 
-const webapp = new DOMService();
+const webapp = new DOMService({loaders});
 webapp.addServices({workers}); //merge the worker service provided by device-decoder for convenience
 
 

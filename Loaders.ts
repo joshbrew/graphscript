@@ -108,21 +108,21 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
  * 
  */
 export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node.__node.animate === true || node.__node.animation) {
-        if(typeof node.__node.animate === 'function') node.__node.animate = node.__node.animate.bind(node);
-        let anim = (node) => {
+    if(node.__node.animate === true || node.animation) {
             let fn = node.__operator;
+
             node.__operator = (...args) => {
                 if(!('animating' in node.__node)) node.__node.animating = true;
                 if(node.__node.animating) {
-                    if(typeof node.__node.animate === 'function') node.__node.animate(...args);
+                    if(typeof node.animation === 'function') node.animation(...args);
                     else fn(...args);
                     requestAnimationFrame(()=>{node.__operator(...args);});
                 }
             }
-            if(node.__node.animating) node.__node.animation();
-        }
-        requestAnimationFrame(anim);
+            if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.animation)) 
+                setTimeout(()=>{requestAnimationFrame(node.__operator())},10);
+
+        
 
         let ondelete = (node) => {
             if(node.__node.animating) node.__node.animating = false;

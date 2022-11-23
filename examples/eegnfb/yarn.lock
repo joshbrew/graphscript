@@ -59,17 +59,17 @@
   dependencies:
     "webgl-plot-utils" "~0.3.13"
 
-"device-decoder@~0.2.38":
-  "integrity" "sha512-bR5LQjNmlAFLoIbFcvgczIS5RPqtq81MFCRWwOCk8fCskPz/G5JG31lQGpMpPHFxI7YcdwfmDNyZ8DSabzL+OQ=="
-  "resolved" "https://registry.npmjs.org/device-decoder/-/device-decoder-0.2.38.tgz"
-  "version" "0.2.38"
+"device-decoder@~0.2.39":
+  "integrity" "sha512-UXfKr/a/x1plkvNecSZiWgegRKm/FNPLp2JjmrsGJ7Z2r/Y3wUj88uRunAjVEiNpjzuwUopxLXut2lUmNkc9wQ=="
+  "resolved" "https://registry.npmjs.org/device-decoder/-/device-decoder-0.2.39.tgz"
+  "version" "0.2.39"
   dependencies:
     "@capacitor-community/bluetooth-le" "~2.0.1"
     "brainsatplay-math" "~0.0.25"
-    "graphscript" "~0.2.2"
-    "graphscript-services" "~0.2.2"
-    "graphscript-services.gpu" "~0.2.2"
-    "graphscript-services.storage" "~0.2.2"
+    "graphscript" "~0.2.4"
+    "graphscript-services" "~0.2.4"
+    "graphscript-services.gpu" "~0.2.4"
+    "graphscript-services.storage" "~0.2.4"
     "webgl-plot-utils" "~0.3.13"
 
 "gpujsutils@~1.0.12":
@@ -77,10 +77,10 @@
   "resolved" "https://registry.npmjs.org/gpujsutils/-/gpujsutils-1.0.12.tgz"
   "version" "1.0.12"
 
-"graphscript-services.gpu@~0.2.2":
-  "integrity" "sha512-Vg79epM9GE5pj25CJ6wXSwQdCKHSpo2c+mOBqN+c2oawjFmLhyjFEVILGDs4q1uK9A6ht7Zn7Zo6uECeFeView=="
-  "resolved" "https://registry.npmjs.org/graphscript-services.gpu/-/graphscript-services.gpu-0.2.2.tgz"
-  "version" "0.2.2"
+"graphscript-services.gpu@~0.2.4":
+  "integrity" "sha512-jq1T4SVLlDEZ2GajSf7/Sx+TIC6qN+MOIfvbYWymtM0vKHr28BLo7vhd+c1CBmseKWtjgR+H/kIYmZtutz6ECQ=="
+  "resolved" "https://registry.npmjs.org/graphscript-services.gpu/-/graphscript-services.gpu-0.2.5.tgz"
+  "version" "0.2.5"
   dependencies:
     "brainsatplay-math" "~0.0.25"
     "browserfs" "^1.4.3"
@@ -88,10 +88,10 @@
     "gpujsutils" "~1.0.12"
     "webgl-plot-utils" "~0.3.13"
 
-"graphscript-services.storage@~0.2.2":
-  "integrity" "sha512-1iRtU2GGZZ0/oz8D7OhnlF0Z4kw0hOvMdrUmh1WSW04/zcRXh7PZNgtSi+PWtx4ggrBpFa4jFgLWUx9pgPxKNg=="
-  "resolved" "https://registry.npmjs.org/graphscript-services.storage/-/graphscript-services.storage-0.2.2.tgz"
-  "version" "0.2.2"
+"graphscript-services.storage@~0.2.4":
+  "integrity" "sha512-rZZeDXM78bkXuShKymwum7nFPMr+28UxecFF6bWSOv4whEPTr1OpREeE41X7j4uj7vJwp+NXpEPIiNdZ1HtLww=="
+  "resolved" "https://registry.npmjs.org/graphscript-services.storage/-/graphscript-services.storage-0.2.4.tgz"
+  "version" "0.2.4"
   dependencies:
     "brainsatplay-math" "~0.0.25"
     "browserfs" "^1.4.3"
@@ -99,10 +99,10 @@
     "gpujsutils" "~1.0.12"
     "webgl-plot-utils" "~0.3.13"
 
-"graphscript-services@~0.2.2":
-  "integrity" "sha512-wA1qslGLnoN/FZEfTxVQKXTwRhAQtEevyJZjZTOYVzsZqm5OJ4cWP78/eh7mY/HSILmWscjfWpdiULbreB7ZZw=="
-  "resolved" "https://registry.npmjs.org/graphscript-services/-/graphscript-services-0.2.2.tgz"
-  "version" "0.2.2"
+"graphscript-services@~0.2.4":
+  "integrity" "sha512-6LfXwYxcxYqPyPh91awQo8mdhWq9HsF2ycAY8tpN3LDAOvlw+b0sUVP0XPgLgp4feXurowaFbi6QXtR/BvGdFw=="
+  "resolved" "https://registry.npmjs.org/graphscript-services/-/graphscript-services-0.2.4.tgz"
+  "version" "0.2.4"
   dependencies:
     "brainsatplay-math" "~0.0.25"
     "browserfs" "^1.4.3"
@@ -111,10 +111,10 @@
     "web-worker" "^1.2.0"
     "webgl-plot-utils" "~0.3.13"
 
-"graphscript@~0.2.2":
-  "integrity" "sha512-C46EJnVkzGwa5MjE5kXfCedo/R4CnINdybdSn6lzPDf2cw7Pk1I06ecmpCusbVqMKHKKLUEd8BiB7dMDTBHnWQ=="
-  "resolved" "https://registry.npmjs.org/graphscript/-/graphscript-0.2.2.tgz"
-  "version" "0.2.2"
+"graphscript@~0.2.4":
+  "integrity" "sha512-C9irGi3fUdYXsKs3QOM5KG69JaC7LpFIWJIL8Qe0Gy47XFiQwI6Lrb1twKGYgKsfk3SpLDDEF/2/6ihZ6SbKDg=="
+  "resolved" "https://registry.npmjs.org/graphscript/-/graphscript-0.2.4.tgz"
+  "version" "0.2.4"
   dependencies:
     "better-sse" "~0.8.0"
     "brainsatplay-math" "~0.0.25"

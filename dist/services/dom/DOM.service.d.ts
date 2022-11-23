@@ -13,7 +13,7 @@ export declare class DOMService extends Service {
         jsx: (template: any, options: ComponentProps) => void;
     };
     domloader: {
-        dom: (r: DOMRouteProp & GraphNode, parent: GraphNode & DOMRouteProp, graph: Graph, tree: any, props: any) => void;
+        dom: (r: DOMRouteProp & GraphNode, parent: GraphNode & DOMRouteProp, graph: Graph, tree: any, props: any, key: string) => void;
     };
     constructor(options?: ServiceOptions, parentNode?: HTMLElement, interpreters?: {
         [key: string]: (template: string, options: ComponentProps) => void;

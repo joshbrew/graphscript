@@ -38,7 +38,8 @@ export type GraphOptions = {
         parent:Graph|GraphNode,
         graph:Graph,
         tree:any,
-        properties:GraphNodeProperties
+        properties:GraphNodeProperties,
+        key:string
     )=>void},
     state?:EventHandler,
     childrenKey?:string,
@@ -149,9 +150,10 @@ export class GraphNode {
                 }
             }
 
-
             properties.__node = Object.assign(this.__node,properties.__node);
-            for(const key in properties) { this[key] = properties[key]; }
+            
+            let keys = Object.getOwnPropertyNames(properties);
+            for(const key of keys) { this[key] = properties[key]; }
 
             if(properties.__operator && parent instanceof GraphNode && parent.__operator) {
                 let sub = parent.__subscribe(this);
@@ -321,20 +323,7 @@ export class GraphNode {
 
     //we can proxy an original object and function outputs on the node
     __proxyObject = (obj) => {
-        function getAllProperties(obj){ //https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
-            var allProps = []
-            , curr = obj
-            do{
-                if(curr.constructor?.name === 'Object') continue;
-                var props = Object.getOwnPropertyNames(curr)
-                props.forEach(function(prop){
-                    if (allProps.indexOf(prop) === -1)
-                        allProps.push(prop)
-                })
-            }while(curr = Object.getPrototypeOf(curr))
-            return allProps;
-        }
-
+        
         let allProps = getAllProperties(obj);
 
         for(const k of allProps) {
@@ -440,7 +429,7 @@ export class Graph {
             if(!tree.__node.tag) tree.__node._tag = `tree${Math.floor(Math.random()*1000000000000000)}`
             else if (!this.get(tree.__node.tag)) {
                 let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
-                for(const l in this.__node.loaders) { this.__node.loaders[l](node,this,this,tree,tree); } //run any passes on the nodes to set things up further
+                for(const l in this.__node.loaders) { this.__node.loaders[l](node,this,this,tree,tree,tree.__node.tag); } //run any passes on the nodes to set things up further
                 this.set(node.__node.tag,node);
                 if(node.__listeners) {
                     listeners[node.__node.tag] = node.__listeners;
@@ -451,9 +440,11 @@ export class Graph {
         //now setup event listeners
         this.setListeners(listeners);
 
+        return cpy; //should be the node tree
+
     }
 
-    setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,props:any)=>void}, replace?:boolean) => {
+    setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,props:any,key:string)=>void}, replace?:boolean) => {
         if(replace)  this.__node.loaders = loaders;
         else Object.assign(this.__node.loaders,loaders);
 
@@ -463,7 +454,6 @@ export class Graph {
     add = (properties:any, parent?:GraphNode|string) => {
 
         let listeners = {}; //collect listener props declared
-
         if(typeof parent === 'string') parent = this.get(parent);
         if(typeof properties === 'function') properties = { __operator:properties }; 
         else if (typeof properties === 'string') properties = this.__node.tree[properties];
@@ -500,7 +490,8 @@ export class Graph {
     }
 
     recursiveSet = (t,parent,listeners={}) =>  {
-        for(const key in t) {
+        let keys = Object.getOwnPropertyNames(t);
+        for(const key of keys) {
             let p = t[key];
             if(Array.isArray(p)) continue;
             if(typeof p === 'function') p = { __operator:p }; 
@@ -513,7 +504,7 @@ export class Graph {
                 p.__node.initial = t[key];
                 if((this.get(p.__node.tag) && !(parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
                 let node = new GraphNode(p,parent,this);
-                for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,t,t[key]); } //run any passes on the nodes to set things up further
+                for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,t,t[key],key); } //run any passes on the nodes to set things up further
                 t[key] = node; //replace child with a graphnode
                 this.__node.tree[node.__node.tag] = p; //reference the original props by tag in the tree for children
                 this.set(node.__node.tag,node);
@@ -738,7 +729,6 @@ export class Graph {
 }
 
 
-
 function recursivelyAssign (target,obj) {
     for(const key in obj) {
         if(obj[key]?.constructor.name === 'Object' && !Array.isArray(obj[key])) {
@@ -755,3 +745,25 @@ function recursivelyAssign (target,obj) {
 }
 
 
+export function getAllProperties(obj){ //https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
+    var allProps = [], curr = obj
+    do{
+        var props = Object.getOwnPropertyNames(curr)
+        props.forEach(function(prop){
+            if (allProps.indexOf(prop) === -1)
+                allProps.push(prop)
+        })
+    }while(curr = Object.getPrototypeOf(curr))
+    return allProps;
+}
+
+export function instanceObject(obj) {
+    let props = getAllProperties(obj); //e.g. Math
+    let instance = {};
+    for(const key of props) {
+        instance[key] = obj[key];
+    }
+
+    return instance;
+    //simply copies methods, nested objects will not be instanced to limit recursion
+}

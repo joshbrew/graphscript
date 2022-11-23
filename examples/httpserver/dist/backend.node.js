@@ -2536,7 +2536,12 @@ var require_event_target = __commonJS({
     };
     Object.defineProperty(MessageEvent.prototype, "data", { enumerable: true });
     var EventTarget = {
-      addEventListener(type, listener, options = {}) {
+      addEventListener(type, handler, options = {}) {
+        for (const listener of this.listeners(type)) {
+          if (!options[kForOnEventAttribute] && listener[kListener] === handler && !listener[kForOnEventAttribute]) {
+            return;
+          }
+        }
         let wrapper;
         if (type === "message") {
           wrapper = function onMessage(data, isBinary) {
@@ -2544,7 +2549,7 @@ var require_event_target = __commonJS({
               data: isBinary ? data : data.toString()
             });
             event[kTarget] = this;
-            listener.call(this, event);
+            callListener(handler, this, event);
           };
         } else if (type === "close") {
           wrapper = function onClose(code, message) {
@@ -2554,7 +2559,7 @@ var require_event_target = __commonJS({
               wasClean: this._closeFrameReceived && this._closeFrameSent
             });
             event[kTarget] = this;
-            listener.call(this, event);
+            callListener(handler, this, event);
           };
         } else if (type === "error") {
           wrapper = function onError(error) {
@@ -2563,19 +2568,19 @@ var require_event_target = __commonJS({
               message: error.message
             });
             event[kTarget] = this;
-            listener.call(this, event);
+            callListener(handler, this, event);
           };
         } else if (type === "open") {
           wrapper = function onOpen() {
             const event = new Event("open");
             event[kTarget] = this;
-            listener.call(this, event);
+            callListener(handler, this, event);
           };
         } else {
           return;
         }
         wrapper[kForOnEventAttribute] = !!options[kForOnEventAttribute];
-        wrapper[kListener] = listener;
+        wrapper[kListener] = handler;
         if (options.once) {
           this.once(type, wrapper);
         } else {
@@ -2598,6 +2603,13 @@ var require_event_target = __commonJS({
       EventTarget,
       MessageEvent
     };
+    function callListener(listener, thisArg, event) {
+      if (typeof listener === "object" && listener.handleEvent) {
+        listener.handleEvent.call(listener, event);
+      } else {
+        listener.call(thisArg, event);
+      }
+    }
   }
 });
 
@@ -4041,6 +4053,44 @@ var GraphNode = class {
       };
       return this.__operator;
     };
+    this.__proxyObject = (obj) => {
+      let allProps = getAllProperties(obj);
+      for (const k of allProps) {
+        if (typeof this[k] === "undefined") {
+          if (typeof obj[k] === "function") {
+            this[k] = (...args) => {
+              if (this.__node.inputState)
+                this.__node.state.setValue(this.__node.unique + "." + k + "input", args);
+              let result = obj[k](...args);
+              if (this.__node.state.triggers[this.__node.unique + "." + k]) {
+                if (typeof result?.then === "function") {
+                  result.then((res) => {
+                    this.__node.state.setValue(this.__node.unique + "." + k, res);
+                  }).catch(console.error);
+                } else
+                  this.__node.state.setValue(this.__node.unique + "." + k, result);
+              }
+              return result;
+            };
+          } else {
+            let definition = {
+              get: () => {
+                return obj[k];
+              },
+              set: (value) => {
+                obj[k] = value;
+                if (this.__node.state.triggers[this.__node.unique + "." + k])
+                  this.__node.state.setValue(this.__node.unique + "." + k, value);
+              },
+              enumerable: true,
+              configurable: true
+            };
+            Object.defineProperty(this, k, definition);
+          }
+        }
+      }
+    };
+    let orig = properties;
     if (typeof properties === "function") {
       properties = {
         __operator: properties,
@@ -4054,7 +4104,16 @@ var GraphNode = class {
         properties = graph.get(properties);
       }
     }
+    if (!properties.__node.initial)
+      properties.__node.initial = orig;
     if (typeof properties === "object") {
+      if (properties.__props) {
+        if (typeof properties.__props === "function")
+          properties.__props = new properties.__props();
+        if (typeof properties.__props === "object") {
+          this.__proxyObject(properties.__props);
+        }
+      }
       if (typeof properties.__node === "string") {
         if (graph?.get(properties.__node.tag)) {
           properties = graph.get(properties.__node.tag);
@@ -4093,7 +4152,7 @@ var GraphNode = class {
           Object.assign(parent.__node.loaders ? parent.__node.loaders : {}, properties.__node.loaders);
         if (parent.__node.mapGraphs) {
           properties.__node.nodes.forEach((n) => {
-            parent.__node.nodes.set(properties.__node.tag + "." + n.__node.tag, n);
+            parent.set(properties.__node.tag + "." + n.__node.tag, n);
           });
           let ondelete = () => {
             properties.__node.nodes.forEach((n) => {
@@ -4103,9 +4162,11 @@ var GraphNode = class {
           this.__addDisconnected(ondelete);
         }
       }
-      properties.__node.initial = properties;
       properties.__node = Object.assign(this.__node, properties.__node);
-      Object.assign(this, properties);
+      let keys = Object.getOwnPropertyNames(properties);
+      for (const key of keys) {
+        this[key] = properties[key];
+      }
       if (properties.__operator && parent instanceof GraphNode && parent.__operator) {
         let sub = parent.__subscribe(this);
         let ondelete = () => {
@@ -4141,6 +4202,8 @@ var GraphNode = class {
     }
     let localState = this.__node.localState;
     for (let k in props) {
+      if (this.__props && this.__props[k])
+        continue;
       if (typeof props[k] === "function") {
         if (!k.startsWith("_")) {
           let fn = props[k].bind(this);
@@ -4149,10 +4212,11 @@ var GraphNode = class {
               this.__node.state.setValue(this.__node.unique + "." + k + "input", args);
             let result = fn(...args);
             if (typeof result?.then === "function") {
-              result.then((res) => {
-                this.__node.state.setValue(this.__node.unique + "." + k, res);
-              }).catch(console.error);
-            } else
+              if (this.__node.state.triggers[this.__node.unique + "." + k])
+                result.then((res) => {
+                  this.__node.state.setValue(this.__node.unique + "." + k, res);
+                }).catch(console.error);
+            } else if (this.__node.state.triggers[this.__node.unique + "." + k])
               this.__node.state.setValue(this.__node.unique + "." + k, result);
             return result;
           };
@@ -4165,18 +4229,20 @@ var GraphNode = class {
             return localState[k];
           },
           set: (v) => {
+            localState[k] = v;
             if (this.__node.state.triggers[this.__node.unique + "." + k])
               this.__node.state.setValue(this.__node.unique + "." + k, v);
-            localState[k] = v;
           },
           enumerable: true,
           configurable: true
         };
         Object.defineProperty(this, k, definition);
-        const ogProps = this.__node.initial;
-        let dec = Object.getOwnPropertyDescriptor(ogProps, k);
-        if (dec === void 0 || dec?.configurable)
-          Object.defineProperty(ogProps, k, definition);
+        if (typeof this.__node.initial === "object") {
+          let dec = Object.getOwnPropertyDescriptor(this.__node.initial, k);
+          if (dec === void 0 || dec?.configurable) {
+            Object.defineProperty(this.__node.initial, k, definition);
+          }
+        }
       }
     }
   }
@@ -4242,13 +4308,14 @@ var Graph = class {
           for (const l in this.__node.loaders) {
             this.__node.loaders[l](node, this, this, tree, tree);
           }
-          this.__node.nodes.set(node.__node.tag, node);
+          this.set(node.__node.tag, node);
           if (node.__listeners) {
             listeners[node.__node.tag] = node.__listeners;
           }
         }
       }
       this.setListeners(listeners);
+      return cpy;
     };
     this.setLoaders = (loaders2, replace) => {
       if (replace)
@@ -4261,15 +4328,20 @@ var Graph = class {
       let listeners = {};
       if (typeof parent === "string")
         parent = this.get(parent);
-      let props = Object.assign({}, properties);
-      if (properties.__node)
-        props.__node = Object.assign({}, properties.__node);
-      if (!props.__node?.tag || !this.get(props.__node.tag)) {
-        let node = new GraphNode(props, parent, this);
+      if (typeof properties === "function")
+        properties = { __operator: properties };
+      else if (typeof properties === "string")
+        properties = this.__node.tree[properties];
+      let p = Object.assign({}, properties);
+      if (!p.__node)
+        p.__node = {};
+      p.__node.initial = properties;
+      if (typeof properties === "object" && (!p?.__node?.tag || !this.get(p.__node.tag))) {
+        let node = new GraphNode(p, parent, this);
         for (const l in this.__node.loaders) {
           this.__node.loaders[l](node, parent, this, this.__node.tree, properties);
         }
-        this.__node.nodes.set(node.__node.tag, node);
+        this.set(node.__node.tag, node);
         this.__node.tree[node.__node.tag] = properties;
         if (node.__listeners) {
           listeners[node.__node.tag] = node.__listeners;
@@ -4285,7 +4357,8 @@ var Graph = class {
       return;
     };
     this.recursiveSet = (t, parent, listeners = {}) => {
-      for (const key in t) {
+      let keys = Object.getOwnPropertyNames(t);
+      for (const key of keys) {
         let p = t[key];
         if (Array.isArray(p))
           continue;
@@ -4301,13 +4374,12 @@ var Graph = class {
             p.__node = {};
           if (!p.__node.tag)
             p.__node.tag = key;
-          if (this.get(p.__node.tag) || parent?.__node && this.get(parent.__node.tag + "." + p.__node.tag))
+          p.__node.initial = t[key];
+          if (this.get(p.__node.tag) && !(parent?.__node && this.get(parent.__node.tag + "." + p.__node.tag)) || parent?.__node && this.get(parent.__node.tag + "." + p.__node.tag))
             continue;
-          let props = Object.assign({}, p);
-          props.__node = Object.assign({}, p.__node);
-          let node = new GraphNode(props, parent, this);
+          let node = new GraphNode(p, parent, this);
           for (const l in this.__node.loaders) {
-            this.__node.loaders[l](node, parent, this, t, p);
+            this.__node.loaders[l](node, parent, this, t, t[key]);
           }
           t[key] = node;
           this.__node.tree[node.__node.tag] = p;
@@ -4328,7 +4400,7 @@ var Graph = class {
       if (typeof node === "string")
         node = this.get(node);
       if (node instanceof GraphNode) {
-        this.__node.nodes.delete(node.__node.tag);
+        this.delete(node.__node.tag);
         delete this.__node.tree[node.__node.tag];
         if (clearListeners) {
           this.clearListeners(node);
@@ -4337,9 +4409,9 @@ var Graph = class {
         const recursiveRemove = (t) => {
           for (const key in t) {
             this.unsubscribe(t[key]);
-            this.__node.nodes.delete(t[key].__node.tag);
+            this.delete(t[key].__node.tag);
             delete this.__node.tree[t[key].__node.tag];
-            this.__node.nodes.delete(key);
+            this.delete(key);
             delete this.__node.tree[key];
             t[key].__node.tag = t[key].__node.tag.substring(t[key].__node.tag.lastIndexOf(".") + 1);
             if (clearListeners) {
@@ -4361,8 +4433,6 @@ var Graph = class {
       }
       return node;
     };
-    this.removeTree = (tree) => {
-    };
     this.run = (node, ...args) => {
       if (typeof node === "string") {
         let nd = this.get(node);
@@ -4370,7 +4440,7 @@ var Graph = class {
           nd = this.get(node.substring(0, node.lastIndexOf(".")));
           if (typeof nd?.[node.substring(node.lastIndexOf(".") + 1)] === "function")
             return nd[node.substring(node.lastIndexOf(".") + 1)](...args);
-        } else
+        } else if (nd?.__operator)
           return nd.__operator(...args);
       }
       if (node?.__operator) {
@@ -4436,6 +4506,9 @@ var Graph = class {
     this.set = (tag, node) => {
       return this.__node.nodes.set(tag, node);
     };
+    this.delete = (tag) => {
+      return this.__node.nodes.delete(tag);
+    };
     this.getProps = (node, getInitial) => {
       if (typeof node === "string")
         node = this.get(node);
@@ -4458,10 +4531,13 @@ var Graph = class {
       if (!(node instanceof GraphNode))
         nd = this.get(node);
       let sub;
-      if (typeof callback === "string" && target) {
-        let method = this.get(target)?.[callback];
-        if (typeof method === "function")
-          callback = method;
+      if (typeof callback === "string") {
+        if (target) {
+          let method = this.get(target)?.[callback];
+          if (typeof method === "function")
+            callback = method;
+        } else
+          callback = this.get(callback)?.__operator;
       }
       if (nd instanceof GraphNode) {
         sub = nd.__subscribe(callback, key, subInput, target, bound);
@@ -4514,6 +4590,17 @@ function recursivelyAssign(target, obj) {
     }
   }
   return target;
+}
+function getAllProperties(obj) {
+  var allProps = [], curr = obj;
+  do {
+    var props = Object.getOwnPropertyNames(curr);
+    props.forEach(function(prop) {
+      if (allProps.indexOf(prop) === -1)
+        allProps.push(prop);
+    });
+  } while (curr = Object.getPrototypeOf(curr));
+  return allProps;
 }
 
 // ../../Loaders.ts
@@ -4573,16 +4660,19 @@ var loop = (node, parent, graph) => {
       };
     }
     if (node.__node.loop && typeof node.__node.loop === "number") {
-      if (!("looping" in node.__node))
-        node.__node.looping = true;
-      node.__node.looper = () => {
+      let fn = node.__operator;
+      node.__operator = (...args) => {
+        if (!("looping" in node.__node))
+          node.__node.looping = true;
         if (node.__node.looping) {
-          node.__operator();
-          setTimeout(node.__node.looper, node.__node.loop);
+          fn(...args);
+          setTimeout(() => {
+            node.__operator(...args);
+          }, node.__node.loop);
         }
       };
       if (node.__node.looping)
-        node.__node.looper();
+        node.__operator();
       let ondelete = (node2) => {
         if (node2.__node.looping)
           node2.__node.looping = false;
@@ -4596,18 +4686,20 @@ var animate = (node, parent, graph) => {
     if (typeof node.__node.animate === "function")
       node.__node.animate = node.__node.animate.bind(node);
     let anim = (node2) => {
-      if (!("animating" in node2.__node))
-        node2.__node.animating = true;
-      node2.__node.animate = () => {
+      let fn = node2.__operator;
+      node2.__operator = (...args) => {
+        if (!("animating" in node2.__node))
+          node2.__node.animating = true;
         if (node2.__node.animating) {
           if (typeof node2.__node.animate === "function")
-            node2.__node.animation();
+            node2.__node.animate(...args);
           else
-            node2.__operator();
-          requestAnimationFrame(node2.__node.animation);
+            fn(...args);
+          requestAnimationFrame(() => {
+            node2.__operator(...args);
+          });
         }
       };
-      requestAnimationFrame(node2.__node.animation);
       if (node2.__node.animating)
         node2.__node.animation();
     };
@@ -4723,7 +4815,7 @@ var substitute__operator = (node, parent, graph) => {
   }
   if (node.aliases) {
     node.aliases.forEach((a) => {
-      graph.__node.nodes.set(a, node);
+      graph.set(a, node);
       let ondelete = (node2) => {
         graph.__node.nodes.delete(a);
       };
@@ -4752,6 +4844,38 @@ var Service = class extends Graph {
       loaders: options?.loaders ? Object.assign({ ...loaders }, options.loaders) : { ...loaders }
     });
     this.name = `service${Math.floor(Math.random() * 1e15)}`;
+    this.addServices = (services) => {
+      for (const s in services) {
+        if (typeof services[s] === "function")
+          services[s] = new services[s]();
+        if (services[s]?.__node?.loaders)
+          Object.assign(this.__node.loaders, services[s].__node.loaders);
+        if (services[s]?.__node?.nodes) {
+          services[s].__node.nodes.forEach((n, tag) => {
+            if (!this.get(tag)) {
+              this.set(tag, n);
+            } else
+              this.set(s + "." + tag, n);
+          });
+          this.__node.nodes.forEach((n, k) => {
+            if (!services[s].__node.nodes.get(k))
+              services[s].__node.nodes.set(k, n);
+          });
+          let set = this.set;
+          this.set = (tag, node) => {
+            services[s].set(tag, node);
+            return set(tag, node);
+          };
+          let del = this.delete;
+          this.delete = (tag) => {
+            services[s].delete(tag);
+            return del(tag);
+          };
+        } else if (typeof services[s] === "object") {
+          this.setTree(services[s]);
+        }
+      }
+    };
     this.handleMethod = (route, method, args) => {
       let m = method.toLowerCase();
       let src = this.__node.nodes.get(route);
@@ -4862,7 +4986,7 @@ var Service = class extends Graph {
     this.recursivelyAssign = recursivelyAssign2;
     this.spliceTypedArray = spliceTypedArray;
     this.ping = () => {
-      console.log("pinged");
+      console.log("pinged!");
       return "pong";
     };
     this.echo = (...args) => {
@@ -4872,23 +4996,6 @@ var Service = class extends Graph {
     if (options?.services)
       this.addServices(options.services);
     this.setTree(this);
-  }
-  addServices(services) {
-    for (const s in services) {
-      if (typeof services[s] === "function")
-        services[s] = new services[s]();
-      if (services[s]?.__node?.loaders)
-        Object.assign(this.__node.loaders, services[s].__node.loaders);
-      if (services[s] instanceof Service) {
-        services[s].__node.nodes.forEach((n, tag) => {
-          if (!this.__node.nodes.get(tag)) {
-            this.__node.nodes.set(tag, n);
-          } else
-            this.__node.nodes.set(s + "." + tag, n);
-        });
-      } else if (typeof services[s] === "object")
-        this.setTree(services[s]);
-    }
   }
   handleServiceMessage(message) {
     let call;
@@ -5244,6 +5351,7 @@ var HTTPbackend = class extends Service {
       } else
         return this.setupHTTPserver(options, requestListener, onStarted);
     };
+    this.open = this.setupServer;
     this.setupHTTPserver = (options = {
       host: "localhost",
       port: 8080,
@@ -6121,6 +6229,7 @@ var SSEbackend = class extends Service {
       });
       return sse;
     };
+    this.open = this.setupSSE;
     this.streamIterable = (path2, iterable, sessionId, eventName = "message") => {
       let server2 = this.servers[path2];
       if (server2) {
@@ -6310,6 +6419,12 @@ var WSSbackend = class extends Service {
     this.connections = {
       servers: this.servers,
       sockets: this.sockets
+    };
+    this.open = (options) => {
+      if (options?.server) {
+        return this.setupWSS(options);
+      } else
+        return this.openWS(options);
     };
     this.setupWSS = (options) => {
       const host = options.host;
@@ -6787,12 +6902,6 @@ var WSSbackend = class extends Service {
         });
         return this.sockets[socketId].request({ route: "subscribeSocket", args: [route, socketId, key, subInput] });
       }
-    };
-    this.open = (options) => {
-      if (options.server)
-        return this.setupWSS(options);
-      else
-        return this.openWS(options);
     };
     this.setTree(this);
   }
@@ -7327,6 +7436,15 @@ var Router = class extends Service {
     };
     this.routeService = (service, connections, source, order) => {
       this.services[service.name] = service;
+      if (service.__node?.nodes)
+        this.__node.nodes.forEach((n, k) => {
+          if (!service.__node?.nodes.get(k)) {
+            service.__node?.nodes.set(k, n);
+          } else
+            service.__node?.nodes.set(this.name + "." + k, n);
+        });
+      if (service.users)
+        service.users = this.users;
       if (connections) {
         if (typeof connections === "string")
           this.addServiceConnections(service, connections, source);
@@ -7366,7 +7484,7 @@ var Router = class extends Service {
       if (typeof service === "string") {
         service = this.services[service];
       }
-      if (service instanceof Service) {
+      if (service?.__node.nodes) {
         let connection = service.run("open", options, ...args);
         if (connection instanceof Promise) {
           return connection.then(async (info) => {
@@ -7433,7 +7551,7 @@ var Router = class extends Service {
       if (typeof relay === "object")
         return new Promise((res, rej) => {
           relay.run("routeConnections", [route, endpoint, relay._id, ...args]).then((sub) => {
-            this.subscribe(endpoint, (res2) => {
+            this.__node.state.subscribeTrigger(endpoint, (res2) => {
               if (res2?.callbackId === route) {
                 if (!callback)
                   this.setState({ [endpoint]: res2.args });
@@ -7507,26 +7625,23 @@ var Router = class extends Service {
     if (options) {
       if (options.order)
         this.order = options.order;
-      if (options.services) {
-        for (const key in options.services) {
-          let opt = options.services[key];
-          if (opt instanceof Service) {
+      if (options.graph) {
+        for (const key in options.graph) {
+          let opt = options.graph[key];
+          if (typeof opt === "function")
+            opt = new opt();
+          if (opt?.__node?.nodes) {
             opt.name = key;
             opt.__node.tag = key;
+            this.addServices({ [opt.name]: opt });
             this.routeService(opt, opt.connections);
-          } else if (typeof opt === "function") {
-            let service = new opt();
-            service.name = key;
-            service.__node.tag = key;
-            if (service instanceof Service)
-              this.routeService(
-                service,
-                service.connections
-              );
           } else {
-            if (opt?.service instanceof Service) {
+            if (typeof opt?.service === "function")
+              opt.service = new opt.service();
+            if (opt?.service?.__node?.nodes) {
               opt.service.name = key;
-              opt.service.tag = key;
+              opt.service.__node.tag = key;
+              this.addServices({ [opt.service.name]: opt.service });
               this.routeService(
                 opt.service
               );

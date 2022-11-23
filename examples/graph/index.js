@@ -7,7 +7,17 @@ const nodeAInstance = Object.assign({}, nodeA)
 
 let tree = {
 
-    nodeA: nodeAInstance,
+    nodeA: {
+        x:5,
+        y:2,
+        jump:()=>{console.log('jump!'); return 'jumped!'; },
+        __listeners:{
+            'nodeB.x':'jump', //string listeners in a scope are methods bound to 'this' node
+            'nodeB.nodeC':function(op_result){console.log('nodeA listener: nodeC operator returned:', op_result, this)},
+            'nodeB.nodeC.z':function(newZ){console.log('nodeA listener: nodeC z prop changed:', newZ, this)},
+            'nodeE': 'jump'
+        }
+    },
 
     nodeB:{
         x:3,
@@ -15,11 +25,11 @@ let tree = {
         __children:{
                 nodeC:{
                     z:4,
-                    __operator:function(a) { this.z += a; console.log('nodeC: nodeC z prop added to',this); return this.z; },
+                    __operator:function(a) { this.z += a; console.log('nodeC operator: nodeC z prop added to',this); return this.z; },
                     __listeners:{
-                        'nodeA.x':function(newX) { console.log('nodeC: nodeA x prop updated', newX);},
+                        'nodeA.x':function(newX) { console.log('nodeC listener: nodeA x prop updated', newX);},
                         'nodeA.jump':function(jump) { 
-                            console.log('nodeC: nodeA ', jump);
+                            console.log('nodeC listener: nodeA ', jump);
                         }
                     }
                 }

@@ -1,16 +1,16 @@
 //@ts-nocheck
 
 //resources
-import { DOMService } from '../../index'////'../../index';
+import { DOMService, loaders } from '../../index'////'../../index';
 import {initDevice, Devices, gsworker, filterPresets} from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
 import { Howl, Howler } from 'howler';
-import { visualizeDirectory } from 'graphscript-services/storage/BFS_CSV'//'../../extras/storage/BFS_CSV'
+import { visualizeDirectory } from '../../extras/storage/BFS_CSV'//'../../extras/storage/BFS_CSV'
 
 
 import './index.css'
 
 //types
-import { ElementProps, ElementInfo } from 'graphscript/services/dom/types/element';
+import { ElementProps, ElementInfo } from '../../index';
 //import { ComponentProps } from 'graphscript/services/dom/types/component';
 
 //Selectable devices and labels
@@ -482,6 +482,7 @@ const webappHtml = {
 
 
 const webapp = new DOMService({
-    routes:webappHtml
+    tree:webappHtml,
+    loaders
 });
 

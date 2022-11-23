@@ -51,7 +51,9 @@ type ConnectionTemplate = {
 }
 
 ```
-These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need increasing control over your program. There are no restrictions on top of the base protocols, it's all just boiled down to one liners and similar calls between services for mental clarity and a recommended configuration by default to enable the most desirable functionality e.g. if you do not specify your own onmessage callbacks for sockets or threads then the default functions are set to interface with the graph/service architecture automatically for zero config if you stick to the main tag-based run/subscribe templates here. Everything in the base javascript tooling is available still for direct calls to save overhead - of which there is very little in our system here, ideally the bare minimum in each protocol to application maximize performance for general use cases.
+These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need for increasing control over your program. There are no restrictions on top of the base protocols, it's all just boiled down to one liners like transmit() and receive() i.e. similar calls between services for mental clarity and a recommended configuration by default to enable the most desirable functionality e.g. if you do not specify your own onmessage callbacks for sockets or threads then the default functions are set to interface with the graph/service architecture automatically for zero config if you stick to the main tag-based run/subscribe templates here. 
+
+Everything in the base javascript tooling is available still for direct calls to save overhead - of which there is very little in our added system here. Ideally we are using the bare minimum needed to generalize each protocol's message passing system to maximize application performance for general use cases without sacrificing readability and composability.
 
 The subscribe and unsubscribe functions act the same as they do locally and configure the endpoints with a state subscription on arbitrary routes for you to do what you want with on the listening port.
 
@@ -99,4 +101,4 @@ For all services with remote message passing support (http, wss, sse, webrtc, et
 
 - Unsafe - These let you dynamically transfer functions and classes or read/write global values across service instances, e.g. to other threads or between frontend/backend. Use with caution as it is reliant on eval(), but generally this is an easy way to generate and control entire backends and thread pools from a single file.
 
-This is all receiving constant updates and is not entirely tested. 
+This is all receiving constant updates and is not entirely tested or may receive breaking changes in the interim of cleaning up the base API layers.

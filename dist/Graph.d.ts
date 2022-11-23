@@ -44,7 +44,7 @@ export declare type GraphOptions = {
         [key: string]: any;
     };
     loaders?: {
-        [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, properties: GraphNodeProperties) => void;
+        [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, properties: GraphNodeProperties, key: string) => void;
     };
     state?: EventHandler;
     childrenKey?: string;
@@ -87,9 +87,11 @@ export declare class Graph {
     init: (options: GraphOptions) => void;
     setTree: (tree: {
         [key: string]: any;
-    }) => void;
+    }) => {
+        [key: string]: any;
+    };
     setLoaders: (loaders: {
-        [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, props: any) => void;
+        [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, props: any, key: string) => void;
     }, replace?: boolean) => any;
     add: (properties: any, parent?: GraphNode | string) => GraphNode;
     recursiveSet: (t: any, parent: any, listeners?: {}) => {};
@@ -111,3 +113,5 @@ export declare class Graph {
         [key: string]: any;
     }) => void;
 }
+export declare function getAllProperties(obj: any): any[];
+export declare function instanceObject(obj: any): {};

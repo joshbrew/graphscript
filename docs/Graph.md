@@ -1,6 +1,14 @@
 # Graphs
 
-The Graph and GraphNode classes are an implementation of the acyclic graphs and node-based hierarchical programming. You can design control workflows very easily this way, essentially we are providing a general model for piping and stately programming. We took this further by unifying Graphs with a uniform message passing system via Services, allowing for complex multithreading and backend + frontend workflows to be constructed very clearly within a few hundred lines of code.
+The Graph and GraphNode classes are an implementation of the acyclic graphs and node-based hierarchical programming. You can design control workflows very easily this way. Essentially we are providing a general visual programming model within javascript for piping and stately programming only imposed as needed, but one that requires very little mental workload with clunky object oriented classes except where needed.
+
+To create a graph, simply declare an object as your "tree" or your program hierarchy. Here is the graph from [`examples/graph`](../examples/graph/):
+
+```ts
+
+
+```
+
 
 
 ```ts
@@ -46,3 +54,5 @@ export type GraphOptions = {
     [key:string]:any
 }
 ```
+
+We took this further by unifying Graphs with a uniform message passing system via Services, allowing for complex multithreading and backend + frontend workflows to be constructed very clearly within a few hundred lines of code.
