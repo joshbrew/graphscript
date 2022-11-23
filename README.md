@@ -14,10 +14,10 @@ For happy code!
 > **Note:** **graphscript** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
 
 
-
+For Browser:
 `npm i graphscript` ~195kb dist
 
-For node.js
+For NodeJS
 `npm i graphscript-node` ~215Kb dist
 
 Core (Graph and Loaders only) ~17Kb dist
