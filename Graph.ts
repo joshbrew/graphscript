@@ -15,7 +15,7 @@ export type GraphNodeProperties = {
     __ondisconnected?:((node)=>void|((node)=>void)[]),
     __node?:{
         tag?:string,
-        state?:EventHandler,
+        state?:EventHandler, //by default has a global shared state
         inputState?:boolean //we can track inputs on a node, subscribe to state with 'input' on the end of the tag or 'tag.prop' 
         [key:string]:any
     },
@@ -75,6 +75,7 @@ export class GraphNode {
     //pass GraphNodeProperties, functions, or tags of other nodes
     constructor(properties:any, parent?:{[key:string]:any}, graph?:Graph) {
 
+        let orig = properties;
         if(typeof properties === 'function') {
             properties = {
                 __operator:properties,
@@ -88,7 +89,8 @@ export class GraphNode {
                 properties = graph.get(properties);
             }
         }
-        
+        if(!properties.__node.initial) properties.__node.initial = orig; //original object or function
+
         if(typeof properties === 'object') {
             if(properties.__props) { //e.g. some generic javascript object or class constructor that we want to proxy. Functions passed here are treated as constructors. E.g. pass an HTML canvas element for the node then set this.width on the node to set the canvas width  
                 if (typeof properties.__props === 'function') properties.__props = new properties.__props();
@@ -147,7 +149,6 @@ export class GraphNode {
                 }
             }
 
-            properties.__node.initial = properties; //original object or function
 
             properties.__node = Object.assign(this.__node,properties.__node);
             for(const key in properties) { this[key] = properties[key]; }
@@ -308,9 +309,12 @@ export class GraphNode {
 
                 Object.defineProperty(this, k, definition);
                 
-                const ogProps = this.__node.initial;
-                let dec = Object.getOwnPropertyDescriptor(ogProps,k);
-                if(dec === undefined || dec?.configurable) Object.defineProperty(ogProps, k, definition);
+                if(typeof this.__node.initial === 'object') {
+                    let dec = Object.getOwnPropertyDescriptor(this.__node.initial,k);
+                    if(dec === undefined || dec?.configurable) {
+                        Object.defineProperty(this.__node.initial, k, definition);
+                    }
+                }
             }
         }
     }
@@ -461,10 +465,14 @@ export class Graph {
         let listeners = {}; //collect listener props declared
 
         if(typeof parent === 'string') parent = this.get(parent);
-        let props = Object.assign({},properties); if(properties.__node) props.__node = Object.assign({},properties.__node);
-        
-        if(!props.__node?.tag || !this.get(props.__node.tag)) {
-            let node = new GraphNode(props, parent as GraphNode, this);
+        if(typeof properties === 'function') properties = { __operator:properties }; 
+        else if (typeof properties === 'string') properties = this.__node.tree[properties];
+        let p = Object.assign({},properties); //make sure we don't mutate the original object
+        if(!p.__node) p.__node = {};
+        p.__node.initial = properties;
+
+        if(typeof properties === 'object' && (!p?.__node?.tag || !this.get(p.__node.tag))) {
+            let node = new GraphNode(p, parent as GraphNode, this);
             for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,this.__node.tree,properties); } //run any passes on the nodes to set things up further
             this.set(node.__node.tag,node);
             this.__node.tree[node.__node.tag] = properties; //reference the original props by tag in the tree for children
@@ -498,17 +506,14 @@ export class Graph {
             if(typeof p === 'function') p = { __operator:p }; 
             else if (typeof p === 'string') p = this.__node.tree[p];
             else if (typeof p === 'boolean') p = this.__node.tree[key];
-            // else if (typeof p.default === 'function') {
-            //     p.__operator = p.default;
-            // } 
             if(typeof p === 'object') {
                 p = Object.assign({},p); //make sure we don't mutate the original object
                 if(!p.__node) p.__node = {};
                 if(!p.__node.tag) p.__node.tag = key;
-                if(this.get(p.__node.tag) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
-                let props = Object.assign({},p); props.__node = Object.assign({},p.__node);
-                let node = new GraphNode(props,parent,this);
-                for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,t,p); } //run any passes on the nodes to set things up further
+                p.__node.initial = t[key];
+                if((this.get(p.__node.tag) && !(parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
+                let node = new GraphNode(p,parent,this);
+                for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,t,t[key]); } //run any passes on the nodes to set things up further
                 t[key] = node; //replace child with a graphnode
                 this.__node.tree[node.__node.tag] = p; //reference the original props by tag in the tree for children
                 this.set(node.__node.tag,node);
@@ -593,8 +598,6 @@ export class Graph {
     }
 
     setListeners = (listeners:{[key:string]:{[key:string]:any}}) => {
-
-        
         //now setup event listeners
         for(const key in listeners) {
             let node = this.get(key);

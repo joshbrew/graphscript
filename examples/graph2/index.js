@@ -35,6 +35,20 @@ let tree = {
             loop:1000,
             looping:true
         }
+    },
+
+    nodeF:{
+        __props:document.createElement('div'), //properties on the '__props' object will be proxied and mutatable as 'this' on the node. E.g. for representing HTML elements
+        __onconnected:function (node) { 
+            this.innerHTML = 'Test';
+            this.style.backgroundColor = 'green'; 
+            document.body.appendChild(this.__props); 
+            console.log(this,this.__props);
+        },
+        __ondisconnected:function(node) {
+            document.body.removeChild(this.__props);
+        }
+        
     }
 
 };
@@ -42,17 +56,14 @@ let tree = {
 let graph = new Graph({
     tree,
     loaders:{
-        // 'escompose': (node,parent,graph) =>{
-        //     console.log('escompose loader', node, parent, graph);
-        // },
         ...loaders
     }
 });
 
-nodeAInstance.x = 1;
+nodeAInstance.x = 1; //should trigger nodeA.x listener on nodeC
+graph.get('nodeA').x = 2; //same thing
 
 graph.get('nodeB').x += 1; //should trigger nodeA listener jump()
-console.log('nodeA should have jumped when nodeB changed ^^')
 
 graph.run('nodeB.nodeC', 4); //should trigger nodeA listener
 
@@ -65,27 +76,27 @@ console.log(JSON.stringify(graph.__node.state.triggers));
 
 console.log('graph1',graph);
 
-// let tree2 = {
-//     graph
-// };
+let tree2 = {
+    graph
+};
 
-// let graph2 = new Graph({tree:tree2});
+let graph2 = new Graph({tree:tree2});
 
-// let popped = graph.remove('nodeB');
+let popped = graph.remove('nodeB');
 
-// console.log(JSON.stringify(graph.__node.state.triggers)); //should be no triggers left
+console.log(JSON.stringify(graph.__node.state.triggers)); //should be no triggers left
 
-// console.log(popped.__node.tag, 'popped')
+console.log(popped.__node.tag, 'popped')
 
-// graph.get('nodeA').jump(); //should trigger nodeC listener
+graph.get('nodeA').jump(); //should trigger nodeC listener
 
-// graph2.add(popped); //reparent nodeB to the parent graph
+graph2.add(popped); //reparent nodeB to the parent graph
 
-// console.log('nodeB reparented to graph2',popped,graph2);
+console.log('nodeB reparented to graph2',popped,graph2);
 
-// popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
+popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
 
-// popped.__children.nodeC.__operator(1);
+popped.__children.nodeC.__operator(1);
 
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 
