@@ -1,6 +1,6 @@
 # Graphs
 
-The Graph and GraphNode classes are an implementation of the acyclic graphs and node-based hierarchical programming. You can design control workflows very easily this way. Essentially we are providing a general workflow programming model within javascript for pipes and stately programming and more imposed as needed. It is one that requires very little mental workload and lets you impose more advanced features and constraints as needed.
+The Graph and GraphNode classes are an implementation of the acyclic graphs and node-based hierarchical programming. You can design control workflows very easily this way. Essentially we are providing a general workflow programming model within javascript for pipes and stately programming and more imposed as needed. It is one that requires very little mental workload to jump into and takes care of the connectivity between your program modules for you.
 
 
 ### First Steps
