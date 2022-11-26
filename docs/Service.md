@@ -6,12 +6,77 @@ Before reading and getting immediately confused by this alien API, scroll throug
 
 Services extend Graphs to build on the idea of creating pluggable [microservices](https://www.akana.com/resources/microservices-why-should-businesses-care) in a unified, componentized programming interface, and simplifies the amount of work required to implement increasing numbers of protocols with more syntax and functionality than we can normally remember. Building these instead as Services and following the general formula here can vastly speed up feature development and feature meshing. 
 
-The Service class extends the Graph class and adds additional methods for creating and linking execution graphs. All extended Services (WorkerService, HTTPbackend, etc) can load any other Services/Graphs/routes/etc. to serve as the entry point to your program depending on how you need to stage your programs. The only incompatibilities are based on nodejs or browser-specific functionality like command line or DOM access (without a document and window renderer in node anyway).
+e.g.
+```ts
+
+import {WorkerService} from 'graphscript'
+
+import worker from 'graphscript/services/worker/Worker' //includes Math loaded as a service
+//our tinybuild bundler will convert this to a file or dataurl for us
+
+
+//This is a useless example of running math callbacks through workers 
+//  in a quick chain then feeding the output to the document body.
+let workers = new WorkerService({
+    tree:{
+        worker1:{
+            workerUrl:worker,
+            callback:'log10'
+            __children:{
+                worker2:{
+                    workerUrl:worker,
+                    callback:'sinh', //will receive a message directly from worker1 and not through the main thread
+                    __children:{
+                        output:{ //receives output directly from worker2
+                            __props:document.body,
+                            __operator:function (inp) {
+                                this.innerHTML += `${inp}<br/>`;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+});
+
+
+workers.run('worker1', 100);
+
+workers.run('worker1', 500);
+
+```
+You can see here easily that Services are a moderate twist on the Graph format to introduce new arbitrary keys for doing different things specific to a javascript tool, in this case multithreading with Web Workers. We have covered a diverse number of use cases already for full stack usage but they still only scratch the surface of what we can do here to make for extremely minimal application code. 
+
+And the Worker.ts
+```ts
+//functionality
+import { WorkerService } from './Worker.service';
+import { Math2 } from 'brainsatplay-math';
+
+//wonder if we can have a scheme to dynamic import within the services? e.g. to bring in node-only or browser-only services without additional workers
+
+declare var WorkerGlobalScope;
+
+if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
+    (self as any).SERVICE = new WorkerService({
+        services:{
+            Math,
+            Math2
+        }
+    });
+    
+}
+
+export default self as any;
+
+```
+
+The Service class extends the Graph class and adds additional methods for creating and linking execution graphs. All extended Services (WorkerService, HTTPbackend, etc) can load any other Services/Graphs/routes/etc. to serve as the entry point to your program depending on how you need to stage your programs. The only incompatibilities are based on nodejs or browser-specific functionality like OS access (command line) or DOM access (without a document and window renderer in node anyway).
 
 Services provide a unifying function/class loading and message passing framework to make it really easy to chain program functions across http, socket, sse, webrtc, thread, child process, frontend rendering and any of your own protocols. It has more features to help with scoping connected node services as well. 
 
-Create routed nodes with any functions, node/graph/service prototypes, any objects at all (e.g. the built in Math object in browsers) to gain state machine and flowgraph functionalities across your program, even remotely.
-
+Create routed nodes with any functions, node/graph/service prototypes, any objects at all (e.g. the built in Math object in browsers) to gain state machine and flowgraph functionalities across your program, even remotely as we demonstrated above with threads.
 
 
 ## Service Messages

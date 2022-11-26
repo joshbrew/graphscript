@@ -27,7 +27,6 @@ export type RouterOptions = ServiceOptions & {
             }, //configure new connections after adding the relevant services?
         } //can be a service constructor
     }
-    syncServices?:boolean,
     order?:string[]
 }
 

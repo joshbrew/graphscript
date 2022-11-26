@@ -9,6 +9,8 @@ export declare type GraphNodeProperties = {
     __listeners?: {
         [key: string]: ((result: any) => void) | {
             callback: (result: any) => void;
+            subInput?: boolean;
+            [key: string]: any;
         };
     };
     __onconnected?: ((node: any) => void | ((node: any) => void)[]);
@@ -21,24 +23,6 @@ export declare type GraphNodeProperties = {
     };
     [key: string]: any;
 };
-export declare type GraphProperties = {
-    tree?: {
-        [key: string]: any;
-    };
-    loaders?: {
-        [key: string]: {
-            node: GraphNode;
-            parent: Graph | GraphNode;
-            graph: Graph;
-            tree: any;
-            properties: GraphNodeProperties;
-        };
-    };
-    state?: EventHandler;
-    childrenKey?: string;
-    mapGraphs?: false;
-    [key: string]: any;
-};
 export declare type GraphOptions = {
     tree?: {
         [key: string]: any;
@@ -47,7 +31,6 @@ export declare type GraphOptions = {
         [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, properties: GraphNodeProperties, key: string) => void;
     };
     state?: EventHandler;
-    childrenKey?: string;
     mapGraphs?: false;
     [key: string]: any;
 };
@@ -94,7 +77,7 @@ export declare class Graph {
         [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, props: any, key: string) => void;
     }, replace?: boolean) => any;
     add: (properties: any, parent?: GraphNode | string) => GraphNode;
-    recursiveSet: (t: any, parent: any, listeners?: {}) => {};
+    recursiveSet: (t: any, parent: any, listeners: {}, origin: any) => {};
     remove: (node: GraphNode | string, clearListeners?: boolean) => string | GraphNode;
     run: (node: string | GraphNode, ...args: any[]) => any;
     setListeners: (listeners: {

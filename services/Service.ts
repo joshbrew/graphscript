@@ -21,7 +21,10 @@ export type ServiceMessage = {
     [key:string]:any //it's an object so do whatever, any messages meant for web protocols need to be stringified or buffered
 }
 
-export type ServiceOptions = GraphOptions & { services?:{[key:string]:Service|Function|{[key:string]:any}} }
+export type ServiceOptions = 
+    GraphOptions & { 
+        services?:{[key:string]:Service|Function|{[key:string]:any}} 
+    }
 
 export class Service extends Graph {
     

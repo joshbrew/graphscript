@@ -412,9 +412,9 @@ export class Graph {
         this.__node.tree = Object.assign(this.__node.tree ? this.__node.tree : {}, tree);
 
         let cpy = Object.assign({},tree);
-        delete cpy.__node; //we can specify __node behaviors on the tree too to specify listeners
+        if(cpy.__node) delete cpy.__node; //we can specify __node behaviors on the tree too to specify listeners
 
-        let listeners = this.recursiveSet(cpy,this);
+        let listeners = this.recursiveSet(cpy,this,undefined,tree);
 
         //make the tree a node 
         if(tree.__node) {
@@ -466,7 +466,7 @@ export class Graph {
     
             if(node.__children) {
                 node.__children = Object.assign({},node.__children);
-                this.recursiveSet(node.__children, node, listeners);
+                this.recursiveSet(node.__children, node, listeners,node.__children);
             }
     
             //now setup event listeners
@@ -481,10 +481,11 @@ export class Graph {
         return;
     }
 
-    recursiveSet = (t,parent,listeners={}) =>  {
-        let keys = Object.getOwnPropertyNames(t);
+    recursiveSet = (t,parent,listeners={},origin) =>  {
+        let keys = Object.getOwnPropertyNames(origin);
         for(const key of keys) {
-            let p = t[key];
+            if(key.includes('__')) continue;
+            let p = origin[key];
             if(Array.isArray(p)) continue;
             if(typeof p === 'function') p = { __operator:p }; 
             else if (typeof p === 'string') p = this.__node.tree[p];
@@ -505,7 +506,7 @@ export class Graph {
                 }
                 else if(node.__children) {
                     node.__children = Object.assign({},node.__children);
-                    this.recursiveSet(node.__children, node, listeners);
+                    this.recursiveSet(node.__children, node, listeners,node.__children);
                 }
 
                 node.__callConnected();
