@@ -56,9 +56,9 @@ graph.get('nodeB.nodeC').__operator(5); //should trigger nodeA listeners 'nodeB.
 
 ```
 
-Why would you do this? Well the more you script things in software, the more you'll find yourself retreading the same problems over and over again to set up your states, run asynchronous tasks, and build functional abstractions for all of your different code pieces to talk to each other. Each time it often leads to nontrivial solutions that work for your particular use case but might be a bit nonsensical coming from the outside or nonreusable. Imposing a little bit of general structure here can go a long ways to simplifying programs and improving performance across the board. Javascript lends itself well to this with it's inherent dynamic programming and object oriented scoping that you can easily pass-by-reference. 
+Why would you do this? Well the more you script things in software, the more you'll find yourself retreading the same problems over and over again to set up your states, run asynchronous tasks, and build functional abstraction layers for all of your different code pieces to talk to each other. Each time it often leads to nontrivial solutions that work for your particular use case but might be a bit nonsensical coming from the outside or nonreusable. Imposing a little bit of a general theoretical programming structure here, i.e. graph theory, can go a long ways to simplifying APIs and improving performance across the board. Javascript lends itself well to this with it's inherent dynamic programming and object oriented scoping that you can easily pass-by-reference. 
 
-Javascript has hundreds of features for you to, well, script your web pages and applications. If we can synthesize it into a proper hierarchical graph system format for workflow programming that does not burden the developer with heavy abstractions, it makes life that much better and the developer experience frictionless. 
+Javascript has hundreds of features for you to, well, script your web pages and applications. If we can synthesize it into a properly generalized hierarchical graph system (i.e. game engine) format for workflow programming and software construction that does not burden the developer with heavy abstractions or leave you lost with how to connect separate modules, it makes life much better for developers and code far more readable and reusable. This should lead to quality improvements in general in our products as less time gets lost on the menial labor of debugging our own custom business logic that nobody else can read or use, and more on actually creating usable systems that you know will slot in with the rest of your own or others' programs from the outset. 
 
 We have a synthesis of this idea we're calling a form of "graph script" which provides a simple way to link functions, objects, modules, scopes, etc. in your program in an object tree that imbues these objects with state and listener powers - and much more - on an acyclic graph abstraction with very minimal overhead and constraints. This is a minimal workflow programming implementation that respects javascript's robust offerings without getting in the way, and allows for all kinds of combination and composition.
 
@@ -110,7 +110,7 @@ type GraphOptions = {
 }
 ```
 
-Loaders are important and allow for as many complex behaviors to be defined as you desire when running the node load order. After the node is defined it will run each loader function that has been supplied. This makes it so you can quickly specify new properties and usages of the node hierarchies.
+[Loaders](../Loaders.ts) are important and allow for as many complex behaviors to be defined as you desire when running the node load order. After the node is defined it will run each loader function that has been supplied. This makes it so you can quickly specify new properties and usages of the node hierarchies.
 
 ### Loaders and more
 
@@ -192,4 +192,4 @@ let graph = new Graph({
 ```
 
 
-We took this much further by unifying Graphs with a uniform message passing system via Services, allowing for complex multithreading and backend + frontend workflows to be constructed very clearly within a few hundred lines of code. See [Services](./Service.md)
+We took this much further by unifying Graphs with a uniform message passing system via Services, allowing for complex multithreading and backend + frontend workflows to be constructed very clearly within a few hundred lines of code. With this we have created a graph-based full stack API for browser frontend and node backend development. There is much more to come. See [Services](./Service.md)
