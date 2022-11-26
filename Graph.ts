@@ -7,13 +7,13 @@ export const state = new EventHandler();
 
 
 export type GraphNodeProperties = {
-    __props?:Function|GraphNodeProperties,
-    __operator?:((...args:any[])=>any)|string,
-    __children?:{[key:string]:GraphNodeProperties},
-    __listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void}},
-    __onconnected?:((node)=>void|((node)=>void)[]),
-    __ondisconnected?:((node)=>void|((node)=>void)[]),
-    __node?:{
+    __props?:Function|GraphNodeProperties, //a class constructor function (calls 'new x()') or an object we want to proxy all of the methods on this node. E.g. an html element gains 'this' access through operators and listeners on this node.
+    __operator?:((...args:any[])=>any)|string, //The 'main' function of the graph node, children will call this function if triggered by a parent. Functions passed as graphnodeproperties become the operator which can set state.
+    __children?:{[key:string]:GraphNodeProperties}, //child nodes belonging to this node, e.g. for propagating results
+    __listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void,subInput?:boolean,[key:string]:any}}, //subscribe by tag to nodes or their specific properties and method outputs
+    __onconnected?:((node)=>void|((node)=>void)[]), //what happens once the node is created?
+    __ondisconnected?:((node)=>void|((node)=>void)[]), //what happens when the node is deleted?
+    __node?:{ //node specific properties, can contain a lot more things
         tag?:string,
         state?:EventHandler, //by default has a global shared state
         inputState?:boolean //we can track inputs on a node, subscribe to state with 'input' on the end of the tag or 'tag.prop' 
@@ -22,14 +22,6 @@ export type GraphNodeProperties = {
     [key:string]:any
 }
 
-export type GraphProperties = {
-    tree?:{[key:string]:any},
-    loaders?:{[key:string]:{node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties}},
-    state?:EventHandler,
-    childrenKey?:string,
-    mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
-    [key:string]:any
-}
 
 export type GraphOptions = {
     tree?:{[key:string]:any},
@@ -42,7 +34,6 @@ export type GraphOptions = {
         key:string
     )=>void},
     state?:EventHandler,
-    childrenKey?:string,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
     [key:string]:any
 }
@@ -263,9 +254,11 @@ export class GraphNode {
         this.__operator = (...args) => {
             if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'input',args);
             let result = fn(...args);
-            if(typeof result?.then === 'function') {
-                result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.unique,res ) }).catch(console.error);
-            } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
+            if(this.__node.state.triggers[this.__node.unique]) { //don't set state (i.e. copy the result) if no subscriptions
+                if(typeof result?.then === 'function') {
+                    result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.unique,res ) }).catch(console.error);
+                } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
+            }
             return result;
         } 
 
@@ -398,7 +391,6 @@ export class Graph {
         // mapGraphs:false //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
         // tree:undefined as any,
         // loaders:undefined as any,
-        // childrenKey:undefined as any
     }
 
 

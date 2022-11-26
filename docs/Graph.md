@@ -1,25 +1,82 @@
 # Graphs
 
-The Graph and GraphNode classes are an implementation of the acyclic graphs and node-based hierarchical programming. You can design control workflows very easily this way. Essentially we are providing a general visual programming model within javascript for piping and stately programming only imposed as needed, but one that requires very little mental workload with clunky object oriented classes except where needed.
+The Graph and GraphNode classes are an implementation of the acyclic graphs and node-based hierarchical programming. You can design control workflows very easily this way. Essentially we are providing a general visual programming model within javascript for pipes and stately programming, imposed as needed, but one that requires very little mental workload with clunky object oriented classes except where needed.
 
-To create a graph, simply declare an object as your "tree" or your program hierarchy. Here is the graph from [`examples/graph`](../examples/graph/):
+
+### First Steps
+
+To create a Graph, simply declare an object as your "tree" or your program hierarchy then load it into the graph. After that your nodes become interactive through both the definition objects and through accessors on the Graph instance.
 
 ```ts
 
+import {Graph} from 'graphscript'
+
+
+let nodeA = {
+        x:5,
+        y:2,
+        jump:()=>{console.log('jump!'); return 'jumped!'; },
+        __listeners:{
+            'nodeB.x':'jump', //string listeners in a scope are methods bound to 'this' node
+            'nodeB.nodeC':function(op_result){console.log('nodeA listener: nodeC operator returned:', op_result, this)},
+            'nodeB.nodeC.z':function(newZ){console.log('nodeA listener: nodeC z prop changed:', newZ, this)},
+        }
+};
+
+let nodeB = {
+        x:3,
+        y:4,
+        __children:{
+                nodeC:{
+                    z:4,
+                    __operator:function(a) { this.z += a; console.log('nodeC operator: nodeC z prop added to',this); return this.z; },
+                    __listeners:{
+                        'nodeA.x':function(newX) { console.log('nodeC listener: nodeA x prop updated', newX);},
+                        'nodeA.jump':function(jump) { 
+                            console.log('nodeC listener: nodeA ', jump);
+                        }
+                    }
+                }
+            }
+};
+
+let tree = {
+    nodeA,
+    nodeB
+};
+
+let graph = new Graph({tree});
+
+
+nodeB.x += 1; //should trigger nodeA listener 'nodeB.x'
+
+nodeB.__children.nodeC.z *= 5; //should trigger nodeA listener 'nodeB.nodeC.z'
+
+graph.get('nodeB.nodeC').__operator(5); //should trigger nodeA listeners 'nodeB.nodeC.z' and 'nodeB.nodeC'
 
 ```
 
+Why would you do this? Well the more you script things in software, the more you'll find yourself retreading the same problems over and over again to set up your states, run asynchronous tasks, and building layers for all of your different code pieces to talk to each other. Each time it often leads to nontrivial solutions that work for you but might be a bit nonsensical coming from the outside. Imposing a little bit of general structure here can go a long ways to simplifying programs and improving performance across the board. Javascript lends itself well to this with it's inherent dynamic programming and object oriented scoping that you can easily pass-by-reference. 
 
+Javascript has hundreds of features for you to, well, script your web pages and applications. If we can synthesize it into a proper hierarchical graph system format for workflow programming that does not burden the developer with heavy abstractions, it makes life that much better and the developer experience frictionless. 
+
+We have a synthesis of this idea we're calling a form of "graph script" which provides a simple way to link functions, objects, modules, scopes, etc. in your program in an object tree that becomes imbues these objects with state and listener powers - and much more - with very minimal overhead and constraints.
+
+
+
+### Graph Node Properties
+
+Graph nodes can have many properties, and even more if you specify loaders on the Graph (see below).
 
 ```ts
-export type GraphNodeProperties = {
-    __props?:Function|GraphNodeProperties,
-    __operator?:((...args:any[])=>any)|string,
-    __children?:{[key:string]:GraphNodeProperties},
-    __listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void}},
-    __onconnected?:((node)=>void|((node)=>void)[]),
-    __ondisconnected?:((node)=>void|((node)=>void)[]),
-    __node?:{
+type GraphNodeProperties = {
+    __props?:Function|GraphNodeProperties, //a class constructor function (calls 'new x()') or an object we want to proxy all of the methods on this node. E.g. an html element gains 'this' access through operators and listeners on this node.
+    __operator?:((...args:any[])=>any)|string, //The 'main' function of the graph node, children will call this function if triggered by a parent. Functions passed as graphnodeproperties become the operator which can set state.
+    __children?:{[key:string]:GraphNodeProperties}, //child nodes belonging to this node, e.g. for propagating results
+    __listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void,subInput?:boolean,[key:string]:any}}, //subscribe by tag to nodes or their specific properties and method outputs
+    __onconnected?:((node)=>void|((node)=>void)[]), //what happens once the node is created?
+    __ondisconnected?:((node)=>void|((node)=>void)[]), //what happens when the node is deleted?
+    __node?:{ //node specific properties, can contain a lot more things
         tag?:string,
         state?:EventHandler, //by default has a global shared state
         inputState?:boolean //we can track inputs on a node, subscribe to state with 'input' on the end of the tag or 'tag.prop' 
@@ -29,30 +86,110 @@ export type GraphNodeProperties = {
 }
 ```
 
-```ts
-export type GraphProperties = {
-    tree?:{[key:string]:any},
-    loaders?:{[key:string]:{node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties}},
-    state?:EventHandler,
-    childrenKey?:string,
-    mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
-    [key:string]:any
-}
+One special property to note here is `__props`. If you provide an object, class instance, or class constructor function (to be instanced) under `__props`, all of the object's methods will be made available by proxy on the graph node. This enables the proxied object to be mutated by the node as its own properties, e.g. to control an HTML node within the graph node scope. E.g. setting `__props:document.body` then with the resulting node setting  `node.style.backgroundColor = 'black'` should turn the page black, because the node is acting as the referenced HTML node now.
 
-export type GraphOptions = {
+
+### Graph Options
+
+Graphs also have several options:
+```ts
+
+type GraphOptions = {
     tree?:{[key:string]:any},
     loaders?:{[key:string]:(
         node:GraphNode,
         parent:Graph|GraphNode,
         graph:Graph,
         tree:any,
-        properties:GraphNodeProperties
+        properties:GraphNodeProperties,
+        key:string
     )=>void},
     state?:EventHandler,
-    childrenKey?:string,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
     [key:string]:any
 }
 ```
 
-We took this further by unifying Graphs with a uniform message passing system via Services, allowing for complex multithreading and backend + frontend workflows to be constructed very clearly within a few hundred lines of code.
+Loaders are important and allow for as many complex behaviors to be defined as you desire when running the node load order. After the node is defined it will run each loader function that has been supplied. This makes it so you can quickly specify new properties and usages of the node hierarchies.
+
+### Loaders and more
+
+With additional [loaders](../Loaders.ts), we can quickly turn nodes into self contained loops and animations, html nodes, threads and thread-thread message ports, server endpoints, user representations, and more so we can quickly script out very complex programs, with the tree as a simple reference point to remix these features via the application trees. We can also export these node definitions as their own esm modules for easy module development.
+
+The most complex examples we have so far do things like relay P2P initial connections through a socket backend, animate tens of thousands of boids with multiple threads, process and debug sensor data with 8 separate task threads. 
+
+Each example is only a few hundred lines of code and roughly understandable in one pass at reading.
+
+Here is a bigger graph from [`examples/graph`](../examples/graph/):
+
+```ts
+
+import {Graph, loaders} from 'graphscript'
+
+let tree = {
+
+    nodeA: {
+        x:5,
+        y:2,
+        jump:()=>{console.log('jump!'); return 'jumped!'; },
+        __listeners:{
+            'nodeB.x':'jump', //string listeners in a scope are methods bound to 'this' node
+            'nodeB.nodeC':function(op_result){console.log('nodeA listener: nodeC operator returned:', op_result, this)},
+            'nodeB.nodeC.z':function(newZ){console.log('nodeA listener: nodeC z prop changed:', newZ, this)},
+            'nodeE': 'jump'
+        }
+    },
+
+    nodeB:{
+        x:3,
+        y:4,
+        __children:{
+                nodeC:{
+                    z:4,
+                    __operator:function(a) { this.z += a; console.log('nodeC operator: nodeC z prop added to',this); return this.z; },
+                    __listeners:{
+                        'nodeA.x':function(newX) { console.log('nodeC listener: nodeA x prop updated', newX);},
+                        'nodeA.jump':function(jump) { 
+                            console.log('nodeC listener: nodeA ', jump);
+                        }
+                    }
+                }
+            }
+    },
+
+    nodeD:(a,b,c)=>{ return a+b+c; }, //becomes the .__operator prop and calling triggers setState for this tag (or nested tag if a child)
+
+    nodeE:{
+        __operator:()=>{console.log('looped!'); return true;},
+        __node:{ //more properties
+            loop:1000, //default loaders include this, allowing you to define a timer loop
+            looping:true //start looping as soon as the node is defined?
+        }
+    },
+
+    nodeF:{ //this is a way to control HTML nodes
+        __props:document.createElement('div'), //properties on the '__props' object will be proxied and mutatable as 'this' on the node. E.g. for representing HTML elements
+        __onconnected:function (node) { 
+            this.innerHTML = 'Test';
+            this.style.backgroundColor = 'green'; 
+            document.body.appendChild(this.__props); 
+            console.log(this,this.__props);
+        },
+        __ondisconnected:function(node) {
+            document.body.removeChild(this.__props);
+        }
+        
+    }
+
+};
+
+let graph = new Graph({
+    tree,
+    loaders
+});
+
+
+```
+
+
+We took this much further by unifying Graphs with a uniform message passing system via Services, allowing for complex multithreading and backend + frontend workflows to be constructed very clearly within a few hundred lines of code. See [Services](./Service.md)

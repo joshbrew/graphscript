@@ -28,8 +28,6 @@ For additional services (currently gpu.js service and the compiled worker dataur
 
 # READMEs:
 
-Need to redo these after some major formatting changes...
-
 ## * [Graphs and GraphNodes](https://github.com/brainsatplay/graphscript/blob/master/docs/Graph.md)
 ## * [Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md)
    * * [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
