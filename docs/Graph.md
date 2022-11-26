@@ -60,7 +60,7 @@ Why would you do this? Well the more you script things in software, the more you
 
 Javascript has hundreds of features for you to, well, script your web pages and applications. If we can synthesize it into a proper hierarchical graph system format for workflow programming that does not burden the developer with heavy abstractions, it makes life that much better and the developer experience frictionless. 
 
-We have a synthesis of this idea we're calling a form of "graph script" which provides a simple way to link functions, objects, modules, scopes, etc. in your program in an object tree that imbues these objects with state and listener powers - and much more - on an acyclic graph abstraction with very minimal overhead and constraints. This is a minimal workflow programming implementation that respects javascript's basic offerings without getting in the way, and allows for all kinds of combination and composition.
+We have a synthesis of this idea we're calling a form of "graph script" which provides a simple way to link functions, objects, modules, scopes, etc. in your program in an object tree that imbues these objects with state and listener powers - and much more - on an acyclic graph abstraction with very minimal overhead and constraints. This is a minimal workflow programming implementation that respects javascript's robust offerings without getting in the way, and allows for all kinds of combination and composition.
 
 
 
