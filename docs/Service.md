@@ -6,6 +6,8 @@ Before reading and getting immediately confused by this alien API, scroll throug
 
 Services extend Graphs to build on the idea of creating pluggable [microservices](https://www.akana.com/resources/microservices-why-should-businesses-care) in a unified, componentized programming interface, and simplifies the amount of work required to implement increasing numbers of protocols with more syntax and functionality than we can normally remember. Building these instead as Services and following the general formula here can vastly speed up feature development and feature meshing. 
 
+
+### Worker Service example
 e.g.
 ```ts
 
@@ -79,9 +81,9 @@ Services provide a unifying function/class loading and message passing framework
 Create routed nodes with any functions, node/graph/service prototypes, any objects at all (e.g. the built in Math object in browsers) to gain state machine and flowgraph functionalities across your program, even remotely as we demonstrated above with threads.
 
 
-## Service Messages
+### Service Messages
 
-For microservices to be able to talk to each other, we use a common set of keys in an object used for message passing and transmitting/receiving between services and nodes, including those on other servers or threads. 
+For microservices to be able to talk to each other, we use a common set of keys in an object used for message passing and transmitting/receiving between services and nodes, including those on other servers or threads. We then simply write handlers specific to a messenging API (sockets, web workers, HTTP, etc) to interpret graph messages generically to trigger i/o on either end, easily allowing for posting, subscribing, awaiting, etc.   
 
 ```ts
 type ServiceMessage = {
@@ -98,6 +100,8 @@ let message:ServiceMessage = {route:'add', args:[10,20], method:'post'};
 service.transmit(message); //these get customized in services representing their specific protocols e.g. http or websockets to deal with those specific interface requirements
 
 ```
+
+### Connection Templating
 
 All of the remote message passing services with two way communication channels (excluding http/sse currently) have the following functions available on each instance of your socket, rtc peer, worker thread (including worker->worker message ports), child process, etc. connections to make it really easy to build complex message passing functions e.g. for server or multiplayer communication and remote control. 
 
@@ -116,7 +120,7 @@ type ConnectionTemplate = {
 }
 
 ```
-These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need for increasing control over your program. There are no restrictions on top of the base protocols, it's all just boiled down to one liners like transmit() and receive() i.e. similar calls between services for mental clarity and a recommended configuration by default to enable the most desirable functionality e.g. if you do not specify your own onmessage callbacks for sockets or threads then the default functions are set to interface with the graph/service architecture automatically for zero config if you stick to the main tag-based run/subscribe templates here. 
+These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need for increasing control over your program. There are no restrictions on the base protocols, it's all just boiled down to one liners like transmit() and receive() i.e. similar calls between services for mental clarity and a recommended configuration by default to enable the most desirable functionality.
 
 Everything in the base javascript tooling is available still for direct calls to save overhead - of which there is very little in our added system here. Ideally we are using the bare minimum needed to generalize each protocol's message passing system to maximize application performance for general use cases without sacrificing readability and composability.
 
