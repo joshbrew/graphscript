@@ -5,7 +5,7 @@ The Graph and GraphNode classes are an implementation of the acyclic graphs and 
 
 ### First Steps
 
-To create a Graph, simply declare an object as your "tree" or your program hierarchy then load it into the graph. After that your nodes become interactive through both the definition objects and through accessors on the Graph instance.
+To create a Graph, simply declare an object as your "tree" or your program hierarchy with lists of node definitions, then load it into the graph. After that your nodes become interactive through both the definition objects and through accessors on the Graph instance.
 
 ```ts
 
@@ -87,6 +87,13 @@ type GraphNodeProperties = {
 ```
 
 One special property to note here is `__props`. If you provide an object, class instance, or class constructor function (to be instanced) under `__props`, all of the object's methods will be made available by proxy on the graph node. This enables the proxied object to be mutated by the node as its own properties, e.g. to control an HTML node within the graph node scope. E.g. setting `__props:document.body` then with the resulting node setting  `node.style.backgroundColor = 'black'` should turn the page black, because the node is acting as the referenced HTML node now.
+
+Other important properties to note are the `__listeners` and the `__operator`. 
+Listeners allow subscribing to the results of node operator and arbitrary method outputs - including promise results - and changes to object variables to be subscribed to e.g. numbers or strings that get updated (e.g. velocity, text inputs). To subscribe to nodes, you simply call `graph.subscribe(nodeOrTag,callback)` The callback can be any function, node, or node tag so you can simply pass strings in to initiate subscriptions. They will clean themselves up when nodes are removed from the graph. 
+
+When a node is subscribed to it enhances itself with getters and setters that allow changes to set state automatically, including for results of async functions so you can work with sync and async processes the same way. To avoid excessive copying, state is only set on changes that have active subscriptions with a simple boolean. 
+
+The `__operator` is where default functions for nodes are stored. This lets you pass class methods in for instance as node definitions and then they can gain state and listener access across the program. Arrow functions on classes are nice because they will remain bound to their parent class instance even when applied to nodes. We use this extensively to subscribe across remote endpoints to outputs of specific methods or arbitrary states e.g. a game state. 
 
 
 ### Graph Options
