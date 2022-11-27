@@ -135,7 +135,7 @@ export const htmlloader = (
                 parent.__props.appendChild(node.__props);
             } else if(graph.parentNode instanceof HTMLElement) {
                 graph.parentNode.appendChild(node.__props);
-            } else document.body.appendChild(node.__props);
+            } else if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement)) document.body.appendChild(node.__props);
         });
 
         node.__addOndisconnected((n) => { 
