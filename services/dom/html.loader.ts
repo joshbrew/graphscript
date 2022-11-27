@@ -14,6 +14,10 @@ export type HTMLNodeProperties = GraphNodeProperties & {
     __renderonchanged?:(elm:HTMLElement) => void,
     useShadow?:boolean,
     __css?:string, //stylesheet template string 
+
+    //more
+    __element?:string|HTMLElement //alt way to set __props with a more explicit key
+    __attributes?:{[key:string]:any} //can assign these to the html node, or just use the node definition itself as all element props are available on 'this'
 }
 
 export const htmlloader = (
