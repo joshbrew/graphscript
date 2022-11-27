@@ -106,8 +106,6 @@ export const htmlloader = (
         }
 
     } else if(node.__props instanceof HTMLElement) {
-        
-        node.__props.id = key;
 
         if(node.__onresize)
             window.addEventListener('resize', node.__onresize as EventListener);
@@ -128,6 +126,7 @@ export const htmlloader = (
     }
     
     if(node.__props instanceof HTMLElement) {
+        node.__props.id = key;
 
         node.__addOnconnected((n) => { 
             if(node.__props.parentNode) (n.__props as HTMLElement).remove(); 
