@@ -93,7 +93,7 @@ export class WorkerService extends Service {
             let ondelete = (rt) => { //removing the original route will trigger ondelete
                 rt.worker?.terminate();
             }
-            rt.__addDisconnected(ondelete);
+            rt.__addOndisconnected(ondelete);
         }
 
         rt.worker = worker;
@@ -163,7 +163,6 @@ export class WorkerService extends Service {
             if(!node.parentRoute && (parent?.callback && parent?.worker)) node.parentRoute = parent?.callback;
             if(rt?.worker || rt?.workerId || (rt as WorkerRoute)?.workerUrl) { //each set of props with a worker will instantiate a new worker, else you can use the same worker elsewhere by passing the corresponding tag
 
-            
                 let worker = this.loadWorkerRoute(rt as any, rt.__node.tag);
                 if(worker) {
                     if(!rt.parentRoute && (rt.__parent as any)?.callback) rt.parentRoute = (rt.__parent as any).callback;

@@ -262,7 +262,6 @@ export class DOMService extends Service {
     
     resolveGraphNode = (element, options) => {
 
-
         let node: GraphNode & DOMRouteProp;
         if(this.__node.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.__node.nodes.get(options.id)?.parentNode === options.parentNode) {
             node = this.__node.nodes.get(options.id);
@@ -404,7 +403,7 @@ export class DOMService extends Service {
         
         let node = this.resolveGraphNode(elm, options);
 
-        node.__addDisconnected((node) => { (elm as DOMElement).delete(); });
+        node.__addOndisconnected((node) => { (elm as DOMElement).delete(); });
 
 
         this.components[completeOptions.id] = {
@@ -504,7 +503,7 @@ export class DOMService extends Service {
 
         let node = this.resolveGraphNode(elm, options);
 
-        node.__addDisconnected((node) => { (elm as DOMElement).delete(); });
+        node.__addOndisconnected((node) => { (elm as DOMElement).delete(); });
 
         let canvas = elm.querySelector('canvas');
         if(completeOptions.style) Object.assign(canvas.style,completeOptions.style); //assign the style object

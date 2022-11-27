@@ -96,7 +96,7 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
                 if(node.__node.looping) node.__node.looping = false;
             }
 
-            node.__addDisconnected(ondelete);
+            node.__addOndisconnected(ondelete);
         }
     }
 
@@ -128,7 +128,7 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
             if(node.__node.animating) node.__node.animating = false;
         }
 
-        node.__addDisconnected(ondelete);
+        node.__addOndisconnected(ondelete);
     }
 }
 
@@ -271,7 +271,7 @@ export const substitute__operator = (node:GraphNode & GraphNodeProperties, paren
                 graph.__node.nodes.delete(a);
             }
     
-            node.__addDisconnected(ondelete);
+            node.__addOndisconnected(ondelete);
         })
     }
     if(typeof graph.__node.tree[node.__node.tag] === 'object' && node.get) graph.__node.tree[node.__node.tag].get = node.get;

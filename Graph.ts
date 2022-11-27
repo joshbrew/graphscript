@@ -136,7 +136,7 @@ export class GraphNode {
                     properties.__node.nodes.forEach((n) => {parent.set(properties.__node.tag+'.'+n.__node.tag,n)});
 
                     let ondelete = () => { properties.__node.nodes.forEach((n) => {parent.__node.nodes.delete(properties.__node.tag+'.'+n.__node.tag)}); }
-                    this.__addDisconnected(ondelete);
+                    this.__addOndisconnected(ondelete);
 
                 }
             }
@@ -149,7 +149,7 @@ export class GraphNode {
             if(properties.__operator && parent instanceof GraphNode && parent.__operator) {
                 let sub = parent.__subscribe(this);
                 let ondelete = () => { parent?.__unsubscribe(sub);}
-                this.__addDisconnected(ondelete);
+                this.__addOndisconnected(ondelete);
             }
             else if (typeof properties.default === 'function' && !properties.__operator) { //make it so the node is subscribable
                 let fn = properties.default.bind(this);
@@ -356,7 +356,7 @@ export class GraphNode {
         else this.__onconnected = callback;
     }
 
-    __addDisconnected(callback:(node)=>void) {
+    __addOndisconnected(callback:(node)=>void) {
         if(Array.isArray(this.__ondisconnected)) { this.__ondisconnected.push(callback); }
         else if (typeof this.__ondisconnected === 'function') { this.__ondisconnected = [callback,this.__ondisconnected] }
         else this.__ondisconnected = callback;
@@ -683,7 +683,7 @@ export class Graph {
                 (nd as GraphNode).__unsubscribe(sub,key,subInput);
             }
 
-            nd.__addDisconnected(ondelete);
+            nd.__addOndisconnected(ondelete);
         } else if (typeof node === 'string') {
             if(this.get(node)) {
                 if(callback instanceof GraphNode && callback.__operator) {
@@ -693,7 +693,7 @@ export class Graph {
                         //console.log('unsubscribed', key)
                     }
         
-                    callback.__addDisconnected(ondelete);
+                    callback.__addOndisconnected(ondelete);
                 }
                 else if (typeof callback === 'function' || typeof callback === 'string') {
                     sub = (this.get(node) as GraphNode).__subscribe(callback,key,subInput,target,bound); 
