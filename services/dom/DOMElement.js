@@ -262,16 +262,15 @@ export class DOMElement extends HTMLElement {
             }
             t.appendChild(this.templateResult);
         }
-
         const fragment = t.content;
 
         if(this.FRAGMENT) { //will reappend the fragment without reappending the whole node if already rendered once
             if(this.useShadow) {
                 //this.removeChild(this.shadowRoot)
                 if(this.STYLE) this.shadowRoot.removeChild(this.STYLE);
-                this.shadowRoot.removeChild(this.FRAGMENT);
+                this.FRAGMENT.forEach((c) => {this.shadowRoot.removeChild(c);});
             }   
-            else this.removeChild(this.FRAGMENT); 
+            else this.FRAGMENT.forEach((c) => {this.removeChild(c)}); 
         }
         if(this.useShadow) {
             if(!this.attachedShadow) {
@@ -285,13 +284,15 @@ export class DOMElement extends HTMLElement {
                 this.STYLE = style;
             }
 
+            let len = fragment.childNodes.length;
             this.shadowRoot.prepend(fragment); //now you need to use the shadowRoot.querySelector etc.
-            this.FRAGMENT = this.shadowRoot.childNodes[0];
+            this.FRAGMENT = Array.from(this.shadowRoot.childNodes).slice(0,len)
             //this.prepend(this.shadowRoot)
         }   
         else {
+            let len = fragment.childNodes.length;
             this.prepend(fragment);
-            this.FRAGMENT = this.childNodes[0];
+            this.FRAGMENT = Array.from(this.childNodes).slice(0,len)
         }
         
 

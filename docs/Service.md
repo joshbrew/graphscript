@@ -132,7 +132,9 @@ We will elaborate on all of this with individual docs for each microservice, as 
 
 For all services with remote message passing support (http, wss, sse, webrtc, etc.) they are by default configured to handle our service messages alongside arbitrary callbacks or basic standard functions (e.g. file serving in the http server). This allows them to be quickly wired together with your custom services without worrying about formats matching up.
 
-- DOM - Create elements, detailed web components, or a macro for canvases that tie in with the graph. Really quickly script out whole web pages with heavy interactivity with a lot less fuss. Includes .md and .jsx interpreting options (rough). (browser only) 
+- DOM - Deprecated, use the [htmlloader](../services/dom/html.loader.ts) for a much leaner tool. 
+
+Create elements, detailed web components, or a macro for canvases that tie in with the graph. Really quickly script out whole web pages with heavy interactivity with a lot less fuss. Includes .md and .jsx interpreting options (rough). (browser only) 
     - - [DOMService](./services/dom/dom.service.md)
 
 - HTTP - Create [http/https servers](https://nodejs.org/api/http.html) and manage REST calls and create static or dynamic websites instantly. The server is set up to handle custom GET/POST requests using our route format encoded in the request body as well as standard GET/POST calls for serving files. The backend HTTP service allows you to construct webpages just from strings and inject code e.g. for hotreloading into your page with simple one liners. You can even build whole pages from lists of functions and template strings.

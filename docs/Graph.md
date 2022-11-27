@@ -191,5 +191,6 @@ let graph = new Graph({
 
 ```
 
+In the above example, one interesting thing we can do is proxy methods on an object using __props, this lets us treat an html element as if it's a node, meaning these properties can be listened to by other nodes in the graph. Import the [htmlloader](../services/dom/html.loader.ts) for a special node definition for working with html and web components.
 
 We took this much further by unifying Graphs with a uniform message passing system via Services, allowing for complex multithreading and backend + frontend workflows to be constructed very clearly within a few hundred lines of code. With this we have created a graph-based full stack API for browser frontend and node backend development. There is much more to come. See [Services](./Service.md)
