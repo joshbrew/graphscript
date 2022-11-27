@@ -90,7 +90,6 @@ export const htmlloader = (
         CustomElement.addElement(node.tagName);
 
         node.__props = document.createElement(node.tagName);
-        node.__props.id = key;
 
         node.__proxyObject(node.__props);
         let keys = Object.getOwnPropertyNames(properties);
@@ -99,7 +98,9 @@ export const htmlloader = (
             else node.__props[k] = properties[k]; 
         }
 
-    } else if(node.__props instanceof HTMLElement) {
+    } 
+     
+    if(node.__props instanceof HTMLElement) {
         
         node.__props.id = key;
         
@@ -133,6 +134,7 @@ export const htmlloader = (
             }
         });
     } 
+
     if(node.__attributes && node.__props instanceof HTMLElement) { 
         for(const k in node.__attributes) {
             if(k === 'style' && typeof node.__attribute[k] === 'object') {Object.assign(node.__props.style,node.__attribute[k]);}
