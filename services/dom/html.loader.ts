@@ -54,7 +54,7 @@ export const htmlloader = (
         node.__proxyObject(node.__props);
         let keys = Object.getOwnPropertyNames(properties);
         for(const k of keys) { 
-            if(k === 'style' && typeof keys[k] === 'object') {Object.assign(node.__props.style,keys[k]);}
+            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
             else node.__props[k] = properties[k]; 
         }
     } else if (node.__element && !node.__template) {
@@ -64,7 +64,7 @@ export const htmlloader = (
         node.__proxyObject(node.__props);
         let keys = Object.getOwnPropertyNames(properties);
         for(const k of keys) { 
-            if(k === 'style' && typeof keys[k] === 'object') {Object.assign(node.__props.style,keys[k]);}
+            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
             else node.__props[k] = properties[k]; 
         }
     } else if (typeof node.__css === 'string') {
@@ -101,7 +101,7 @@ export const htmlloader = (
         node.__proxyObject(node.__props);
         let keys = Object.getOwnPropertyNames(properties);
         for(const k of keys) { 
-            if(k === 'style' && typeof keys[k] === 'object') {Object.assign(node.__props.style,keys[k]);}
+            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
             else node.__props[k] = properties[k]; 
         }
 
