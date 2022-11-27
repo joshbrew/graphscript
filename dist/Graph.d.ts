@@ -54,7 +54,7 @@ export declare class GraphNode {
     }): void;
     __proxyObject: (obj: any) => void;
     __addOnconnected(callback: (node: any) => void): void;
-    __addDisconnected(callback: (node: any) => void): void;
+    __addOndisconnected(callback: (node: any) => void): void;
     __callConnected(node?: this): void;
     __callDisconnected(node?: this): void;
 }
