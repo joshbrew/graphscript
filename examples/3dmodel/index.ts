@@ -1,5 +1,4 @@
 import * as BABYLON from 'babylonjs'
-import { Vector3 } from 'babylonjs';
 import { Graph, htmlloader } from '../../index';
 
 let canvas = document.createElement('canvas');
@@ -90,7 +89,7 @@ let graph = new Graph({
 
 engine.runRenderLoop(function(){
     scene.render();
-    graph.get('snowman').position = new Vector3(0, Math.sin(performance.now()*0.001)*5, 0);
+    graph.get('snowman').position = new BABYLON.Vector3(0, Math.sin(performance.now()*0.001)*5, 0);
 
 });
 // the canvas/window resize event handler
