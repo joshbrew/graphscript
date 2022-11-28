@@ -1,4 +1,4 @@
 
 export * from './Graph'
 
-export * from './Loaders'
+export * from './loaders/Loaders'

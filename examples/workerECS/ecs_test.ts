@@ -4,19 +4,19 @@
 import {
     Router,
     WorkerService,
-    DOMService,
     workerCanvasRoutes,
     WorkerCanvas,
     WorkerCanvasControls,
-    WorkerInfo
+    WorkerInfo,
+    htmlloader,
+    HTMLNodeProperties
 } from '../../index'//'graphscript'
-import { ElementProps } from '../../services/dom/types/index';
 
 import gsworker from './worker'
 
 const workers = new WorkerService();
 
-const router = new Router({ services:{ DOMService, workers, workerCanvasRoutes } });
+const router = new Router({ services:{ workers, workerCanvasRoutes }, loaders:{htmlloader} });
 
 console.log(router);
 
@@ -29,11 +29,11 @@ let ret = router.setTree({
             'div':{
                 tagName:'div',
                 innerText:'Multithreaded canvases!'
-            } as ElementProps,
+            } as HTMLNodeProperties,
             'canvas':{
                 tagName:'canvas',
                 style:{width:'100%',height:'100%'},
-                onrender:(elm,info)=>{
+                __onrender:function (elm){
                     const renderer = workers.addWorker({url:gsworker}) as WorkerInfo;
                     const entities = workers.addWorker({url:gsworker}) as WorkerInfo;
                     const entities2 = workers.addWorker({url:gsworker}) as WorkerInfo;
@@ -196,9 +196,9 @@ let ret = router.setTree({
                         const portId = workers.establishMessageChannel(renderer.worker,entities.worker);
                         const port2Id = workers.establishMessageChannel(renderer.worker,entities2.worker);
                         
-                        info.renderer = renderer;
-                        info.entities = entities;
-                        info.entities2 = entities2;
+                        this.renderer = renderer;
+                        this.entities = entities;
+                        this.entities2 = entities2;
     
                         //console.log(renderer);
     
@@ -248,6 +248,7 @@ let ret = router.setTree({
 
                                     
                                     canvas.addEventListener('resize', (ev) => {
+                                        //console.log('resizing', canvas.clientWidth, canvas.clientHeight)
                                         renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
                                         if(camera) {
                                             camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -473,14 +474,14 @@ let ret = router.setTree({
                         entities2.post('animateEntities');
                     }
                 },
-                onremove:(elm,info)=>{
-                    workers.terminate(info.renderer._id);
-                    workers.terminate(info.entities._id);
-                    workers.terminate(info.entities2._id);
+                __onremove:function (elm){
+                    workers.terminate(this.renderer._id);
+                    workers.terminate(this.entities._id);
+                    workers.terminate(this.entities2._id);
                 }        
-            } as ElementProps      
+            } as HTMLNodeProperties      
         } 
-    } as ElementProps
+    } as HTMLNodeProperties
 });
 
 //console.log(ret)

@@ -18,7 +18,7 @@ export declare class Service extends Graph {
     name: string;
     constructor(options?: ServiceOptions);
     addServices: (services: {
-        [key: string]: Function | Service | {
+        [key: string]: Function | Graph | Service | {
             [key: string]: any;
         };
     }) => void;

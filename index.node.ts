@@ -1,7 +1,7 @@
 //frontend (browser-compatible) exports
 
 export * from './Graph'
-export * from './Loaders'
+export * from './loaders/Loaders'
 
 export * from './services/Service'
 export * from './services/unsafe/Unsafe.service'

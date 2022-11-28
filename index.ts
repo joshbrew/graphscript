@@ -1,16 +1,16 @@
 //frontend (browser-compatible) exports
 
 export * from './Graph'
-export * from './Loaders'
+export * from './loaders/Loaders'
 
 export * from './services/Service'
 export * from './services/unsafe/Unsafe.service'
 
 export * from './services/ecs/ECS.service'
 
-export * from './services/dom/DOM.service'
-export { DOMElement, addCustomElement } from './services/dom/DOMElement'
-export * from './services/dom/html.loader'
+//export * from './services/dom/DOM.service'
+export { DOMElement, addCustomElement } from './loaders/html/DOMElement'
+export * from './loaders/html/html.loader'
 
 export * from './services/e2ee/E2EE.service'
 

@@ -110,12 +110,6 @@ export const htmlloader = (
         if(node.__onresize)
             window.addEventListener('resize', node.__onresize as EventListener);
 
-        node.__addOnconnected((n) => { 
-            if(node.__onrender) {
-                node.__onrender(node.__props);
-            }
-        });
-
     } 
 
     if(node.__attributes && node.__props instanceof HTMLElement) { 
@@ -129,12 +123,16 @@ export const htmlloader = (
         node.__props.id = key;
 
         node.__addOnconnected((n) => { 
-            if(node.__props.parentNode) (n.__props as HTMLElement).remove(); 
+            if(n.__props.parentNode) (n.__props as HTMLElement).remove(); 
             if(parent.__props instanceof HTMLElement) {
                 parent.__props.appendChild(node.__props);
             } else if(graph.parentNode instanceof HTMLElement) {
                 graph.parentNode.appendChild(node.__props);
             } else if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement)) document.body.appendChild(node.__props);
+        
+            //add slight delay for sizing etc to kick in correctly
+            if(node.__onrender && !node.__template) setTimeout(()=>{node.__onrender(node.__props)},0.01);
+
         });
 
         node.__addOndisconnected((n) => { 
@@ -143,11 +141,11 @@ export const htmlloader = (
             if(typeof n.__onremove === 'function') {
                 n.__onremove(n.__props)
             }
-        });
-    }
 
-    if(!node.__template && node.__onrender) {
-        node.__onrender(node.__props);
+            if(n.__onresize) {
+                window.removeEventListener('resize', n.__onresize);
+            }
+        });
     }
 
 

@@ -1,7 +1,7 @@
 //@ts-nocheck
 
 //resources
-import { DOMService, WorkerCanvas, GraphNodeProperties, loaders } from '../../index';
+import { Service, WorkerCanvas, GraphNodeProperties, loaders, htmlloader, HTMLNodeProperties } from '../../index';
 import { 
     initDevice, 
     workers, 
@@ -23,7 +23,6 @@ import { visualizeDirectory } from '../../extras/index.storage.services'//'graph
 import './index.css'
 
 //types
-import { ElementProps } from 'graphscript/services/dom/types/element';
 import { WorkerRoute } from 'graphscript/services/worker/Worker.service';
 //import { ComponentProps } from 'graphscript/services/dom/types/component';
 
@@ -68,7 +67,10 @@ const GameState = {
 }
 
 
-const webapp = new DOMService({loaders});
+const webapp = new Service({loaders:{
+    ...loaders,
+    htmlloader
+}});
 webapp.addServices({workers}); //merge the worker service provided by device-decoder for convenience
 
 
@@ -89,84 +91,81 @@ const webappHtml = {
                             'connectheader':{
                                 tagName:'h4',
                                 innerHTML:'Connect to an EEG device'
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'connectmode':{
                                 tagName:'select',
-                                attributes:{
-                                    innerHTML:`
-                                        <option value='BLE' selected>BLE</option>
-                                        <option value='BLE_OTHER'>BLE (Third Party Drivers)</option>
-                                        <option value='USB'>USB</option>
-                                        <option value='OTHER'>Other</option>
-                                    `,
-                                    onchange:(ev)=>{ // this is a terrible solution :P
-                                        if(ev.target.value === 'BLE') {
-                                            ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
-                                            ev.target.parentNode.querySelector('#selectBLE').style.display = '';
-                                            ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
-                                            ev.target.parentNode.querySelector('#selectOther').style.display = 'none';
-                                        }
-                                        else if(ev.target.value === 'USB') {
-                                            ev.target.parentNode.querySelector('#selectUSB').style.display = '';
-                                            ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
-                                            ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
-                                            ev.target.parentNode.querySelector('#selectOther').style.display = 'none';
-                                        }
-                                        else if(ev.target.value === 'BLE_OTHER') {
-                                            ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
-                                            ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
-                                            ev.target.parentNode.querySelector('#selectBLEOther').style.display = '';
-                                            ev.target.parentNode.querySelector('#selectOther').style.display = 'none';
-                                        }
-                                        else if(ev.target.value === 'OTHER') {
-                                            ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
-                                            ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
-                                            ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
-                                            ev.target.parentNode.querySelector('#selectOther').style.display = '';
-                                        }
+                                innerHTML:`
+                                    <option value='BLE' selected>BLE</option>
+                                    <option value='BLE_OTHER'>BLE (Third Party Drivers)</option>
+                                    <option value='USB'>USB</option>
+                                    <option value='OTHER'>Other</option>
+                                `,
+                                onchange:(ev)=>{ // this is a terrible solution :P
+                                    if(ev.target.value === 'BLE') {
+                                        ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
+                                        ev.target.parentNode.querySelector('#selectBLE').style.display = '';
+                                        ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
+                                        ev.target.parentNode.querySelector('#selectOther').style.display = 'none';
+                                    }
+                                    else if(ev.target.value === 'USB') {
+                                        ev.target.parentNode.querySelector('#selectUSB').style.display = '';
+                                        ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
+                                        ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
+                                        ev.target.parentNode.querySelector('#selectOther').style.display = 'none';
+                                    }
+                                    else if(ev.target.value === 'BLE_OTHER') {
+                                        ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
+                                        ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
+                                        ev.target.parentNode.querySelector('#selectBLEOther').style.display = '';
+                                        ev.target.parentNode.querySelector('#selectOther').style.display = 'none';
+                                    }
+                                    else if(ev.target.value === 'OTHER') {
+                                        ev.target.parentNode.querySelector('#selectUSB').style.display = 'none';
+                                        ev.target.parentNode.querySelector('#selectBLE').style.display = 'none';
+                                        ev.target.parentNode.querySelector('#selectBLEOther').style.display = 'none';
+                                        ev.target.parentNode.querySelector('#selectOther').style.display = '';
                                     }
                                 }
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'selectUSB':{
                                 tagName:'select',
                                 style:{display:'none'},
-                                onrender:(self)=>{                      
+                                __onrender:(self)=>{                      
                                     for(const key in selectable.USB) {
                                         self.innerHTML += `<option value='${key}'>${selectable.USB[key]}</option>`
                                     }
                                 }
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'selectBLE':{
                                 tagName:'select',
-                                onrender:(self)=>{                      
+                                __onrender:(self)=>{                      
                                     for(const key in selectable.BLE) {
                                         self.innerHTML += `<option value='${key}'>${selectable.BLE[key]}</option>`
                                     }   
                                 }
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'selectBLEOther':{
                                 tagName:'select',
                                 style:{display:'none'},
-                                onrender:(self)=>{                    
+                                __onrender:(self)=>{                    
                                     for(const key in selectable.BLE_OTHER) { //include both sets
                                         self.innerHTML += `<option value='${key}'>${selectable.BLE_OTHER[key]}</option>`
                                     }
                                 }
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'selectOther':{
                                 tagName:'select',
                                 style:{display:'none'},
-                                onrender:(self)=>{                    
+                                __onrender:(self)=>{                    
                                     for(const key in selectable.OTHER) { //include both sets
                                         self.innerHTML += `<option value='${key}'>${selectable.OTHER[key]}</option>`
                                     }
                                 }
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'connectDevice':{
                                 tagName:'button',
-                                attributes:{
-                                    innerHTML:'Connect Device',
-                                    onclick:async (ev)=>{
+                                innerHTML:'Connect Device',
+                                onclick:async (ev)=>{
 
                                         //let outputelm = document.getElementById('raw') as HTMLDivElement;
 
@@ -624,13 +623,12 @@ const webappHtml = {
                                             }
                                             ev.target.parentNode.appendChild(disc);
                                         }
-                                    }
                                 }
-                            } as ElementProps
+                            } as HTMLNodeProperties
                         }
-                    } as ElementProps
+                    } as HTMLNodeProperties
                 }
-            } as ElementProps,
+            } as HTMLNodeProperties,
             'output':{
                 tagName:'div',
                 __children:{
@@ -640,59 +638,55 @@ const webappHtml = {
                             'soundheader':{
                                 tagName:'h4',
                                 innerHTML:'Play a sound to modulate volume with the EEG using the mean Alpha Coherence between channels 0 and 1'
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'soundDropdown':{
                                 tagName:'select',
                                 innerHTML:soundFilePaths.map((p) => `<option value='${p}'>${p}</option>`)
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'play':{
                                 tagName:'button',
-                                attributes:{
-                                    onclick:(ev)=>{
-                                        //ev.target.parentNode.querySelector('#soundDropdown')
-                                        if(GameState.playing) {
-                                            GameState.playing.stop()
-                                            GameState.playing = undefined;
-                                        }
+                                onclick:(ev)=>{
+                                    //ev.target.parentNode.querySelector('#soundDropdown')
+                                    if(GameState.playing) {
+                                        GameState.playing.stop()
+                                        GameState.playing = undefined;
+                                    }
 
-                                        GameState.playing = new Howl({
-                                            src:(document.getElementById('soundDropdown') as HTMLSelectElement).value,
-                                            loop:true,
-                                            autoplay:true,
-                                            volume:0.5,
-                                            onend:()=>{},
-                                            onplay:()=>{},
-                                            onload:()=>{
-                                                GameState.analyser = Howler.ctx.createAnalyser();
-                                                Howler.masterGain.connect(GameState.analyser);
-                                                GameState.analyser.connect(Howler.ctx.destination);
-                                            }
-                                        });
-                                    },
-                                    innerText:'Play'
-                                }
-                            } as ElementProps,
+                                    GameState.playing = new Howl({
+                                        src:(document.getElementById('soundDropdown') as HTMLSelectElement).value,
+                                        loop:true,
+                                        autoplay:true,
+                                        volume:0.5,
+                                        onend:()=>{},
+                                        onplay:()=>{},
+                                        onload:()=>{
+                                            GameState.analyser = Howler.ctx.createAnalyser();
+                                            Howler.masterGain.connect(GameState.analyser);
+                                            GameState.analyser.connect(Howler.ctx.destination);
+                                        }
+                                    });
+                                },
+                                innerText:'Play'
+                            } as HTMLNodeProperties,
                             'stop':{
                                 tagName:'button',
-                                attributes:{
-                                    onclick:(ev)=>{
-                                        if(GameState.playing){
-                                            GameState.playing.stop();
-                                            GameState.playing = undefined;
-                                        }
-                                    },
-                                    innerText:'Stop'
-                                }
-                            } as ElementProps
+                                onclick:(ev)=>{
+                                    if(GameState.playing){
+                                        GameState.playing.stop();
+                                        GameState.playing = undefined;
+                                    }
+                                },
+                                innerText:'Stop'
+                            } as HTMLNodeProperties
                         }
-                    } as ElementProps,
+                    } as HTMLNodeProperties,
                     'ln0':{
                         tagName:'hr'
                     },
                     'waveformtitle':{
                         tagName:'div',
                         innerHTML:'Raw Data'
-                    } as ElementProps,
+                    } as HTMLNodeProperties,
                     'waveformdiv':{
                         tagName:'div',
                         style:{height:'300px'},
@@ -700,21 +694,19 @@ const webappHtml = {
                             'waveform':{
                                 tagName:'canvas',
                                 style:{width:'100%', height:'300px', position:'absolute', zIndex:'1'}
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'waveformoverlay':{
                                 tagName:'canvas',
                                 style:{width:'100%', height:'300px', position:'absolute', zIndex:'2'},
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'waveformcontrols':{
                                 tagName:'table',
                                 style:{display:'none', width:'100%', height:'300px', position:'absolute',  zIndex:'3'},
-                                attributes: {
-                                    className:'chartcontrols',
-                                    onmouseleave:(ev) => {
-                                        document.getElementById('waveformcontrols').style.display = 'none';
-                                    }
-                                },
-                            } as ElementProps,
+                                className:'chartcontrols',
+                                onmouseleave:(ev) => {
+                                    document.getElementById('waveformcontrols').style.display = 'none';
+                                }
+                            } as HTMLNodeProperties,
                         }
                     },
                     'ln':{
@@ -723,7 +715,7 @@ const webappHtml = {
                     'dfttitle':{
                         tagName:'div',
                         innerHTML:'Coherence'
-                    } as ElementProps,
+                    } as HTMLNodeProperties,
                     'dftdiv':{
                         tagName:'div',
                         style:{height:'300px'},
@@ -731,11 +723,11 @@ const webappHtml = {
                             'dftwaveform':{
                                 tagName:'canvas',
                                 style:{width:'100%', height:'300px', position:'absolute', zIndex:'1'},
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                             'dftwaveformoverlay':{
                                 tagName:'canvas',
                                 style:{width:'100%', height:'300px',  position:'absolute', zIndex:'2'},
-                            } as ElementProps,
+                            } as HTMLNodeProperties,
                         }
                     },
                     'ln2':{
@@ -744,7 +736,7 @@ const webappHtml = {
                     'dftxaxis':{
                         tagName:'div',
                         style:{display:'flex', justifyContent:'space-between'}
-                    } as ElementProps,
+                    } as HTMLNodeProperties,
                     'ln3':{
                         tagName:'hr'
                     },
@@ -754,7 +746,7 @@ const webappHtml = {
                         __children:{
                             'rmse':{
                                 tagName:'div'
-                            } as ElementProps
+                            } as HTMLNodeProperties
                         }
                     },
                     'ln4':{
@@ -763,15 +755,15 @@ const webappHtml = {
                     'csvmenu':{
                         tagName:'div',
                         innerHTML:'CSVs',
-                        onrender:(self) => {
+                        __onrender:(self) => {
                             //console.log('rendering html')
                             visualizeDirectory('data', self);
                         }
-                    } as ElementProps,
+                    } as HTMLNodeProperties,
                 }
-            } as ElementProps
+            } as HTMLNodeProperties
         }
-    } as ElementProps
+    } as HTMLNodeProperties
 }
 
 webapp.setTree(webappHtml);

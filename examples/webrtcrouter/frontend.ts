@@ -4,12 +4,15 @@ import { EventSourceProps, SSEfrontend } from '../../services/sse/SSE.browser';
 import { SessionsService } from '../../services/sessions/sessions.service';
 import { WebRTCfrontend, WebRTCInfo } from '../../services/webrtc/WebRTC.browser';
 import { WebSocketProps, WSSfrontend } from '../../services/wss/WSS.browser';
-import { DOMService } from '../../services/dom/DOM.service';
+import {Graph, htmlloader} from '../../index'
 
 const router = new Router({
     order:['webrtc','wss','sse'],
     graph:{
-        'dom': new DOMService({
+        'dom': new Graph({
+            loaders:{
+                htmlloader
+            },
             tree:{
                 'main':{
                     tagName:'div',

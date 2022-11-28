@@ -123,6 +123,10 @@ type GraphOptions = {
 
 With additional [loaders](../Loaders.ts), we can quickly turn nodes into self contained loops and animations, html nodes, threads and thread-thread message ports, server endpoints, user representations, and more so we can quickly script out very complex programs, with a simple reference point to remix these features via the application trees. We can also export these node definitions as their own esm modules for easy module development.
 
+Featured Loaders:
+
+- [html](../loaders/html/html.loader.ts): create any html nodes and template string web components. The node properties are treated as setters for the html element if they overlap, so you can set innerHTML or events right on the node definition in one pass.
+
 The most complex examples we have so far do things like relay P2P initial connections through a socket backend, animate tens of thousands of boids with multiple threads, and process and debug sensor data with 8 separate task threads. 
 
 Each example is only a few hundred lines of code and roughly understandable in one pass at reading.

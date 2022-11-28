@@ -1,4 +1,4 @@
-import { GraphNode, Graph, GraphNodeProperties } from "./Graph";
+import { GraphNode, Graph, GraphNodeProperties } from "../Graph";
 
 //loaders are triggered just after graphnode creation, after oncreate() is called
 
@@ -108,18 +108,18 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
  * 
  */
 export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(node.__node.animate === true || node.animation) {
+    if(node.__node.animate === true || node.__animation) {
             let fn = node.__operator;
 
             node.__operator = (...args) => {
                 if(!('animating' in node.__node)) node.__node.animating = true;
                 if(node.__node.animating) {
-                    if(typeof node.animation === 'function') node.animation(...args);
+                    if(typeof node.__animation === 'function') node.__animation(...args);
                     else fn(...args);
                     requestAnimationFrame(()=>{node.__operator(...args);});
                 }
             }
-            if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.animation)) 
+            if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.__animation)) 
                 setTimeout(()=>{requestAnimationFrame(node.__operator())},10);
 
         
