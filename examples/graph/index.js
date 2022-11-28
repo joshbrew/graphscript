@@ -1,6 +1,6 @@
 
 import { Graph } from "../../Graph";
-import { loaders } from "../../Loaders";
+import { loaders } from "../../loaders";
 import * as nodeA from './nodes/nodeA.js'
 
 const nodeAInstance = Object.assign({}, nodeA)
