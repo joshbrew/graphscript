@@ -97,3 +97,5 @@ engine.runRenderLoop(function(){
 window.addEventListener('resize', function(){
     engine.resize();
 });
+
+setTimeout(()=>{engine.resize();},0.1)
