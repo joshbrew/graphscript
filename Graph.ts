@@ -421,8 +421,8 @@ export class Graph {
             if(!tree.__node.tag) tree.__node._tag = `tree${Math.floor(Math.random()*1000000000000000)}`
             else if (!this.get(tree.__node.tag)) {
                 let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
-                for(const l in this.__node.loaders) { this.__node.loaders[l](node,this,this,tree,tree,tree.__node.tag); } //run any passes on the nodes to set things up further
                 this.set(node.__node.tag,node);
+                for(const l in this.__node.loaders) { this.__node.loaders[l](node,this,this,tree,tree,tree.__node.tag); } //run any passes on the nodes to set things up further
                 if(node.__listeners) {
                     listeners[node.__node.tag] = node.__listeners;
                 } //now the tree can specify nodes
@@ -455,8 +455,8 @@ export class Graph {
 
         if(typeof properties === 'object' && (!p?.__node?.tag || !this.get(p.__node.tag))) {
             let node = new GraphNode(p, parent as GraphNode, this);
-            for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,this.__node.tree,properties); } //run any passes on the nodes to set things up further
             this.set(node.__node.tag,node);
+            for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,this.__node.tree,properties); } //run any passes on the nodes to set things up further
             this.__node.tree[node.__node.tag] = properties; //reference the original props by tag in the tree for children
             //console.log('old:',properties.__node,'new:',node.__node);
             
@@ -497,14 +497,14 @@ export class Graph {
                 p.__node.initial = t[key];
                 if((this.get(p.__node.tag) && !(parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
                 let node = new GraphNode(p,parent,this);
+                this.set(node.__node.tag,node);
                 for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,t,t[key],key); } //run any passes on the nodes to set things up further
                 t[key] = node; //replace child with a graphnode
                 this.__node.tree[node.__node.tag] = p; //reference the original props by tag in the tree for children
-                this.set(node.__node.tag,node);
                 if(node.__listeners) {
                     listeners[node.__node.tag] = node.__listeners;
                 }
-                else if(node.__children) {
+                if(node.__children) {
                     node.__children = Object.assign({},node.__children);
                     this.recursiveSet(node.__children, node, listeners,node.__children);
                 }
