@@ -73,7 +73,7 @@ type GraphNodeProperties = {
     __props?:Function|GraphNodeProperties, //a class constructor function (calls 'new x()') or an object we want to proxy all of the methods on this node. E.g. an html element gains 'this' access through operators and listeners on this node.
     __operator?:((...args:any[])=>any)|string, //The 'main' function of the graph node, children will call this function if triggered by a parent. Functions passed as graphnodeproperties become the operator which can set state.
     __children?:{[key:string]:GraphNodeProperties}, //child nodes belonging to this node, e.g. for propagating results
-    __listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void,subInput?:boolean,[key:string]:any}}, //subscribe by tag to nodes or their specific properties and method outputs
+    __listeners?:{[key:string]:true|string|((result)=>void)|{__callback:string|((result)=>void)|true,subInput?:boolean,[key:string]:any}}|{[key:string]:((result)=>void)|true|string}, //subscribe by tag to nodes or their specific properties and method outputs
     __onconnected?:((node)=>void|((node)=>void)[]), //what happens once the node is created?
     __ondisconnected?:((node)=>void|((node)=>void)[]), //what happens when the node is deleted?
     __node?:{ //node specific properties, can contain a lot more things
@@ -101,16 +101,18 @@ The `__operator` is where default functions for nodes are stored. This lets you 
 Graphs also have several options:
 ```ts
 
+type Loader = (
+    node:GraphNode,
+    parent:Graph|GraphNode,
+    graph:Graph,
+    tree:any,
+    properties:GraphNodeProperties,
+    key:string
+)=>void;
+
 type GraphOptions = {
     tree?:{[key:string]:any},
-    loaders?:{[key:string]:(
-        node:GraphNode,
-        parent:Graph|GraphNode,
-        graph:Graph,
-        tree:any,
-        properties:GraphNodeProperties,
-        key:string
-    )=>void},
+    loaders?:{[key:string]:Loader|{init?:Loader, connected?:(node)=>void, disconnected:(node)=>void}},//can specify onconnected and ondisconnected attributes in loaders
     state?:EventHandler,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
     [key:string]:any

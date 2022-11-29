@@ -7,11 +7,13 @@ export declare type GraphNodeProperties = {
         [key: string]: GraphNodeProperties;
     };
     __listeners?: {
-        [key: string]: ((result: any) => void) | {
-            callback: (result: any) => void;
+        [key: string]: true | string | ((result: any) => void) | {
+            __callback: string | ((result: any) => void) | true;
             subInput?: boolean;
             [key: string]: any;
         };
+    } | {
+        [key: string]: ((result: any) => void) | true | string;
     };
     __onconnected?: ((node: any) => void | ((node: any) => void)[]);
     __ondisconnected?: ((node: any) => void | ((node: any) => void)[]);
@@ -23,12 +25,17 @@ export declare type GraphNodeProperties = {
     };
     [key: string]: any;
 };
+export declare type Loader = (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, properties: GraphNodeProperties, key: string) => void;
 export declare type GraphOptions = {
     tree?: {
         [key: string]: any;
     };
     loaders?: {
-        [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, properties: GraphNodeProperties, key: string) => void;
+        [key: string]: {
+            init?: Loader;
+            connected?: (node: any) => void;
+            disconnected: (node: any) => void;
+        } | Loader;
     };
     state?: EventHandler;
     mapGraphs?: false;
