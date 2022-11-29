@@ -261,7 +261,7 @@ export class GraphNode {
         if(!this.__subscribedToParent) {
             if(this.__parent instanceof GraphNode && this.__parent.__operator) {
                 let sub = this.__parent.__subscribe(this);
-                let ondelete = () => { this.__parent?.__unsubscribe(sub);}
+                let ondelete = () => { this.__parent?.__unsubscribe(sub); delete this.__subscribedToParent;}
                 this.__addOndisconnected(ondelete);
                 this.__subscribedToParent = true;
             }
