@@ -34,7 +34,7 @@ export type Loader = (
 
 export type GraphOptions = {
     tree?:{[key:string]:any},
-    loaders?:{[key:string]:{init?:Loader, connected?:(node)=>void, disconnected:(node)=>void}|Loader},
+    loaders?:{[key:string]:{init?:Loader, connected?:(node)=>void, disconnected?:(node)=>void}|Loader},
     state?:EventHandler,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
     [key:string]:any
