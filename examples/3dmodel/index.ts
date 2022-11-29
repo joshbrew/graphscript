@@ -114,7 +114,7 @@ type __transition = {
     rinterp?:(currRot, lastRot, curTime, startTime) => B.Vector3, //apply rotation path modifier
 }
 
-//very rudimentary camera tracking example
+//very rudimentary camera tracking example. Better would be spring movement and better timing to remove judder at end of transition
 let cameraLoader = (node, parent, graph) => {
 
     let animating = true;
