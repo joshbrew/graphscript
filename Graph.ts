@@ -23,16 +23,18 @@ export type GraphNodeProperties = {
 }
 
 
+export type Loader = (
+    node:GraphNode,
+    parent:Graph|GraphNode,
+    graph:Graph,
+    tree:any,
+    properties:GraphNodeProperties,
+    key:string
+)=>void;
+
 export type GraphOptions = {
     tree?:{[key:string]:any},
-    loaders?:{[key:string]:(
-        node:GraphNode,
-        parent:Graph|GraphNode,
-        graph:Graph,
-        tree:any,
-        properties:GraphNodeProperties,
-        key:string
-    )=>void},
+    loaders?:{[key:string]:{init?:Loader, connected?:(node)=>void, disconnected:(node)=>void}|Loader},
     state?:EventHandler,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
     [key:string]:any
@@ -427,11 +429,18 @@ export class Graph {
             else if (!this.get(tree.__node.tag)) {
                 let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
                 this.set(node.__node.tag,node);
-                for(const l in this.__node.loaders) { this.__node.loaders[l](node,this,this,tree,tree,tree.__node.tag); } //run any passes on the nodes to set things up further
+                for(const l in this.__node.loaders) { 
+                    if(typeof this.__node.loaders[l] === 'object') { 
+                        if(this.__node.loaders[l].init) this.__node.loaders[l](node,parent,this,this.__node.tree,tree);
+                        if(this.__node.loaders[l].connected) node.__addOnconnected(this.__node.loaders[l].connect); 
+                        if(this.__node.loaders[l].disconnected) node.__addOndisconnected(this.__node.loaders[l].disconnect); 
+                    } else if (typeof this.__node.loaders === 'function') this.__node.loaders[l](node,this,this,tree,tree,tree.__node.tag); } //run any passes on the nodes to set things up further
                 if(node.__listeners) {
                     listeners[node.__node.tag] = node.__listeners;
                 } //now the tree can specify nodes
             }
+        } else if (tree.__listeners) {
+            this.setListeners(tree.__listeners)
         }
 
         //now setup event listeners
@@ -461,7 +470,12 @@ export class Graph {
         if(typeof properties === 'object' && (!p?.__node?.tag || !this.get(p.__node.tag))) {
             let node = new GraphNode(p, parent as GraphNode, this);
             this.set(node.__node.tag,node);
-            for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,this.__node.tree,properties); } //run any passes on the nodes to set things up further
+            for(const l in this.__node.loaders) { 
+                if(typeof this.__node.loaders[l] === 'object') { 
+                    if(this.__node.loaders[l].init) this.__node.loaders[l](node,parent,this,this.__node.tree,properties, node.__node.tag);
+                    if(this.__node.loaders[l].connected) node.__addOnconnected(this.__node.loaders[l].connect); 
+                    if(this.__node.loaders[l].disconnected) node.__addOndisconnected(this.__node.loaders[l].disconnect); 
+            } else if (typeof this.__node.loaders === 'function') this.__node.loaders[l](node,parent,this,this.__node.tree,properties, node.__node.tag); } //run any passes on the nodes to set things up further
             this.__node.tree[node.__node.tag] = properties; //reference the original props by tag in the tree for children
             //console.log('old:',properties.__node,'new:',node.__node);
             
@@ -595,6 +609,7 @@ export class Graph {
                     let n = this.get(k);
                     let sub;
                     if( typeof listeners[key][k] !== 'object' ) listeners[key][k] = { callback:listeners[key][k] };
+                    if(listeners[key][k].callback === true) listeners[key][k].callback = node.__operator;
                     if( typeof listeners[key][k].callback === 'function') listeners[key][k].callback = listeners[key][k].callback.bind(node);
                     if(typeof node.__listeners !== 'object') node.__listeners = {}; //if we want to subscribe a node with listeners that doesn't predeclare them
                     if(!n) {
