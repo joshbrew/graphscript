@@ -1,12 +1,12 @@
 import {
     Router,
     WorkerService,
-    DOMService,
     workerCanvasRoutes,
     WorkerCanvas,
-    WorkerCanvasControls
+    WorkerCanvasControls,
+    htmlloader,
+    HTMLNodeProperties
 } from '../../index'//'graphscript'
-import { ElementProps } from '../../dist/services/dom/types/element';
 
 import gsworker from './worker'
 
@@ -14,9 +14,11 @@ const workers = new WorkerService();
 
 const router = new Router({
     services:{
-        DOMService,
         workers,
         workerCanvasRoutes
+    },
+    loaders:{
+        htmlloader
     }
 });
 
@@ -31,13 +33,13 @@ let ret = router.setTree({
             'div':{
                 tagName:'div',
                 innerText:'Multithreaded canvases!'
-            } as ElementProps,
+            } as HTMLNodeProperties,
             'canvas':{
                 tagName:'canvas',
                 style:{width:'100%',height:'100%'},
-                onrender:(elm,info)=>{
+                __onrender:function(elm){
                     const renderer = workers.addWorker({url:gsworker});
-                    info.worker = renderer;
+                    this.worker = renderer;
 
                     //console.log(renderer);
 
@@ -212,12 +214,12 @@ let ret = router.setTree({
                         );
                     }
                 },
-                onremove:(elm,info)=>{
-                    workers.terminate(info.worker._id);
+                __onremove:function(elm){
+                    workers.terminate(this.worker._id);
                 }        
-            } as ElementProps      
+            } as HTMLNodeProperties      
         } 
-    } as ElementProps
+    } as HTMLNodeProperties
 });
 
 //console.log(ret)

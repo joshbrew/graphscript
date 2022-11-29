@@ -146,12 +146,8 @@ export class GraphNode {
             let keys = Object.getOwnPropertyNames(properties);
             for(const key of keys) { this[key] = properties[key]; }
 
-            if(properties.__operator && parent instanceof GraphNode && parent.__operator) {
-                let sub = parent.__subscribe(this);
-                let ondelete = () => { parent?.__unsubscribe(sub);}
-                this.__addOndisconnected(ondelete);
-            }
-            else if (typeof properties.default === 'function' && !properties.__operator) { //make it so the node is subscribable
+            
+            if (typeof properties.default === 'function' && !properties.__operator) { //make it so the node is subscribable
                 let fn = properties.default.bind(this);
                 this.default = (...args) => {
                     if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'input',args);
@@ -261,6 +257,15 @@ export class GraphNode {
             }
             return result;
         } 
+
+        if(!this.__subscribedToParent) {
+            if(this.__parent instanceof GraphNode && this.__parent.__operator) {
+                let sub = this.__parent.__subscribe(this);
+                let ondelete = () => { this.__parent?.__unsubscribe(sub);}
+                this.__addOndisconnected(ondelete);
+                this.__subscribedToParent = true;
+            }
+        }
 
         return this.__operator;
     }
