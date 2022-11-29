@@ -34,7 +34,7 @@ export declare type GraphOptions = {
         [key: string]: {
             init?: Loader;
             connected?: (node: any) => void;
-            disconnected: (node: any) => void;
+            disconnected?: (node: any) => void;
         } | Loader;
     };
     state?: EventHandler;
