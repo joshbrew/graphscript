@@ -10,7 +10,7 @@ export type GraphNodeProperties = {
     __props?:Function|GraphNodeProperties, //a class constructor function (calls 'new x()') or an object we want to proxy all of the methods on this node. E.g. an html element gains 'this' access through operators and listeners on this node.
     __operator?:((...args:any[])=>any)|string, //The 'main' function of the graph node, children will call this function if triggered by a parent. Functions passed as graphnodeproperties become the operator which can set state.
     __children?:{[key:string]:GraphNodeProperties}, //child nodes belonging to this node, e.g. for propagating results
-    __listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void,subInput?:boolean,[key:string]:any}}, //subscribe by tag to nodes or their specific properties and method outputs
+    __listeners?:{[key:string]:true|string|((result)=>void)|{__callback:string|((result)=>void)|true,subInput?:boolean,[key:string]:any}}|{[key:string]:((result)=>void)|true|string}, //subscribe by tag to nodes or their specific properties and method outputs
     __onconnected?:((node)=>void|((node)=>void)[]), //what happens once the node is created?
     __ondisconnected?:((node)=>void|((node)=>void)[]), //what happens when the node is deleted?
     __node?:{ //node specific properties, can contain a lot more things
@@ -608,24 +608,50 @@ export class Graph {
                 for(const k in listeners[key]) {
                     let n = this.get(k);
                     let sub;
-                    if( typeof listeners[key][k] !== 'object' ) listeners[key][k] = { callback:listeners[key][k] };
-                    if(listeners[key][k].callback === true) listeners[key][k].callback = node.__operator;
-                    if( typeof listeners[key][k].callback === 'function') listeners[key][k].callback = listeners[key][k].callback.bind(node);
-                    if(typeof node.__listeners !== 'object') node.__listeners = {}; //if we want to subscribe a node with listeners that doesn't predeclare them
-                    if(!n) {
-                        let tag = k.substring(0,k.lastIndexOf('.'));
-                        n = this.get(tag);
-                        if(n) {
-                            sub = this.subscribe(n,  listeners[key][k].callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState, key, k);
-                            if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState:listeners[key][k]?.inputState };
+                    if( typeof listeners[key][k] !== 'object' ) listeners[key][k] = { __callback:listeners[key][k] };
+                    else if(!listeners[key][k].__callback) { //this is an object specifying multiple input
+                        for(const kk in listeners[key][k]) {
+                            if(typeof listeners[key][k][kk] !== 'object') {
+                                listeners[key][k][kk] = {__callback: listeners[key][k][kk]}
+                                if(listeners[key][k][kk].__callback === true) listeners[key][k][kk].__callback = node.__operator;
+                            }
+                            let nn = this.get(kk);
+                            if(nn) {
+                                if(!nn) {
+                                    let tag = k.substring(0,k.lastIndexOf('.'));
+                                    nn = this.get(tag);
+                                    if(n) {
+                                        sub = this.subscribe(nn,  listeners[key][k][kk].__callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k][kk].inputState, key, k);
+                                        if(typeof node.__listeners[k][kk] !== 'object') node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState:listeners[key][k][kk]?.inputState };
+                                        node.__listeners[k][kk].sub = sub;
+                                    }
+                                } else {
+                                    sub = this.subscribe(nn, listeners[key][k][kk].__callback, undefined, listeners[key][k].inputState, key, k);
+                                    if(typeof node.__listeners[k][kk] !== 'object') node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState: listeners[key][k][kk]?.inputState };
+                                    node.__listeners[k][kk].sub = sub;
+                                }
+                            }
+                        }
+                    }
+                    if(listeners[key][k].__callback) {
+                        if(listeners[key][k].__callback === true) listeners[key][k].__callback = node.__operator;
+                        if( typeof listeners[key][k].__callback === 'function') listeners[key][k].__callback = listeners[key][k].__callback.bind(node);
+                        if(typeof node.__listeners !== 'object') node.__listeners = {}; //if we want to subscribe a node with listeners that doesn't predeclare them
+                        if(!n) {
+                            let tag = k.substring(0,k.lastIndexOf('.'));
+                            n = this.get(tag);
+                            if(n) {
+                                sub = this.subscribe(n,  listeners[key][k].__callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState, key, k);
+                                if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState:listeners[key][k]?.inputState };
+                                node.__listeners[k].sub = sub;
+                            }
+                        } else {
+                            sub = this.subscribe(n, listeners[key][k].__callback, undefined, listeners[key][k].inputState, key, k);
+                            if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState: listeners[key][k]?.inputState };
                             node.__listeners[k].sub = sub;
                         }
-                    } else {
-                        sub = this.subscribe(n, listeners[key][k].callback, undefined, listeners[key][k].inputState, key, k);
-                        if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { callback: listeners[key][k].callback, inputState: listeners[key][k]?.inputState };
-                        node.__listeners[k].sub = sub;
+                        //console.log(sub);
                     }
-                    //console.log(sub);
                 }
             }
         }
@@ -643,9 +669,19 @@ export class Graph {
                 if(!n) {
                     n = this.get(key.substring(0,key.lastIndexOf('.')));
                     //console.log(key.substring(0,key.lastIndexOf('.')),key,n,node.__listeners[key]);
-                    if(n) this.unsubscribe(n,node.__listeners[key].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key].inputState);
+                    if(n) {
+                        if(!node.__listeners[key].__callback) {
+                            for(const k in node.__listeners[key]) {
+                                this.unsubscribe(n,node.__listeners[key][k].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key][k].inputState);
+                            }
+                        } else this.unsubscribe(n,node.__listeners[key].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key].inputState);
+                    }
                 } else {
-                    this.unsubscribe(n,node.__listeners[key].sub, undefined, node.__listeners[key].inputState);
+                    if(!node.__listeners[key].__callback) {
+                        for(const k in node.__listeners[key]) {
+                            this.unsubscribe(n,node.__listeners[key][k].sub, undefined, node.__listeners[key][k].inputState);
+                        }
+                    } else this.unsubscribe(n,node.__listeners[key].sub, undefined, node.__listeners[key].inputState);
                 }
 
                 //console.log('unsubscribed', key)
