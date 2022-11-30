@@ -104,7 +104,11 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
 
 /** Animations
  * 
- * nodeA.__node.animate = true | () => void, to run the operator or a specified animation function on loop
+ * nodeA.__node.animate = true;
+ * then __operator becomes a requestAnimationFrame function
+ * start with a call the __operator or by setting node.__node.animating = true;
+ * 
+ * or node.__animation = (...args) => {}
  * 
  */
 export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
@@ -121,7 +125,6 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
             });
             if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.__animation)) 
                 setTimeout(()=>{requestAnimationFrame(node.__operator)},10);
-
         
 
         let ondelete = (node) => {
