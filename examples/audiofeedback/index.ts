@@ -353,8 +353,8 @@ const webappHtml = {
                     'stats':{
                         tagName:'table',
                         __animation:function(){
-                            if(!this.element.innerHTML || GameState.currentTimestamp !== GameState.lastTimestamp){
-                                this.element.innerHTML = `
+                            if(!this.innerHTML || GameState.currentTimestamp !== GameState.lastTimestamp){
+                                this.innerHTML = `
                                 STATS:
                                 <tr> <th>Timestamp: </th><td>${new Date(GameState.currentTimestamp).toISOString()}</td> </tr>
                                 <tr> <th>Current: </th><td>${GameState.currentHEG?.toFixed(2)}</td> </tr>
