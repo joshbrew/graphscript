@@ -1,2 +1,2 @@
 export * from './Graph';
-export * from './loaders/Loaders';
+export * from './loaders';

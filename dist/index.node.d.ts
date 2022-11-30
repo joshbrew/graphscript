@@ -1,5 +1,5 @@
 export * from './Graph';
-export * from './loaders/Loaders';
+export * from './loaders';
 export * from './services/Service';
 export * from './services/unsafe/Unsafe.service';
 export * from './services/ecs/ECS.service';
