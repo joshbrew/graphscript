@@ -23,9 +23,9 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "browserfs": "^1.4.3",
-    "device-decoder": "~0.2.41",
-    "device-decoder.third-party": "~0.1.13",
-    "graphscript": "~0.2.6",
+    "device-decoder": "~0.2.42",
+    "device-decoder.third-party": "~0.1.14",
+    "graphscript": "~0.2.19",
     "howler": "~2.2.3"
   },
   "nodemonConfig": {
