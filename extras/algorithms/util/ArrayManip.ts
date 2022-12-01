@@ -156,33 +156,27 @@ export class ArrayManip {
     }
 
     //push new entries to end of array and roll over starting entries with a set array length
-    static circularBuffer(arr:any[],newEntries:any[]|any) {
-        if(Array.isArray(newEntries)) {
-            if(newEntries.length < arr.length) {
-                let slice = arr.slice(newEntries.length);
-                let len = arr.length;
-                arr.splice(
-                    0,
-                    len,
-                    ...slice,...newEntries
-                );
-            }
-            else if (newEntries.length > arr.length) {
-                let len = arr.length;
-                arr.splice(
-                    0,
-                    len,
-                    newEntries.slice(len-newEntries.length)
-                );
-            }
-            else { 
-                arr.splice(0,arr.length,...newEntries);
-            }
-        } else {
-            arr.push(newEntries); 
-            arr.shift();
+    static circularBuffer(arr:any[],newEntries:any[]) {
+        if(newEntries.length < arr.length) {
+            let slice = arr.slice(newEntries.length);
+            let len = arr.length;
+            arr.splice(
+                0,
+                len,
+                ...slice,...newEntries
+            );
         }
-        
+        else if (newEntries.length > arr.length) {
+            let len = arr.length;
+            arr.splice(
+                0,
+                len,
+                newEntries.slice(len-newEntries.length)
+            );
+        }
+        else { 
+            arr.splice(0,arr.length,...newEntries);
+        }
         return arr;
     }
 
@@ -193,6 +187,7 @@ export class ArrayManip {
         }|string|((number|number[])[])|number, 
         key?:string //if passing a single value
     ) {
+        //console.log(JSON.parse(JSON.stringify(data)));//print copy
         //take incoming data formats and return them in the format that our charting library likes so we can blindly pass stuff in
         if (Array.isArray(data)) {
             if(Array.isArray(data[0])) {
@@ -235,18 +230,20 @@ export class ArrayManip {
                     } else if (l.includes('|')) {
                         split = l.split('|');
                     }
-                    split.forEach((val,i) => {
-                        if(val.includes(':')) {
-                            let [key,v] = val.split(':');
-                            let fl = parseFloat(v);
-                            if(fl) data[key] = [fl];
-                            else return undefined;
-                        } else {
-                            let fl = parseFloat(val);
-                            if(fl) data[i] = [fl];
-                            else return undefined;
-                        }
-                    });
+                    if(Array.isArray(split)) {
+                        split.forEach((val,i) => {
+                            if(val.includes(':')) {
+                                let [key,v] = val.split(':');
+                                let fl = parseFloat(v);
+                                if(fl) data[key] = [fl];
+                                else return undefined;
+                            } else {
+                                let fl = parseFloat(val);
+                                if(fl) data[i] = [fl];
+                                else return undefined;
+                            }
+                        });
+                    }   
                 })
             } else if(data.includes('\t')) {
                 split = data.split('\t');
@@ -256,7 +253,7 @@ export class ArrayManip {
                 split = data.split('|');
             }
             data = {};
-            if(split) {
+            if(Array.isArray(split)) {
                 split.forEach((val,i) => {
                     if(val.includes(':')) {
                         let [key,v] = val.split(':');
@@ -275,6 +272,8 @@ export class ArrayManip {
             else data = {0:[data]};
         }
     
+        //console.log(JSON.parse(JSON.stringify(data)));
+
         return data;// as {[key:string]:(number[]|{values:number[],[key:string]:any}|WebglLineProps)};
     }
 
@@ -365,13 +364,10 @@ export class ArrayManip {
             e = arr.subarray(end+1);
         }
 
-        let n:any;
-
-        if(s.length > 0 || e?.length > 0) {
-            n = new (arr as any).constructor(s.length+e.length); //use the same constructor
-            if(s.length > 0) n.set(s);
-            if(e && e.length > 0) n.set(e,s.length);
-        }
+        let n:TypedArray;
+        if(s.length > 0 || e?.length > 0) n = new (arr as any).constructor(s.length+e.length); //use the same constructor
+        if(s.length > 0) n.set(s);
+        if(e && e.length > 0) n.set(e,s.length);
 
         return n;
     }

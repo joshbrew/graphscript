@@ -2,7 +2,7 @@
 
 //resources
 import { Graph, loaders, htmlloader, HTMLNodeProperties } from '../../index'////'../../index';
-import {initDevice, Devices, gsworker, filterPresets} from 'device-decoder'//'../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
+import {initDevice, Devices, gsworker, filterPresets} from '../../../device_debugger/src/device.frontend'//'device-decoder' ////'device-decoder'//'../../../device_debugger/src/device.frontend'//
 import { Howl, Howler } from 'howler';
 import { visualizeDirectory } from '../../extras/storage/BFS_CSV'//'../../extras/storage/BFS_CSV'
 
