@@ -7,7 +7,7 @@ export declare class ArrayManip {
     static upsample(array: any, fitCount: any, scalar?: number): any[];
     static interpolate(array: number[], fitCount: number, scalar?: number): any;
     static HSLToRGB(h: any, s: any, l: any, scalar?: number): [number, number, number];
-    static circularBuffer(arr: any[], newEntries: any[] | any): any[];
+    static circularBuffer(arr: any[], newEntries: any[]): any[];
     static reformatData(data: {
         [key: string]: number[] | number | {
             values: number[] | number;
@@ -35,5 +35,5 @@ export declare class ArrayManip {
     }, buffer?: ArrayBufferLike) => ArrayBufferLike;
     isTypedArray(x: any): boolean;
     recursivelyAssign: (target: any, obj: any) => any;
-    spliceTypedArray(arr: TypedArray, start: number, end?: number): any;
+    spliceTypedArray(arr: TypedArray, start: number, end?: number): TypedArray;
 }

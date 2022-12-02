@@ -21,7 +21,11 @@ export declare const backprop: (node: GraphNode, parent: GraphNode | Graph, grap
 export declare const loop: (node: GraphNode, parent: GraphNode | Graph, graph: Graph) => void;
 /** Animations
  *
- * nodeA.__node.animate = true | () => void, to run the operator or a specified animation function on loop
+ * nodeA.__node.animate = true;
+ * then __operator becomes a requestAnimationFrame function
+ * start with a call the __operator or by setting node.__node.animating = true;
+ *
+ * or node.__animation = (...args) => {}
  *
  */
 export declare const animate: (node: GraphNode, parent: GraphNode | Graph, graph: Graph) => void;

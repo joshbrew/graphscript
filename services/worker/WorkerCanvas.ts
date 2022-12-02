@@ -244,7 +244,7 @@ export function setupCanvas(
         else globalThis.CANVASES[canvasOptions._id] = canvasOptions;
 
         //create an element proxy to add event listener functionality
-        if(this?.__node.graph) this.__node.graph.run('makeProxy', canvasOptions._id, canvasOptions.canvas);
+        if(this?.__node?.graph) this.__node.graph.run('makeProxy', canvasOptions._id, canvasOptions.canvas);
         else proxyElementWorkerRoutes.makeProxy(canvasOptions._id, canvasOptions.canvas);
         //now the canvas can handle mouse and resize events, more can be implemented
   
