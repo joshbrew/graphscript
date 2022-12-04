@@ -21,7 +21,7 @@ export declare type WorkerRoute = {
     initTransfer?: any[];
 } & GraphNodeProperties & WorkerProps;
 export declare type WorkerProps = {
-    worker: WorkerInfo;
+    worker?: WorkerInfo;
     workerUrl?: string | URL | Blob;
     url?: URL | string | Blob;
     _id?: string;

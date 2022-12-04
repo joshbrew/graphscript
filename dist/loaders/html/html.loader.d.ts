@@ -5,6 +5,8 @@ export declare type HTMLNodeProperties = GraphNodeProperties & {
     __onremove?: (elm: HTMLElement) => void;
     __onrender?: (elm: HTMLElement) => void;
     tagName?: string;
+    parentNode?: string;
+    style?: Partial<CSSStyleDeclaration>;
     __template?: string;
     __renderonchanged?: (elm: HTMLElement) => void;
     useShadow?: boolean;

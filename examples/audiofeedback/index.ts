@@ -170,7 +170,7 @@ const webappHtml = {
                                                         //if(data.timestamp)
                                                     }
                                             }, 
-                                            routes:{ //top level routes subscribe to device output thread directly (and workers in top level routes will not use main thread)
+                                            tree:{ //top level routes subscribe to device output thread directly (and workers in top level routes will not use main thread)
                                                 hr: {
                                                     workerUrl:gsworker,
                                                     init:'createSubprocess',

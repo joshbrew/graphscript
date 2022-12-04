@@ -21,7 +21,7 @@ export type WorkerRoute = {
 } & GraphNodeProperties & WorkerProps
 
 export type WorkerProps = {
-    worker:WorkerInfo,
+    worker?:WorkerInfo,
     workerUrl?: string|URL|Blob,
     url?:URL|string|Blob,
     _id?:string,
@@ -200,7 +200,7 @@ export class WorkerService extends Service {
                                 });
                             }
                             if(!(typeof rt.__parent === 'string' && rt.__parent === worker._id)) 
-                                worker.workerSubs[rt+rt.portId] = {sub:null, route:worker._id, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
+                                worker.workerSubs[rt.__parent+rt.portId] = {sub:null, route:worker._id, portId:rt.portId, callback:rt.callback, blocking:rt.blocking };
                            
                         } else if(rt.__parent?.__node?.tag && rt.__parent?.worker) {
                             //console.log(rt);
@@ -219,7 +219,6 @@ export class WorkerService extends Service {
 
                 }
             } else if(rt.__parent && rt.parentRoute) {
-                console.log(rt);
                 if(typeof rt.__parent === 'string' && (tree[rt.__parent] as any)?.worker) {
                     ((tree[rt.__parent] as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt.__operator, rt.blocking);
                 } else if((rt.__parent as any)?.worker) {

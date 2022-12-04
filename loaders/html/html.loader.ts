@@ -9,11 +9,13 @@ export type HTMLNodeProperties = GraphNodeProperties & {
     __onremove?:(elm:HTMLElement) => void,
     __onrender?:(elm:HTMLElement) => void,
     tagName?:string, //can provide this instead of an element or html template string
+    parentNode?:string, //can define a specific parentNode, else a parent graph node with an HTMLElement as __props will be selected, else graph.parentNode if defined, else document.body 
+    style?:Partial<CSSStyleDeclaration>, //supply an object with style properties for this element's inline styles
     //applies to custom webcomponent only:
     __template?:string,
     __renderonchanged?:(elm:HTMLElement) => void,
     useShadow?:boolean,
-    __css?:string, //stylesheet template string 
+    __css?:string, //stylesheet template string for use with web components (just prepends a <style> sheet before the new divs)
 
     //more
     __element?:string|HTMLElement //alt way to set __props with a more explicit key
@@ -124,8 +126,13 @@ export const htmlloader = (
 
         node.__addOnconnected((n) => { 
             if(n.__props.parentNode) (n.__props as HTMLElement).remove(); 
-            if(parent.__props instanceof HTMLElement) {
+            if(n.parentNode) {
+                if(typeof n.parentNode === 'string' && document.getElementById(n.parentNode))  document.getElementById(n.parentNode).appendChild(n.__props);
+                else if (n.parentNode instanceof HTMLElement) n.parentNode.appendChild(n.__props);
+            } else if(parent.__props instanceof HTMLElement) {
                 parent.__props.appendChild(node.__props);
+            } else if (typeof graph.parentNode === 'string' && document.getElementById(n.parentNode)) {  
+                document.getElementById(n.parentNode).appendChild(graph.__props);
             } else if(graph.parentNode instanceof HTMLElement) {
                 graph.parentNode.appendChild(node.__props);
             } else if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement)) document.body.appendChild(node.__props);
