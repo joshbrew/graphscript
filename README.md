@@ -11,9 +11,6 @@
 For happy code!
 </p>
 
-> **Note:** **graphscript** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
-
-
 For Browser:
 `npm i graphscript` ~190kb dist
 
@@ -35,6 +32,9 @@ Before reading and getting immediately confused by this alien API and the curren
    * * [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
 
 (WIP)
+
+
+> **Note:** **graphscript** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
 
 
 ## Acknowledgments

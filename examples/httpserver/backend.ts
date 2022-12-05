@@ -33,7 +33,7 @@ let server = router.run(
             '/':{
                 template:`<div>Nice...</div>`,
                 onrequest:(self,node,req,res)=>{ 
-                    (node as any).get = `<h3>Hello World!! The Time: ${new Date(Date.now()).toISOString()}</h3>`  
+                    node.get = `<h3>Hello World!! The Time: ${new Date(Date.now()).toISOString()}</h3>`  
                 }
             },
             'config':{

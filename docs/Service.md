@@ -74,7 +74,9 @@ export default self as any;
 
 The Service class extends the Graph class and adds additional methods for creating and linking execution graphs. All extended Services (WorkerService, HTTPbackend, etc) can load any other Services/Graphs/trees/etc. to serve as the entry point to your program depending on how you need to stage your programs. The only incompatibilities are based on nodejs or browser-specific functionality like OS access (command line) or DOM access (without a document and window renderer in node anyway).
 
-Services provide a unifying function/class loading and message passing framework to make it really easy to chain program functions across http, socket, sse, webrtc, thread, child process, frontend rendering and any of your own protocols. It has more features to help with scoping connected node services as well. 
+Services provide a unifying function/class loading and message passing framework to make it really easy to chain program functions across http, socket, sse, webrtc, thread, child process, frontend rendering and any of your own protocols. It has more features to help with scoping connected node services as well. Each service we have on hand produces a single control pattern to make it easier to work with different protocols as well as enable cross-communication by simply defining endpoint nodes and i/o behaviors. 
+
+We are reworking some things to update tree node definitions for routing user endpoints.
 
 Create routed nodes with any functions, node/graph/service prototypes, any objects at all (e.g. the built in Math object in browsers) to gain state machine and flowgraph functionalities across your program, even remotely as we demonstrated above with threads.
 
@@ -118,17 +120,19 @@ type ConnectionTemplate = {
 }
 
 ```
-These services provide defaults for mostly zero config wiring up for programs, just specify ports, routes, ids, etc. as you need for increasing control over your program. There are no restrictions on the base protocols, it's all just boiled down to one liners like transmit() and receive() i.e. similar calls between services for mental clarity and a recommended configuration by default to enable the most desirable functionality.
+These services provide defaults for mostly zero config wiring up for programs, just specify ports, node tags, ids, etc. as you need for increasing control over your program. There are no restrictions on the base protocols, it's all just boiled down to one liners like transmit() and receive() i.e. similar calls between services for mental clarity and a recommended configuration by default to enable the most desirable functionality.
 
 Everything in the base javascript tooling is available still for direct calls to save overhead - of which there is very little in our added system here. Ideally we are using the bare minimum needed to generalize each protocol's message passing system to maximize application performance for general use cases without sacrificing readability and composability.
 
-The subscribe and unsubscribe functions act the same as they do locally and configure the endpoints with a state subscription on arbitrary routes for you to do what you want with on the listening port.
+The subscribe and unsubscribe functions act the same as they do locally and configure the endpoints with a state subscription on arbitrary nodes for you to do what you want with on the listening port.
 
 # Included Services
 
 We will elaborate on all of this with individual docs for each microservice, as they can go pretty deep. 
 
 For all services with remote message passing support (http, wss, sse, webrtc, etc.) they are by default configured to handle our service messages alongside arbitrary callbacks or basic standard functions (e.g. file serving in the http server). This allows them to be quickly wired together with your custom services without worrying about formats matching up.
+
+For frontend HTML use the simple [html loader](https://github.com/brainsatplay/graphscript/blob/master/loaders/html/html.loader.ts) which includes support for simple HTML nodes and complex web components within tree definitions. See the [examples](https://github.com/brainsatplay/graphscript/blob/master/examples) for usage.
 
 - HTTP - Create [http/https servers](https://nodejs.org/api/http.html) and manage REST calls and create static or dynamic websites instantly. The server is set up to handle custom GET/POST requests using our route format encoded in the request body as well as standard GET/POST calls for serving files. The backend HTTP service allows you to construct webpages just from strings and inject code e.g. for hotreloading into your page with simple one liners. You can even build whole pages from lists of functions and template strings.
     - - [HTTPbackend](./services/http/http.node.md)

@@ -89,42 +89,40 @@ As you can see there is a lot to pick apart in this service! We'll get to it as 
 ```ts
 
 export class SessionsService {
-    //...
-    routes:Routes = {
-        getSessionInfo,
-        openPrivateSession,
-        openSharedSession,
-        updateSession,
-        joinSession,
-        setUserProps,
-        leaveSession,
-        getFirstMatch,
-        swapHost,
-        deleteSession,
-        subscribeToSession,
-        transmitSessionUpdates,
-        receiveSessionUpdates,
-        getUpdatedUserData,
-        userUpdateCheck,
-        userUpdateLoop:{ //this node loop will run separately from the one below it
-            operator:this.userUpdateCheck, 
-            loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
-        },
-        sessionLoop:{
-            operator:this.sessionUpdateCheck, 
-            loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
-        },
-        setStreamFunc,
-        addStreamFunc,
-        setStream,
-        removeStream,
-        updateStreamData,
-        getStreamUpdate,
-        getAllStreamUpdates,
-        streamLoop:{
-            operator:this.getAllStreamUpdates,
-            loop:10
-        }
+    //methods ...
+    getSessionInfo,
+    openPrivateSession,
+    openSharedSession,
+    updateSession,
+    joinSession,
+    setUserProps,
+    leaveSession,
+    getFirstMatch,
+    swapHost,
+    deleteSession,
+    subscribeToSession,
+    transmitSessionUpdates,
+    receiveSessionUpdates,
+    getUpdatedUserData,
+    userUpdateCheck,
+    userUpdateLoop:{ //this node loop will run separately from the one below it
+        __operator:this.userUpdateCheck, 
+        loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
+    },
+    sessionLoop:{
+        __operator:this.sessionUpdateCheck, 
+        loop:10//this will set state each iteration so we can trigger subscriptions on session updates :O
+    },
+    setStreamFunc,
+    addStreamFunc,
+    setStream,
+    removeStream,
+    updateStreamData,
+    getStreamUpdate,
+    getAllStreamUpdates,
+    streamLoop:{
+        __operator:this.getAllStreamUpdates,
+        loop:10
     }
 }
 

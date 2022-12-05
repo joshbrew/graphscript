@@ -146,7 +146,7 @@ const router = new Router({
 
 console.log(router)
 
-let ret = router.load({
+let ret = router.setTree({
     'main':{
         tagName:'div',
         __children:{
