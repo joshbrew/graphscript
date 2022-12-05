@@ -2,8 +2,6 @@
 
 See [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
 
-Before reading and getting immediately confused by this alien API, scroll through the code in [Examples](https://github.com/brainsatplay/graphscript/blob/master/examples) for very clear, compelling implementatons that flex our feature sets.
-
 Services extend Graphs to build on the idea of creating pluggable [microservices](https://www.akana.com/resources/microservices-why-should-businesses-care) in a unified, componentized programming interface, and simplifies the amount of work required to implement increasing numbers of protocols with more syntax and functionality than we can normally remember. Building these instead as Services and following the general formula here can vastly speed up feature development and feature meshing. 
 
 
@@ -74,7 +72,7 @@ export default self as any;
 
 ```
 
-The Service class extends the Graph class and adds additional methods for creating and linking execution graphs. All extended Services (WorkerService, HTTPbackend, etc) can load any other Services/Graphs/routes/etc. to serve as the entry point to your program depending on how you need to stage your programs. The only incompatibilities are based on nodejs or browser-specific functionality like OS access (command line) or DOM access (without a document and window renderer in node anyway).
+The Service class extends the Graph class and adds additional methods for creating and linking execution graphs. All extended Services (WorkerService, HTTPbackend, etc) can load any other Services/Graphs/trees/etc. to serve as the entry point to your program depending on how you need to stage your programs. The only incompatibilities are based on nodejs or browser-specific functionality like OS access (command line) or DOM access (without a document and window renderer in node anyway).
 
 Services provide a unifying function/class loading and message passing framework to make it really easy to chain program functions across http, socket, sse, webrtc, thread, child process, frontend rendering and any of your own protocols. It has more features to help with scoping connected node services as well. 
 
