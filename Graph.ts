@@ -34,7 +34,12 @@ export type Loader = (
 
 export type GraphOptions = {
     tree?:{[key:string]:any},
-    loaders?:{[key:string]:{init?:Loader, connected?:(node)=>void, disconnected?:(node)=>void}|Loader},
+    loaders?:Loader|{
+        [key:string]:{
+            init?:Loader, 
+            connected?:(node)=>void, 
+            disconnected?:(node)=>void}
+        },
     state?:EventHandler,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
     [key:string]:any
@@ -71,7 +76,10 @@ export class GraphNode {
 
         let orig = properties;
         if(typeof properties === 'function') {
-            properties = {
+            if(isNativeClass(properties)) { //works on custom classes
+                console.log(properties);
+                properties = new properties(); //this is a class that returns a node definition
+            } else properties = {
                 __operator:properties,
                 __node:{
                     forward:true, //propagate operator results to children
@@ -100,7 +108,6 @@ export class GraphNode {
                 } else properties.__node = {}
             } else if(!properties.__node) properties.__node = {};
 
-            if(!properties.__parent && parent) properties.__parent = parent;
             if(graph) {
                 properties.__node.graph = graph;
             }
@@ -127,7 +134,9 @@ export class GraphNode {
             }
 
             //nested graphs or 2nd level+ nodes get their parents as a tag
-            if(parent?.__node && (!(parent instanceof Graph || properties instanceof Graph))) properties.__node.tag = parent.__node.tag + '.' + properties.__node.tag; //load parents first
+            if(!properties.__parent && parent) properties.__parent = parent;
+            if(parent?.__node && (!(parent instanceof Graph || properties instanceof Graph))) 
+                properties.__node.tag = parent.__node.tag + '.' + properties.__node.tag; //load parents first
             
             if(parent instanceof Graph && properties instanceof Graph) {
 
@@ -461,14 +470,26 @@ export class Graph {
 
         let listeners = {}; //collect listener props declared
         if(typeof parent === 'string') parent = this.get(parent);
-        if(typeof properties === 'function') properties = { __operator:properties }; 
-        else if (typeof properties === 'string') properties = this.__node.tree[properties];
-        let p = Object.assign({},properties); //make sure we don't mutate the original object
-        if(!p.__node) p.__node = {};
-        p.__node.initial = properties;
 
-        if(typeof properties === 'object' && (!p?.__node?.tag || !this.get(p.__node.tag))) {
-            let node = new GraphNode(p, parent as GraphNode, this);
+        let instanced;
+        if(typeof properties === 'function') {
+            if(isNativeClass(properties)) { //works on custom classes
+                if(properties.prototype instanceof GraphNode) { properties = properties.prototype.constructor(properties,parent,this); instanced = true; } //reinstantiate a new node with the old node's props
+                else properties = new properties(); //this is a class that returns a node definition 
+            } else properties = { __operator:properties };
+        }
+        else if (typeof properties === 'string') properties = this.__node.tree[properties];
+        
+        if(!instanced) {
+            properties = Object.assign({},properties); //make sure we don't mutate the original object   
+        }
+        if(!properties.__node) properties.__node = {};
+        properties.__node.initial = properties; 
+
+        if(typeof properties === 'object' && (!properties?.__node?.tag || !this.get(properties.__node.tag))) {
+            let node;
+            if(instanced) node = properties;
+            else node = new GraphNode(properties, parent as GraphNode, this);
             this.set(node.__node.tag,node);
             for(const l in this.__node.loaders) { 
                 if(typeof this.__node.loaders[l] === 'object') { 
@@ -506,16 +527,27 @@ export class Graph {
             if(key.includes('__')) continue;
             let p = origin[key];
             if(Array.isArray(p)) continue;
-            if(typeof p === 'function') p = { __operator:p }; 
+            let instanced;
+            if(typeof p === 'function') {
+                if(isNativeClass(p)) { //works on custom classes
+                    p = new p(); //this is a class that returns a node definition
+                    if(p instanceof GraphNode) { p = p.prototype.constructor(p,parent,this); instanced = true; } //re-instance a new node
+                } else p = { __operator:p };
+            } 
             else if (typeof p === 'string') p = this.__node.tree[p];
             else if (typeof p === 'boolean') p = this.__node.tree[key];
             if(typeof p === 'object') {
-                p = Object.assign({},p); //make sure we don't mutate the original object
+                
+                if(!instanced) {
+                    p = Object.assign({},p); //make sure we don't mutate the original object
+                }
                 if(!p.__node) p.__node = {};
                 if(!p.__node.tag) p.__node.tag = key;
                 p.__node.initial = t[key];
                 if((this.get(p.__node.tag) && !(parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
-                let node = new GraphNode(p,parent,this);
+                let node;
+                if(instanced) node = p;
+                else node = new GraphNode(p, parent as GraphNode, this);
                 this.set(node.__node.tag,node);
                 for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,t,t[key],key); } //run any passes on the nodes to set things up further
                 t[key] = node; //replace child with a graphnode
@@ -815,4 +847,8 @@ export function instanceObject(obj) {
 
     return instance;
     //simply copies methods, nested objects will not be instanced to limit recursion
+}
+
+export function isNativeClass (thing) {
+    return typeof thing === 'function' && thing.hasOwnProperty('prototype') && !thing.hasOwnProperty('arguments')
 }

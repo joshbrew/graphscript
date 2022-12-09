@@ -112,7 +112,13 @@ type Loader = (
 
 type GraphOptions = {
     tree?:{[key:string]:any},
-    loaders?:{[key:string]:Loader|{init?:Loader, connected?:(node)=>void, disconnected:(node)=>void}},//can specify onconnected and ondisconnected attributes in loaders
+    loaders?:{
+        [key:string]:Loader | {
+                init?:Loader, 
+                connected?:(node)=>void,  //can specify onconnected and ondisconnected attributes in loaders for a quicker fix
+                disconnected?:(node)=>void
+            }
+        },
     state?:EventHandler,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
     [key:string]:any
@@ -192,6 +198,12 @@ let tree = {
             document.body.removeChild(this.__props);
         }
         
+    },
+
+    nodeG:class nodeDefinition { //you can pass class constructor functions in as well and they will be used to instance nodes cleanly e.g. for more standard ways to work with local variables within a node module that may be instantiated multiple times
+        __operator = () => {
+            console.log('class instanced node called!')
+        }
     }
 
 };

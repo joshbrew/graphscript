@@ -30,12 +30,12 @@ export declare type GraphOptions = {
     tree?: {
         [key: string]: any;
     };
-    loaders?: {
+    loaders?: Loader | {
         [key: string]: {
             init?: Loader;
             connected?: (node: any) => void;
             disconnected?: (node: any) => void;
-        } | Loader;
+        };
     };
     state?: EventHandler;
     mapGraphs?: false;
@@ -105,3 +105,4 @@ export declare class Graph {
 }
 export declare function getAllProperties(obj: any): any[];
 export declare function instanceObject(obj: any): {};
+export declare function isNativeClass(thing: any): boolean;

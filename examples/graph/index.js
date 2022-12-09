@@ -5,6 +5,12 @@ import * as nodeA from './nodes/nodeA.js'
 
 const nodeAInstance = Object.assign({}, nodeA)
 
+class nodeClass { //treated as a class to instance rather than a function to set as __operator
+    __operator = () => {
+        console.log('class instanced node called!')
+    }
+}
+
 let tree = {
 
     nodeA: {
@@ -39,6 +45,7 @@ let tree = {
 
     nodeD:(a,b,c)=>{ return a+b+c; }, //becomes the .__operator prop and calling triggers setState for this tag (or nested tag if a child)
 
+
     nodeE:{
         __operator:()=>{console.log('looped!'); return true;},
         __node:{
@@ -59,7 +66,9 @@ let tree = {
             document.body.removeChild(this.__props);
         }
         
-    }
+    },
+
+    nodeG: nodeClass
 
 };
 
@@ -69,6 +78,8 @@ let graph = new Graph({
         ...loaders
     }
 });
+
+graph.run('nodeG');
 
 nodeAInstance.x = 1; //should trigger nodeA.x listener on nodeC
 graph.get('nodeA').x = 2; //same thing
@@ -81,6 +92,7 @@ graph.get('nodeB.nodeC').z += 1;
 
 graph.get('nodeA').jump(); //should trigger nodeC listener
 graph.run('nodeA.jump'); //same
+
 
 console.log(JSON.stringify(graph.__node.state.triggers));
 
