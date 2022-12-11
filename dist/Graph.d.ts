@@ -83,7 +83,7 @@ export declare class Graph {
     setLoaders: (loaders: {
         [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, props: any, key: string) => void;
     }, replace?: boolean) => any;
-    add: (properties: any, parent?: GraphNode | string) => GraphNode;
+    add: (properties: any, parent?: GraphNode | string) => any;
     recursiveSet: (t: any, parent: any, listeners: {}, origin: any) => {};
     remove: (node: GraphNode | string, clearListeners?: boolean) => string | GraphNode;
     run: (node: string | GraphNode, ...args: any[]) => any;
