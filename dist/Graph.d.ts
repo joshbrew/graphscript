@@ -30,8 +30,8 @@ export declare type GraphOptions = {
     tree?: {
         [key: string]: any;
     };
-    loaders?: Loader | {
-        [key: string]: {
+    loaders?: {
+        [key: string]: Loader | {
             init?: Loader;
             connected?: (node: any) => void;
             disconnected?: (node: any) => void;

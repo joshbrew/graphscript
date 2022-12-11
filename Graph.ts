@@ -34,8 +34,8 @@ export type Loader = (
 
 export type GraphOptions = {
     tree?:{[key:string]:any},
-    loaders?:Loader|{
-        [key:string]:{
+    loaders?:{
+        [key:string]:Loader|{
             init?:Loader, 
             connected?:(node)=>void, 
             disconnected?:(node)=>void}

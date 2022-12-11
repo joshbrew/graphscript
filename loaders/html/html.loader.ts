@@ -23,11 +23,11 @@ export type HTMLNodeProperties = GraphNodeProperties & {
 }
 
 export const htmlloader = (
-    node:GraphNode, 
-    parent:GraphNode|Graph, 
-    graph:Graph, 
-    tree:any, 
-    properties:GraphNodeProperties, 
+    node:GraphNode,
+    parent:Graph|GraphNode,
+    graph:Graph,
+    tree:any,
+    properties:GraphNodeProperties,
     key:string
 ) => {
 
