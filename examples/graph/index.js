@@ -2,6 +2,7 @@
 // import { Graph } from "../../core/Graph";
 import { Graph } from "../../core/Graph2";
 import { loaders } from "../../core/loaders";
+import list from "./list";
 import tree from './tree'
 
 const nodeAInstance = tree.nodeA
@@ -33,6 +34,7 @@ console.log('graph',graph);
 graph.run('nodeG');
 
 nodeAInstance.x = 1; //should trigger nodeA.x listener on nodeC
+
 graph.get('nodeA').x = 2; //same thing
 
 graph.get('nodeB').x += 1; //should trigger nodeA listener jump()
@@ -46,7 +48,7 @@ graph.run('nodeA.jump'); //same
 
 
 const flow = graph.__node.ref.__node.flow
-console.log('Active Listeners', deepCopy(flow.globals.active));
+console.log('Active Listeners (1)', deepCopy(flow.globals.active));
 
 console.log('graph1',graph);
 
@@ -56,17 +58,28 @@ let tree2 = {
 
 let graph2 = new Graph({tree:tree2});
 
+const message ='nodeB removed!'
+list.add(message)
+console.log(message,popped,graph2);
 let popped = graph.remove('nodeB');
 
-console.log('Active Listeners', deepCopy(flow.globals.active)); //should be no triggers left
+console.log('Active Listeners (1)', deepCopy(flow.globals.active)); //should be no triggers left
 
 console.log(popped.__node.tag, 'popped')
 
 graph.get('nodeA').jump(); //should trigger nodeC listener
 
+
 graph2.add(popped); //reparent nodeB to the parent graph
 
-console.log('nodeB reparented to graph2',popped,graph2);
+const secondMessage = 'nodeB reparented to graph2'
+list.add(secondMessage)
+console.log(secondMessage,popped,graph2);
+
+const secondFlow = graph2.__node.ref.__node.flow
+console.log('Active Listeners (1)', deepCopy(flow.globals.active)); //should be no triggers left
+console.log('Active Listeners (2)', deepCopy(secondFlow.globals.active)); //should be no triggers left
+
 
 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
 
@@ -74,5 +87,10 @@ popped.__children.nodeC.__operator(1);
 
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 
-setTimeout(()=>{ graph.remove('nodeE'); console.log('nodeE popped!') },5500)
+setTimeout(()=>{ 
+    graph.remove('nodeE'); 
+    const message ='nodeE popped!'
+    list.add(message)
+    console.log(message);
+},5500)
 // console.log('graph2',graph2);
