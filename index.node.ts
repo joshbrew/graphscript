@@ -1,7 +1,6 @@
 //frontend (browser-compatible) exports
 
-export * from './Graph'
-export * from './loaders'
+export * from './core/index'
 
 export * from './services/Service'
 export * from './services/unsafe/Unsafe.service'

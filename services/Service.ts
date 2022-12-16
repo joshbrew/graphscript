@@ -1,5 +1,5 @@
 import { Graph, GraphNode, GraphOptions } from "../Graph";
-import {loaders} from '../loaders';
+import {loaders} from '../core/loaders';
 
 
 export type TypedArray =

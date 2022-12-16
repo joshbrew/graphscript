@@ -22,6 +22,7 @@ export class EventHandler {
         if(this.triggers[key]) this.triggers[key].forEach((obj) => obj.onchange(this.data[key]));
     }
     subscribeTrigger = (key:string,onchange:(res:any)=>void) => {
+
         if(key) {
             if(!this.triggers[key]) {
                 this.triggers[key] = [];

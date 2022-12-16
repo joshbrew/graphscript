@@ -1,7 +1,7 @@
 //graphnodes but we are going to define graph nodes as scopes and graphs as instances of scopes, 
 // then the execution behaviors will be made plugins to recognize settings on the objects optionally. This is more generic
 
-import { EventHandler } from "./services/EventHandler";
+import { EventHandler } from "./utils/EventHandler";
 
 export const state = new EventHandler();
 

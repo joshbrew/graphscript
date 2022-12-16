@@ -1,7 +1,7 @@
 import { stringifyFast } from "../utils";
 import { Service, ServiceOptions } from "../Service";
 import { User } from "../router/Router";
-import { loaders } from "../../loaders";
+import { loaders } from "../../core/loaders";
 
 //parse from this object/endpoint and send to that object/endpoint, e.g. single users
 export type PrivateSessionProps = {

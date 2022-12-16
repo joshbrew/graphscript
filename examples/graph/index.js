@@ -1,76 +1,25 @@
 
-import { Graph } from "../../Graph";
-import { loaders } from "../../loaders";
-import * as nodeA from './nodes/nodeA.js'
+// import { Graph } from "../../core/Graph";
+import { Graph } from "../../core/Graph2";
+import { loaders } from "../../core/loaders";
+import tree from './tree'
 
-const nodeAInstance = Object.assign({}, nodeA)
+const nodeAInstance = tree.nodeA
 
-class nodeClass { //treated as a class to instance rather than a function to set as __operator
-    __operator = () => {
-        console.log('class instanced node called!')
+const deepCopy = (obj) => {
+
+    const copy = {}
+    for (let key in obj) {
+        const val = obj[key]
+        if (val && typeof val === 'object' && !Array.isArray(val)) {
+            copy[key] = deepCopy(val)
+        } else copy[key] = val
+
     }
+
+    return copy
+    
 }
-
-let tree = {
-
-    nodeA: {
-        x:5,
-        y:2,
-        jump:()=>{console.log('jump!'); return 'jumped!'; },
-        __listeners:{
-            'nodeB.x':'jump', //string listeners in a scope are methods bound to 'this' node
-            'nodeB.nodeC':function(op_result){console.log('nodeA listener: nodeC operator returned:', op_result, this)},
-            'nodeB.nodeC.z':function(newZ){console.log('nodeA listener: nodeC z prop changed:', newZ, this)},
-            'nodeE': 'jump'
-        }
-    },
-
-    nodeB:{
-        x:3,
-        y:4,
-        __children:{
-                nodeC:{
-                    z:4,
-                    __operator:function(a) { this.z += a; console.log('nodeC operator: nodeC z prop added to',this); return this.z; },
-                    __listeners:{
-                        'nodeA.x':function(newX) { console.log('nodeC listener: nodeA x prop updated', newX);},
-                        'nodeA.jump':function(jump) { 
-                            console.log('nodeC listener: nodeA ', jump);
-                        }
-                    }
-                }
-            }
-        
-    },
-
-    nodeD:(a,b,c)=>{ return a+b+c; }, //becomes the .__operator prop and calling triggers setState for this tag (or nested tag if a child)
-
-
-    nodeE:{
-        __operator:()=>{console.log('looped!'); return true;},
-        __node:{
-            loop:1000,
-            looping:true
-        }
-    },
-
-    nodeF:{
-        __props:document.createElement('div'), //properties on the '__props' object will be proxied and mutatable as 'this' on the node. E.g. for representing HTML elements
-        __onconnected:function (node) { 
-            this.innerHTML = 'Test';
-            this.style.backgroundColor = 'green'; 
-            document.body.appendChild(this.__props); 
-            console.log(this,this.__props);
-        },
-        __ondisconnected:function(node) {
-            document.body.removeChild(this.__props);
-        }
-        
-    },
-
-    nodeG: nodeClass
-
-};
 
 let graph = new Graph({
     tree,
@@ -78,6 +27,8 @@ let graph = new Graph({
         ...loaders
     }
 });
+
+console.log('graph',graph);
 
 graph.run('nodeG');
 
@@ -94,7 +45,8 @@ graph.get('nodeA').jump(); //should trigger nodeC listener
 graph.run('nodeA.jump'); //same
 
 
-console.log(JSON.stringify(graph.__node.state.triggers));
+const flow = graph.__node.ref.__node.flow
+console.log('Active Listeners', deepCopy(flow.globals.active));
 
 console.log('graph1',graph);
 
@@ -106,7 +58,7 @@ let graph2 = new Graph({tree:tree2});
 
 let popped = graph.remove('nodeB');
 
-console.log(JSON.stringify(graph.__node.state.triggers)); //should be no triggers left
+console.log('Active Listeners', deepCopy(flow.globals.active)); //should be no triggers left
 
 console.log(popped.__node.tag, 'popped')
 

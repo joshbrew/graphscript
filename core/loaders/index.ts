@@ -34,30 +34,43 @@ export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
  * 
  * 
  */
+
+
+// NOTE (GF): Must return something to propagate changes through the graph
 export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
 
+
+
     if(node.__operator && !node.__node.looperSet) {
+
         node.__node.looperSet = true;
         if(typeof node.__node.delay === 'number') {
             let fn = node.__operator;
-            node.__setOperator((...args:any[]) => {
+            const delay = (...args:any[]) => {
+
                 return new Promise((res,rej) => {
                     setTimeout(async ()=>{
                         res(await fn(...args));},node.__node.delay);
                 });
-            });
+            }
+            node.__operator = delay;
+
         } else if (node.__node.frame === true) {
             let fn = node.__operator;
-            node.__setOperator((...args:any[]) => {
+            const frame = (...args:any[]) => {
                 return new Promise((res,rej) => {
                     requestAnimationFrame(async ()=>{res(await fn(...args));});
                 });
-            });
+            }
+
+            node.__operator = frame;
+
         }
 
         if(typeof node.__node.repeat === 'number' || typeof node.__node.recursive === 'number') {
             let fn = node.__operator;
-            node.__setOperator(async (...args:any[]) => {
+            const repeat = async (...args:any[]) => {
+
                 let i = node.__node.repeat ? node.__node.repeat : node.__node.recursive; 
                 let result;
                 let repeater = async (tick,...inp:any[]) => {
@@ -77,20 +90,28 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
                 }
                 await repeater(i,...args);
                 return result;
-            });
+            }
+
+            node.__operator = repeat
         } 
                
+
         if(node.__node.loop && typeof node.__node.loop === 'number') {
-            
-            let fn = node.__operator;
-            node.__setOperator((...args) => {
+        
+            let ogFunction = node.__operator;
+            const looper = function (...args) {
                 if(!('looping' in node.__node)) node.__node.looping = true;
                 if(node.__node.looping) {
-                    fn(...args);
-                    setTimeout(()=>{node.__operator(...args)},node.__node.loop);
+                    const res = ogFunction.call(node, ...args);
+                    setTimeout(()=> {
+                        node.__operator(...args) 
+                    },node.__node.loop);
+                    return res
                 }
-            });
-            if(node.__node.looping) node.__operator();
+            }
+            node.__operator = looper
+
+            if(node.__node.looping) looper();
             
             let ondelete = (node) => {
                 if(node.__node.looping) node.__node.looping = false;
@@ -115,16 +136,22 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     if(node.__node.animate === true || node.__animation) {
             let fn = node.__operator;
 
-            node.__setOperator((...args) => {
-                if(!('animating' in node.__node)) node.__node.animating = true;
+            const animate = (...args) => {
+
+                if(!('animating' in node.__node)) node.
+                __node.animating = true;
                 if(node.__node.animating) {
                     if(typeof node.__animation === 'function') node.__animation(...args);
-                    else fn(...args);
+                    else fn.call(node, ...args);
                     requestAnimationFrame(()=>{node.__operator(...args);});
                 }
-            });
-            if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.__animation)) 
-                setTimeout(()=>{requestAnimationFrame(node.__operator)},10);
+
+                return true
+            }
+
+            node.__operator = animate;
+
+            if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.__animation)) setTimeout(()=>{requestAnimationFrame(node.__operator)},10);
         
 
         let ondelete = (node) => {
