@@ -4,15 +4,15 @@ import list from '../list'
 export const x = 5
 export const y = 2
 
-export const jump = (input)=>{
-    const message = `jump! (${input})`
+export const jump = ()=>{
+    const message = `jump!`
     list.add(message)
     console.log(message); 
     return 'jumped!'; 
 }
 
+//listeners in a scope are bound to 'this' node
 export const __listeners = {
-    'nodeB.x':'jump', //listeners in a scope are bound to 'this' node
     'nodeB.nodeC':function(op_result){
         const message = 'nodeA listener: nodeC operator returned:'
         list.add(message)
@@ -23,5 +23,15 @@ export const __listeners = {
         list.add(message)
         console.log(message,  newZ, this.__node.tag)
     },
-    'nodeE': 'jump'
+
+    // ---------- Equivalent Decarations ----------
+    // From —> To
+    // 'nodeB.x':'jump',
+    // 'nodeE': 'jump',
+
+    // To —> From
+    'jump': {
+        'nodeE': true,
+        'nodeB.x': true
+    }
 }

@@ -24,6 +24,9 @@ function applyLoaders (node: GraphNode, parent, graph=this, tree= graph.__node.t
 }
 
 
+type GraphSpecifier = GraphNode | string
+
+
 export type GraphNodeProperties = {
     __props?:Function|GraphNodeProperties, //a class constructor function (calls 'new x()') or an object we want to proxy all of the methods on this node. E.g. an html element gains 'this' access through operators and listeners on this node.
     __operator?:((...args:any[])=>any)|string, //The 'main' function of the graph node, children will call this function if triggered by a parent. Functions passed as graphnodeproperties become the operator which can set state.
@@ -74,12 +77,12 @@ export class GraphNode {
     __node:{
         [key:string]:any,
         flow: FlowManager
-        symbol: Symbol,
         ref: GraphNode
     } = { //GraphNode-specific properties 
         tag:`node${Math.floor(Math.random()*1000000000000000)}`,
         unique:`${Math.random()}`,
         ref: this,
+        flow: new FlowManager()
         // operator: undefined as any,
         // graph: undefined as any,
         // children: undefined as any,
@@ -243,10 +246,8 @@ export class GraphNode {
             if (graph){
                 const symbol = (graph.__node.ref ?? this).__isGraphScript
                 const monitor = graph.monitor
-                this.__node.flow = new FlowManager(
-                    this.__listeners, 
-                    undefined, 
-                    {
+
+                    this.__node.flow.setInitialProperties(this.__listeners, undefined, {
                         id: symbol, // Global symbol for this graph
                         instance: this, 
                         monitor,
@@ -260,7 +261,7 @@ export class GraphNode {
     }
     
     __addOnconnected(callback:(node)=>void) {
-        if(Array.isArray(this.__ondisconnected)) { this.__onconnected.push(callback); }
+        if(Array.isArray(this.__onconnected)) { this.__onconnected.push(callback); }
         else if (typeof this.__onconnected === 'function') { this.__onconnected = [callback,this.__onconnected] }
         else this.__onconnected = callback;
     }
@@ -329,7 +330,9 @@ export class Graph {
     #init = (properties) => {
         const node = this.__node.ref
         node.__init(properties, this, this, {
-            onInit: () => this.monitor.set(node.__isGraphScript, node.__properties) // Register node in graph monitor
+            onInit: () => {
+                this.monitor.set(node.__isGraphScript, node.__properties)
+             } // Register node in graph monitor
         })
         return node
     }
@@ -373,6 +376,10 @@ export class Graph {
         // ---------------- Setup event listeners ----------------
         this.__node.nodes.forEach(n => n.__node.flow.start()) //start all node listeners
 
+        // ---------------- "Connect" the Nodes ----------------
+        node.__callConnected()
+
+
         return cpy; //should be the node tree
 
     }
@@ -380,11 +387,10 @@ export class Graph {
     setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,props:any,key:string)=>void}, replace?:boolean) => {
         if(replace)  this.__node.loaders = loaders;
         else Object.assign(this.__node.loaders,loaders);
-
         return this.__node.loaders;
     }
 
-    add = (properties:any, parent?:GraphNode|string) => {
+    add = (properties:any, parent?:GraphSpecifier) => {
 
         let listeners = {}; //collect listener props declared
         if(typeof parent === 'string') parent = this.get(parent);
@@ -421,10 +427,7 @@ export class Graph {
                 const copy = Object.assign({}, children)
                 this.recursiveSet(copy, node, listeners, children);
             }
-    
-            // //now setup event listeners
-            // this.setListeners(listeners);
-    
+
             node.__callConnected();
 
             return node;
@@ -476,14 +479,16 @@ export class Graph {
                     this.recursiveSet(copy, node, listeners, children);
                 }
 
-                node.__callConnected();
+                let parentNode = (parent instanceof Graph) ? parent.__node.ref : parent;
+
+                parentNode.__addOnconnected(() => node.__callConnected());
             }
         } 
         return listeners;
     }
 
     remove = (
-        node:GraphNode|string, 
+        node:GraphSpecifier, 
         // clearListeners:boolean=true
     ) => {
 
@@ -495,13 +500,16 @@ export class Graph {
 
             // if(clearListeners) 
             this.clearListeners(node);
+            
 
             node.__callDisconnected();
  
             const recursiveRemove = (t) => {
                 for(const key in t) {
                     const node = t[key].__node.ref; // Safe access method for GraphNode class
-                    this.unsubscribe(node);
+
+                    this.clearListeners(node)
+
                     this.delete(node.__node.tag);
                     delete this.__node.tree[node.__node.tag]
                     this.delete(key);
@@ -542,12 +550,15 @@ export class Graph {
         }
     }
 
-    clearListeners = (node:GraphNode|string) => {
-        if(typeof node === 'string') node = this.get(node) as GraphNode;
-        if (node) node.__node.flow.clear(node.tag)
+    clearListeners = (node:GraphSpecifier) => {
+        this.unsubscribe(node); // Clear subscriptions BOUND TO this node
+        this.clear(node); // Clear subscriptions to and from this node
     }
 
-    get = (tag:string, base?:string) => { 
+    get = (tag:string, base?:GraphSpecifier) => { 
+
+        if (base instanceof GraphNode) base = base.__node.tag
+
 
         // Get the node from the graph
         if (tag === this.__node.tag) return this.__node.ref
@@ -565,7 +576,7 @@ export class Graph {
     set = (tag:string,node:GraphNode) => { return this.__node.nodes.set(tag,node); };
     delete = (tag:string) => { return this.__node.nodes.delete(tag); }
 
-    getProps = (node:GraphNode|string, getInitial?:boolean) => {
+    getProps = (node:GraphSpecifier, getInitial?:boolean) => {
         if(typeof node === 'string') node = this.get(node);
 
         if(node instanceof GraphNode) {
@@ -584,18 +595,38 @@ export class Graph {
         }
     }
 
-    subscribe = (
-        node:GraphNode|string, callback:string|GraphNode|((res:any)=>void), key?:string|undefined, subInput?:boolean, target?:string, bound?:string
-    ) => {
-        console.log('Subscribe', node, callback, key, subInput, target, bound)
-        if(typeof node === 'string') node = this.get(node, bound) as GraphNode;
-        if (node) node.__node.flow.add(node, callback, callback, undefined)
+    subscribe = (from: GraphSpecifier, to: GraphSpecifier | Function, value: any, bound: GraphSpecifier = this.__node.ref) => {
+        if(typeof from === 'string') from = this.get(from, bound) as GraphNode;
+        if(typeof bound === 'string') bound = this.get(bound) as GraphNode;
+
+        if (bound) bound.__node.flow.add(from, to, value)
     }
 
-    unsubscribe = ( node:GraphNode|string, sub?:number, key?:string, subInput?:boolean) => {
-        console.log('Unsubscribe', node, sub, key, subInput)
-        let nd = (!(node instanceof GraphNode)) ? this.get(node) : node
-        nd.__node.flow.clear(nd.__node.tag) // TODO: unsubscribe specific sub
+    // Unsubscribe subscriptions for a particular node
+    unsubscribe = (node:GraphSpecifier, from?:GraphSpecifier|symbol, to?:GraphSpecifier ) => this.clear(from, to, node)
+
+    // Clear all nodes of a certain listener (or specific) using from / to syntax
+    clear = ( from?: GraphSpecifier | symbol, to?:GraphSpecifier, bound?: GraphSpecifier) => {
+
+        const nd = (typeof bound === 'string') ? this.get(bound) : bound
+
+        // Single Unsubscribe
+        if (typeof from === 'symbol') return this.__node.flow.remove(from)
+
+        // Unsubscribe Using Listener Identifiers
+        let fromString = (from instanceof GraphNode) ? from.__node.tag : from
+        let toString = (to instanceof GraphNode) ? to.__node.tag : to
+
+        const remove = (n) => {
+            const flow = n.__node.flow;
+            (toString) ? flow.remove(fromString, toString) : flow.clear(fromString);
+        }
+
+        if (nd) remove(nd)
+        else {
+            remove(this.__node.ref)
+            this.__node.nodes.forEach(remove)
+        }
     }
 
 

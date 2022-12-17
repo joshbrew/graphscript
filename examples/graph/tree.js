@@ -50,11 +50,9 @@ let tree = {
 
     nodeE:{
         __operator:function (){
-            console.log('looped')
             const message = 'looped'
             list.add(message)
             console.log(message);
-            
             return true;
         },
         __node:{

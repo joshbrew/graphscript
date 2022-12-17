@@ -109,9 +109,12 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
                     return res
                 }
             }
+
             node.__operator = looper
 
-            if(node.__node.looping) looper();
+            node.__addOnconnected((node) => {
+                if (node.__node.looping) node.__operator();
+            })
             
             let ondelete = (node) => {
                 if(node.__node.looping) node.__node.looping = false;
@@ -151,14 +154,13 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
 
             node.__operator = animate;
 
-            if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.__animation)) setTimeout(()=>{requestAnimationFrame(node.__operator)},10);
-        
+            node.__addOnconnected((node) => {
+                if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.__animation)) setTimeout(()=>{requestAnimationFrame(node.__operator)},10);
+            })
 
-        let ondelete = (node) => {
-            if(node.__node.animating) node.__node.animating = false;
-        }
-
-        node.__addOndisconnected(ondelete);
+            node.__addOndisconnected((node) => {
+                if(node.__node.animating) node.__node.animating = false;
+            });
     }
 }
 

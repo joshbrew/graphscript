@@ -1,6 +1,7 @@
 import { Graph } from "../../Graph2"
 
 
+// Special Key Definition
 const defaultPath = 'default'
 const operatorPath = '__operator'
 const specialKeys = {
@@ -15,21 +16,24 @@ const specialKeys = {
     },
 }
 
+// Symbols to Recognize
 const listenerObject = Symbol('listenerObject')
 const toSet = Symbol('toSet')
-const isConfigObject = (o) => specialKeys.listeners.format in o || specialKeys.listeners.branch in o || specialKeys.listeners.trigger in o || specialKeys.listeners.bind in o
-
-const initializedStatus = 'INITIALIZED'
-const registeredStatus = 'REGISTERED'
-
-const globalFrom = {} as any
-const globalTo = {} as any
-
-const globalActive = {}
-
 const subscriptionKey = Symbol('subscriptionKey')
 const configKey = Symbol('configKey')
 const toResolveWithKey = Symbol('toResolveWithKey')
+
+// Configuration Options
+const isConfigObject = (o) => specialKeys.listeners.format in o || specialKeys.listeners.branch in o || specialKeys.listeners.trigger in o || specialKeys.listeners.bind in o
+
+// Status Definitions
+const initializedStatus = 'INITIALIZED'
+const registeredStatus = 'REGISTERED'
+
+// Global References
+const globalFrom = {} as any
+const globalTo = {} as any
+const globalActive = {}
 
 class Edgelord {
 
@@ -47,9 +51,13 @@ class Edgelord {
     #triggers: any[] = []
     #queue: any[] = []
     #toResolveWith: Edgelord
-    // #sendsToExternalGraph = false
 
-    constructor (listeners = {}, root, context={}) {
+    constructor (listeners?, root?, context?) {
+        if (listeners || root || context) this.setInitialProperties(listeners = {}, root, context={})
+    }
+
+    setInitialProperties = (listeners = {}, root, context={}) => {
+
         Object.assign(this.context, context)
         if (root) this.rootPath = root
 
@@ -104,7 +112,6 @@ class Edgelord {
                 const from = second
                 const to = first
                 for (let fromPath in from) {
-                    console.log('Adding Listener Sheet', from, to)
                     callback(
                         fromPath,  // From Path
                         to, // To Path
@@ -223,7 +230,7 @@ class Edgelord {
         return output
     }
 
-    add = (from, to, value: any = true, subscription) => {
+    add = (from, to, value: any = true, subscription?) => {
 
         if (!value) return // Any non-truthy value is not accepted
 
@@ -313,6 +320,7 @@ class Edgelord {
             { ref: this.globals.active, path, unlisten: true }, // Remove subscription if required
             // { ref: this.original, path: [toInfo.relative.value, fromInfo.relative.value] }, // Just removing from the list
         ]
+
 
         toRemove.forEach(o => {
             const { ref, path, unlisten } = o
