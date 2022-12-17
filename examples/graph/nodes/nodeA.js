@@ -4,8 +4,8 @@ import list from '../list'
 export const x = 5
 export const y = 2
 
-export const jump = ()=>{
-    const message = 'jump!'
+export const jump = (input)=>{
+    const message = `jump! (${input})`
     list.add(message)
     console.log(message); 
     return 'jumped!'; 
