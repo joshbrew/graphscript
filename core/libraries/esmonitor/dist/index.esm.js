@@ -35,7 +35,6 @@ var getPath = (type, info2) => {
   return filtered.join(info2.keySeparator);
 };
 var getPathInfo = (path, options) => {
-  // if (Array.isArray(path)) path = path.join(options.keySeparator)
   let splitPath = path;
   if (typeof path === "string")
     splitPath = path.split(options.keySeparator);
@@ -73,6 +72,7 @@ var Poller = class {
       const sub = info2.sub;
       this.listeners[sub] = info2;
       this.start();
+      return true;
     };
     this.get = (sub) => this.listeners[sub];
     this.remove = (sub) => {
@@ -205,7 +205,7 @@ var getShortcut = (path, shortcuts, keySeparator2) => {
       return value;
   }
 };
-var getFromPath = (baseObject, path, opts = {}, throwError = true) => {
+var getFromPath = (baseObject, path, opts = {}) => {
   const fallbackKeys = opts.fallbacks ?? [];
   const keySeparator2 = opts.keySeparator ?? keySeparator;
   if (opts.shortcuts) {
@@ -218,39 +218,32 @@ var getFromPath = (baseObject, path, opts = {}, throwError = true) => {
     }
   }
   if (typeof path === "string")
-    path = path.split(keySeparator2);
+    path = path.split(keySeparator2).flat();
   else if (typeof path == "symbol")
     path = [path];
   let exists;
-  
   path = [...path];
-  
-  path = path.map(o => (typeof o === "string") ? o.split(keySeparator) : o).flat()
-
+  path = path.map((o) => typeof o === "string" ? o.split(keySeparator2) : o).flat();
   let ref = baseObject;
   for (let i = 0; i < path.length; i++) {
-    if (!ref) {
-      if (!throwError) return
-      const message = `Could not get path`;
-      console.error(message, path, ref);
-      throw new Error(message);
-    }
-    const str = path[i];
-    if (!hasKey(str, ref) && "__children" in ref) {
-      for (let i2 in fallbackKeys) {
-        const key = fallbackKeys[i2];
-        if (hasKey(key, ref)) {
-          ref = ref[key];
-          break;
+    if (ref) {
+      const str = path[i];
+      if (!hasKey(str, ref) && "__children" in ref) {
+        for (let i2 in fallbackKeys) {
+          const key = fallbackKeys[i2];
+          if (hasKey(key, ref)) {
+            ref = ref[key];
+            break;
+          }
         }
       }
-    }
-    exists = hasKey(str, ref);
-    if (exists)
-      ref = ref[str];
-    else {
-      ref = void 0;
-      exists = true;
+      exists = hasKey(str, ref);
+      if (exists)
+        ref = ref[str];
+      else {
+        ref = void 0;
+        exists = true;
+      }
     }
   }
   if (opts.output === "info")
@@ -279,15 +272,11 @@ var setFromPath = (path, value, ref, opts = {}) => {
     }
     if (has)
       ref = ref[str];
-    else {
-      const message = `Could not set path`;
-      console.error(message, path);
-      throw new Error(message);
-    }
     if (ref.__children)
       ref = ref.__children;
   }
   ref[last] = value;
+  return true;
 };
 
 // src/inspectable/handlers.ts
@@ -632,6 +621,7 @@ var register = (info2, collection, lookups) => {
     collection[absolute] = {};
   collection[absolute][info2.sub] = info2;
   registerInLookup(absolute, info2.sub, lookups);
+  return true;
 };
 var listeners = {
   functions: functions2,
@@ -651,15 +641,15 @@ var set = (type, absPath, value, callback, base, allListeners, options) => {
 };
 var get2 = (info2, collection) => collection[getPath("absolute", info2)];
 var handler = (info2, collection, subscribeCallback, lookups) => {
-  if (!get2(info2, collection)) {
+  let success = !!get2(info2, collection);
+  if (!success) {
     let parent = info2.parent;
-    let val = parent[info2.last];
-    subscribeCallback(val, parent);
+    let val = parent?.[info2.last];
+    success = subscribeCallback(val, parent);
   }
-  register(info2, collection, lookups);
+  return register(info2, collection, lookups);
 };
 var setterExecution = (listeners2, value) => {
-
   return iterateSymbols(listeners2, (_, o) => {
     const path = getPath("output", o);
     runCallback(o.callback, path, {}, value);
@@ -667,8 +657,10 @@ var setterExecution = (listeners2, value) => {
 };
 function setters(info2, collection, lookups) {
   const thisValue = this;
-  handler(info2, collection["setters"], (value, parent) => {
+  return handler(info2, collection["setters"], (value, parent) => {
     let val = value;
+    if (!parent)
+      return;
     if (!parent[isProxy]) {
       let redefine = true;
       try {
@@ -683,15 +675,12 @@ function setters(info2, collection, lookups) {
             get: () => val,
             set: async (v) => {
               const isFunction = typeof val === "function";
+              val = v;
               if (!isFunction) {
-                val = v;
                 const listeners2 = Object.assign({}, collection["setters"][getPath("absolute", info2)]);
                 setterExecution(listeners2, v);
-              } else {
-                if (val !== v) {
-                  val = getProxyFunction.call(thisValue, info2, collection, v);
-                }
-              }
+              } else
+                val = getProxyFunction.call(thisValue, info2, collection, val);
             },
             enumerable: true,
             configurable: true
@@ -721,10 +710,11 @@ var functionExecution = (context, listeners2, func, args) => {
   return executionInfo;
 };
 function functions2(info2, collection, lookups) {
-  handler(info2, collection["functions"], (_, parent) => {
+  return handler(info2, collection["functions"], (_, parent) => {
     if (!parent[isProxy]) {
+      console.error("Listener revoked (func)?", info2);
       parent[info2.last] = getProxyFunction.call(this, info2, collection);
-      setters(info2, collection, lookups);
+      return setters(info2, collection, lookups);
     }
   }, lookups);
 }
@@ -800,7 +790,7 @@ var Monitor = class {
       lookup: createLookup()
     };
     this.references = {};
-    this.get = (path, output, reference = this.references, throwError=true) => {
+    this.get = (path, output, reference = this.references, throwError = true) => {
       return getFromPath(reference, path, {
         keySeparator: this.options.keySeparator,
         fallbacks: this.options.fallbacks,
@@ -839,8 +829,7 @@ var Monitor = class {
       else if (typeof path === "symbol")
         path = [path];
       const arrayPath = path;
-      let baseRef = this.get(id)
-
+      let baseRef = this.get(id);
       if (!baseRef) {
         console.error(`Reference does not exist.`, id);
         return;
@@ -850,13 +839,8 @@ var Monitor = class {
       if (!__internal.seen)
         __internal.seen = [];
       const __internalComplete = __internal;
-      if (!this.references[id])
-        this.references[id] = baseRef;
-      
-      const thisPath = [id, ...arrayPath]
-      const ref = this.get(thisPath)
-
-
+      const thisPath = [id, ...arrayPath];
+      const ref = this.get(thisPath);
       const toMonitorInternally = (val, allowArrays = false) => {
         const first = val && typeof val === "object";
         if (!first)
@@ -870,8 +854,8 @@ var Monitor = class {
           return !Array.isArray(val);
       };
       let subs = {};
-      const internal = toMonitorInternally(ref, true)
-      if (internal) {
+      const subscribeAll = toMonitorInternally(ref, true);
+      if (subscribeAll) {
         if (ref.__esInspectable)
           ref.__esInspectable.options.globalCallback = callback;
         drillSimple(ref, (_, __, drillInfo) => {
@@ -887,34 +871,44 @@ var Monitor = class {
         });
       }
       let info2;
+      let success = false;
       try {
         info2 = this.getInfo(id, callback, arrayPath, ref);
-        if (__internalComplete.poll) {
-          this.poller.add(info2);
-        } else {
-          let type = "setters";
-          if (typeof ref === "function")
-            type = "functions";
-          this.add(type, info2);
+        if (info2) {
+          if (__internalComplete.poll)
+            success = this.poller.add(info2);
+          else {
+            let type = "setters";
+            if (typeof ref === "function")
+              type = "functions";
+            success = this.add(type, info2);
+          }
         }
       } catch (e) {
         console.error("Fallback to polling:", path, e);
-        this.poller.add(info2);
+        success = this.poller.add(info2);
       }
-      subs[getPath("absolute", info2)] = info2.sub;
-      if (this.options.onInit instanceof Function) {
-        const executionInfo = {};
-        for (let key in info2.infoToOutput)
-          executionInfo[key] = void 0;
-        this.options.onInit(getPath("output", info2), executionInfo);
+      if (success) {
+        subs[getPath("absolute", info2)] = info2.sub;
+        if (this.options.onInit instanceof Function) {
+          const executionInfo = {};
+          for (let key in info2.infoToOutput)
+            executionInfo[key] = void 0;
+          this.options.onInit(getPath("output", info2), executionInfo);
+        }
+        return subs;
+      } else {
+        console.error("Failed to subscribe to:", path);
+        return;
       }
-      return subs;
     };
     this.add = (type, info2) => {
       if (listeners_exports[type])
-        listeners_exports[type](info2, this.listeners, this.listeners.lookup);
-      else
+        return listeners_exports[type](info2, this.listeners, this.listeners.lookup);
+      else {
         this.listeners[type][getPath("absolute", info2)][info2.sub] = info2;
+        return true;
+      }
     };
     this.remove = (subs) => {
       if (!subs) {
@@ -963,9 +957,11 @@ var Monitor = class {
         delete setters2[sub];
         if (!Object.getOwnPropertySymbols(setters2).length) {
           const parent = setter.parent;
-          const last = setter.last;
-          const value = parent[last];
-          Object.defineProperty(parent, last, { value, writable: true });
+          if (parent) {
+            const last = setter.last;
+            const value = parent[last];
+            Object.defineProperty(parent, last, { value, writable: true });
+          }
           delete this.listeners.setters[absPath];
         }
       } else

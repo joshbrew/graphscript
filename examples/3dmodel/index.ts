@@ -1,4 +1,5 @@
 import * as B from 'babylonjs'
+import propsLoader from '../../core/loaders/props/props.loader';
 import { Graph, htmlloader } from '../../index';
 
 let canvas = document.createElement('canvas');
@@ -94,12 +95,17 @@ let modelLoader = (node, parent, graph) => {
                 node.rotation = (node.rotation as B.Vector3).add(parent.rotation);
             }
 
-            graph.setListeners({
-                [node.__node.tag]:{
-                    [parent.__node.tag+'.position']:function(newP) {node.position = (node.__localPosition as B.Vector3).add(newP);},
-                    [parent.__node.tag+'.rotation']:function(newR) {node.rotation = (node.__localRotation as B.Vector3).add(newR);},
-                }
-            });
+            graph.subscribe(
+                parent.__node.tag+'.position', 
+                node.__node.tag, 
+                function(newP) {node.position = (node.__localPosition as B.Vector3).add(newP);}
+            );
+
+            graph.subscribe(
+                parent.__node.tag+'.rotation', 
+                node.__node.tag,
+                function(newR) {node.rotation = (node.__localRotation as B.Vector3).add(newR);},
+            );
         }
     }
 }
@@ -118,12 +124,19 @@ type __transition = {
 let cameraLoader = (node, parent, graph) => {
 
     let animating = true;
-    if(!node.__props && parent.__props instanceof B.FreeCamera) {node.__props = parent.__props; node.__proxyObject(node.__props); }
+
+    if(!node.__props && parent.__props instanceof B.FreeCamera)  node.__props = parent.__props
+    
     if(node.__props instanceof B.FreeCamera) {
         if(node.__transition) {
-            node.__setOperator(()=>{
+
+            console.log('Setting operator', node.__node.tag, node)
+
+            node.__operator = () => {
                 let lastTime = performance.now()*0.001;
                 let startTime = lastTime;
+                console.log('Running operator', node.__node.tag, node)
+
                 let startPos = (node.position as B.Vector3).clone();
                 let startRot = (node.rotation as B.Vector3).clone();
                 if(node.__transition.position && !(node.__transition.position instanceof B.Vector3)) node.__transition.position = new B.Vector3(node.__transition.position.x,node.__transition.position.y,node.__transition.position.z);
@@ -166,7 +179,7 @@ let cameraLoader = (node, parent, graph) => {
                 if(node.__transition.delay) {
                     return new Promise ((res) => {setTimeout(async()=>{ res(await transition()); }, node.__transition.delay);});
                 } else return new Promise (async (res) => {res(await transition()); });
-            });
+            };
         }
     }
 
@@ -178,11 +191,12 @@ let cameraLoader = (node, parent, graph) => {
 
 let graph = new Graph({
     tree:model,
-    loaders:{
+    loaders:[
+        propsLoader,
         htmlloader,
         modelLoader,
         cameraLoader
-    }
+    ]
 });
 
 engine.runRenderLoop(function(){

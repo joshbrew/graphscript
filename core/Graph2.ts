@@ -1,7 +1,7 @@
 //graphnodes but we are going to define graph nodes as scopes and graphs as instances of scopes, 
 // then the execution behaviors will be made plugins to recognize settings on the objects optionally. This is more generic
 
-import { EventHandler } from "./utils/EventHandler";
+import propsLoader from '../core/loaders/props/props.loader'
 
 
 import Monitor from './libraries/esmonitor/dist/index.esm';
@@ -24,6 +24,8 @@ function applyLoaders (node: GraphNode, parent, graph=this, tree= graph.__node.t
 }
 
 
+
+type AnyObj = {[key:string]:any}
 type GraphSpecifier = GraphNode | string
 
 
@@ -51,14 +53,19 @@ export type Loader = (
     key:string
 )=>void;
 
+
+export type Loaders = Loader[] | {[key:string]:Loader};
+
 export type GraphOptions = {
-    tree?:{[key:string]:any},
-    loaders?:{
-        [key:string]:Loader|{
-            init?:Loader, 
-            connected?:(node)=>void, 
-            disconnected?:(node)=>void}
-        },
+    tree?:AnyObj,
+    loaders?:Loaders,
+    // {
+    //     [key:string]:Loader|{
+    //         init?:Loader, 
+    //         connected?:(node)=>void, 
+    //         disconnected?:(node)=>void}
+    //      },
+    // }
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
     [key:string]:any
 }
@@ -72,7 +79,7 @@ type GraphOptionsType = {
 export class GraphNode {
 
     // Confirm that the object should be recognized as graph script
-    __isGraphScript = Symbol('graphscript')
+    __ = Symbol('graphscript')
 
     __node:{
         [key:string]:any,
@@ -100,45 +107,71 @@ export class GraphNode {
 
     [key:string]:any
 
-    #parent?: {[key:string]:any};
+    #parent?: AnyObj;
     #graph?: Graph;
 
-    #properties = {}
+    #properties: AnyObj = {}
     get __properties() { return this.#properties }
 
     #options = {}
     
     //pass GraphNodeProperties, functions, or tags of other nodes
-    constructor(properties?:any, parent?:{[key:string]:any}, graph?:Graph, options?: GraphOptionsType) {
+    constructor(properties?:any, parent?:AnyObj, graph?:Graph, options?: GraphOptionsType) {
             this.__init(properties, parent, graph, options)
     }
 
     #applied: string[] = []
-    #applySetters = (properties=this.#properties, proxy=this.#properties) => {
 
+
+    #applySetters = (properties=this.#properties, proxy: true | AnyObj =this.#properties, ignore: string[]=[]) => {
+
+        const isProxy = proxy === true
         let keys = Object.getOwnPropertyNames(properties);
 
-        if (proxy === true) {
+        if (isProxy) {
             proxy = properties
             keys = getAllProperties(properties)
+            console.error('Applying setters to proxy', keys.includes('rotation'), this.__node.tag, properties)
+
         }
 
         for(const key of keys) { 
-            if (this.#applied.includes(key)) continue
+            if (ignore.includes(key)) continue;
+            if (this.#applied.includes(key)) continue;
             this.#applied.push(key)
+
             if (key === '__properties') Object.defineProperty(this, key, {
                 get: () => this.#properties,
                 enumerable: true,
             })
 
-            else  Object.defineProperty(this, key, {
-                get: () => proxy[key],
-                set: (value) => proxy[key] = value,
-                enumerable: true,
-                configurable: false
-            })
+            // When Props Loader is Specified...
+            // TODO: Allow this to be specified by the loader itself...
+            else if (key === '__props') {
+                Object.defineProperty(this, key, {
+                    get: () => proxy[key],
+                    set: (value) => {
+                        proxy[key] = value
+                        this.#applySetters(value, true)
+                    },
+                    enumerable: true,
+                    configurable: true
+                })
+            }
+
+            else  {
+                Object.defineProperty(this, key, {
+                    get: () => proxy[key],
+                    set: (value) => proxy[key] = value,
+                    enumerable: true,
+                    configurable: false
+                })
+            }
          }
     }
+
+    ____apply = this.#applySetters // Public version
+
 
     __init = (properties, parent = this.#parent, graph = this.#graph, options: GraphOptionsType = this.#options) => {
 
@@ -147,7 +180,6 @@ export class GraphNode {
         this.#options = options
 
         if (properties)  {
-            this.#properties = properties
 
         let orig = properties;
         if(typeof properties === 'function') {
@@ -169,52 +201,7 @@ export class GraphNode {
 
         if(typeof properties === 'object') {
 
-            if (!properties.__node) properties.__node = {};
-
-            if(!properties.__node.initial) properties.__node.initial = orig; //original object or function
-
-
-            if(properties.__props) { //e.g. some generic javascript object or class constructor that we want to proxy. Functions passed here are treated as constructors. E.g. pass an HTML canvas element for the node then set this.width on the node to set the canvas width  
-                if (typeof properties.__props === 'function') properties.__props = new properties.__props();
-                // if (typeof properties.__props === 'object') {
-                //     this.__proxyObject(properties.__props);
-                // }
-            }
-
-            if (typeof properties.__node === 'string') {
-                //copy
-                if(graph?.get(properties.__node.tag)) {
-                    properties = graph.get(properties.__node.tag);
-                } else properties.__node = {}
-            } else if(!properties.__node) properties.__node = {};
-
-            if(graph) {
-                properties.__node.graph = graph;
-            }
-
-            if(properties.__operator) {
-                if (typeof properties.__operator === 'string') {
-                    if(graph) {
-                        let n = graph.get(properties.__operator);
-                        if(n) properties.__operator = n.__operator;
-                        if(!properties.__node.tag && (properties.__operator as Function).name) 
-                            properties.__node.tag = (properties.__operator as Function).name;
-                    }
-                }
-            }
-
-            if(!properties.__node.tag) {
-                if(properties.__operator?.name)
-                    properties.__node.tag = properties.__operator.name;
-                else 
-                    properties.__node.tag = `node${Math.floor(Math.random()*1000000000000000)}`;
-            }
-
-            //nested graphs or 2nd level+ nodes get their parents as a tag
-            if(!properties.__parent && parent) properties.__parent = parent;
-            if(parent?.__node && (!(parent instanceof Graph || properties instanceof Graph))) 
-                properties.__node.tag = parent.__node.tag + '.' + properties.__node.tag; //load parents first
-            
+            // Handle Graph Properties
             if(parent instanceof Graph && properties instanceof Graph) {
 
                 if(properties.__node.loaders) Object.assign(parent.__node.loaders ? parent.__node.loaders : {}, properties.__node.loaders); //let the parent graph adopt the child graph's loaders
@@ -227,14 +214,65 @@ export class GraphNode {
                     this.__addOndisconnected(ondelete);
 
                 }
+
+                properties = properties.__node.tree // apply the user-specified object properties—not the graph instance
+
             }
+
+            // Assign stored properties
+            this.#properties = properties
+
+
+            if (!properties.__node) properties.__node = {};
+
+            // Apply original object or function to the node
+            if(!properties.__node.initial) this.__node.initial = orig; //original object or function
+
+
+            // Create Props Proxy
+            // e.g. some generic javascript object or class constructor that we want to proxy. Functions passed here are treated as constructors. E.g. pass an HTML canvas element for the node then set this.width on the node to set the canvas width  
+            if(properties.__props) { 
+                if (typeof properties.__props === 'function') properties.__props = new properties.__props();
+            }
+
+            // Copy
+            if (typeof properties.__node === 'string') {
+                if(graph?.get(properties.__node.tag)) {
+                    properties = graph.get(properties.__node.tag);
+                } else properties.__node = {}
+            } else if(!properties.__node) properties.__node = {};
+
+            // Set Graph on Node Properties
+            if(graph) properties.__node.graph = graph;
+
+            // Set Operator on Properties
+            if(properties.__operator) {
+                if (typeof properties.__operator === 'string') {
+                    if(graph) {
+                        let n = graph.get(properties.__operator);
+                        if(n) properties.__operator = n.__operator;
+                        if(!properties.__node.tag && (properties.__operator as Function).name) 
+                            properties.__node.tag = (properties.__operator as Function).name;
+                    }
+                }
+            }
+
+            // Create Tag
+            if(!properties.__node.tag) {
+                if(properties.__operator?.name) properties.__node.tag = properties.__operator.name;
+                else properties.__node.tag = `node${Math.floor(Math.random()*1000000000000000)}`;
+            }
+
+            //nested graphs or 2nd level+ nodes get their parents as a tag
+            if(!properties.__parent && parent) properties.__parent = parent;
+            if(parent?.__node && (!(parent instanceof Graph || properties instanceof Graph))) properties.__node.tag = parent.__node.tag + '.' + properties.__node.tag; //load parents first
+            
 
             properties.__node = Object.assign(this.__node,properties.__node);
 
             this.#applySetters() // Set properties on the graphnode 
             applyLoaders.call(graph, this, parent, graph, graph?.__node?.tree, properties) // Apply loaders
-            this.#applySetters() // Proxy the new properties too
-            this.#applySetters(properties.__props, true)
+            this.#applySetters(undefined, undefined, ['__props']) // Proxy the new properties too
             
             if(properties instanceof Graph) this.__node.source = properties; //keep tabs on source graphs passed to make nodes
 
@@ -244,7 +282,7 @@ export class GraphNode {
 
             // Create flow manager for this specific node
             if (graph){
-                const symbol = (graph.__node.ref ?? this).__isGraphScript
+                const symbol = (graph.__node.ref ?? this).__
                 const monitor = graph.monitor
 
                     this.__node.flow.setInitialProperties(this.__listeners, undefined, {
@@ -274,12 +312,12 @@ export class GraphNode {
 
     __callConnected(node=this) {
         if(typeof this.__onconnected === 'function') { this.__onconnected(this); }
-        else if (Array.isArray(this.__onconnected)) { this.__onconnected.forEach((o:Function) => { o(this); }) }
+        else if (Array.isArray(this.__onconnected)) { this.__onconnected.forEach((o:Function) => { o.call(this, this); }) }
     }
 
     __callDisconnected(node=this) {
         if(typeof this.__ondisconnected === 'function') this.__ondisconnected(this);
-        else if (Array.isArray(this.__ondisconnected)) { this.__ondisconnected.forEach((o:Function) => {o(this)}); }
+        else if (Array.isArray(this.__ondisconnected)) { this.__ondisconnected.forEach((o:Function) => {o.call(this, this)}); }
     }
 
 }
@@ -298,15 +336,19 @@ export class Graph {
         tag:string,
         nodes:Map<string,GraphNode|any>,
         ref: GraphNode, // Always create a GraphNode reference
+        loaders: Loaders
+        initial: GraphNodeProperties,
         [key:string]:any
     } = {
         tag:`graph${Math.floor(Math.random()*1000000000000000)}`,
         nodes:new Map(),
-        ref: new GraphNode()
+        ref: new GraphNode(),
+        loaders: [
+            propsLoader
+        ]
         // addState:true //apply the addLocalState on node init 
         // mapGraphs:false //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
         // tree:undefined as any,
-        // loaders:undefined as any,
     }
 
 
@@ -314,13 +356,15 @@ export class Graph {
     constructor(
         options?:GraphOptions
     ) {
-        const node = this.__node.ref
-
         this.init(options);
     }
 
     init = (options?:GraphOptions) => {
         if(options) {
+            if (options.loaders) {
+                this.setLoaders(options.loaders)
+                delete options.loaders
+            }
             recursivelyAssign(this.__node, options); //assign loaders etc
             if(options.tree) this.setTree(options.tree);
             // else this.#init()
@@ -331,13 +375,13 @@ export class Graph {
         const node = this.__node.ref
         node.__init(properties, this, this, {
             onInit: () => {
-                this.monitor.set(node.__isGraphScript, node.__properties)
+                this.monitor.set(node.__, node.__properties)
              } // Register node in graph monitor
         })
         return node
     }
 
-    setTree = (tree:{[key:string]:any}) => {
+    setTree = (tree:AnyObj) => {
 
         // --------------- Recognize node trees ----------------
         const hasGraphscriptProperties = Object.keys(tree).find(str => {
@@ -384,9 +428,19 @@ export class Graph {
 
     }
 
-    setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,props:any,key:string)=>void}, replace?:boolean) => {
+    setLoaders = (loaders:{[key:string]:Loader} | Loader[], replace?:boolean) => {
         if(replace)  this.__node.loaders = loaders;
-        else Object.assign(this.__node.loaders,loaders);
+        else {
+
+            // Array Loader Specification
+            if (Array.isArray(this.__node.loaders)) {
+                if (Array.isArray(loaders)) this.__node.loaders = [...this.__node.loaders, ...loaders]
+                else this.__node.loaders = [...this.__node.loaders, ...Object.values(loaders)]
+            } 
+            
+            // Object Loader Specification
+            else Object.assign(this.__node.loaders, loaders);
+        }
         return this.__node.loaders;
     }
 
@@ -595,8 +649,8 @@ export class Graph {
         }
     }
 
-    subscribe = (from: GraphSpecifier, to: GraphSpecifier | Function, value: any, bound: GraphSpecifier = this.__node.ref) => {
-        if(typeof from === 'string') from = this.get(from, bound) as GraphNode;
+    subscribe = (from: GraphSpecifier, to: GraphSpecifier | Function, value: any = true, bound: GraphSpecifier = this.__node.ref) => {
+        if(typeof from !== 'string') from = from.__node.tag;
         if(typeof bound === 'string') bound = this.get(bound) as GraphNode;
 
         if (bound) bound.__node.flow.add(from, to, value)
@@ -633,7 +687,7 @@ export class Graph {
     activate = (from, value) => this.__node.flow.activate(from, value);
 
     // Maintains old behavior for setState
-    setState = (update:{[key:string]:any}) => {
+    setState = (update:AnyObj) => {
         for (let key in update) this.activate(key, update);
     }
 

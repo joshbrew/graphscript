@@ -46,14 +46,11 @@ export const htmlloader = (
 
     if(node.__onrender) {
         let onrender = node.__onrender;
-        node.__onrender = (element:DOMElement) => {
-            onrender.call(node, element);
-        }
+        node.__onrender = (element:DOMElement) =>  onrender.call(node, element)
     }
 
     if(node.tagName && !node.__props && !node.__template) {
-        node.__props = document.createElement(node.tagName);
-        node.__proxyObject(node.__props);
+        node.__props = document.createElement(node.tagName);  // Apply proxy to object
         let keys = Object.getOwnPropertyNames(properties);
         for(const k of keys) { 
             if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
@@ -62,8 +59,7 @@ export const htmlloader = (
     } else if (node.__element && !node.__template) {
         if(typeof node.__element === 'string') node.__element = document.createElement(node.__element);
         if(!(node.__element instanceof HTMLElement)) return; 
-        node.__props = node.__element; 
-        node.__proxyObject(node.__props);
+        node.__props = node.__element; // Apply proxy to object
         let keys = Object.getOwnPropertyNames(properties);
         for(const k of keys) { 
             if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}

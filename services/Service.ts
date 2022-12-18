@@ -1,4 +1,4 @@
-import { Graph, GraphNode, GraphOptions } from "../Graph";
+import { Graph, GraphNode, GraphOptions } from "../core/Graph2";
 import {loaders} from '../core/loaders';
 
 

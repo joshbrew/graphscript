@@ -1,4 +1,4 @@
-import { GraphNode } from "../../Graph";
+import { GraphNode } from "../../core/Graph2";
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 
 

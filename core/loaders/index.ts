@@ -1,4 +1,4 @@
-import { GraphNode, Graph, GraphNodeProperties } from "../Graph";
+import { GraphNode, Graph, GraphNodeProperties } from "../Graph2";
 
 //loaders are triggered just after graphnode creation, after oncreate() is called
 
@@ -7,14 +7,7 @@ import { GraphNode, Graph, GraphNodeProperties } from "../Graph";
  */
 export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     
-    if(node.__node.backward && parent instanceof GraphNode) {
-
-        graph.setListeners({
-            [parent.__node.tag]:{
-                [node.__node.tag]:parent
-            }
-        })
-    }
+    if(node.__node.backward && parent instanceof GraphNode) graph.subscribe(parent.__node.tag, node.__node.tag)
 
     
 }
@@ -291,12 +284,16 @@ export const transformListenerResult = (node:GraphNode,parent:GraphNode|Graph,gr
 export const substitute__operator = (node:GraphNode & GraphNodeProperties, parent:GraphNode|Graph,graph:Graph) => {
     //console.log('route', r)
     if(node.post && !node.__operator) {
-        node.__setOperator(node.post);
-    } else if (!node.__operator && typeof node.get == 'function') {
-        node.__setOperator(node.get);
+        node.__operator = node.post 
+    } 
+
+    else if (!node.__operator && typeof node.get == 'function') {
+        node.__operator = node.get 
     } if(!node.get && node.__operator) {
         node.get = node.__operator;
-    } if(node.aliases) {
+    } 
+    
+    if(node.aliases) {
         node.aliases.forEach((a) => {
             graph.set(a,node);
             let ondelete = (node) => {

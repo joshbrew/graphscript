@@ -6,7 +6,7 @@ const defaultPath = 'default'
 const operatorPath = '__operator'
 const specialKeys = {
     path: '__path',
-    isGraphScript: '__isGraphScript',
+    isGraphScript: '__',
     listeners: {
         value: '__listeners',
         branch: '__branch',
@@ -53,7 +53,7 @@ class Edgelord {
     #toResolveWith: Edgelord
 
     constructor (listeners?, root?, context?) {
-        if (listeners || root || context) this.setInitialProperties(listeners = {}, root, context={})
+        if (listeners || root || context) this.setInitialProperties(listeners, root, context)
     }
 
     setInitialProperties = (listeners = {}, root, context={}) => {
@@ -206,7 +206,8 @@ class Edgelord {
                 obj = this.context.graph.get(rel)
             }
         }
-        const isGraphScript = obj && specialKeys.isGraphScript in obj
+        
+        const isGraphScript = obj && typeof obj === 'object' && specialKeys.isGraphScript in obj
 
         // Updates based on default / operators
         if (isGraphScript) {
@@ -580,7 +581,8 @@ pass = (from, target, update) => {
             parentPath.push(...to.split(this.context.options.keySeparator))
             const idx = parentPath.pop()
             const info = this.context.monitor.get(parentPath, 'info')
-            info.value[idx] = update
+            if (info.value) info.value[idx] = update
+            else console.error(`Cannot set value on ${parentPath.filter(str => typeof str !== 'symbol').join(this.context.options.keySeparator)} from ${from}`)
         }
 
         // Direct Object with Default Function
