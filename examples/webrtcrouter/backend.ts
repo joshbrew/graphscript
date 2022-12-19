@@ -29,7 +29,7 @@ const router = new Router({
                 'server1':{
                     protocol:'http',
                     host:'localhost',
-                    port:8080,
+                    port:8081,
                     pages:{
                         '/':scriptBoilerPlate('dist/frontend.js'), //serve the built dist
                         'config':{
@@ -47,7 +47,7 @@ const router = new Router({
                         'test':'<div>TEST</div>',
                         _all:{
                             inject:{ //page building
-                                hotreload:'ws://localhost:8080/hotreload' //this is a route that exists as dynamic content with input arguments, in this case it's a url, could pass objects etc in as arguments
+                                hotreload:'ws://localhost:8081/hotreload' //this is a route that exists as dynamic content with input arguments, in this case it's a url, could pass objects etc in as arguments
                             }
                         }
                     },

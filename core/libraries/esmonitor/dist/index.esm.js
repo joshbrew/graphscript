@@ -52,9 +52,9 @@ var runCallback = (callback, path, info2, output, setGlobal = true) => {
     else
       callback(path, info2, output);
   }
-  if (setGlobal && window.ESMonitorState) {
-    const callback2 = window.ESMonitorState.callback;
-    window.ESMonitorState.state[path] = { output, value: info2 };
+  if (setGlobal && globalThis.ESMonitorState) {
+    const callback2 = globalThis.ESMonitorState.callback;
+    globalThis.ESMonitorState.state[path] = { output, value: info2 };
     runCallback(callback2, path, info2, output, false);
   }
 };
@@ -147,12 +147,12 @@ __export(listeners_exports, {
 });
 
 // src/global.ts
-window.ESMonitorState = {
+globalThis.ESMonitorState = {
   state: {},
   callback: void 0,
   info: {}
 };
-var global_default = window.ESMonitorState;
+var global_default = globalThis.ESMonitorState;
 
 // src/info.ts
 var performance = async (callback, args) => {
@@ -712,7 +712,6 @@ var functionExecution = (context, listeners2, func, args) => {
 function functions2(info2, collection, lookups) {
   return handler(info2, collection["functions"], (_, parent) => {
     if (!parent[isProxy]) {
-      console.error("Listener revoked (func)?", info2);
       parent[info2.last] = getProxyFunction.call(this, info2, collection);
       return setters(info2, collection, lookups);
     }

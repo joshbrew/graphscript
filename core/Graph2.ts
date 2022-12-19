@@ -130,8 +130,7 @@ export class GraphNode {
 
         if (isProxy) {
             proxy = properties
-            keys = getAllProperties(properties)
-            console.error('Applying setters to proxy', keys.includes('rotation'), this.__node.tag, properties)
+            keys = getAllPropertyNames(properties)
 
         }
 
@@ -270,10 +269,15 @@ export class GraphNode {
 
             properties.__node = Object.assign(this.__node,properties.__node);
 
+            const ogProperties = properties
             this.#applySetters() // Set properties on the graphnode 
             applyLoaders.call(graph, this, parent, graph, graph?.__node?.tree, properties) // Apply loaders
             this.#applySetters(undefined, undefined, ['__props']) // Proxy the new properties too
-            
+
+            // for (let key in ogProperties) {
+            //     this[key] = ogProperties[key] // Copy over the original properties (in case new interactions are defined by setters / proxies)
+            // }
+
             if(properties instanceof Graph) this.__node.source = properties; //keep tabs on source graphs passed to make nodes
 
 
@@ -684,7 +688,7 @@ export class Graph {
     }
 
 
-    activate = (from, value) => this.__node.flow.activate(from, value);
+    activate = (from, value) => this.__node.ref.__node.flow.activate(from, value);
 
     // Maintains old behavior for setState
     setState = (update:AnyObj) => {
@@ -710,19 +714,21 @@ function recursivelyAssign (target,obj) {
 }
 
 
-export function getAllProperties(obj){ //https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
-    let allProps = [] as string[], curr = obj
-    while(curr = Object.getPrototypeOf(curr)) {
-        let props = Object.getOwnPropertyNames(curr)
-        props.forEach((prop) => {
-            if (allProps.indexOf(prop) === -1) allProps.push(prop)
-        })
-    }
-    return allProps;
+function getAllPropertyNames( obj ) {
+    var props = [];
+    do {
+
+        if (obj.constructor.name === 'Object') props.push(...Object.keys(obj))
+        else Object.getOwnPropertyNames( obj ).forEach(function ( prop ) {
+            if ( props.indexOf( prop ) === -1 ) props.push( prop )
+        });
+    } while ( obj = Object.getPrototypeOf( obj ));
+
+    return props;
 }
 
 export function instanceObject(obj) {
-    let props = getAllProperties(obj); //e.g. Math
+    let props = getAllPropertyNames(obj); //e.g. Math
     let instance = {} as any;
     for(const key of props) instance[key] = obj[key];
     return instance; //simply copies methods, nested objects will not be instanced to limit recursion

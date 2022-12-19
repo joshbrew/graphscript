@@ -233,6 +233,14 @@ class Edgelord {
 
     add = (from, to, value: any = true, subscription?) => {
 
+        if (typeof to == 'function') {
+            value = to
+            to = '' // Actually to a function
+        } else if (typeof to !== 'string') {
+            console.error('Improperly Formatted Listener', from, to, value)
+            return
+        }
+
         if (!value) return // Any non-truthy value is not accepted
 
         const fromInfo = this.#getPathInfo(from)
@@ -371,7 +379,7 @@ class Edgelord {
 
     const listenerGroups = [{
         info: this.get(from, this.globals.active),
-        name
+        name: from
     }]
 
     listenerGroups.forEach(group => {

@@ -1,5 +1,5 @@
 
-import {GraphNode, GraphNodeProperties,Graph} from '../../Graph'
+import {GraphNode, GraphNodeProperties,Graph} from '../../Graph2'
 import {DOMElement} from './DOMElement'
 
 
@@ -95,9 +95,8 @@ export const htmlloader = (
         CustomElement.addElement(node.tagName);
 
         node.__props = document.createElement(node.tagName);
-
-        node.__proxyObject(node.__props);
         node.__props.node = node;
+        
         let keys = Object.getOwnPropertyNames(properties);
         for(const k of keys) { 
             if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}

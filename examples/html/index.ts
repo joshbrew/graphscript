@@ -1,4 +1,5 @@
-import {Graph, htmlloader, HTMLNodeProperties} from '../../index'
+import { htmlloader, HTMLNodeProperties } from '../../core/loaders/html/html.loader';
+import { Graph } from '../../index.core'
 
 let tree = {
 

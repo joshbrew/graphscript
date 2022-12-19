@@ -750,11 +750,15 @@ export class Router extends Service {
             this.serviceConnections[service.name][connectionsKey] = service[connectionsKey];
 
             for(const key in service[connectionsKey]) {
-                if(!this.connections[key]) 
-                    {
-                        newConnections[key] = this.addConnection({connection:service[connectionsKey][key], service},source);
+                if(!this.connections[key]) {
+                    const res = this.addConnection({ connection: service[connectionsKey][key], service }, source);
+                    if (res) {
+                        newConnections[key] = res;
                         newConnections[key].connectionType = connectionsKey;
+                    } else {
+                        console.log('Could not make connection', service[connectionsKey][key], service, source)
                     }
+                }
             }
             return newConnections;
         }

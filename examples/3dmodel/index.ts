@@ -130,13 +130,9 @@ let cameraLoader = (node, parent, graph) => {
     if(node.__props instanceof B.FreeCamera) {
         if(node.__transition) {
 
-            console.log('Setting operator', node.__node.tag, node)
-
             node.__operator = () => {
                 let lastTime = performance.now()*0.001;
                 let startTime = lastTime;
-                console.log('Running operator', node.__node.tag, node)
-
                 let startPos = (node.position as B.Vector3).clone();
                 let startRot = (node.rotation as B.Vector3).clone();
                 if(node.__transition.position && !(node.__transition.position instanceof B.Vector3)) node.__transition.position = new B.Vector3(node.__transition.position.x,node.__transition.position.y,node.__transition.position.z);

@@ -55,7 +55,7 @@ const router = new Router({
             service:SSEfrontend,
             config:{
                 'testsse':{
-                    url:'http://localhost:8080/sse',
+                    url:'http://localhost:8081/sse',
                     events:{
                         'test':(ev)=>{console.log('test',ev.data)}
                     }
@@ -67,7 +67,7 @@ const router = new Router({
             config:{
                 'testsocket':{
                     host:'localhost',
-                    port:8080,
+                    port:8081,
                     path:'wss',
                     onopen:(ev,ws,wsinfo)=>{
                         console.log('socket opened!');
@@ -319,7 +319,7 @@ const router = new Router({
                 } as WebSocketProps,
                 // 'hotreload':{
                 //     host:'localhost',
-                //     port:8080,
+                //     port:8081,
                 //     path:'hotreload'
                 // } as WebSocketProps
             }
