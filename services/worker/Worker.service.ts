@@ -70,7 +70,7 @@ export class WorkerService extends Service {
     
         if(options?.services) this.addServices(options.services);
 
-        // this.setTree(this); // TODO: Why are you setting tree with self?
+        this.setTree(this);
         this.setLoaders(this.workerloader); //add a custom route loader for the worker logic
 
         if(options) this.init(options);

@@ -8,6 +8,23 @@ import Monitor from './libraries/esmonitor/dist/index.esm';
 import FlowManager from "./libraries/edgelord/index"
 
 
+const registry = {}
+const printed = []
+
+function makeNonEnumerable(obj) {
+    for (let key in obj) {
+        const desc = Object.getOwnPropertyDescriptor(obj, key);
+        if (!desc.get && !desc.set) {
+            if (key.slice(0, 2) === '__') Object.defineProperty(obj, key, {
+                value: obj[key],
+                enumerable: false,
+                configurable: true
+            }); 
+        } 
+        // else console.error('Will not reset enumerable on getter/setter', key)
+    }
+}
+
 function applyLoader (node: GraphNode, parent, graph=this, tree= graph.__node.tree, properties, tag=node.__node.tag, loader) {
 
     const args = [ node,parent,graph,tree,properties, tag ]
@@ -85,6 +102,7 @@ export class GraphNode {
         [key:string]:any,
         flow: FlowManager
         ref: GraphNode
+        graph?: Graph
     } = { //GraphNode-specific properties 
         tag:`node${Math.floor(Math.random()*1000000000000000)}`,
         unique:`${Math.random()}`,
@@ -137,11 +155,14 @@ export class GraphNode {
         for(const key of keys) { 
             if (ignore.includes(key)) continue;
             if (this.#applied.includes(key)) continue;
-            this.#applied.push(key)
 
+            const isGraphScriptProperty = key.slice(0,2) === '__'
+            if (!isGraphScriptProperty) this.#applied.push(key)
+
+            // Proxy the properties object here
             if (key === '__properties') Object.defineProperty(this, key, {
                 get: () => this.#properties,
-                enumerable: true,
+                enumerable: false,
             })
 
             // When Props Loader is Specified...
@@ -153,16 +174,27 @@ export class GraphNode {
                         proxy[key] = value
                         this.#applySetters(value, true)
                     },
-                    enumerable: true,
+                    enumerable: false,
                     configurable: true
                 })
             }
 
+            // Allow overwriting graphscript properties
+            else if (isGraphScriptProperty) {
+                Object.defineProperty(this, key, {
+                    get: () => proxy[key],
+                    set: (value) => proxy[key] = value,
+                    enumerable: false,
+                    configurable: true
+                })
+            }
+
+            // Do not overwrite existing properties
             else  {
                 Object.defineProperty(this, key, {
                     get: () => proxy[key],
                     set: (value) => proxy[key] = value,
-                    enumerable: true,
+                    enumerable: true, //key.slice(0,2) !== '__', // Do not enumerate special keys
                     configurable: false
                 })
             }
@@ -204,22 +236,9 @@ export class GraphNode {
             if(parent instanceof Graph && properties instanceof Graph) {
 
                 if(properties.__node.loaders) Object.assign(parent.__node.loaders ? parent.__node.loaders : {}, properties.__node.loaders); //let the parent graph adopt the child graph's loaders
-
-                if(parent.__node.mapGraphs) {
-                    //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
-                    properties.__node.nodes.forEach((n) => {parent.set(properties.__node.tag+'.'+n.__node.tag,n)});
-
-                    let ondelete = () => { properties.__node.nodes.forEach((n) => {parent.__node.nodes.delete(properties.__node.tag+'.'+n.__node.tag)}); }
-                    this.__addOndisconnected(ondelete);
-
-                }
-
                 properties = properties.__node.tree // apply the user-specified object properties—not the graph instance
 
             }
-
-            // Assign stored properties
-            this.#properties = properties
 
 
             if (!properties.__node) properties.__node = {};
@@ -241,8 +260,9 @@ export class GraphNode {
                 } else properties.__node = {}
             } else if(!properties.__node) properties.__node = {};
 
-            // Set Graph on Node Properties
-            if(graph) properties.__node.graph = graph;
+
+            // Assign stored properties after you are sure this object will be used
+            this.#properties = properties
 
             // Set Operator on Properties
             if(properties.__operator) {
@@ -262,17 +282,29 @@ export class GraphNode {
                 else properties.__node.tag = `node${Math.floor(Math.random()*1000000000000000)}`;
             }
 
+            // if (properties.__node.tag.includes('graph')) console.log('Initializing',  this.__node.tag, properties.__node.tag, new Error('test'))
+
+            // Set Graph on Node Properties
+            if(graph && !properties.__node.graph) properties.__node.graph = graph;
+            else if (graph) console.error('Skipping!')
+            // if(graph) properties.__node.graph = graph;
+
+            
             //nested graphs or 2nd level+ nodes get their parents as a tag
             if(!properties.__parent && parent) properties.__parent = parent;
+
             if(parent?.__node && (!(parent instanceof Graph || properties instanceof Graph))) properties.__node.tag = parent.__node.tag + '.' + properties.__node.tag; //load parents first
             
+            properties.__node = Object.assign(this.__node, properties.__node);
 
-            properties.__node = Object.assign(this.__node,properties.__node);
-
-            const ogProperties = properties
             this.#applySetters() // Set properties on the graphnode 
             applyLoaders.call(graph, this, parent, graph, graph?.__node?.tree, properties) // Apply loaders
             this.#applySetters(undefined, undefined, ['__props']) // Proxy the new properties too
+
+
+            // Graph Script Properties are always non-enumerable
+            makeNonEnumerable(properties)
+            makeNonEnumerable(this)
 
             // for (let key in ogProperties) {
             //     this[key] = ogProperties[key] // Copy over the original properties (in case new interactions are defined by setters / proxies)
@@ -286,16 +318,31 @@ export class GraphNode {
 
             // Create flow manager for this specific node
             if (graph){
-                const symbol = (graph.__node.ref ?? this).__
-                const monitor = graph.monitor
 
+
+                    // FROM BEFORE SERVICE REWRITE
+                    // let target = graph.__node.graph
+                    // if (!target) {
+                    //     target = (graph.__node.ref ?? this) 
+                    //     while (target?.__node?.graph) {
+                    //         target = target.__node.graph
+                    //     }
+                    // }
+                    // const symbol = target.__node.ref.__
+                    const symbol = (graph.__node.ref ?? this).__
+
+                    const monitor = graph.__node.monitor
+
+                    registry[symbol] = true
+                    // Share flow if passed in
                     this.__node.flow.setInitialProperties(this.__listeners, undefined, {
-                        id: symbol, // Global symbol for this graph
-                        instance: this, 
-                        monitor,
-                        graph,
-                        bound: this.__node.tag,
-                    })
+                            id: symbol, // Global symbol for this graph
+                            instance: this, 
+                            monitor,
+                            graph,
+                            bound: this.__node.tag,
+                        }
+                    )
 
             } else console.error('No flow manager created for ' + this.__node.tag)
         }
@@ -331,17 +378,14 @@ export class Graph {
     [key:string]:any;
 
 
-    monitor = new Monitor({
-        keySeparator: '.',
-        fallbacks: ['__children']
-    })
-
     __node:{
         tag:string,
         nodes:Map<string,GraphNode|any>,
         ref: GraphNode, // Always create a GraphNode reference
         loaders: Loaders
         initial: GraphNodeProperties,
+        graph?: Graph
+        monitor: Monitor
         [key:string]:any
     } = {
         tag:`graph${Math.floor(Math.random()*1000000000000000)}`,
@@ -349,7 +393,11 @@ export class Graph {
         ref: new GraphNode(),
         loaders: [
             propsLoader
-        ]
+        ],
+        monitor: new Monitor({
+            keySeparator: '.',
+            fallbacks: ['__children']
+        })
         // addState:true //apply the addLocalState on node init 
         // mapGraphs:false //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
         // tree:undefined as any,
@@ -365,11 +413,17 @@ export class Graph {
 
     init = (options?:GraphOptions) => {
         if(options) {
+
+            options = Object.assign({}, options)
             if (options.loaders) {
                 this.setLoaders(options.loaders)
                 delete options.loaders
             }
+
+            if (!(options.graph instanceof Graph)) delete options.graph
+
             recursivelyAssign(this.__node, options); //assign loaders etc
+
             if(options.tree) this.setTree(options.tree);
             // else this.#init()
         }
@@ -377,9 +431,11 @@ export class Graph {
 
     #init = (properties) => {
         const node = this.__node.ref
+        
+        // const graph = this.__node.graph ?? this
         node.__init(properties, this, this, {
             onInit: () => {
-                this.monitor.set(node.__, node.__properties)
+                this.__node.monitor.set(node.__, node.__properties)
              } // Register node in graph monitor
         })
         return node
@@ -388,14 +444,25 @@ export class Graph {
     setTree = (tree:AnyObj) => {
 
         // --------------- Recognize node trees ----------------
-        const hasGraphscriptProperties = Object.keys(tree).find(str => {
-            const slice = str.slice(0,2)
-            return (slice === '__' && str !== '__node')
-        })
+        // FROM BEFORE SERVICE REWRITE
+        // const isGraph = tree instanceof Graph
+        // if (!isGraph) {
+            const hasGraphscriptProperties = Object.keys(tree).find(str => {
+                const slice = str.slice(0,2)
+                return (slice === '__' && str !== '__node')
+            })
 
+            if (!hasGraphscriptProperties) tree = {__children: tree}
+        // } 
+        // else {
+        //     // Update the node information
+        //     const __node = {...tree.__node}
+        //     delete __node.nodes
+        //     delete __node.ref
+        //     // delete __node.flow
+        //     tree = {...tree, __node}
+        // }
         
-        if (!hasGraphscriptProperties) tree = {__children: tree}
-
         if (!tree.__node) tree.__node = {} // Set tree as a node (not all nodes are registered in the graph...)
 
         // ---------------- Preprocess tree ----------------
@@ -417,6 +484,7 @@ export class Graph {
         // Activate all children
         const children = node.__children
         const copy = Object.assign({}, children)
+
         if (children) listeners = this.recursiveSet(copy, this, undefined, children) // Replace children with GraphNode children
 
         if(node.__listeners) listeners[node.__node.tag] = node.__listeners;
@@ -426,7 +494,6 @@ export class Graph {
 
         // ---------------- "Connect" the Nodes ----------------
         node.__callConnected()
-
 
         return cpy; //should be the node tree
 
@@ -495,7 +562,7 @@ export class Graph {
         return;
     }
 
-    recursiveSet = (t,parent,listeners={},origin = t) =>  {
+    recursiveSet = (t,parent,listeners={}, origin = t) =>  {
         let keys = Object.getOwnPropertyNames(origin);
         for(const key of keys) {
             if(key.includes('__')) continue;
@@ -523,7 +590,9 @@ export class Graph {
                 if((this.get(p.__node.tag) && !(parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
                 let node;
                 if(instanced) node = p;
-                else node = new GraphNode(p, parent as GraphNode, this);
+                else {
+                    node = new GraphNode(p, parent as GraphNode, this);
+                }
                 this.set(node.__node.tag,node);
                 // for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,t,t[key],key); } //run any passes on the nodes to set things up further
                 t[key] = node; //replace child with a graphnode
@@ -601,8 +670,12 @@ export class Graph {
             if(!nd && node.includes('.')) {
                 nd = this.get(node.substring(0,node.lastIndexOf('.')));
                 if(typeof nd?.[node.substring(node.lastIndexOf('.')+1)] === 'function') return nd[node.substring(node.lastIndexOf('.')+1)](...args);
-            } else if(nd?.__operator) return nd.__operator(...args);
+            } else if(nd?.__operator) {
+                return nd.__operator(...args);
+            }
         }
+
+        console.log('running',node)
         if((node as GraphNode)?.__operator) {
             return (node as GraphNode)?.__operator(...args);
         }
@@ -631,7 +704,9 @@ export class Graph {
         return this.__node.nodes.get(tag); 
     };
 
-    set = (tag:string,node:GraphNode) => { return this.__node.nodes.set(tag,node); };
+    set = (tag:string,node:GraphNode) => { 
+        return this.__node.nodes.set(tag,node); 
+    };
     delete = (tag:string) => { return this.__node.nodes.delete(tag); }
 
     getProps = (node:GraphSpecifier, getInitial?:boolean) => {
@@ -698,8 +773,13 @@ export class Graph {
 }
 
 
-function recursivelyAssign (target,obj) {
+function recursivelyAssign (
+    target, 
+    obj, 
+    // ignore:string[] = []
+) {
     for(const key in obj) {
+        // if (ignore.includes(key)) continue;
         if(obj[key]?.constructor.name === 'Object' && !Array.isArray(obj[key])) {
             if(target[key]?.constructor.name === 'Object' && !Array.isArray(target[key])) 
                 recursivelyAssign(target[key], obj[key]);

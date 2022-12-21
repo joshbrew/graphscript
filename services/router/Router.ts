@@ -107,19 +107,21 @@ export class Router extends Service {
     constructor(options?:RouterOptions){
         super(options);
         this.setTree(this);
+
         if(options) {
             if(options.order) this.order = options.order;
 
-            if(options.graph) {
+
+            if(options.graph && options.graph) {
                 for(const key in options.graph) {
                     let opt = (options.graph[key] as any);
-                    if (typeof opt === 'function') opt = new opt() as Service; //instantiate a class prototype
+                    if (typeof opt === 'function') opt = new opt({graph: this}) as Service; //instantiate a class prototype
                     if(opt?.__node?.nodes) {
                         opt.name = key; opt.__node.tag = key;
                         this.addServices({[opt.name]:opt});
-                        this.routeService(opt, (opt as any).connections);
+                        this.routeService(opt, opt.connections);
                     } else {
-                        if(typeof opt?.service === 'function') opt.service = new opt.service();
+                        if(typeof opt?.service === 'function') opt.service = new opt.service({graph: this});
                         if(opt?.service?.__node?.nodes) {
                             opt.service.name = key; opt.service.__node.tag = key;
                             this.addServices({[opt.service.name]:opt.service});
@@ -127,13 +129,16 @@ export class Router extends Service {
                                 opt.service
                             );
                         }
+
                         if(typeof opt?.service === 'object') {
                             if(opt.connections) {
                                 if(Array.isArray(opt.connections)) {
                                     (opt.connections as any).forEach((k) => {
                                         this.addServiceConnections(opt[key].service,k);
                                     })
-                                } else this.addServiceConnections(opt.service,opt.connections);
+                                } else {
+                                    this.addServiceConnections(opt.service,opt.connections);
+                                }
                             }
                             if(opt.config) {
                                 for(const c in opt.config) {
@@ -166,6 +171,7 @@ export class Router extends Service {
         }, //configure new connections after adding the relevant services?
         receiving?:boolean //is this the receiving router?
     ) => {
+
         if(!info._id) {
             info._id = `user${Math.floor(Math.random()*1000000000000000)}`;
         }
@@ -177,6 +183,7 @@ export class Router extends Service {
                 if(typeof connections[key] === 'object') {
                     if(!(connections[key] as any).connection._id) {
                         await new Promise((res,rej) => {
+                            console.log('STARTING!')
                             let start = performance.now();
                             let checker = () => {
                                 if(!(connections[key] as any).connection._id) {
@@ -283,6 +290,8 @@ export class Router extends Service {
             }
         }
             
+        console.log('User has been added!', info)
+
         return user;
     }
     
@@ -712,18 +721,22 @@ export class Router extends Service {
         source?:string,
         order?:string[],
     ) => {
+
         //console.log(service)
         this.services[service.name] = service;
         if(service.__node?.nodes) this.__node.nodes.forEach((n,k) => {
             if(!service.__node?.nodes.get(k)) 
             {
-                service.__node?.nodes.set(k,n);
-            } else service.__node?.nodes.set(this.name + '.' + k,n);
+                service.set(k,n);
+            } else {
+                service.set(this.name + '.' + k,n);
+            }
         });
         if(service.users) service.users = this.users; //needed for sessions service rn, should find more elegant solution
         if(connections) {
-            if(typeof connections === 'string') this.addServiceConnections(service,connections,source);
-            else {
+            if(typeof connections === 'string') {
+                this.addServiceConnections(service,connections,source);
+            } else {
                 for(const c in connections) {
                     this.addServiceConnections(service,c,source);
                 }
@@ -741,9 +754,9 @@ export class Router extends Service {
         connectionsKey:any,
         source?:string
     ) => {
-        if(typeof service === 'string') {
-            service = this.services[service];
-        }
+
+        if(typeof service === 'string') service = this.services[service];
+        
         if(connectionsKey && service[connectionsKey]) {
             let newConnections = {};
             if(!this.serviceConnections[service.name]) this.serviceConnections[service.name] = {};
@@ -755,9 +768,7 @@ export class Router extends Service {
                     if (res) {
                         newConnections[key] = res;
                         newConnections[key].connectionType = connectionsKey;
-                    } else {
-                        console.log('Could not make connection', service[connectionsKey][key], service, source)
-                    }
+                    } else  console.log('Could not make connection', connectionsKey, key , service[connectionsKey][key])
                 }
             }
             return newConnections;
@@ -770,9 +781,11 @@ export class Router extends Service {
         source?:string,
         ...args:any[] //potentially other arguments in custom services
     ) => {
+
         if(typeof service === 'string') {
             service = this.services[service];
         }
+
         if(service?.__node.nodes) {
             let connection = service.run('open', options, ...args);
             if(connection instanceof Promise) {

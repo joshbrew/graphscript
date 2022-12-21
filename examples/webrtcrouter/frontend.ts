@@ -55,7 +55,7 @@ const router = new Router({
             service:SSEfrontend,
             config:{
                 'testsse':{
-                    url:'http://localhost:8081/sse',
+                    url:'http://localhost:8082/sse',
                     events:{
                         'test':(ev)=>{console.log('test',ev.data)}
                     }
@@ -67,7 +67,7 @@ const router = new Router({
             config:{
                 'testsocket':{
                     host:'localhost',
-                    port:8081,
+                    port:8082,
                     path:'wss',
                     onopen:(ev,ws,wsinfo)=>{
                         console.log('socket opened!');
@@ -330,4 +330,5 @@ const router = new Router({
 
 //router.services.sessions.users = router.users;
 
+console.log('Graph', router)
 console.log(router.__node.nodes.keys())

@@ -11,31 +11,37 @@
 For happy code!
 </p>
 
-For Browser:
-`npm i graphscript` ~190kb dist
-
-For NodeJS
-`npm i graphscript-node` ~220Kb dist
-
-Core (Graph and Loaders only) ~20Kb dist
-`npm i graphscript-core`
-
-For additional services (currently gpu.js service and the compiled worker dataurl as `gsworker` (or use `graphscript/dist/Worker`))
-`npm i graphscript-services`
-
-# READMEs:
-
-Before reading and getting immediately confused by this alien API and the currently-lacking documentation, scroll through the code in [Examples](https://github.com/brainsatplay/graphscript/blob/master/examples) for very clear, compelling implementatons that flex our feature sets.
-
-## * [Graphs and GraphNodes](https://github.com/brainsatplay/graphscript/blob/master/docs/Graph.md)
-## * [Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md)
-   * * [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
-
-(WIP)
-
+**GraphScript** is an extensible standard for defining special properties on a hierarchy of reactive objects.
 
 > **Note:** **graphscript** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
 
+## The Library
+**graphscript** is an object-oriented library organized based on the principles of graph theory.
+
+1. **Nodes:** There is a hierarchy of objects.
+2. **Graph:** These are contained in a shared scope.
+3. **Edges:** Node properties can be linked to modifying each other.
+
+Beyond these basic features, you can selectively enable other GraphScript properties (distinguished with a *__*) using loaders.
+
+Scroll through the code in [examples](https://github.com/brainsatplay/graphscript/blob/master/examples) for very clear, compelling implementatons that flex our features.
+
+### Installation
+- **Browser:** `npm i graphscript` 
+   - ~190kb dist
+
+- **Node:** `npm i graphscript-node` 
+   - ~220Kb dist
+
+- **Core:** `npm i graphscript-core`
+   - ~20Kb dist
+- **Additional Services:** `npm i graphscript-services`
+
+
+### Additional Documentation
+1. [Graphs and GraphNodes](https://github.com/brainsatplay/graphscript/blob/master/docs/Graph.md)
+2. [Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md)
+   - [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
 
 ## Acknowledgments
 This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.

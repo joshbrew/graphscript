@@ -37,6 +37,7 @@ const globalActive = {}
 
 class Edgelord {
 
+    unique: any = Math.random()
     original = {};
     active = {}
     globals: any = {}
@@ -233,6 +234,7 @@ class Edgelord {
 
     add = (from, to, value: any = true, subscription?) => {
 
+
         if (typeof to == 'function') {
             value = to
             to = '' // Actually to a function
@@ -377,6 +379,8 @@ class Edgelord {
     // ----------------- Global Flow Activation Management -----------------
     activate = (from, update) => {
 
+    console.log('Activating', from, update)
+    console.log('Active', this.globals.active)
     const listenerGroups = [{
         info: this.get(from, this.globals.active),
         name: from

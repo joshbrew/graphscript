@@ -39,7 +39,7 @@ export class Service extends Graph {
 
         if(options?.services) this.addServices(options.services);
 
-        this.setTree(this);
+        if (!!options.graph) this.setTree(this); // Avoid setting the tree twice
     }
 
     addServices = (services:{[key:string]:Graph|Service|Function|{[key:string]:any}}) => {
@@ -54,7 +54,8 @@ export class Service extends Graph {
                     } else this.set(s+'.'+tag,n);
                 });
 
-                this.__node.nodes.forEach((n,k) => { if(!(services[s] as Service).__node.nodes.get(k)) (services[s] as Graph).__node.nodes.set(k,n) })
+                this.__node.nodes.forEach((n,k) => { 
+                    if(!(services[s] as Service).__node.nodes.get(k)) (services[s] as Graph).set(k,n) })
 
                 let set = this.set;
 
@@ -104,7 +105,6 @@ export class Service extends Graph {
             if(message.route) call = message.route; else if (message.node) call = message.node;
         }
         if(call) {
-            //console.log('call',call,'message',message, 'nodes:', this.nodes.keys(),this)
             if(Array.isArray(message.args)) return this.run(call,...message.args);
             else return this.run(call,message.args);
         } else return message;
@@ -153,6 +153,7 @@ export class Service extends Graph {
                 args[0] = JSON.parse(args[0]); //parse stringified args
             }
         }
+
 
         if(typeof args[0] === 'object') {
             if(args[0].method) { //run a route method directly, results not linked to graph

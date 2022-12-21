@@ -670,6 +670,7 @@ function setters(info2, collection, lookups) {
         redefine = false;
       }
       if (redefine) {
+        const isGraphScriptProperty = info2.last.slice(0, 2) === "__";
         try {
           Object.defineProperty(parent, info2.last, {
             get: () => val,
@@ -682,7 +683,7 @@ function setters(info2, collection, lookups) {
               } else
                 val = getProxyFunction.call(thisValue, info2, collection, val);
             },
-            enumerable: true,
+            enumerable: isGraphScriptProperty,
             configurable: true
           });
         } catch (e) {

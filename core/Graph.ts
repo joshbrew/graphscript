@@ -416,7 +416,7 @@ export class Graph {
         this.init(options);
     }
 
-    init = (options:GraphOptions) => {
+    init = (options?:GraphOptions) => {
         if(options) {
             recursivelyAssign(this.__node, options); //assign loaders etc
             if(options.tree) this.setTree(options.tree);

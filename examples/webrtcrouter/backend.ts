@@ -10,7 +10,6 @@ process.on('exit', exitHandler.bind(null,{cleanup:true}));
 //catches ctrl+c event
 process.on('SIGINT', exitHandler.bind(null, {exit:true}));
 
-
 import { Router, User } from "../../services/router/Router";
 import { SocketServerProps, WSSbackend } from "../../services/wss/WSS.node";
 import { SSEbackend, SSEProps } from "../../services/sse/SSE.node";
@@ -29,7 +28,7 @@ const router = new Router({
                 'server1':{
                     protocol:'http',
                     host:'localhost',
-                    port:8081,
+                    port:8082,
                     pages:{
                         '/':scriptBoilerPlate('dist/frontend.js'), //serve the built dist
                         'config':{
@@ -47,7 +46,7 @@ const router = new Router({
                         'test':'<div>TEST</div>',
                         _all:{
                             inject:{ //page building
-                                hotreload:'ws://localhost:8081/hotreload' //this is a route that exists as dynamic content with input arguments, in this case it's a url, could pass objects etc in as arguments
+                                hotreload:'ws://localhost:8082/hotreload' //this is a route that exists as dynamic content with input arguments, in this case it's a url, could pass objects etc in as arguments
                             }
                         }
                     },
@@ -111,9 +110,13 @@ const router = new Router({
     order:['sse','wss'],//prefer certain connection sources in a certain order, defaults to load order (if appropriate callbacks are available for subscription)
 }); //on frontend we want to prefer wss first as sse is POST-reliant from browser
 
+console.log('rETURNED')
+
 //router.services.sessions.users = router.users;
 
 //console.log(Object.keys(router.services));
+
+console.log('addUser')
 
 router.addUser({
     _id:'admin'
@@ -132,8 +135,12 @@ let session = (router.services.sessions as SessionsService).openSharedSession(
     'admin'
 );
 
+console.log('sessionLoop')
+
 router.run('sessionLoop');
 
+console.log('SBUSCRIBING')
+// NOTE: Not currently getting a new user
 router.subscribe('addUser', (user:User) => {
     console.log('new user!', user._id);
     if(typeof user === 'object') {

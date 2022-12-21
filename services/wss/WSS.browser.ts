@@ -46,7 +46,7 @@ export class WSSfrontend extends Service {
     
     constructor(options?:ServiceOptions) {
         super(options)
-        this.setTree(this);
+        // this.setTree(this);
     }
 
     openWS = (
@@ -219,6 +219,7 @@ export class WSSfrontend extends Service {
             let s = this.sockets[Object.keys(this.sockets)[0]];
             if(s) ws = s.socket;
         }
+
         if(ws instanceof WebSocket && ws?.readyState === 1) ws.send(data);
 
         return true;
