@@ -68,8 +68,8 @@ let tree = {
         __onconnected:function (node) { 
             this.innerHTML = 'Test';
             this.style.backgroundColor = 'green'; 
-            document.body.appendChild(this.__props); 
-            console.log(this,this.__props);
+            // document.body.appendChild(this.__props); 
+            // console.log(this,this.__props);
         },
         __ondisconnected:function(node) {
             document.body.removeChild(this.__props);
