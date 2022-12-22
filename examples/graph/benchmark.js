@@ -18,17 +18,6 @@ const deepCopy = (obj, seen=[]) => {
     return copy
 }
 
-// const checkPerformance = (callback, times = 1, cleanupCallback) => {
-//     const array = Array.from({length: times}).map(() => callback)
-//     return array.map((callback, i) => {
-//         const start = performance.now()
-//         const res = callback(i)
-//         const end = performance.now()
-//         if (cleanupCallback) cleanupCallback(res)
-//         return end - start
-//     }).reduce((acc, item) => acc + item, 0) / array.length
-// }
-
 const checkPerformance = async (callback, times = 1, cleanupCallback) => {
     const callbacks = Array.from({length: times}).map(() => callback)
 
@@ -51,11 +40,33 @@ const checkPerformance = async (callback, times = 1, cleanupCallback) => {
 const nTimes = 100
 const trees = Array.from({length: nTimes}).map(() => deepCopy(tree)) // Pre-generate trees to avoid performance hit of generating them
 
-checkPerformance((i) => {
+const checkInstantiationTime = async () => {
+    return checkPerformance((i) => {
+        let graph = new Graph({
+            tree: trees[i],
+        });
+        return graph
+    }, nTimes).then(averageTime => {
+        console.log(`Time to Construct Graphs:`, averageTime)
+    })
+}
+
+
+const listenerTree = deepCopy(tree)
+const checkListenerTime = async () => {
     let graph = new Graph({
-        tree: trees[i],
+        tree: listenerTree,
     });
-    return graph
-}, nTimes).then(averageTime => {
-    console.log(`Time to Construct Graphs:`, averageTime)
-})
+
+    return checkPerformance(async () => {
+        const res = graph.get('nodeA').jump();
+        // console.warn('Got', res)
+    }, nTimes).then(averageTime => {
+        console.log(`Time to Jump:`, averageTime)
+    })
+}
+
+
+// Run Benchmarks
+checkInstantiationTime()
+.then(checkListenerTime)
