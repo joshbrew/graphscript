@@ -436,13 +436,9 @@ export class Graph {
             else if (!this.get(tree.__node.tag)) {
                 let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
                 this.set(node.__node.tag,node);
-                for(const l in this.__node.loaders) { 
-                    if(typeof this.__node.loaders[l] === 'object') { 
-                        if(this.__node.loaders[l].init) this.__node.loaders[l](node,parent,this,this.__node.tree,tree);
-                        if(this.__node.loaders[l].connected) node.__addOnconnected(this.__node.loaders[l].connect); 
-                        if(this.__node.loaders[l].disconnected) node.__addOndisconnected(this.__node.loaders[l].disconnect); 
-                    } else if (typeof this.__node.loaders === 'function') this.__node.loaders[l](node,this,this,tree,tree,tree.__node.tag); } //run any passes on the nodes to set things up further
-                if(node.__listeners) {
+                
+            this.runLoaders(node,this, tree, tree.__node.tag);
+            if(node.__listeners) {
                     listeners[node.__node.tag] = node.__listeners;
                 } //now the tree can specify nodes
             }
@@ -462,6 +458,15 @@ export class Graph {
         else Object.assign(this.__node.loaders,loaders);
 
         return this.__node.loaders;
+    }
+
+    runLoaders = (node, parent, properties, key) => {
+        for(const l in this.__node.loaders) { 
+            if(typeof this.__node.loaders[l] === 'object') { 
+                if(this.__node.loaders[l].init) this.__node.loaders[l](node, parent, this,this.__node.tree,properties, key);
+                if(this.__node.loaders[l].connected) node.__addOnconnected(this.__node.loaders[l].connect); 
+                if(this.__node.loaders[l].disconnected) node.__addOndisconnected(this.__node.loaders[l].disconnect); 
+        } else if (typeof this.__node.loaders[l] === 'function') this.__node.loaders[l](node, parent, this, this.__node.tree, properties, key); } //run any passes on the nodes to set things up further 
     }
 
     add = (properties:any, parent?:GraphNode|string) => {
@@ -489,12 +494,8 @@ export class Graph {
             if(instanced) node = properties;
             else node = new GraphNode(properties, parent as GraphNode, this);
             this.set(node.__node.tag,node);
-            for(const l in this.__node.loaders) { 
-                if(typeof this.__node.loaders[l] === 'object') { 
-                    if(this.__node.loaders[l].init) this.__node.loaders[l](node,parent,this,this.__node.tree,properties, node.__node.tag);
-                    if(this.__node.loaders[l].connected) node.__addOnconnected(this.__node.loaders[l].connect); 
-                    if(this.__node.loaders[l].disconnected) node.__addOndisconnected(this.__node.loaders[l].disconnect); 
-            } else if (typeof this.__node.loaders === 'function') this.__node.loaders[l](node,parent,this,this.__node.tree,properties, node.__node.tag); } //run any passes on the nodes to set things up further
+            this.runLoaders(node, parent, properties, node.__node.tag);
+            console.log('ran loaders', this.__node.loaders)
             this.__node.tree[node.__node.tag] = properties; //reference the original props by tag in the tree for children
             //console.log('old:',properties.__node,'new:',node.__node);
             
@@ -547,7 +548,7 @@ export class Graph {
                 if(instanced) node = p;
                 else node = new GraphNode(p, parent as GraphNode, this);
                 this.set(node.__node.tag,node);
-                for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,t,t[key],key); } //run any passes on the nodes to set things up further
+                this.runLoaders(node, parent, t[key], key); //run any passes on the nodes to set things up further
                 t[key] = node; //replace child with a graphnode
                 this.__node.tree[node.__node.tag] = p; //reference the original props by tag in the tree for children
                 if(node.__listeners) {
