@@ -306,20 +306,27 @@ export class GraphNode {
                 }
                 this[k] = props[k]; 
             } else {
-                if(!this.__props?.[k]) localState[k] = props[k];
+                let get:()=>any, set:(v)=>void;
+                if(this.__props?.[k]) {
+                    get = () => {return this.__props[k];};
+                    set = (v) => {
+                        //if(this.__node.state.triggers[inpstr]) this.__node.state.setValue(inpstr,v);
+                        this.__props[k] = v;
+                        if(this.__node.state.triggers[str]) this.__node.state.triggerState(str,v); //this will update localState and trigger local key subscriptions
+                    };
+                } else {
+                    localState[k] = props[k]; 
+                    get = () => {return localState[k];};
+                    set = (v) => {
+                        //if(this.__node.state.triggers[inpstr]) this.__node.state.setValue(inpstr,v);
+                        localState[k] = v;
+                        if(this.__node.state.triggers[str]) this.__node.state.triggerState(str,v); //this will update localState and trigger local key subscriptions
+                    };
+                }
                 //console.log(k, localState[k]);
 
                 const descriptor = {
-                    get: () => {
-                        if(this.__props?.[k]) return this.__props[k];
-                        return localState[k];
-                    },
-                    set: (v) => {
-                        //if(this.__node.state.triggers[inpstr]) this.__node.state.setValue(inpstr,v);
-                        if(this.__props?.[k]) this.__props[k] = v;
-                        else localState[k] = v;
-                        if(this.__node.state.triggers[str]) this.__node.state.triggerState(str,v); //this will update localState and trigger local key subscriptions
-                    },
+                    get, set,
                     enumerable: true,
                     configurable: true
                 };
