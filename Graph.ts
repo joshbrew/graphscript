@@ -311,11 +311,13 @@ export class GraphNode {
 
                 const descriptor = {
                     get: () => {
+                        if(this.__props?.[k]) return this.__props[k];
                         return localState[k];
                     },
                     set: (v) => {
                         //if(this.__node.state.triggers[inpstr]) this.__node.state.setValue(inpstr,v);
-                        localState[k] = v;
+                        if(this.__props?.[k]) this.__props[k] = v;
+                        else localState[k] = v;
                         if(this.__node.state.triggers[str]) this.__node.state.triggerState(str,v); //this will update localState and trigger local key subscriptions
                     },
                     enumerable: true,

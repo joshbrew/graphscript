@@ -94,6 +94,7 @@ let modelLoader = (node, parent, graph) => {
                 node.rotation = (node.rotation as B.Vector3).add(parent.rotation);
             }
 
+            console.log(parent, node.__node.tag)
             graph.setListeners({
                 [node.__node.tag]:{
                     [parent.__node.tag+'.position']:function(newP) {node.position = (node.__localPosition as B.Vector3).add(newP);},
@@ -144,8 +145,16 @@ let cameraLoader = (node, parent, graph) => {
                     let currTime = performance.now()*0.001;
                     let dT = (currTime - startTime) / node.__transition.duration;
 
-                    if(node.__transition.position) {
-                        
+                    
+                    if (currTime - startTime >= node.__transition.duration) {
+                        if(node.__transition.position) {
+                            node.position = node.__transition.position;
+                        }
+                        if(node.__transition.rotation) {
+                            node.rotation = node.__transition.rotation;
+                        }
+                    }
+                    else {
                         if(node.__transition.rotation) {
                             let newRot = startRot.add((node.__transition.rotation as B.Vector3).subtract(startRot).scale(dT))
                             if(node.__transition.rinterp) newRot = node.__transition.rinterp(newRot,node.rotation,currTime,startTime);
@@ -153,15 +162,17 @@ let cameraLoader = (node, parent, graph) => {
                         } else if (node.__transition.target) {
                             (node.__props as B.FreeCamera).setTarget(node.__transition.target);
                         }
-
-                        let newP = startPos.add((node.__transition.position as B.Vector3).subtract(startPos).scale(dT))
-                        if(node.__transition.pinterp) newP = node.__transition.pinterp(newP,node.position,currTime,startTime);
-                        node.position = newP;
+                        if(node.__transition.position) {
+                            let newP = startPos.add((node.__transition.position as B.Vector3).subtract(startPos).scale(dT))
+                            if(node.__transition.pinterp) newP = node.__transition.pinterp(newP,node.position,currTime,startTime);
+                            node.position = newP;
+                            
+                            lastTime = currTime;
+                            await new Promise(async (res)=>{requestAnimationFrame(async ()=>{res(await transition())})});
+                        }
+                        return true;
                         
-                        lastTime = currTime;
-                        await new Promise(async (res)=>{requestAnimationFrame(async ()=>{res(await transition())})});
                     }
-                    return true;
                 }
                 if(node.__transition.delay) {
                     return new Promise ((res) => {setTimeout(async()=>{ res(await transition()); }, node.__transition.delay);});
