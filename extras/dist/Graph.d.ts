@@ -20,14 +20,13 @@ export declare type GraphNodeProperties = {
     __node?: {
         tag?: string;
         state?: EventHandler;
-        inputState?: boolean;
         [key: string]: any;
     };
     [key: string]: any;
 };
-export declare type Loader = (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, properties: GraphNodeProperties, key: string) => void;
+export declare type Loader = (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, properties: GraphNodeProperties, key: string) => void;
 export declare type GraphOptions = {
-    tree?: {
+    roots?: {
         [key: string]: any;
     };
     loaders?: {
@@ -43,9 +42,15 @@ export declare type GraphOptions = {
 };
 export declare class GraphNode {
     __node: {
+        tag: string;
+        unique: string;
+        state: EventHandler;
         [key: string]: any;
     };
-    __children?: any;
+    __children?: {
+        [key: string]: GraphNode;
+    };
+    __parent?: Graph | GraphNode;
     __operator?: any;
     __listeners?: any;
     __props?: any;
@@ -54,11 +59,11 @@ export declare class GraphNode {
         [key: string]: any;
     }, graph?: Graph);
     __subscribe: (callback: string | GraphNode | ((res: any) => void), key?: string, subInput?: boolean, bound?: string, target?: string) => any;
-    __unsubscribe: (sub?: number, key?: string, subInput?: boolean) => any;
+    __unsubscribe: (sub?: number, key?: string, unsubInput?: boolean) => boolean;
     __setOperator: (fn: (...args: any[]) => any) => any;
-    __addLocalState(props?: {
+    __addLocalState: (props?: {
         [key: string]: any;
-    }): void;
+    }, key?: string) => void;
     __proxyObject: (obj: any) => void;
     __addOnconnected(callback: (node: any) => void): void;
     __addOndisconnected(callback: (node: any) => void): void;
@@ -69,20 +74,26 @@ export declare class Graph {
     [key: string]: any;
     __node: {
         tag: string;
+        unique: string;
         state: EventHandler;
         nodes: Map<string, GraphNode | any>;
+        roots?: {
+            [key: string]: any;
+        };
+        mapGraphs?: boolean;
         [key: string]: any;
     };
     constructor(options?: GraphOptions);
     init: (options: GraphOptions) => void;
-    setTree: (tree: {
+    load: (roots: {
         [key: string]: any;
     }) => {
         [key: string]: any;
     };
     setLoaders: (loaders: {
-        [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, props: any, key: string) => void;
+        [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, props: any, key: string) => void;
     }, replace?: boolean) => any;
+    runLoaders: (node: any, parent: any, properties: any, key: any) => void;
     add: (properties: any, parent?: GraphNode | string) => any;
     recursiveSet: (t: any, parent: any, listeners: {}, origin: any) => {};
     remove: (node: GraphNode | string, clearListeners?: boolean) => string | GraphNode;

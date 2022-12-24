@@ -40,7 +40,7 @@ export declare class CMDService extends Service {
         processes: any;
     };
     subprocessloader: {
-        process: (node: CMDRoute & GraphNode, parent: GraphNode, graph: Graph, tree: any, properties: any) => void;
+        process: (node: CMDRoute & GraphNode, parent: GraphNode, graph: Graph, roots: any, properties: any) => void;
     };
     constructor(options?: ServiceOptions);
     createProcess: (properties: CMDRoute) => CMDRoute;

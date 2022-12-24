@@ -652,22 +652,22 @@ export class HTTPbackend extends Service {
                     
                     let route,method,args;
                     if(body?.route){ //if arguments were posted 
-                        route = this.__node.roots[body.route];
+                        route = this.__node.roots?.[body.route];
                         method = body.method;
                         args = body.args;
                         if(!route) {
                             if(typeof body.route === 'string') if(body.route.includes('/') && body.route.length > 1) body.route = body.route.split('/').pop();
-                            route = this.__node.roots[body.route];
+                            route = this.__node.roots?.[body.route];
                         }
                     }
                     if(!route) { //body post did not provide argument so use the request route
                         if (message?.route) {
-                            let route = this.__node.roots[message.route];
+                            let route = this.__node.roots?.[message.route];
                             method = message.method;
                             args = message.args;
                             if(!route) {
                                 if(typeof message.route === 'string') if(message.route.includes('/') && message.route.length > 1) message.route = message.route.split('/').pop() as string;
-                                route = this.__node.roots[message.route];
+                                route = this.__node.roots?.[message.route];
                             }
                         }
                     }
@@ -883,7 +883,7 @@ export class HTTPbackend extends Service {
                 for(const key in obj) {
                     appendTemplate(obj,key,res); //recursive append
                 }
-            } else if(this.__node.roots[r]?.get) {
+            } else if(this.__node.roots?.[r]?.get) {
                 let toAdd = this.__node.roots[r]?.get;
                 if(typeof toAdd === 'function') toAdd = toAdd(obj[r]);
                 if(typeof toAdd === 'string')  {
@@ -894,7 +894,7 @@ export class HTTPbackend extends Service {
                     } res += toAdd; 
                 }
                 
-            } else if (typeof this.__node.roots[r] === 'function' || this.__node.roots[r]?.__operator) {
+            } else if (typeof this.__node.roots?.[r] === 'function' || this.__node.roots?.[r]?.__operator) {
                 let routeresult;
                 if(this.__node.roots[r]?.__operator) routeresult = this.__node.roots[r].__operator(obj[r]); 
                 else routeresult = (this.__node.roots[r] as Function)(obj[r]); //template function, pass props
@@ -907,7 +907,7 @@ export class HTTPbackend extends Service {
                     else res += routeresult;
                     //console.log(lastDiv, res, routeresult)
                 }
-            } else if (typeof this.__node.roots[r] === 'string') res += this.__node.roots[r];
+            } else if (typeof this.__node.roots?.[r] === 'string') res += this.__node.roots[r];
             return res;
         }
 

@@ -16,4 +16,4 @@ export declare type HTMLNodeProperties = GraphNodeProperties & {
         [key: string]: any;
     };
 };
-export declare const htmlloader: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, tree: any, properties: GraphNodeProperties, key: string) => void;
+export declare const htmlloader: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, properties: GraphNodeProperties, key: string) => void;
