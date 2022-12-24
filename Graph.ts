@@ -331,7 +331,7 @@ export class GraphNode {
                     configurable: true
                 };
 
-                Object.defineProperty(this, k, descriptor);
+                Object.defineProperty(props, k, descriptor);
                 
                 if(typeof this.__node.initial === 'object') {
                     let dec = Object.getOwnPropertyDescriptor(this.__node.initial,k);
