@@ -47,7 +47,7 @@ export class CMDService extends Service {
     }
 
     subprocessloader = {
-        'process':(node: CMDRoute & GraphNode, parent: GraphNode, graph: Graph, tree:any, properties:any) => {
+        'process':(node: CMDRoute & GraphNode, parent: GraphNode, graph: Graph, roots:any, properties:any) => {
             if((node as CMDRoute).command) {
                this.createProcess((node as CMDRoute)); 
             }
@@ -56,7 +56,7 @@ export class CMDService extends Service {
 
     constructor(options?:ServiceOptions) {
         super(options)
-        this.setTree(this);
+        this.load(this);
 
         this.connections.processes = this.processes;
 

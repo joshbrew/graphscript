@@ -46,7 +46,7 @@ export class WSSfrontend extends Service {
     
     constructor(options?:ServiceOptions) {
         super(options)
-        this.setTree(this);
+        this.load(this);
     }
 
     openWS = (

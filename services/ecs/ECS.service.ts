@@ -69,7 +69,7 @@ export class ECSService extends Service {
 
     constructor(options?:ECSOptions) {
         super(options);
-        this.setTree(this);
+        this.load(this);
 
         if(options?.systems)
             for(const key in options.systems) {

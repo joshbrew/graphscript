@@ -170,7 +170,7 @@ const webappHtml = {
                                                         //if(data.timestamp)
                                                     }
                                             }, 
-                                            tree:{ //top level routes subscribe to device output thread directly (and workers in top level routes will not use main thread)
+                                            roots:{ //top level routes subscribe to device output thread directly (and workers in top level routes will not use main thread)
                                                 hr: {
                                                     workerUrl:gsworker,
                                                     init:'createSubprocess',
@@ -472,7 +472,7 @@ const webappHtml = {
 
 
 const webapp = new Graph({
-    tree:webappHtml,
+    roots:webappHtml,
     loaders:{...loaders,htmlloader}
 });
 

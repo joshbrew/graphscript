@@ -27,7 +27,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
             ECSService,
             unsafeRoutes, //allows dynamic route loading
         },
-        tree:{
+        roots:{
             ...workerCanvasRoutes,
              receiveThreeCanvas:function(options:CanvasProps){ //modified canvas receiver that installs desired threejs modules
                  const ThreeProps = { //e.g. install these systems to 'self', which is the worker canvas

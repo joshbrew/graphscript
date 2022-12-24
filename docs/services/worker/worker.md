@@ -17,7 +17,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
             //GPUService,
             ECSService
         }
-        tree:{
+        roots:{
             ...workerCanvasRoutes,
             ...unsafeRoutes //allows dynamic route loading
         },

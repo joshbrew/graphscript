@@ -146,7 +146,7 @@ const router = new Router({
 
 console.log(router)
 
-let ret = router.setTree({
+let ret = router.load({
     'main':{
         tagName:'div',
         __children:{
@@ -213,7 +213,7 @@ declare var WorkerGlobalScope;
 
 if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
     const worker = new WorkerService({
-        tree:[
+        roots:[
             //GPUService as any,
             ...workerCanvasRoutes,
             ...unsafeRoutes //allows dynamic route loading

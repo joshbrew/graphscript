@@ -1,4 +1,4 @@
-import { EventHandler } from "./EventHandler";
+import { EventHandler } from "../services/EventHandler";
 
 
 export type FunctionNode = {
@@ -27,8 +27,8 @@ export class FunctionTree {
         if(options.state) this.state = options.state;
     }
 
-    setTree = (
-        tree:FunctionTreeProps,
+    load = (
+        roots:FunctionTreeProps,
         transform?:(node:FunctionNode, key:string, parent:{[key:string]:FunctionNode|Function}|FunctionNode,tree:FunctionTreeProps)=>Function|FunctionNode //we could run a callback with each route (or a callback that calls a series of callbacks :P) for additional setup powers 
     ) => {
         const setRoute = (rt:any,key:string,parent:{[key:string]:FunctionNode|Function}|FunctionNode) => {
@@ -45,7 +45,7 @@ export class FunctionTree {
                             rt.tag = parent.tag+'.'+key;
                         } 
                         if(transform) {
-                            let r =  transform(rt,key,parent,tree); //run some callback on the route
+                            let r =  transform(rt,key,parent,roots); //run some callback on the route
                             if(r) rt = r; //can replace the route if it returns something
                         }
                         this.nodes.set(rt.tag,rt);
@@ -54,7 +54,7 @@ export class FunctionTree {
             } else {
     
                 if(transform) {
-                    let r =  transform(rt,key,parent,tree); //run some callback on the route
+                    let r =  transform(rt,key,parent,roots); //run some callback on the route
                     if(r) rt = r; //can replace the route if it returns something
                 }
 
@@ -68,14 +68,14 @@ export class FunctionTree {
                     }
                 }
                 if(typeof rt === 'object') {
-                    if(typeof rt.operator === 'string') {
-                        rt.operator = this.nodes.get(rt.operator);
-                        if(typeof rt.operater === 'object') rt.operator = rt.operator.operator;
-                    } if(typeof rt.operator === 'function') {
-                        rt.operator.bind(rt); //bind non-arrow functions to the object's 'this' context
+                    if(typeof rt.__operator === 'string') {
+                        rt.__operator = this.nodes.get(rt.operator);
+                        if(typeof rt.__operater === 'object') rt.__operator = rt.__operator.__operator;
+                    } if(typeof rt.__operator === 'function') {
+                        rt.__operator.bind(rt); //bind non-arrow functions to the object's 'this' context
                         if(!rt.tag) {
-                            if(typeof parent.tag === 'string') rt.tag = parent.tag+'.'+(rt.operator as Function).name;
-                            else rt.tag = (rt.operator as Function).name;
+                            if(typeof parent.tag === 'string') rt.tag = parent.tag+'.'+(rt.__operator as Function).name;
+                            else rt.tag = (rt.__operator as Function).name;
                             
                         }
                     } else if(rt.tag) {
@@ -87,7 +87,7 @@ export class FunctionTree {
                         else rt.tag = key;
                     }
     
-                    if(typeof rt?.children === 'object') {
+                    if(typeof rt?.__children === 'object') {
                         for(const key in rt.children) {
                             setRoute(rt.children[key],key,parent);
                         }
@@ -98,8 +98,8 @@ export class FunctionTree {
             }
         }
 
-        for(const nm in tree) {
-            setRoute(tree[nm],nm,tree);
+        for(const nm in roots) {
+            setRoute(roots[nm],nm,roots);
         }
     }
 
@@ -135,18 +135,18 @@ export class FunctionTree {
                 else return r;
             }
         } else if(typeof fn === 'object') {
-            if(typeof fn?.operator === 'function') {
-                let r = fn.operator(...args);
+            if(typeof fn?.__operator === 'function') {
+                let r = fn.__operator(...args);
                 if(r instanceof Promise) {
                     return new Promise((res) => {
                         r.then((rr) => {
-                            if((fn as FunctionNode).children) {
-                                for(const key in (fn as FunctionNode).children) {
-                                    this.run(((fn as FunctionNode).children as any)[key] as Function|FunctionNode, rr);
+                            if((fn as FunctionNode).__children) {
+                                for(const key in (fn as FunctionNode).__children) {
+                                    this.run(((fn as FunctionNode).__children as any)[key] as Function|FunctionNode, rr);
                                 }
                             }
                             if(this.state && (fn as FunctionNode).tag) {this.state.setState({[(fn as FunctionNode).tag]:rr})}
-                            else if(this.state && ((fn as FunctionNode).operator as Function).name) {this.state.setState({[((fn as FunctionNode).operator as Function).name]:rr})}
+                            else if(this.state && ((fn as FunctionNode)._operator as Function).name) {this.state.setState({[((fn as FunctionNode).__operator as Function).name]:rr})}
                              
                             if(this._returnServiceMessage) res({route:(fn as Function).name, args:rr});
                             else res(rr);
@@ -154,15 +154,15 @@ export class FunctionTree {
                     });
                 
                 } else {
-                    if(fn.children) {
-                        for(const key in fn.children) {
-                            this.run(fn.children[key] as Function|FunctionNode, r);
+                    if(fn.__children) {
+                        for(const key in fn.__children) {
+                            this.run(fn.__children[key] as Function|FunctionNode, r);
                         } 
                         if(this.state && (fn as FunctionNode).tag) {this.state.setState({[(fn as FunctionNode).tag]:r});}
-                        else if(this.state && ((fn as FunctionNode).operator as Function).name) {this.state.setState({[((fn as FunctionNode).operator as Function).name]:r});}
+                        else if(this.state && ((fn as FunctionNode).__operator as Function).name) {this.state.setState({[((fn as FunctionNode).__operator as Function).name]:r});}
                     }
                 }
-                if(this._returnServiceMessage) return {route:fn.operator.name, args:r};
+                if(this._returnServiceMessage) return {route:fn.__operator.name, args:r};
                 return r;
             }
         }
@@ -191,8 +191,8 @@ let t = new FunctionTree({
         'add':(a=3,b=2)=>{return a+b;}
         'multiply':(a=3,b=2)=>{return a*b},
         'sequence:{
-            operator:'multiply',
-            children:{
+            __operator:'multiply',
+            __children:{
                 'add':true
             }
         }

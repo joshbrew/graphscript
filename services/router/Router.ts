@@ -106,7 +106,7 @@ export class Router extends Service {
 
     constructor(options?:RouterOptions){
         super(options);
-        this.setTree(this);
+        this.load(this);
         if(options) {
             if(options.order) this.order = options.order;
 

@@ -23,7 +23,7 @@ export class StructFrontend extends Service {
         user?:Partial<User>
     ) {
         super(options);
-        this.setTree(this);
+        this.load(this);
 
         if (user instanceof Object && Object.keys(user).length > 0) this.setupUser(user) // Declares currentUser
     }

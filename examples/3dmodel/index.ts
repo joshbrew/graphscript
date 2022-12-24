@@ -177,7 +177,7 @@ let cameraLoader = (node, parent, graph) => {
 }
 
 let graph = new Graph({
-    tree:model,
+    roots:model,
     loaders:{
         htmlloader,
         modelLoader,

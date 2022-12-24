@@ -26,7 +26,7 @@ console.log(router)
 
 document.body.style.height = '100vh'
 
-let ret = router.setTree({
+let ret = router.load({
     'main':{
         tagName:'div',
         __children:{

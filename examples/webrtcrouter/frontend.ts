@@ -13,7 +13,7 @@ const router = new Router({
             loaders:{
                 htmlloader
             },
-            tree:{
+            roots:{
                 'main':{
                     tagName:'div',
                     __children:{

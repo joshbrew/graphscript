@@ -105,13 +105,13 @@ type Loader = (
     node:GraphNode,
     parent:Graph|GraphNode,
     graph:Graph,
-    tree:any,
+    roots:any,
     properties:GraphNodeProperties,
     key:string
 )=>void;
 
 type GraphOptions = {
-    tree?:{[key:string]:any},
+    roots?:{[key:string]:any}, //node definitions, the 'forest'
     loaders?:{
         [key:string]:Loader | {
                 init?:Loader, 
@@ -145,7 +145,7 @@ Here is a bigger graph from [`examples/graph`](../examples/graph/):
 
 import {Graph, loaders} from 'graphscript'
 
-let tree = {
+let roots = {
 
     nodeA: {
         x:5,
@@ -209,7 +209,7 @@ let tree = {
 };
 
 let graph = new Graph({
-    tree,
+    roots,
     loaders
 });
 

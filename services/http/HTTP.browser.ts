@@ -27,7 +27,7 @@ export class HTTPfrontend extends Service {
 
     constructor(options?:ServiceOptions, path?:string, fetched?: (clone: Response, args: any[], response: Response) => Promise<void>) {
         super(options);
-        this.setTree(this);
+        this.load(this);
         this.listen(path,fetched);
     }
 

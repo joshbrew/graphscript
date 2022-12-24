@@ -34,7 +34,7 @@ export class E2EEService extends Service {
             else Object.assign(this.keys,keys);
         }
 
-        this.setTree(this);
+        this.load(this);
     }
 
     addKey = (

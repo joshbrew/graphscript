@@ -26,7 +26,7 @@ export const htmlloader = (
     node:GraphNode,
     parent:Graph|GraphNode,
     graph:Graph,
-    tree:any,
+    roots:any,
     properties:GraphNodeProperties,
     key:string
 ) => {

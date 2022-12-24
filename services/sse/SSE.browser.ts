@@ -47,7 +47,7 @@ export class SSEfrontend extends Service {
 
     constructor(options?:ServiceOptions) {
         super(options);
-        this.setTree(this);
+        this.load(this);
     }
     
     openSSE = (

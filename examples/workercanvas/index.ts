@@ -24,7 +24,7 @@ const router = new Router({
 
 console.log(router);
 
-let ret = router.setTree({
+let ret = router.load({
     'main':{
         tagName:'div',
         __children:{

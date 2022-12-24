@@ -14,7 +14,7 @@ export class GPUService extends Service {
     
     constructor(options?:any) {
         super(options)
-        this.setTree(this);
+        this.load(this);
     }
 
 

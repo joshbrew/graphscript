@@ -26,13 +26,13 @@ export type Loader = (
     node:GraphNode,
     parent:Graph|GraphNode,
     graph:Graph,
-    tree:any,
+    roots:any,
     properties:GraphNodeProperties,
     key:string
 )=>void;
 
 export type GraphOptions = {
-    tree?:{[key:string]:any},
+    roots?:{[key:string]:any}, //node definitions
     loaders?:{
         [key:string]:Loader|{
             init?:Loader, 
@@ -395,6 +395,7 @@ export class Graph {
         unique:string,
         state:EventHandler,
         nodes:Map<string,GraphNode|any>,
+        roots?:{[key:string]:any}
         mapGraphs?:boolean,
         [key:string]:any
     } = {
@@ -403,7 +404,7 @@ export class Graph {
         nodes:new Map(),
         state,
         // mapGraphs:false //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
-        // tree:undefined as any,
+        // roots:undefined as any,
         // loaders:undefined as any,
     }
 
@@ -417,43 +418,43 @@ export class Graph {
     init = (options:GraphOptions) => {
         if(options) {
             recursivelyAssign(this.__node, options); //assign loaders etc
-            if(options.tree) this.setTree(options.tree);
+            if(options.roots) this.load(options.roots);
         }
     }
 
-    setTree = (tree:{[key:string]:any}) => {
+    load = (roots:{[key:string]:any}) => {
 
-        this.__node.tree = Object.assign(this.__node.tree ? this.__node.tree : {}, tree);
+        this.__node.roots = Object.assign(this.__node.roots ? this.__node.roots : {}, roots);
 
-        let cpy = Object.assign({},tree);
-        if(cpy.__node) delete cpy.__node; //we can specify __node behaviors on the tree too to specify listeners
+        let cpy = Object.assign({},roots);
+        if(cpy.__node) delete cpy.__node; //we can specify __node behaviors on the roots too to specify listeners
 
-        let listeners = this.recursiveSet(cpy,this,undefined,tree);
+        let listeners = this.recursiveSet(cpy,this,undefined,roots);
 
-        //make the tree a node 
-        if(tree.__node) {
-            if(!tree.__node.tag) tree.__node._tag = `tree${Math.floor(Math.random()*1000000000000000)}`
-            else if (!this.get(tree.__node.tag)) {
-                let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
+        //make the roots a node 
+        if(roots.__node) {
+            if(!roots.__node.tag) roots.__node._tag = `roots${Math.floor(Math.random()*1000000000000000)}`
+            else if (!this.get(roots.__node.tag)) {
+                let node = new GraphNode(roots,this,this); //blank node essentially for creating listeners
                 this.set(node.__node.tag,node);
                 
-            this.runLoaders(node,this, tree, tree.__node.tag);
+            this.runLoaders(node,this, roots, roots.__node.tag);
             if(node.__listeners) {
                     listeners[node.__node.tag] = node.__listeners;
-                } //now the tree can specify nodes
+                } //now the roots can specify nodes
             }
-        } else if (tree.__listeners) {
-            this.setListeners(tree.__listeners)
+        } else if (roots.__listeners) {
+            this.setListeners(roots.__listeners)
         }
 
         //now setup event listeners
         this.setListeners(listeners);
 
-        return cpy; //should be the node tree
+        return cpy; //should be the node roots
 
     }
 
-    setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,props:any,key:string)=>void}, replace?:boolean) => {
+    setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,roots:any,props:any,key:string)=>void}, replace?:boolean) => {
         if(replace)  this.__node.loaders = loaders;
         else Object.assign(this.__node.loaders,loaders);
 
@@ -463,10 +464,10 @@ export class Graph {
     runLoaders = (node, parent, properties, key) => {
         for(const l in this.__node.loaders) { 
             if(typeof this.__node.loaders[l] === 'object') { 
-                if(this.__node.loaders[l].init) this.__node.loaders[l](node, parent, this,this.__node.tree,properties, key);
+                if(this.__node.loaders[l].init) this.__node.loaders[l](node, parent, this,this.__node.roots,properties, key);
                 if(this.__node.loaders[l].connected) node.__addOnconnected(this.__node.loaders[l].connect); 
                 if(this.__node.loaders[l].disconnected) node.__addOndisconnected(this.__node.loaders[l].disconnect); 
-        } else if (typeof this.__node.loaders[l] === 'function') this.__node.loaders[l](node, parent, this, this.__node.tree, properties, key); } //run any passes on the nodes to set things up further 
+        } else if (typeof this.__node.loaders[l] === 'function') this.__node.loaders[l](node, parent, this, this.__node.roots, properties, key); } //run any passes on the nodes to set things up further 
     }
 
     add = (properties:any, parent?:GraphNode|string) => {
@@ -481,7 +482,7 @@ export class Graph {
                 else properties = new properties(); //this is a class that returns a node definition 
             } else properties = { __operator:properties };
         }
-        else if (typeof properties === 'string') properties = this.__node.tree[properties];
+        else if (typeof properties === 'string') properties = this.__node.roots[properties];
         
         if(!instanced) {
             properties = Object.assign({},properties); //make sure we don't mutate the original object   
@@ -495,7 +496,7 @@ export class Graph {
             else node = new GraphNode(properties, parent as GraphNode, this);
             this.set(node.__node.tag,node);
             this.runLoaders(node, parent, properties, node.__node.tag);
-            this.__node.tree[node.__node.tag] = properties; //reference the original props by tag in the tree for children
+            this.__node.roots[node.__node.tag] = properties; //reference the original props by tag in the roots for children
             //console.log('old:',properties.__node,'new:',node.__node);
             
             if(node.__listeners) {
@@ -531,34 +532,46 @@ export class Graph {
                     p = new p(); //this is a class that returns a node definition
                     if(p instanceof GraphNode) { p = p.prototype.constructor(p,parent,this); instanced = true; } //re-instance a new node
                 } else p = { __operator:p };
-            } 
-            else if (typeof p === 'string') p = this.__node.tree[p];
-            else if (typeof p === 'boolean') p = this.__node.tree[key];
+            } else if (typeof p === 'string') {
+                if(this.__node.nodes.get(p)) p = this.__node.nodes.get(p);
+                else p = this.__node.roots[p];
+            } else if (typeof p === 'boolean') {
+                if(this.__node.nodes.get(key)) p = this.__node.nodes.get(key);
+                else p = this.__node.roots[key];
+            }
+
             if(typeof p === 'object') {
                 
-                if(!instanced) {
+                if(!instanced && !(p instanceof GraphNode)) {
                     p = Object.assign({},p); //make sure we don't mutate the original object
                 }
                 if(!p.__node) p.__node = {};
                 if(!p.__node.tag) p.__node.tag = key;
-                p.__node.initial = t[key];
+                if(!p.__node.initial) p.__node.initial = t[key];
                 if((this.get(p.__node.tag) && !(parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
-                let node;
-                if(instanced) node = p;
-                else node = new GraphNode(p, parent as GraphNode, this);
-                this.set(node.__node.tag,node);
-                this.runLoaders(node, parent, t[key], key); //run any passes on the nodes to set things up further
-                t[key] = node; //replace child with a graphnode
-                this.__node.tree[node.__node.tag] = p; //reference the original props by tag in the tree for children
-                if(node.__listeners) {
-                    listeners[node.__node.tag] = node.__listeners;
+                let node: GraphNode;
+                if(instanced || p instanceof GraphNode) {
+                    node = p;
+                } else node = new GraphNode(p, parent as GraphNode, this); 
+                if(p instanceof GraphNode && !instanced && parent instanceof GraphNode) { //make sure this node is subscribed to the parent, can use this to subscribe a node multiple times as a child
+                    let sub = this.subscribe(parent.__node.tag, node.__node.tag);
+                    let ondelete = (node) => {this.unsubscribe(parent.__node.tag, sub);}
+                    node.__addOndisconnected(ondelete); //cleanup sub
+                } else { //fresh node, run loaders etc.
+                    this.set(node.__node.tag,node);
+                    this.runLoaders(node, parent, t[key], key); //run any passes on the nodes to set things up further
+                    t[key] = node; //replace child with a graphnode
+                    this.__node.roots[node.__node.tag] = p; //reference the original props by tag in the roots for children
+                    if(node.__listeners) {
+                        listeners[node.__node.tag] = node.__listeners;
+                    }
+                    if(node.__children) {
+                        node.__children = Object.assign({},node.__children);
+                        this.recursiveSet(node.__children, node, listeners,node.__children);
+                    }
+                    
+                    node.__callConnected();
                 }
-                if(node.__children) {
-                    node.__children = Object.assign({},node.__children);
-                    this.recursiveSet(node.__children, node, listeners,node.__children);
-                }
-
-                node.__callConnected();
             }
         } 
         return listeners;
@@ -571,7 +584,7 @@ export class Graph {
 
         if(node instanceof GraphNode) {
             this.delete(node.__node.tag);
-            delete this.__node.tree[node.__node.tag];
+            delete this.__node.roots[node.__node.tag];
 
             if(clearListeners) {
                 this.clearListeners(node);
@@ -583,9 +596,9 @@ export class Graph {
                 for(const key in t) {
                     this.unsubscribe(t[key]);
                     this.delete(t[key].__node.tag);
-                    delete this.__node.tree[t[key].__node.tag]
+                    delete this.__node.roots[t[key].__node.tag]
                     this.delete(key);
-                    delete this.__node.tree[key]
+                    delete this.__node.roots[key]
 
                     //console.log(key, 'removing child',t[key]);
                     t[key].__node.tag = t[key].__node.tag.substring(t[key].__node.tag.lastIndexOf('.')+1);
@@ -730,7 +743,7 @@ export class Graph {
         if(node instanceof GraphNode) {
             
             let cpy;
-            if(getInitial) cpy = Object.assign({}, this.__node.tree[node.__node.tag]);
+            if(getInitial) cpy = Object.assign({}, this.__node.roots[node.__node.tag]);
             else {
                 cpy = Object.assign({},node) as any;
                 //remove graphnode methods to return the arbitrary props

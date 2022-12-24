@@ -67,7 +67,7 @@ export class StructBackend extends Service {
         }
     ) {
         super(options);
-        this.setTree(this);
+        this.load(this);
         if(dboptions?.users) this.users = dboptions.users; //set the reference so this keeps concurrent with the user router
         if(dboptions?.db) this.mode = (this.db) ? ((dboptions.mode) ? dboptions.mode : 'local') : 'local'
         if(dboptions?.collections) this.collections = dboptions.collections;

@@ -71,7 +71,7 @@ export class SSEbackend extends Service {
     
     constructor(options?:ServiceOptions) {
         super(options)
-        this.setTree(this);
+        this.load(this);
     }
 
     setupSSE = (options:SSEProps) => {
@@ -238,7 +238,7 @@ export class SSEbackend extends Service {
                             if(typeof body.route === 'string') {
                                 if(body.route.includes('/') && body.route.length > 1) 
                                     body.route = body.route.split('/').pop();
-                                route = this.__node.tree[body.route];
+                                route = this.__node.roots[body.route];
                             }
                            
                         }

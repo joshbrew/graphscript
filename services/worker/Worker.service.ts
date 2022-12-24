@@ -69,7 +69,7 @@ export class WorkerService extends Service {
         }
     
         if(options?.services) this.addServices(options.services);
-        this.setTree(this);
+        this.load(this);
         this.setLoaders(this.workerloader); //add a custom route loader for the worker logic
         if(options) this.init(options);
 
@@ -158,7 +158,7 @@ export class WorkerService extends Service {
     }
 
     workerloader:any = {
-        'workers':(node: WorkerRoute & GraphNode, parent:WorkerRoute & GraphNode, graph:Graph, tree:any) => {
+        'workers':(node: WorkerRoute & GraphNode, parent:WorkerRoute & GraphNode, graph:Graph, roots:any) => {
             let rt = node as WorkerRoute;
             if(!node.parentRoute && (parent?.callback && parent?.worker)) node.parentRoute = parent?.callback;
             if(rt?.worker || rt?.workerId || (rt as WorkerRoute)?.workerUrl) { //each set of props with a worker will instantiate a new worker, else you can use the same worker elsewhere by passing the corresponding tag
@@ -220,8 +220,8 @@ export class WorkerService extends Service {
 
                 }
             } else if(rt.__parent && rt.parentRoute) {
-                if(typeof rt.__parent === 'string' && (tree[rt.__parent] as any)?.worker) {
-                    ((tree[rt.__parent] as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt.__operator, rt.blocking);
+                if(typeof rt.__parent === 'string' && (roots[rt.__parent] as any)?.worker) {
+                    ((roots[rt.__parent] as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt.__operator, rt.blocking);
                 } else if((rt.__parent as any)?.worker) {
                     ((rt.__parent as any).worker as WorkerInfo).subscribe(rt.parentRoute, rt.__operator, rt.blocking);
                 }

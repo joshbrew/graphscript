@@ -229,7 +229,7 @@ const webappHtml = {
                                                     }
                                                 },
 
-                                                tree:{ //top level tree subscribe to device output thread directly (and workers in top level tree will not use main thread)
+                                                roots:{ //top level tree subscribe to device output thread directly (and workers in top level tree will not use main thread)
                                                     renderer: {
                                                         workerUrl:gsworker,
                                                         callback:'updateCanvas', //will pipe data to the canvas animation living alone on this thread
@@ -766,6 +766,6 @@ const webappHtml = {
     } as HTMLNodeProperties
 }
 
-webapp.setTree(webappHtml);
+webapp.load(webappHtml);
 
 

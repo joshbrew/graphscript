@@ -64,7 +64,7 @@ export class WebRTCfrontend extends Service {
         iceServers?:{urls:string[]}[] 
     ) {
         super(options);
-        this.setTree(this);
+        this.load(this);
 
         if(iceServers) this.iceServers = iceServers;
     }

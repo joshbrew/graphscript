@@ -99,7 +99,7 @@ export class SessionsService extends Service {
     constructor(options?:ServiceOptions, users?:{[key:string]:SessionUser}) {
         super(options);
         this.setLoaders(loaders);
-        this.setTree(this);
+        this.load(this);
         if(users) this.users = users;
     }
 

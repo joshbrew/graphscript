@@ -277,7 +277,7 @@ export const substitute__operator = (node:GraphNode & GraphNodeProperties, paren
             node.__addOndisconnected(ondelete);
         })
     }
-    if(typeof graph.__node.tree[node.__node.tag] === 'object' && node.get) graph.__node.tree[node.__node.tag].get = node.get;
+    if(typeof graph.__node.roots[node.__node.tag] === 'object' && node.get) graph.__node.roots[node.__node.tag].get = node.get;
 }
 
 //standard loaders with flow logic for operators and listeners

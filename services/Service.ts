@@ -34,12 +34,12 @@ export class Service extends Graph {
         super({ //assign properties to the graph
                 ...options,
                 loaders: options?.loaders ? Object.assign({...loaders},options.loaders) : {...loaders}
-                //tree:
+                //roots:
         });
 
         if(options?.services) this.addServices(options.services);
 
-        this.setTree(this);
+        this.load(this);
     }
 
     addServices = (services:{[key:string]:Graph|Service|Function|{[key:string]:any}}) => {
@@ -72,7 +72,7 @@ export class Service extends Graph {
 
             }
             else if(typeof services[s] === 'object') {
-                this.setTree(services[s]); //just a tree
+                this.load(services[s]); //just a roots
             }
         }
     }
@@ -85,7 +85,7 @@ export class Service extends Graph {
         let m = method.toLowerCase(); //lower case is enforced in the route keys
         let src = this.__node.nodes.get(route);
         if(!src) {
-            src = this.__node.tree[route];
+            src = this.__node.roots[route];
         }
         if(src?.[m]) {
             if(!(src[m] instanceof Function)) {

@@ -87,7 +87,7 @@ export class WSSbackend extends Service {
 
     constructor(options?:ServiceOptions) {
         super(options)
-        this.setTree(this);
+        this.load(this);
     }
 
     open = (options:SocketServerProps | SocketProps) => {

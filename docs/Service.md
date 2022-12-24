@@ -18,7 +18,7 @@ import worker from 'graphscript/services/worker/Worker' //includes Math loaded a
 //This is a useless example of running math callbacks through workers 
 //  in a quick chain then feeding the output to the document body.
 let workers = new WorkerService({
-    tree:{
+    roots:{
         worker1:{
             workerUrl:worker,
             callback:'log10'
