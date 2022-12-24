@@ -1,6 +1,6 @@
 import {Graph, htmlloader, HTMLNodeProperties} from '../../index'
 
-let tree = {
+let roots = {
 
     mainbody:{
         __element:'div',
@@ -41,7 +41,7 @@ let tree = {
 }
 
 let graph = new Graph({
-    tree,
+    roots,
     loaders:{
         htmlloader
     }
