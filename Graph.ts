@@ -80,7 +80,7 @@ export class GraphNode {
         let orig = properties;
         if(typeof properties === 'function') {
             if(isNativeClass(properties)) { //works on custom classes
-                console.log(properties);
+                //console.log(properties);
                 properties = new properties(); //this is a class that returns a node definition
             } else properties = {
                 __operator:properties,
