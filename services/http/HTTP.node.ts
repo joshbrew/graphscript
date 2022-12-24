@@ -850,11 +850,11 @@ export class HTTPbackend extends Service {
         if(typeof template === 'string') {
             if(!template.includes('<html')) template = '<!DOCTYPE html><html>'+template+'</html>'; //add a root
         }
-        if(typeof this.__node.roots[path] === 'object') {
+        if(typeof this.__node.roots?.[path] === 'object') {
             (this.__node.roots[path] as any).get = template;
             this.__node.nodes.get(path).get = template;
         }
-        else this.setroots({
+        else this.load({
                 [path]: {
                     get:template
                 }
@@ -865,11 +865,11 @@ export class HTTPbackend extends Service {
         if(typeof template === 'string') {
             if(!template.includes('<') || (!template.includes('>'))) template = '<div>'+template+'</div>';
         }
-        if(typeof this.__node.roots[path] === 'object') {
+        if(typeof this.__node.roots?.[path] === 'object') {
             (this.__node.roots[path] as any).get = template;
             this.__node.nodes.get(path).get = template;
         }
-        else this.setroots({
+        else this.load({
                 [path]: {
                     get:template
                 }
