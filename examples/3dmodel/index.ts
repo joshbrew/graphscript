@@ -94,7 +94,6 @@ let modelLoader = (node, parent, graph) => {
                 node.rotation = (node.rotation as B.Vector3).add(parent.rotation);
             }
 
-            console.log(parent, node.__node.tag)
             graph.setListeners({
                 [node.__node.tag]:{
                     [parent.__node.tag+'.position']:function(newP) {node.position = (node.__localPosition as B.Vector3).add(newP);},
