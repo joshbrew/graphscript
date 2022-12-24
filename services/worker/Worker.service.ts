@@ -164,6 +164,7 @@ export class WorkerService extends Service {
             if(rt?.worker || rt?.workerId || (rt as WorkerRoute)?.workerUrl) { //each set of props with a worker will instantiate a new worker, else you can use the same worker elsewhere by passing the corresponding tag
 
                 let worker = this.loadWorkerRoute(rt as any, rt.__node.tag);
+                
                 if(worker) {
                     if(!rt.parentRoute && (rt.__parent as any)?.callback) rt.parentRoute = (rt.__parent as any).callback;
                     if(rt.__parent && !rt.portId){ 

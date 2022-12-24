@@ -2,7 +2,7 @@ import { WorkerInfo } from '../../services/worker/Worker.service'//"graphscript"
 import { WebglLinePlotInfo,WebglLinePlotProps,WebglLinePlotUtil, WebglLineProps } from "webgl-plot-utils"//'../../../BrainsAtPlay_Libraries/webgl-plot-utils/webgl-plot-utils'//"webgl-plot-utils"//'../../BrainsAtPlay_Libraries/webgl-plot-utils/webgl-plot-utils'//"webgl-plot-utils";
 import { FilterSettings } from "../algorithms/util/BiquadFilters";
 
-export { WebglLineProps, WebglLinePlotProps, WebglLinePlotInfo } //re-export types for reference
+export { WebglLinePlotUtil, WebglLineProps, WebglLinePlotProps, WebglLinePlotInfo } //re-export types for reference
 
 export const webglPlotRoutes = {
     setupChart:function setupChart(settings:WebglLinePlotProps) {

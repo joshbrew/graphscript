@@ -1,5 +1,4 @@
 //mini state event handler for arbitrary data event callback handling
-//Graph.ts has its own copy of this 
 
 //a graph representing a callstack of nodes which can be arranged arbitrarily with forward and backprop or propagation to wherever
 export class EventHandler {
@@ -19,14 +18,30 @@ export class EventHandler {
     }
     setValue = (key, value) => {
         this.data[key] = value;
-        if(this.triggers[key]) this.triggers[key].forEach((obj) => obj.onchange(this.data[key]));
+        this.triggerState(key,value);
     }
-    subscribeTrigger = (key:string,onchange:(res:any)=>void) => {
+    triggerState = (key, value) => {
+        if(this.triggers[key]) this.triggers[key].forEach((obj) => obj.onchange(value));
+    }
+    subscribeTrigger = (key:string,onchange:(res:any)=>void, refObject?:{[key:string]:any}, refKey?:string) => {
         if(key) {
             if(!this.triggers[key]) {
                 this.triggers[key] = [];
             }
             let l = this.triggers[key].length;
+
+            if(refObject && refKey && !this.triggers[key]) { //this acts more like an observer rather than needing to hard copy stuff
+                Object.defineProperty(this.data,key,{
+                    get:()=>{
+                        return refObject[refKey];
+                    },
+                    set:(value) => {
+                        refObject[refKey] = value;
+                    },
+                    enumerable:true,
+                    configurable:true
+                });
+            }
 
             this.triggers[key].push({sub:l, onchange});
             return this.triggers[key].length-1;
@@ -35,7 +50,10 @@ export class EventHandler {
     unsubscribeTrigger = (key:string,sub?:number) => {
         let triggers = this.triggers[key]
         if (triggers){
-            if(!sub) delete this.triggers[key];
+            if(!sub) {
+                delete this.triggers[key];
+                delete this.data[key]; //garbage collect useless data
+            }
             else {
                 let sub = undefined;
                 let obj = triggers.find((o,i)=>{
@@ -46,13 +64,17 @@ export class EventHandler {
                 });
 
                 if(obj) triggers.splice(sub,1);
+                if(Object.keys(triggers).length === 0) {
+                    delete this.triggers[key];
+                    delete this.data[key]; //garbage collect useless data
+                }
                 
                 if(this.onRemoved) this.onRemoved(obj);
                 return true;
             }
         }
     }
-    subscribeTriggerOnce = (key:string,onchange:(res:any)=>void) => {
+    subscribeTriggerOnce = (key:string, onchange:(res:any)=>void) => {
         let sub;
         
         let changed = (value) => {
@@ -66,7 +88,13 @@ export class EventHandler {
             if(this.triggers[key][s].sub === sub) return this.triggers[key][s];
         }
     }
-    onRemoved;
+    getSnapshot = () => { //shallow copies the current state
+        const snapshot = {};
+        for(const key in this.data) {
+            snapshot[key] = this.data[key]; //runs getters etc if data not set explicitly in state but passed by reference from a source object
+        }
+    }
+    onRemoved:(trigger:{sub:number, onchange:Function})=>void;
 }
 
 

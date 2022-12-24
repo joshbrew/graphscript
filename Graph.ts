@@ -3,7 +3,7 @@
 
 import { EventHandler } from "./services/EventHandler";
 
-export const state = new EventHandler();
+export const state = new EventHandler(); //default shared global state
 
 
 export type GraphNodeProperties = {
@@ -16,7 +16,6 @@ export type GraphNodeProperties = {
     __node?:{ //node specific properties, can contain a lot more things
         tag?:string,
         state?:EventHandler, //by default has a global shared state
-        inputState?:boolean //we can track inputs on a node, subscribe to state with 'input' on the end of the tag or 'tag.prop' 
         [key:string]:any
     },
     [key:string]:any
@@ -49,6 +48,9 @@ export type GraphOptions = {
 export class GraphNode {
 
     __node:{
+        tag:string,
+        unique:string,
+        state:EventHandler,
         [key:string]:any
     } = { //GraphNode-specific properties 
         tag:`node${Math.floor(Math.random()*1000000000000000)}`,
@@ -64,7 +66,8 @@ export class GraphNode {
         // source:undefined as any// source graph if a graph is passed as properties
     }
 
-    __children?;
+    __children?:{[key:string]:GraphNode};
+    __parent?:Graph|GraphNode;
     __operator?;
     __listeners?;
     __props?;
@@ -94,6 +97,7 @@ export class GraphNode {
         if(!properties.__node.initial) properties.__node.initial = orig; //original object or function
 
         if(typeof properties === 'object') {
+            if(properties.__node?.state) this.__node.state = properties.__node.state; //make sure we're subscribing to the right state if we're passing a custom one in
             if(properties.__props) { //e.g. some generic javascript object or class constructor that we want to proxy. Functions passed here are treated as constructors. E.g. pass an HTML canvas element for the node then set this.width on the node to set the canvas width  
                 if (typeof properties.__props === 'function') properties.__props = new properties.__props();
                 if (typeof properties.__props === 'object') {
@@ -133,7 +137,7 @@ export class GraphNode {
                     properties.__node.tag = `node${Math.floor(Math.random()*1000000000000000)}`;
             }
 
-            //nested graphs or 2nd level+ nodes get their parents as a tag
+            //child/branch nodes get their parent tags prepended in their tag
             if(!properties.__parent && parent) properties.__parent = parent;
             if(parent?.__node && (!(parent instanceof Graph || properties instanceof Graph))) 
                 properties.__node.tag = parent.__node.tag + '.' + properties.__node.tag; //load parents first
@@ -181,8 +185,8 @@ export class GraphNode {
     //subscribe an output or input with an arbitrary callback
     __subscribe = (callback:string|GraphNode|((res)=>void), key?:string, subInput?:boolean, bound?:string, target?:string) => {
 
-        const subscribeToFunction = (k, setTarget = (callback, target?) => callback, triggerCallback=callback) => {
-            let sub = this.__node.state.subscribeTrigger(k, triggerCallback);
+        const subscribeToFunction = (k, setTarget = (callback, target?) => callback, triggerCallback=callback as (res: any) => void) => {
+            let sub = this.__node.state.subscribeTrigger(k, triggerCallback, this, key);
 
             // Add details to trigger
             let trigger = this.__node.state.getTrigger(k,sub);
@@ -206,8 +210,8 @@ export class GraphNode {
 
         if(key) {
            // console.log(key,this.__node.tag, 'callback:', callback);
-            if(!this.__node.localState) {
-                this.__addLocalState(this);
+            if(!this.__node.localState || !this.__node.localState[key]) {
+                this.__addLocalState(this,key);
             }
              
             if(typeof callback === 'string') {
@@ -247,19 +251,16 @@ export class GraphNode {
     }
     
     //unsub the callback
-    __unsubscribe = (sub?:number, key?:string, subInput?:boolean) => {
-
-        if(key) {
-            return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, sub);
-        }
-        else return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique+'input' : this.__node.unique, sub);
-        
+    __unsubscribe = (sub?:number, key?:string, unsubInput?:boolean) => {
+        if(key) return this.__node.state.unsubscribeTrigger(unsubInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, sub);
+        else return this.__node.state.unsubscribeTrigger(unsubInput ? this.__node.unique+'input' : this.__node.unique, sub);
     }
 
     __setOperator = (fn:(...args:any[])=>any) => {
         fn = fn.bind(this);
+        let inpstr = `${this.__node.unique}input`;
         this.__operator = (...args) => {
-            if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'input',args);
+            if(this.__node.state.triggers[inpstr]) this.__node.state.setValue(inpstr,args);
             let result = fn(...args);
             if(this.__node.state.triggers[this.__node.unique]) { //don't set state (i.e. copy the result) if no subscriptions
                 if(typeof result?.then === 'function') {
@@ -269,7 +270,7 @@ export class GraphNode {
             return result;
         } 
 
-        if(!this.__subscribedToParent) {
+        if(!this.__subscribedToParent) { //for child nodes
             if(this.__parent instanceof GraphNode && this.__parent.__operator) {
                 let sub = this.__parent.__subscribe(this);
                 let ondelete = () => { this.__parent?.__unsubscribe(sub); delete this.__subscribedToParent;}
@@ -281,86 +282,81 @@ export class GraphNode {
         return this.__operator;
     }
 
-    __addLocalState(props?:{[key:string]:any}) {
+    __addLocalState = (props?:{[key:string]:any}, key?:string) => { //add easy state functionality to properties on this node using getters/setters or function wrappers
         if(!props) return;
         if(!this.__node.localState) {
             this.__node.localState = {};
         }
-        let localState = this.__node.localState;
-        for (let k in props) {
-            if(this.__props && this.__props[k]) continue; //already given a local state, continue
-            if(typeof props[k] === 'function') {
-                if(!k.startsWith('_')) {
-                    let fn = props[k].bind(this) as Function;
-                    props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
-                        if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'.'+k+'input',args);
-                        let result = fn(...args);
-                        if(typeof result?.then === 'function') {
-                            if(this.__node.state.triggers[this.__node.unique+'.'+k]) result.then((res)=>{ this.__node.state.setValue( this.__node.unique+'.'+k, res ) }).catch(console.error);
-                        } else if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,result);
-                        return result;
+        const localState = this.__node.localState;
+        const initState = (props,k) => {
+            let str = this.__node.unique+'.'+k;
+            let inpstr = `${str}input`; //for input tracking
+            if(typeof props[k] === 'function' && k !== '__operator') {
+                let fn = props[k].bind(this) as Function;
+                props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
+                    if(this.__node.state.triggers[inpstr]) this.__node.state.setValue(inpstr,args);
+                    let result = fn(...args);
+                    if(this.__node.state.triggers[str]) {
+                        if(typeof result?.then === 'function') { //assume promise (faster than instanceof)
+                            result.then((res)=>{ this.__node.state.triggerState( str, res ) }).catch(console.error);
+                        } else this.__node.state.triggerState(str,result);
                     }
-                    this[k] = props[k]; 
+                    
+                    return result;
                 }
+                this[k] = props[k]; 
             } else {
                 localState[k] = props[k];
                 //console.log(k, localState[k]);
 
-                let definition = {
+                const descriptor = {
                     get: () => {
                         return localState[k];
                     },
                     set: (v) => {
+                        //if(this.__node.state.triggers[inpstr]) this.__node.state.setValue(inpstr,v);
                         localState[k] = v;
-                        if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,v); //this will update localState and trigger local key subscriptions
+                        if(this.__node.state.triggers[str]) this.__node.state.triggerState(str,v); //this will update localState and trigger local key subscriptions
                     },
                     enumerable: true,
                     configurable: true
-                } as any;
+                };
 
-                Object.defineProperty(this, k, definition);
+                Object.defineProperty(this, k, descriptor);
                 
                 if(typeof this.__node.initial === 'object') {
                     let dec = Object.getOwnPropertyDescriptor(this.__node.initial,k);
                     if(dec === undefined || dec?.configurable) {
-                        Object.defineProperty(this.__node.initial, k, definition);
+                        Object.defineProperty(this.__node.initial, k, descriptor);
                     }
                 }
             }
         }
+
+        if(key) initState(props,key);
+        else {for (let k in props) {initState(props,k);}}
     }
 
     //we can proxy an original object and function outputs on the node
     __proxyObject = (obj) => {
-        
-        let allProps = getAllProperties(obj);
-
+        const allProps = getAllProperties(obj);
         for(const k of allProps) {
-            if(typeof this[k] === 'undefined') {
+            if(!(k in this)) {
                 if(typeof obj[k] === 'function') {
-                    this[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
-                        if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'.'+k+'input',args);
-                        let result = obj[k](...args);
-                        if(this.__node.state.triggers[this.__node.unique+'.'+k]) {
-                            if(typeof result?.then === 'function') {
-                                result.then((res)=>{ this.__node.state.setValue( this.__node.unique+'.'+k, res ) }).catch(console.error);
-                            } else this.__node.state.setValue(this.__node.unique+'.'+k,result);
-                        }
-                        return result;
+                    this[k] = (...args) => { //simple proxy to preserve original function scope
+                        return obj[k](...args); 
                     }
                 } else {
-
-                    let definition = {
+                    const descriptor = {
                         get:()=>{return obj[k]},
                         set:(value) => { 
                             obj[k] = value;
-                            if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,value);
                         },
                         enumerable: true,
                         configurable: true
                     }
 
-                    Object.defineProperty(this, k, definition);
+                    Object.defineProperty(this, k, descriptor);
                 }
             }  
         }
@@ -396,14 +392,16 @@ export class Graph {
 
     __node:{
         tag:string,
+        unique:string,
         state:EventHandler,
-        nodes:Map<string,GraphNode|any>
+        nodes:Map<string,GraphNode|any>,
+        mapGraphs?:boolean,
         [key:string]:any
     } = {
         tag:`graph${Math.floor(Math.random()*1000000000000000)}`,
+        unique:`${Math.random()}`,
         nodes:new Map(),
         state,
-        // addState:true //apply the addLocalState on node init 
         // mapGraphs:false //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
         // tree:undefined as any,
         // loaders:undefined as any,
@@ -755,9 +753,7 @@ export class Graph {
         let sub;
 
         if(typeof callback === 'string') {
-
             //console.log(node, callback, this.__node.nodes.keys());
-
             if(target) {
                 let method = this.get(target)?.[callback];
                 if(typeof method === 'function') callback = method;
@@ -846,7 +842,7 @@ export function instanceObject(obj) {
     }
 
     return instance;
-    //simply copies methods, nested objects will not be instanced to limit recursion
+    //simply copies methods, nested objects will not be instanced to limit recursion, unless someone wants to add circular reference detection >___> ... <___< 
 }
 
 export function isNativeClass (thing) {

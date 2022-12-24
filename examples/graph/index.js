@@ -73,21 +73,18 @@ list.addCommand(`graph.get('nodeA').jump()`)
 graph.get('nodeA').jump(); //should NOT trigger nodeC listener
 
 
-// NOTE: Reparenting does not change behaviors?
 graph2.add(popped); //reparent nodeB to the parent graph
 const secondMessage = 'nodeB reparented to graph2'
 list.addCommand(secondMessage)
 console.log(secondMessage,popped,graph2);
 console.log(JSON.stringify(graph.__node.state.triggers)); //should be no triggers left
 
-// INCORRECT ON ORIGINAL. DOES NOT HAVE ANY BEHAVIORS
 list.addCommand(`popped.x += 1`)
-popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
+popped.x += 1; //should no longer trigger nodeA.x listener on nodeC
 
 list.addCommand(`popped.__children.nodeC.__operator(1)`)
 popped.__children.nodeC.__operator(1);
 
-// INCORRECT ON ORIGINAL
 list.addCommand(`graph.get('nodeA').jump()`)
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 

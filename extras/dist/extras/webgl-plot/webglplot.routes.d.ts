@@ -1,7 +1,7 @@
 import { WorkerInfo } from '../../services/worker/Worker.service';
-import { WebglLinePlotInfo, WebglLinePlotProps, WebglLineProps } from "webgl-plot-utils";
+import { WebglLinePlotInfo, WebglLinePlotProps, WebglLinePlotUtil, WebglLineProps } from "webgl-plot-utils";
 import { FilterSettings } from "../algorithms/util/BiquadFilters";
-export { WebglLineProps, WebglLinePlotProps, WebglLinePlotInfo };
+export { WebglLinePlotUtil, WebglLineProps, WebglLinePlotProps, WebglLinePlotInfo };
 export declare const webglPlotRoutes: {
     setupChart: (settings: WebglLinePlotProps) => any;
     updateChartData: (plot: WebglLinePlotInfo | string, lines?: {
