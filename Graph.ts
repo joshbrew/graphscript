@@ -495,7 +495,6 @@ export class Graph {
             else node = new GraphNode(properties, parent as GraphNode, this);
             this.set(node.__node.tag,node);
             this.runLoaders(node, parent, properties, node.__node.tag);
-            console.log('ran loaders', this.__node.loaders)
             this.__node.tree[node.__node.tag] = properties; //reference the original props by tag in the tree for children
             //console.log('old:',properties.__node,'new:',node.__node);
             
