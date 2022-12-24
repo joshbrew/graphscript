@@ -47,6 +47,14 @@
   "resolved" "https://registry.npmjs.org/pako/-/pako-1.0.11.tgz"
   "version" "1.0.11"
 
+"tinybuild@file:../../../../AppData/Roaming/npm/node_modules/tinybuild":
+  "resolved" "file:../../../../AppData/Roaming/npm/node_modules/tinybuild"
+  "version" "0.3.181"
+  dependencies:
+    "chokidar" "~3.5.3"
+    "esbuild" "~0.14.49"
+    "ws" "^8.5.0"
+
 "web-worker@^1.2.0":
   "integrity" "sha512-PgF341avzqyx60neE9DD+XS26MMNMoUQRz9NOZwW32nPQrF6p77f1htcnjBSEV8BGMKZ16choqUG4hyI0Hx7mA=="
   "resolved" "https://registry.npmjs.org/web-worker/-/web-worker-1.2.0.tgz"

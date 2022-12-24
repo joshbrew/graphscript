@@ -24,8 +24,8 @@
   "dependencies": {
     "browserfs": "^1.4.3",
     "device-decoder": "~0.3.3",
-    "graphscript": "~0.2.24",
-    "graphscript-services": "~0.2.25",
+    "graphscript": "~0.2.26",
+    "graphscript-services": "~0.2.26",
     "howler": "~2.2.3"
   },
   "nodemonConfig": {
