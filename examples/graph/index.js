@@ -9,7 +9,7 @@ import tree from './tree'
 const nodeAInstance = tree.nodeA
 
 let graph = new Graph({
-    tree,
+    roots:tree,
     loaders:{
         ...loaders
     }
@@ -47,7 +47,7 @@ let tree2 = {
     graph
 };
 
-let graph2 = new Graph({tree:tree2});
+let graph2 = new Graph({roots:tree2});
 
 list.addHeader('nodeB removed!')
 let popped = graph.remove('nodeB');
