@@ -7,7 +7,6 @@ export const y = 2
 export const jump = ()=>{
     const message = 'jump!'
     list.add(message)
-    console.log(message); 
     return 'jumped!'; 
 }
 

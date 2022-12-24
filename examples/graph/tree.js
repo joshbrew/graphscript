@@ -7,7 +7,6 @@ class nodeClass { //treated as a class to instance rather than a function to set
     __operator = () => {
         const message = 'class instanced node called!'
         list.add(message)
-        console.log(message);
     }
 }
 
@@ -25,19 +24,16 @@ let tree = {
                         this.z += a; 
                         const message = 'nodeC operator: nodeC z prop added to'
                         list.add(message)
-                        console.log(message, this.__node.tag); 
                         return this.z; 
                     },
                     __listeners:{
                         'nodeA.x':function(newX) { 
                             const message = 'nodeC listener: nodeA x prop updated'
                             list.add(message)
-                            console.log(message, newX);
                         },
                         'nodeA.jump':function(jump) { 
                             const message = 'nodeC listener: nodeA '
                             list.add(message)
-                            console.log(message, jump);
                         }
                     }
                 }
@@ -68,8 +64,8 @@ let tree = {
         __onconnected:function (node) { 
             this.innerHTML = 'Test';
             this.style.backgroundColor = 'green'; 
-            document.body.appendChild(this.__props); 
-            console.log(this,this.__props);
+            // document.body.appendChild(this.__props); 
+            // console.log(this,this.__props);
         },
         __ondisconnected:function(node) {
             document.body.removeChild(this.__props);

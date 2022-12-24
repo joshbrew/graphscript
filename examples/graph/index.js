@@ -4,22 +4,9 @@ import { loaders } from "../../loaders";
 import list from "./list";
 import tree from './tree'
 
+// import './benchmark'
+
 const nodeAInstance = tree.nodeA
-
-const deepCopy = (obj) => {
-
-    const copy = {}
-    for (let key in obj) {
-        const val = obj[key]
-        if (val && typeof val === 'object' && !Array.isArray(val)) {
-            copy[key] = deepCopy(val)
-        } else copy[key] = val
-
-    }
-
-    return copy
-    
-}
 
 let graph = new Graph({
     tree,
@@ -27,6 +14,7 @@ let graph = new Graph({
         ...loaders
     }
 });
+
 
 list.addHeader('Graph constructor finished')
 console.log('graph',graph);
@@ -55,9 +43,6 @@ graph.get('nodeA').jump(); //should trigger nodeC listener
 list.addCommand(`graph.run('nodeA.jump')`)
 graph.run('nodeA.jump'); //same
 
-
-console.log(JSON.stringify(graph.__node.state.triggers));
-
 let tree2 = {
     graph
 };
@@ -66,7 +51,6 @@ let graph2 = new Graph({tree:tree2});
 
 list.addHeader('nodeB removed!')
 let popped = graph.remove('nodeB');
-console.log(JSON.stringify(graph.__node.state.triggers)); //should be no triggers left
 console.log(popped.__node.tag, 'popped')
 
 list.addCommand(`graph.get('nodeA').jump()`)
