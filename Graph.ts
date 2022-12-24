@@ -304,7 +304,6 @@ export class GraphNode {
                     
                     return result;
                 }
-                //this[k] = props[k]; 
             } else {
                 let get:()=>any, set:(v)=>void;
                 if(this.__props?.[k]) {
