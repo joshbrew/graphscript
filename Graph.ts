@@ -306,7 +306,7 @@ export class GraphNode {
                 }
                 this[k] = props[k]; 
             } else {
-                localState[k] = props[k];
+                if(!this.__props?.[k]) localState[k] = props[k];
                 //console.log(k, localState[k]);
 
                 const descriptor = {
