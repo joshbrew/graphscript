@@ -171,7 +171,7 @@ export class ArrayManip {
             arr.splice(
                 0,
                 len,
-                newEntries.slice(len-newEntries.length)
+                ...newEntries.slice(newEntries.length - len)
             );
         }
         else { 
