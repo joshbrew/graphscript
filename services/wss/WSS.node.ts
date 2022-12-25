@@ -575,7 +575,7 @@ export class WSSbackend extends Service {
 
     subscribeToSocket = (route:string, socketId:string, callback?:string|((res:any)=>void), key?:string, subInput?:boolean) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
-            this.__node.state.subscribeTrigger(socketId, (res) => {
+            this.__node.state.subscribeEvent(socketId, (res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[socketId]:res.args});
                     else if(typeof callback === 'string') { //just set state 

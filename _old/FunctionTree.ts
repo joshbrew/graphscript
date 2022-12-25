@@ -171,14 +171,14 @@ export class FunctionTree {
     subscribe = (node:string,callback:(res:any)=>void|string) => {
         if(!this.state) return;
         if(typeof callback === 'string' && this.nodes.get(callback)) {
-            return this.state.subscribeTrigger(node, (r)=>{ this.run(callback,r); })
+            return this.state.subscribeEvent(node, (r)=>{ this.run(callback,r); })
         } 
-        else if(typeof callback === 'function') return this.state.subscribeTrigger(node,callback);
+        else if(typeof callback === 'function') return this.state.subscribeEvent(node,callback);
     }
 
     unsubscribe =(node:string,sub:number) => {
         if(!this.state) return;
-        this.state.unsubscribeTrigger(node,sub);
+        this.state.unsubscribeEvent(node,sub);
     }
 
 }

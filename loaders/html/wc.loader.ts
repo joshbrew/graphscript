@@ -1,26 +1,13 @@
 
 import {GraphNode, GraphNodeProperties,Graph} from '../../Graph'
+import {DOMElement} from './DOMElement'
+export {HTMLNodeProperties} from './html.loader'
 
-export type HTMLNodeProperties = GraphNodeProperties & {
-    __props?:HTMLElement,
-    __onresize?:(elm:HTMLElement) => void,
-    __onremove?:(elm:HTMLElement) => void,
-    __onrender?:(elm:HTMLElement) => void,
-    tagName?:string, //can provide this instead of an element or html template string
-    parentNode?:string, //can define a specific parentNode, else a parent graph node with an HTMLElement as __props will be selected, else graph.parentNode if defined, else document.body 
-    style?:Partial<CSSStyleDeclaration>, //supply an object with style properties for this element's inline styles
-    //applies to custom webcomponent only:
-    __template?:string,
-    __renderonchanged?:(elm:HTMLElement) => void,
-    useShadow?:boolean,
-    __css?:string, //stylesheet template string for use with web components (just prepends a <style> sheet before the new divs)
+//includes the webcomponent library, specify components with '__template' and 
+//   custom tagnames with  `__element` or `tagName`, else it uses a random tagname.
+// once the first web component template is registered with a new tagname, you can instantiate more down the tree
 
-    //more
-    __element?:string|HTMLElement //alt way to set __props with a more explicit key
-    __attributes?:{[key:string]:any} //can assign these to the html node, or just use the node definition itself as all element props are available on 'this'
-}
-
-export const htmlloader = (
+export const wchtmlloader = (
     node:GraphNode,
     parent:Graph|GraphNode,
     graph:Graph,
@@ -37,19 +24,19 @@ export const htmlloader = (
 
     if(node.__onremove) {
         let ondelete = node.__onremove;
-        node.__onremove = (element:HTMLElement) => {
+        node.__onremove = (element:DOMElement) => {
             ondelete.call(node, element);
         }
     }
 
     if(node.__onrender) {
         let onrender = node.__onrender;
-        node.__onrender = (element:HTMLElement) => {
+        node.__onrender = (element:DOMElement) => {
             onrender.call(node, element);
         }
     }
 
-    if(node.tagName || node.__element) {
+    if((node.tagName || node.__element) && !node.__props && !node.__template) {
         if(node.tagName) node.__props = document.createElement(node.tagName);
         else if (node.__element) node.__props = document.createElement(node.__element);
         if(!(node.__props instanceof HTMLElement)) return; 
@@ -59,9 +46,46 @@ export const htmlloader = (
             if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
             else node.__props[k] = properties[k]; 
         }
+    } else if (typeof node.__css === 'string') {
+        node.__template = `<style> ${node.__css} </style>`; delete node.__css;
     }
     
-    if(node.__props instanceof HTMLElement) {
+    if (node.__template) {
+
+        if(typeof node.__renderonchanged === 'function') {
+            let renderonchanged = node.__renderonchanged;
+            node.__renderonchanged = (element:DOMElement) => {
+                renderonchanged.call((element as any).node, element);
+            }
+        }
+
+        class CustomElement extends DOMElement {
+            props = node.props;
+            styles = node.__css;
+            useShadow = node.useShadow;
+            template = node.__template as any;
+            oncreate = node.__onrender;
+            onresize = node.__onresize;
+            ondelete = node.__onremove;
+            renderonchanged = node.__renderonchanged as any;
+        }
+
+        if(node.__element) node.tagName = node.__element;
+        if(!node.tagName) node.tagName = `element${Math.floor(Math.random()*1000000000000000)}-`;
+
+        CustomElement.addElement(node.tagName);
+
+        node.__props = document.createElement(node.tagName);
+
+        node.__proxyObject(node.__props);
+        node.__props.node = node;
+        let keys = Object.getOwnPropertyNames(properties);
+        for(const k of keys) { 
+            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
+            else node.__props[k] = properties[k]; 
+        }
+
+    } else if(node.__props instanceof HTMLElement) {
 
         if(node.__onresize)
             window.addEventListener('resize', node.__onresize as EventListener);

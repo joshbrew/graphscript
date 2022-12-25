@@ -18,19 +18,16 @@ export class EventHandler {
     }
     setValue = (key, value) => {
         this.data[key] = value;
-        this.triggerState(key,value);
+        this.triggerEvent(key,value);
     }
-    triggerState = (key, value) => {
+    triggerEvent = (key, value) => {
         if(this.triggers[key]) this.triggers[key].forEach((obj) => obj.onchange(value));
     }
-    subscribeTrigger = (key:string,onchange:(res:any)=>void, refObject?:{[key:string]:any}, refKey?:string) => {
+    subscribeEvent = (key:string,onchange:(res:any)=>void, refObject?:{[key:string]:any}, refKey?:string) => {
         if(key) {
-            if(!this.triggers[key]) {
-                this.triggers[key] = [];
-            }
-            let l = this.triggers[key].length;
 
-            if(refObject && refKey && !this.triggers[key]) { //this acts more like an observer rather than needing to hard copy stuff
+            if(refObject && refKey && !this.triggers[key]) { 
+                //this acts more like an observer rather than needing to hard copy stuff
                 Object.defineProperty(this.data,key,{
                     get:()=>{
                         return refObject[refKey];
@@ -43,11 +40,18 @@ export class EventHandler {
                 });
             }
 
+            if(!this.triggers[key]) {
+                this.triggers[key] = [];
+            }
+
+            let l = this.triggers[key].length;
+
+
             this.triggers[key].push({sub:l, onchange});
             return this.triggers[key].length-1;
         } else return undefined;
     }
-    unsubscribeTrigger = (key:string,sub?:number) => {
+    unsubscribeEvent = (key:string,sub?:number) => {
         let triggers = this.triggers[key]
         if (triggers){
             if(!sub) {
@@ -74,16 +78,16 @@ export class EventHandler {
             }
         }
     }
-    subscribeTriggerOnce = (key:string, onchange:(res:any)=>void) => {
+    subscribeEventOnce = (key:string, onchange:(res:any)=>void) => {
         let sub;
         
         let changed = (value) => {
             onchange(value);
-            this.unsubscribeTrigger(key,sub);
+            this.unsubscribeEvent(key,sub);
         }
-        sub = this.subscribeTrigger(key,changed);
+        sub = this.subscribeEvent(key,changed);
     }
-    getTrigger = (key,sub) => {
+    getEvent = (key,sub) => {
         for(const s in this.triggers[key]) {
             if(this.triggers[key][s].sub === sub) return this.triggers[key][s];
         }

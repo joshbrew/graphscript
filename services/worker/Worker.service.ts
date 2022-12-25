@@ -710,7 +710,7 @@ export class WorkerService extends Service {
     ) => {
 
         if(typeof workerId === 'string' && this.workers[workerId]) {
-            this.__node.state.subscribeTrigger(workerId, (res) => {
+            this.__node.state.subscribeEvent(workerId, (res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[workerId]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node

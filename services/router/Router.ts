@@ -51,7 +51,7 @@ export type ConnectionInfo = {
     request?:(message:any, method?:any,...a:any[])=>Promise<any>|Promise<any>[],
     post?:(route:any, args?:any, method?:string, ...a:any[])=>void,
     run?:(route:any, args?:any, method?:string, ...a:any[])=>Promise<any>|Promise<any>[],
-    subscribe?:(route:any, callback?:((res:any)=>void)|string, ...a:any[])=>Promise<number>|Promise<number>[]|undefined,
+    subscribe?:(route:any, callback?:((res:any)=>void)|string, ...a:any[])=>Promise<number>|undefined,
     unsubscribe?:(route:any, sub:number, ...arrayBuffer:any[])=>Promise<boolean>|Promise<boolean>[],
     terminate:(...a:any[]) => boolean,
     onclose?:(connection:ConnectionInfo,...args:any[])=>void
@@ -843,7 +843,7 @@ export class Router extends Service {
         if(typeof relay === 'object')
             return new Promise((res,rej) => {
                 (relay as any).run('routeConnections',[route,endpoint,(relay as any)._id,...args]).then((sub) => {
-                    this.__node.state.subscribeTrigger(endpoint, (res) => {
+                    this.__node.state.subscribeEvent(endpoint, (res) => {
                         if(res?.callbackId === route) {
                             if(!callback) this.setState({[endpoint]:res.args});
                             else if(typeof callback === 'string') { //just set state 
@@ -885,9 +885,8 @@ export class Router extends Service {
         if((transmitter as ConnectionInfo)?.subscribe && (receiver as ConnectionInfo)?.send) {
 
             let res:Promise<number> = new Promise((res,rej) => {
-                (transmitter as any).subscribe(
+                (transmitter as ConnectionInfo).subscribe(
                     route,
-                    (transmitter as any)._id,
                     (res:any) => {
                         if(!this.connections[(receiver as any)._id] && rxsrc) {
                             if(this.sources[rxsrc]) {

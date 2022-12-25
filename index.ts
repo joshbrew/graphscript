@@ -8,9 +8,10 @@ export * from './services/unsafe/Unsafe.service'
 
 export * from './services/ecs/ECS.service'
 
-//export * from './services/dom/DOM.service'
-export { DOMElement, addCustomElement } from './loaders/html/DOMElement'
 export * from './loaders/html/html.loader'
+
+export { DOMElement, addCustomElement } from './loaders/html/DOMElement'
+export * from './loaders/html/wc.loader' //includes the web component spec, html loader is a little leaner otherwise
 
 export * from './services/e2ee/E2EE.service'
 

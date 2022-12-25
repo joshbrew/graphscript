@@ -1,4 +1,4 @@
-import {Graph, htmlloader, HTMLNodeProperties} from '../../index'
+import {Graph, wchtmlloader, HTMLNodeProperties} from '../../index'
 
 let roots = {
 
@@ -43,6 +43,6 @@ let roots = {
 let graph = new Graph({
     roots,
     loaders:{
-        htmlloader
+        wchtmlloader
     }
 })

@@ -186,10 +186,10 @@ export class GraphNode {
     __subscribe = (callback:string|GraphNode|((res)=>void), key?:string, subInput?:boolean, bound?:string, target?:string) => {
 
         const subscribeToFunction = (k, setTarget = (callback, target?) => callback, triggerCallback=callback as (res: any) => void) => {
-            let sub = this.__node.state.subscribeTrigger(k, triggerCallback, this, key);
+            let sub = this.__node.state.subscribeEvent(k, triggerCallback, this, key);
 
             // Add details to trigger
-            let trigger = this.__node.state.getTrigger(k,sub);
+            let trigger = this.__node.state.getEvent(k,sub);
             trigger.source = this.__node.tag;
             if(key) trigger.key = key;
             trigger.target = setTarget(callback) // Non-string value
@@ -252,8 +252,8 @@ export class GraphNode {
     
     //unsub the callback
     __unsubscribe = (sub?:number, key?:string, unsubInput?:boolean) => {
-        if(key) return this.__node.state.unsubscribeTrigger(unsubInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, sub);
-        else return this.__node.state.unsubscribeTrigger(unsubInput ? this.__node.unique+'input' : this.__node.unique, sub);
+        if(key) return this.__node.state.unsubscribeEvent(unsubInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, sub);
+        else return this.__node.state.unsubscribeEvent(unsubInput ? this.__node.unique+'input' : this.__node.unique, sub);
     }
 
     __setOperator = (fn:(...args:any[])=>any) => {
@@ -298,8 +298,8 @@ export class GraphNode {
                     let result = fn(...args);
                     if(this.__node.state.triggers[str]) {
                         if(typeof result?.then === 'function') { //assume promise (faster than instanceof)
-                            result.then((res)=>{ this.__node.state.triggerState( str, res ) }).catch(console.error);
-                        } else this.__node.state.triggerState(str,result);
+                            result.then((res)=>{ this.__node.state.triggerEvent( str, res ) }).catch(console.error);
+                        } else this.__node.state.triggerEvent(str,result);
                     }
                     
                     return result;
@@ -311,7 +311,7 @@ export class GraphNode {
                     set = (v) => {
                         //if(this.__node.state.triggers[inpstr]) this.__node.state.setValue(inpstr,v);
                         this.__props[k] = v;
-                        if(this.__node.state.triggers[str]) this.__node.state.triggerState(str,v); //this will update localState and trigger local key subscriptions
+                        if(this.__node.state.triggers[str]) this.__node.state.triggerEvent(str,v); //this will update localState and trigger local key subscriptions
                     };
                 } else {
                     localState[k] = props[k]; 
@@ -319,7 +319,7 @@ export class GraphNode {
                     set = (v) => {
                         //if(this.__node.state.triggers[inpstr]) this.__node.state.setValue(inpstr,v);
                         localState[k] = v;
-                        if(this.__node.state.triggers[str]) this.__node.state.triggerState(str,v); //this will update localState and trigger local key subscriptions
+                        if(this.__node.state.triggers[str]) this.__node.state.triggerEvent(str,v); //this will update localState and trigger local key subscriptions
                     };
                 }
                 //console.log(k, localState[k]);
@@ -765,7 +765,11 @@ export class Graph {
     }
 
     subscribe = (
-        node:GraphNode|string, callback:string|GraphNode|((res:any)=>void), key?:string|undefined, subInput?:boolean, target?:string, bound?:string
+        node:GraphNode|string, 
+        callback:string|GraphNode|((res:any)=>void), 
+        key?:string|undefined, 
+        subInput?:boolean, 
+        target?:string, bound?:string
     ) => {
 
         let nd = node;
@@ -803,11 +807,11 @@ export class Graph {
                 else if (typeof callback === 'function' || typeof callback === 'string') {
                     sub = (this.get(node) as GraphNode).__subscribe(callback,key,subInput,target,bound); 
                     
-                    this.__node.state.getTrigger(this.get(node).__node.unique,sub).source = node;
+                    this.__node.state.getEvent(this.get(node).__node.unique,sub).source = node;
                 }
             } else {
                 if(typeof callback === 'string') callback = this.__node.nodes.get(callback).__operator; 
-                if(typeof callback === 'function') sub = this.__node.state.subscribeTrigger(node, callback);
+                if(typeof callback === 'function') sub = this.__node.state.subscribeEvent(node, callback);
             }
         }
         return sub;

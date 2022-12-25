@@ -518,7 +518,7 @@ export class WebRTCfrontend extends Service {
             let channel = c.channels[channelId];
 
             if(channel) {
-                this.__node.state.subscribeTrigger(rtcId, (res) => {
+                this.__node.state.subscribeEvent(rtcId, (res) => {
                     if(res?.callbackId === route) {
                         if(!callback) this.setState({[rtcId]:res.args}); //just set state
                         else if(typeof callback === 'string') { //run a local node

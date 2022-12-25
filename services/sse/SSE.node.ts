@@ -238,7 +238,7 @@ export class SSEbackend extends Service {
                             if(typeof body.route === 'string') {
                                 if(body.route.includes('/') && body.route.length > 1) 
                                     body.route = body.route.split('/').pop();
-                                route = this.__node.roots[body.route];
+                                route = this.__node.roots?.[body.route];
                             }
                            
                         }
@@ -461,7 +461,7 @@ export class SSEbackend extends Service {
         eventName?:string
     ) => {
         if(this.servers[path]) {
-            this.__node.state.subscribeTrigger(path,(res) => {
+            this.__node.state.subscribeEvent(path,(res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[path]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node

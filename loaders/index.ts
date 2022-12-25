@@ -138,7 +138,8 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
 
 /** Branching operations
  * 
- * nodeA.__node.branch = {[key:string]:{if:Function|any, then:Function|any|GraphNode}}
+ * //runs a function or node if the if-conditions are satisfied, which can be a function that returns a true or false
+ * nodeA.__branch = {[key:string]:{if:Function|any, then:Function|any|GraphNode}} 
  * 
  * nodeA.__listeners['nodeB.x'] = {
  *  callback:(result)=>void, 
@@ -147,24 +148,24 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
  * 
  */
 export const branching = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
-    if(typeof node.__node.branch === 'object' && node.__operator && !node.__node.branchApplied) {
+    if(typeof node.__branch === 'object' && node.__operator && !node.__branchApplied) {
         let fn = node.__operator;
-        node.__node.branchApplied = true;
+        node.__branchApplied = true;
         node.__operator = ((...args:any[]) => {
             let result = fn(...args);
-            for(const key in node.__node.branch) { //run branching operations
+            for(const key in node.__branch) { //run branching operations
                 let triggered = () => {
-                    if(typeof node.__node.branch[key].then === 'function') {
-                        node.__node.branch[key].then(result); //trigger a callback
-                    } else if(node.__node.branch[key].then instanceof GraphNode && node.__node.branch[key].then.__operator) {
-                        node.__node.branch[key].then.__operator(result); //run a node
-                    } else result = node.__node.branch[key].then; //just replace the result in this case
+                    if(typeof node.__branch[key].then === 'function') {
+                        node.__branch[key].then(result); //trigger a callback
+                    } else if(node.__branch[key].then instanceof GraphNode && node.__branch[key].then.__operator) {
+                        node.__branch[key].then.__operator(result); //run a node
+                    } else result = node.__branch[key].then; //just replace the result in this case
                 }
-                if(typeof node.__node.branch[key].if === 'function') {
-                    if(node.__node.branch[key].if(result)) {
+                if(typeof node.__branch[key].if === 'function') {
+                    if(node.__branch[key].if(result) == true) {
                         triggered();
                     }
-                } else if(node.__node.branch[key].if === result) {
+                } else if(node.__branch[key].if === result) {
                     triggered();
                 } 
             }

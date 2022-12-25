@@ -276,7 +276,7 @@ export class SSEfrontend extends Service {
     
     subscribeToSSE = (route:string, url:string, callback?:string|((res:any)=>void), sessionId?:string, key?:string, subInput?:boolean) => {
         if(url) {
-            this.__node.state.subscribeTrigger(url,(res) => {
+            this.__node.state.subscribeEvent(url,(res) => {
                 let msg = JSON.parse(res);
                 if(msg?.callbackId === route) {
                     if(!callback) this.setState({[url]:msg.args}); //just set state
