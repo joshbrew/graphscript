@@ -9,13 +9,13 @@ export declare class EventHandler {
         [key: string]: any;
     }) => {};
     setValue: (key: any, value: any) => void;
-    triggerState: (key: any, value: any) => void;
-    subscribeTrigger: (key: string, onchange: (res: any) => void, refObject?: {
+    triggerEvent: (key: any, value: any) => void;
+    subscribeEvent: (key: string, onchange: (res: any) => void, refObject?: {
         [key: string]: any;
     }, refKey?: string) => number;
-    unsubscribeTrigger: (key: string, sub?: number) => boolean;
-    subscribeTriggerOnce: (key: string, onchange: (res: any) => void) => void;
-    getTrigger: (key: any, sub: any) => any;
+    unsubscribeEvent: (key: string, sub?: number) => boolean;
+    subscribeEventOnce: (key: string, onchange: (res: any) => void) => void;
+    getEvent: (key: any, sub: any) => any;
     getSnapshot: () => void;
     onRemoved: (trigger: {
         sub: number;

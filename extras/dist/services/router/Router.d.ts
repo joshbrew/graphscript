@@ -33,7 +33,7 @@ export declare type ConnectionInfo = {
     request?: (message: any, method?: any, ...a: any[]) => Promise<any> | Promise<any>[];
     post?: (route: any, args?: any, method?: string, ...a: any[]) => void;
     run?: (route: any, args?: any, method?: string, ...a: any[]) => Promise<any> | Promise<any>[];
-    subscribe?: (route: any, callback?: ((res: any) => void) | string, ...a: any[]) => Promise<number> | Promise<number>[] | undefined;
+    subscribe?: (route: any, callback?: ((res: any) => void) | string, ...a: any[]) => Promise<number> | undefined;
     unsubscribe?: (route: any, sub: number, ...arrayBuffer: any[]) => Promise<boolean> | Promise<boolean>[];
     terminate: (...a: any[]) => boolean;
     onclose?: (connection: ConnectionInfo, ...args: any[]) => void;

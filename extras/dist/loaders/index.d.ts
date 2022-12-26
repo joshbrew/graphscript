@@ -31,7 +31,8 @@ export declare const loop: (node: GraphNode, parent: GraphNode | Graph, graph: G
 export declare const animate: (node: GraphNode, parent: GraphNode | Graph, graph: Graph) => void;
 /** Branching operations
  *
- * nodeA.__node.branch = {[key:string]:{if:Function|any, then:Function|any|GraphNode}}
+ * //runs a function or node if the if-conditions are satisfied, which can be a function that returns a true or false
+ * nodeA.__branch = {[key:string]:{if:Function|any, then:Function|any|GraphNode}}
  *
  * nodeA.__listeners['nodeB.x'] = {
  *  callback:(result)=>void,
