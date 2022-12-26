@@ -189,7 +189,7 @@ export class ECSService extends Service {
                 components[k] = true;
             })
         }
-        if(!entity.__node) entity.__node = {};
+        if(!entity.__node) entity.__node = {} as any;
         if(entity.__node.tag && this.entities[entity.__node.tag]) {
             this.entityCt++;
             let tag = entity.__node.tag+this.entityCt;

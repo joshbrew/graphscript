@@ -244,7 +244,7 @@ export class CMDService extends Service {
 
     subscribeToProcess(route:string, processId:string, callback?:((res:any)=>void)|string, key?:string, subInput?:boolean) {
         if(typeof processId === 'string' && this.processes[processId]) {
-            this.__node.state.subscribeTrigger(processId, (res) => {
+            this.__node.state.subscribeEvent(processId, (res) => {
                 if(res?.callbackId === route) {
                     if(!callback) this.setState({[processId]:res.args}); //just set state
                     else if(typeof callback === 'string') { //run a local node

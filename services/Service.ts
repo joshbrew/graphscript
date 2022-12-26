@@ -88,7 +88,7 @@ export class Service extends Graph {
             src = this.__node.roots[route];
         }
         if(src?.[m]) {
-            if(!(src[m] instanceof Function)) {
+            if(typeof src[m] !== 'function') {
                 if(args) src[m] = args; //if args were passed set the value
                 return src[m]; //could just be a stored local variable we are returning like a string or object
             }
