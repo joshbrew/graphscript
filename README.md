@@ -27,9 +27,9 @@ For additional services (currently gpu.js service and the compiled worker dataur
 
 Before reading and getting immediately confused by this alien API and the currently-lacking documentation, scroll through the code in [Examples](https://github.com/brainsatplay/graphscript/blob/master/examples) for very clear, compelling implementatons that flex our feature sets.
 
-## * [Graphs and GraphNodes](https://github.com/brainsatplay/graphscript/blob/master/docs/Graph.md)
-## * [Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md)
-   * * [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
+## * [Graphs and GraphNodes](./packages/graphscript-core/graph/README.md)
+## * [Services](./services/README.md)
+   * * [Included Services](./services/README.md#included-services)
 
 (WIP)
 

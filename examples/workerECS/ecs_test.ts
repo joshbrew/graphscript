@@ -10,7 +10,7 @@ import {
     WorkerInfo,
     htmlloader,
     HTMLNodeProperties
-} from '../../index'//'graphscript'
+} from '../../packages/graphscript/index'//'graphscript'
 
 import gsworker from './worker'
 

@@ -125,21 +125,21 @@ type GraphOptions = {
 }
 ```
 
-[Loaders](../Loaders.ts) are important and allow for as many complex behaviors to be defined as you desire when running the node load order. After the node is defined it will run each loader function that has been supplied. This makes it so you can quickly specify new properties and usages of the node hierarchies.
+[Loaders](../loaders.ts) are important and allow for as many complex behaviors to be defined as you desire when running the node load order. After the node is defined it will run each loader function that has been supplied. This makes it so you can quickly specify new properties and usages of the node hierarchies.
 
 ### Loaders and more
 
-With additional [loaders](../Loaders.ts), we can quickly turn nodes into self contained loops and animations, html nodes, threads and thread-thread message ports, server endpoints, user representations, and more so we can quickly script out very complex programs, with a simple reference point to remix these features via the application trees. We can also export these node definitions as their own esm modules for easy module development.
+With additional [loaders](../loaders.ts), we can quickly turn nodes into self contained loops and animations, html nodes, threads and thread-thread message ports, server endpoints, user representations, and more so we can quickly script out very complex programs, with a simple reference point to remix these features via the application trees. We can also export these node definitions as their own esm modules for easy module development.
 
 Featured Loaders:
 
-- [html](../loaders/html/html.loader.ts): create any html nodes and template string web components. The node properties are treated as setters for the html element if they overlap, so you can set innerHTML or events right on the node definition in one pass.
+- [html](../../graphscript-html-loader/index.ts): create any html nodes and template string web components. The node properties are treated as setters for the html element if they overlap, so you can set innerHTML or events right on the node definition in one pass.
 
 The most complex examples we have so far do things like relay P2P initial connections through a socket backend, animate tens of thousands of boids with multiple threads, and process and debug sensor data with 8 separate task threads. 
 
 Each example is only a few hundred lines of code and roughly understandable in one pass at reading.
 
-Here is a bigger graph from [`examples/graph`](../examples/graph/):
+Here is a bigger graph from [`examples/graph`](../../../examples/graph):
 
 ```ts
 
@@ -216,6 +216,6 @@ let graph = new Graph({
 
 ```
 
-In the above example, one interesting thing we can do is proxy methods on an object using __props, this lets us treat an html element as if it's a node, meaning these properties can be listened to by other nodes in the graph. Import the [htmlloader](../services/dom/html.loader.ts) for a special node definition for working with html and web components.
+In the above example, one interesting thing we can do is proxy methods on an object using __props, this lets us treat an html element as if it's a node, meaning these properties can be listened to by other nodes in the graph. Import the [htmlloader](../../../services/dom/html.loader.ts) for a special node definition for working with html and web components.
 
-We took this much further by unifying Graphs with a uniform message passing system via Services, allowing for complex multithreading and backend + frontend workflows to be constructed very clearly within a few hundred lines of code. With this we have created a graph-based full stack API for browser frontend and node backend development. There is much more to come. See [Services](./Service.md)
+We took this much further by unifying Graphs with a uniform message passing system via Services, allowing for complex multithreading and backend + frontend workflows to be constructed very clearly within a few hundred lines of code. With this we have created a graph-based full stack API for browser frontend and node backend development. There is much more to come. See [Services](../../../services/README.md)

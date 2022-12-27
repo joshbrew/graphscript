@@ -1,4 +1,3 @@
-import { GraphNode } from "../../Graph";
 import { Entity } from "../../services/ecs/ECS.service";
 
 export const Systems = {

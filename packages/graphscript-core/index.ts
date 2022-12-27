@@ -1,4 +1,3 @@
 
-export * from './Graph'
-
+export * from './graph/index'
 export * from './loaders'

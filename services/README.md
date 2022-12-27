@@ -132,7 +132,7 @@ We will elaborate on all of this with individual docs for each microservice, as 
 
 For all services with remote message passing support (http, wss, sse, webrtc, etc.) they are by default configured to handle our service messages alongside arbitrary callbacks or basic standard functions (e.g. file serving in the http server). This allows them to be quickly wired together with your custom services without worrying about formats matching up.
 
-For frontend HTML use the simple [html loader](https://github.com/brainsatplay/graphscript/blob/master/loaders/html/html.loader.ts) which includes support for simple HTML nodes and complex web components within tree definitions. See the [examples](https://github.com/brainsatplay/graphscript/blob/master/examples) for usage.
+For frontend HTML use the simple [html loader](../packages/graphscript-html-loader/index.ts) which includes support for simple HTML nodes and complex web components within tree definitions. See the [examples](../examples) for usage.
 
 - HTTP - Create [http/https servers](https://nodejs.org/api/http.html) and manage REST calls and create static or dynamic websites instantly. The server is set up to handle custom GET/POST requests using our route format encoded in the request body as well as standard GET/POST calls for serving files. The backend HTTP service allows you to construct webpages just from strings and inject code e.g. for hotreloading into your page with simple one liners. You can even build whole pages from lists of functions and template strings.
     - - [HTTPbackend](./services/http/http.node.md)
