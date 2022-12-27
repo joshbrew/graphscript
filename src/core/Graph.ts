@@ -873,3 +873,5 @@ export function instanceObject(obj) {
 export function isNativeClass (thing) {
     return typeof thing === 'function' && thing.hasOwnProperty('prototype') && !thing.hasOwnProperty('arguments')
 }
+
+// export default Graph

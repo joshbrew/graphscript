@@ -1,4 +1,10 @@
 node_modules
-examples/*/dist
-examples/*/*/dist
-examples/eegnfb/yarn.lock
+dist
+
+.DS_Store
+yarn.lock
+
+.temp
+
+# Jest
+coverage 

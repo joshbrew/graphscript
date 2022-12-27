@@ -1,6 +1,8 @@
 import * as nodeA from './nodes/nodeA.js'
 import list from './list'
 
+export const isNode = typeof process === 'object'
+
 const nodeAInstance = Object.assign({}, nodeA)
 
 class nodeClass { //treated as a class to instance rather than a function to set as __operator
@@ -59,7 +61,13 @@ let tree = {
         }
     },
 
-    nodeF:{
+    nodeG: nodeClass
+
+};
+
+
+if (!isNode) {
+    tree.nodeF = {
         __props:document.createElement('div'), //properties on the '__props' object will be proxied and mutatable as 'this' on the node. E.g. for representing HTML elements
         __onconnected:function (node) { 
             this.innerHTML = 'Test';
@@ -71,10 +79,7 @@ let tree = {
             document.body.removeChild(this.__props);
         }
         
-    },
-
-    nodeG: nodeClass
-
-};
+    }
+}
 
 export default tree

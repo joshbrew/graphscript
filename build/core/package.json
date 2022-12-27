@@ -2,11 +2,12 @@
     "name": "graphscript-core",
     "version": "0.2.27",
     "description": "Comprehensive acyclic-graph based application architecture with microservices and networking.",
-    "main": "dist/index.core.js",
-    "module": "dist/index.core.esm.js",
-    "types": "dist/index.core.d.ts",
+    "main": "dist/index.js",
+    "module": "dist/index.esm.js",
+    "types": "dist/index.d.ts",
+    "type": "module",
     "scripts": {
-        "start": "tinybuild path=tinybuild.node.config.js && tinybuild && tinybuild path=tinybuild.core.config.js",
+        "start": "tinybuild path=tinybuild.core.config.js",
         "build": "tinybuild build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",
@@ -21,18 +22,5 @@
         "esbuild"
     ],
     "author": "Joshua Brewster",
-    "license": "AGPL-3.0-or-later",
-    "dependencies": {},
-    "nodemonConfig": {
-        "env": {
-            "NODEMON": true
-        },
-        "ignore": [
-            "dist/",
-            ".temp/"
-        ]
-    },
-    "devDependencies": {
-        "@types/node": "~18.7.15"
-    }
+    "license": "AGPL-3.0-or-later"
 }

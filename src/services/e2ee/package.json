@@ -1,0 +1,6 @@
+{
+    "dependencies": {
+        "sjcl": "^1.0.8",
+        "@types/sjcl": "^1.0.30"
+    }
+}

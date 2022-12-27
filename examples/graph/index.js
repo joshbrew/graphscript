@@ -1,10 +1,8 @@
 
 import { Graph } from "../../src/core/Graph";
-import { loaders } from "../../src/core/loaders";
+import { loaders } from "../../src/loaders";
 import list from "./list";
 import tree from './tree'
-
-// import './benchmark'
 
 const nodeAInstance = tree.nodeA
 

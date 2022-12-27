@@ -37,4 +37,4 @@ const config = {
     // }
 }
 
-module.exports = config; //es5 //export default config; //
+export default config; //es5 //export default config; //

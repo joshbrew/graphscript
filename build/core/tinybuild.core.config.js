@@ -4,7 +4,7 @@ const config = {
         entryPoints: [ //entry point file(s). These can include .js, .mjs, .ts, .jsx, .tsx, or other javascript files. Make sure your entry point is a ts file if you want to generate types
             "index.core.ts"
         ],
-        outfile: "dist/index.core", //exit point file, will append .js as well as indicators like .esm.js, .node.js for other build flags
+        outfile: "dist/index", //exit point file, will append .js as well as indicators like .esm.js, .node.js for other build flags
         //outdir:[]               //exit point files, define for multiple bundle files
         bundleBrowser: true, //create plain js build? Can include globals and init scripts
         bundleESM: true, //create esm module js files
@@ -37,4 +37,4 @@ const config = {
     // }
 }
 
-module.exports = config; //es5 //export default config; //
+export default config; //es5 //export default config; //
