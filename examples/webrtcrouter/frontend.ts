@@ -62,6 +62,7 @@ const router = new Router({
                 } as EventSourceProps
             }
         },
+        'webrtc':WebRTCfrontend,
         'wss':{
             service:WSSfrontend,
             config:{
@@ -323,8 +324,7 @@ const router = new Router({
                 //     path:'hotreload'
                 // } as WebSocketProps
             }
-        },
-        'webrtc':WebRTCfrontend
+        }
     }
 });
 

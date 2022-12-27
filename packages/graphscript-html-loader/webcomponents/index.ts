@@ -37,7 +37,10 @@ export const wchtmlloader = (
 
     if((node.tagName || node.__element) && !node.__props && !node.__template) {
         if(node.tagName) node.__props = document.createElement(node.tagName);
-        else if (node.__element) node.__props = document.createElement(node.__element);
+        else if (node.__element) {
+            if(node.__element instanceof HTMLElement) node.__props = node.__element;
+            else node.__props = document.createElement(node.__element);
+        }
         if(!(node.__props instanceof HTMLElement)) return; 
         node.__proxyObject(node.__props);
         let keys = Object.getOwnPropertyNames(properties);
