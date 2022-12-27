@@ -1,6 +1,6 @@
 node_modules
-js/examples/**/dist
 **/yarn.lock
 .temp
+.vscode
 
-**/dist
+dist

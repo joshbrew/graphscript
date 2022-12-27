@@ -4,6 +4,6 @@
         "**"
     ],
     "scripts": {
-        "start": "cd js && tinybuild && cd packages/backend && tinybuild && cd ../core && tinybuild && cd ../../extras && npm start"
+        "start": "cd packages/graphscript && tinybuild && cd ../graphscript-node && tinybuild && cd ../graphscript-core && tinybuild && cd ../../extras && npm start"
     }
 }
