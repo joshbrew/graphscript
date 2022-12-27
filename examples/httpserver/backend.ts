@@ -1,5 +1,5 @@
-import { HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "../../index.node"//"graphscript-node";
-import { Router } from '../../services/router/Router';
+import { HTTPbackend, ServerProps, ServerInfo, SSEbackend, SSEProps, WSSbackend, SocketServerProps } from "../../build/node/index.node"//"graphscript-node";
+import { Router } from '../../src/services/router/Router';
 
 function exitHandler(options, exitCode) {
         

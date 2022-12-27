@@ -1,5 +1,5 @@
 import * as B from 'babylonjs'
-import { Graph, htmlloader } from '../../index';
+import { Graph, htmlloader } from '../../build/main/index';
 
 let canvas = document.createElement('canvas');
 

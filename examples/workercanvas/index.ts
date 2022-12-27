@@ -6,7 +6,7 @@ import {
     WorkerCanvas,
     WorkerCanvasControls,
     HTMLNodeProperties
-} from '../../index'//'graphscript'
+} from '../../build/main/index'//'graphscript'
 
 import gsworker from './worker'
 

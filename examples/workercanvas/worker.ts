@@ -4,7 +4,7 @@ import {
     unsafeRoutes, 
     workerCanvasRoutes,
      //GPUService 
-} from '../../index'/////"../../GraphServiceRouter/index";//from 'graphscript'
+} from '../../build/main/index'/////"../../GraphServiceRouter/index";//from 'graphscript'
 
 
 declare var WorkerGlobalScope;

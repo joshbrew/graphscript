@@ -1,10 +1,10 @@
-import { HTTPfrontend } from '../../services/http/HTTP.browser';
-import { Router } from '../../services/router/Router'
-import { EventSourceProps, SSEfrontend } from '../../services/sse/SSE.browser';
-import { SessionsService } from '../../services/sessions/sessions.service';
-import { WebRTCfrontend, WebRTCInfo } from '../../services/webrtc/WebRTC.browser';
-import { WebSocketProps, WSSfrontend } from '../../services/wss/WSS.browser';
-import {Graph, htmlloader} from '../../index'
+import { HTTPfrontend } from '../../src/services/http/HTTP.browser';
+import { Router } from '../../src/services/router/Router'
+import { EventSourceProps, SSEfrontend } from '../../src/services/sse/SSE.browser';
+import { SessionsService } from '../../src/services/sessions/sessions.service';
+import { WebRTCfrontend, WebRTCInfo } from '../../src/services/webrtc/WebRTC.browser';
+import { WebSocketProps, WSSfrontend } from '../../src/services/wss/WSS.browser';
+import {Graph, htmlloader} from '../../build/main/index'
 
 const router = new Router({
     order:['webrtc','wss','sse'],

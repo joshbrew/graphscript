@@ -1,7 +1,7 @@
 //@ts-nocheck
 
 //resources
-import { Service, WorkerCanvas, GraphNodeProperties, loaders, htmlloader, HTMLNodeProperties } from '../../index';
+import { Service, WorkerCanvas, GraphNodeProperties, loaders, htmlloader, HTMLNodeProperties } from '../../build/main/index';
 import { 
     initDevice, 
     workers, 
@@ -11,13 +11,13 @@ import {
 } from '../../../device_debugger/src/device.frontend'//
 
 
-import { setSignalControls } from '../../extras/webgl-plot/webglplot.routes'//'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
+import { setSignalControls } from '../../src/extras/webgl-plot/webglplot.routes'//'graphscript-services'//'../../extras/webgl-plot/webglplot.routes'
 
 import gsworker from '../../../device_debugger/src/stream.big.worker' //device-decoder/stream.big.worker';
 import { Devices } from '../../../device_debugger/src/devices/third_party/index'//
 
 import { Howl, Howler } from 'howler';
-import { visualizeDirectory } from '../../extras/index.storage.services'//'graphscript-services/storage/BFS_CSV';
+import { visualizeDirectory } from '../../src/extras/build/storage/index.storage.services'//'graphscript-services/storage/BFS_CSV';
 
 
 import './index.css'

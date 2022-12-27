@@ -11,12 +11,12 @@ process.on('exit', exitHandler.bind(null,{cleanup:true}));
 process.on('SIGINT', exitHandler.bind(null, {exit:true}));
 
 
-import { Router, User } from "../../services/router/Router";
-import { SocketServerProps, WSSbackend } from "../../services/wss/WSS.node";
-import { SSEbackend, SSEProps } from "../../services/sse/SSE.node";
-import { HTTPbackend, ServerProps } from "../../services/http/HTTP.node";
-import { SessionsService } from "../../services/sessions/sessions.service";
-import { scriptBoilerPlate } from "../../services/http/boilerplate";
+import { Router, User } from "../../src/services/router/Router";
+import { SocketServerProps, WSSbackend } from "../../src/services/wss/WSS.node";
+import { SSEbackend, SSEProps } from "../../src/services/sse/SSE.node";
+import { HTTPbackend, ServerProps } from "../../src/services/http/HTTP.node";
+import { SessionsService } from "../../src/services/sessions/sessions.service";
+import { scriptBoilerPlate } from "../../src/services/http/boilerplate";
 
 const router = new Router({
     graph:{

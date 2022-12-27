@@ -1,5 +1,5 @@
 
-import { Graph } from "../../Graph";
+import { Graph } from "../../src/core/Graph";
 import tree from './tree'
 
 const deepCopy = (obj, seen=[]) => {

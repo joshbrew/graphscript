@@ -1,6 +1,6 @@
 
-import { Graph } from "../../Graph";
-import { loaders } from "../../loaders";
+import { Graph } from "../../src/core/Graph";
+import { loaders } from "../../src/core/loaders";
 import list from "./list";
 import tree from './tree'
 

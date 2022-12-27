@@ -4,11 +4,11 @@ import {
     workerCanvasRoutes,
     ECSService
      //GPUService 
-} from '../../index'/////"../../GraphServiceRouter/index";//from 'graphscript'
+} from '../../build/main/index'/////"../../GraphServiceRouter/index";//from 'graphscript'
 
-import {Systems} from '../../extras/index.services'
+import {Systems} from '../../src/extras/build/services/index.services'
 
-import { CanvasProps } from '../../services/worker/WorkerCanvas';
+import { CanvasProps } from '../../src/services/worker/WorkerCanvas';
 
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
