@@ -5,6 +5,7 @@ dist
 yarn.lock
 
 .temp
+.vscode
 
 # Jest
 coverage 
