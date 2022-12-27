@@ -1,0 +1,44 @@
+{
+    "name": "graphscript-node",
+    "version": "0.2.27",
+    "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "start": "tinybuild",
+        "build": "tinybuild build",
+        "serve": "tinybuild serve",
+        "init": "node tinybuild/init.js",
+        "concurrent": "concurrently \"npm run python\" \"npm start\"",
+        "dev": "npm run pip && npm i --save-dev concurrently && npm i --save-dev nodemon && npm run concurrent",
+        "startdev": "nodemon --exec \"node tinybuild.js\" -e ejs,js,ts,jsx,tsx,css,html,jpg,png,scss,txt,csv",
+        "python": "python python/server.py",
+        "pip": "pip install quart && pip install websockets",
+        "pwa": "npm i workbox-cli && workbox generateSW node_server/pwa/workbox-config.js && npm run build && npm start"
+    },
+    "keywords": [
+        "esbuild"
+    ],
+    "author": "Joshua Brewster",
+    "license": "AGPL-3.0-or-later",
+    "dependencies": {
+        "better-sse": "^0.8.0",
+        "brainsatplay-math": "~0.0.25",
+        "bson-objectid": "~2.0.3",
+        "web-worker": "~1.2.0",
+        "ws": "~8.11.0"
+    },
+    "nodemonConfig": {
+        "env": {
+            "NODEMON": true
+        },
+        "ignore": [
+            "dist/",
+            ".temp/"
+        ]
+    },
+    "devDependencies": {
+        "@types/node": "~18.7.15",
+        "@types/ws": "^8.5.3"
+    }
+}

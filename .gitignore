@@ -1,4 +1,6 @@
 node_modules
-examples/*/dist
-examples/*/*/dist
-examples/eegnfb/yarn.lock
+js/examples/**/dist
+**/yarn.lock
+.temp
+
+**/dist
