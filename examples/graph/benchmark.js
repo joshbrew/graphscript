@@ -43,7 +43,7 @@ const trees = Array.from({length: nTimes}).map(() => deepCopy(tree)) // Pre-gene
 const checkInstantiationTime = async () => {
     return checkPerformance((i) => {
         let graph = new Graph({
-            tree: trees[i],
+            roots: trees[i],
         });
         return graph
     }, nTimes).then(averageTime => {
@@ -55,7 +55,7 @@ const checkInstantiationTime = async () => {
 const listenerTree = deepCopy(tree)
 const checkListenerTime = async () => {
     let graph = new Graph({
-        tree: listenerTree,
+        roots: listenerTree,
     });
 
     return checkPerformance(async () => {
