@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "start": "npm run build",
-        "build": "cd build && cd gpu && tinybuild path=tinybuild.gpu.config.js && cd ../storage && tinybuild path=tinybuild.storage.config.js && cd ../services && tinybuild path=tinybuild.services.config.js"
+        "build": "cd build && cd gpu && tinybuild && cd ../storage && tinybuild && cd ../services && tinybuild"
     },
     "keywords": [
         "esbuild"
