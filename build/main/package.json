@@ -24,7 +24,6 @@
     "author": "Joshua Brewster",
     "license": "AGPL-3.0-or-later",
     "dependencies": {
-        "sjcl": "^1.0.8",
         "web-worker": "^1.2.0"
     }
 }

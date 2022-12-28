@@ -90,13 +90,16 @@ export class WorkerService extends Service {
         if(!worker) {
             worker = this.addWorker(rt);
 
+        }
+
+        rt.worker = worker;
+
+        if(!rt.worker.__ondisconnected) {
             let ondelete = (rt) => { //removing the original route will trigger ondelete
                 rt.worker?.terminate();
             }
             rt.__addOndisconnected(ondelete);
         }
-
-        rt.worker = worker;
         //console.log(rt);
 
         //requires unsafeRoutes on the worker (enabled on the default worker)
@@ -347,10 +350,12 @@ export class WorkerService extends Service {
                     if(sub) workerSubs[route+portId] = {sub, route, portId, callback, blocking}; 
                 });
             else for(const key in workerSubs) {
-                if(typeof workerSubs[key].sub !== 'number')
+                if(typeof workerSubs[key].sub !== 'number') 
                     await run('subscribeToWorker', [workerSubs[key].route, workerSubs[key].portId, workerSubs[key].callback, workerSubs[key].blocking]).then((sub) => {
                         workerSubs[key].sub = sub;
                     }); 
+
+                console.log(JSON.stringify(workerSubs));
             }
             return true;
         }
@@ -365,6 +370,8 @@ export class WorkerService extends Service {
                     if(typeof workerSubs[key].sub === 'number') {
                         await run('unpipeWorkers',[workerSubs[key].route, workerSubs[key].portId, workerSubs[key].sub])
                     } workerSubs[key].sub = false;
+                    
+                    console.log(JSON.stringify(workerSubs));
                 }
             }
             return true;
