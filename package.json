@@ -11,7 +11,7 @@
         "**"
     ],
     "scripts": {
-        "start": "npm run build",
+        "start": "tinybuild",
         "build": "cd build && cd main && tinybuild && cd ../node && tinybuild path=tinybuild.node.config.js && cd ../core && tinybuild path=tinybuild.core.config.js && cd ../../src/extras && npm run build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",

@@ -24,6 +24,7 @@
   "dependencies": {
     "graphscript": "~0.1.47",
     "three": "^0.143.0",
+    "web-worker": "^1.2.0",
     "webgl-plot-utils": "^0.3.13"
   },
   "nodemonConfig": {

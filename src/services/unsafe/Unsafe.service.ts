@@ -13,7 +13,7 @@ export const unsafeRoutes = {
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
             if(this.__node.graph.get(fnName)) {
-                this.__node.graph.get(fnName).__setOperator(fn); //overwrite operator
+                this.__node.graph.get(fnName).__operator = fn //overwrite operator
             }
             else {
                 let node = (this.__node.graph as Graph).add({__node:{tag:fnName},__operator:fn});
@@ -29,7 +29,7 @@ export const unsafeRoutes = {
         if(typeof fn === 'function') {
             if(!fnName) fnName = fn.name;
             if(this.__node.graph.get(fnName)) {
-                this.__node.graph.get(fnName).__setOperator(fn); //overwrite operator
+                this.__node.graph.get(fnName).__operator = fn; //overwrite operator
             }
             else (this.__node.graph as Graph).add({__node:{tag:fnName},__operator:fn});
             //console.log(this)

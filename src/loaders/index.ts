@@ -5,11 +5,14 @@ import { GraphNode, Graph, GraphNodeProperties } from "../core/Graph";
 /**
  * setting nodeA.__node.backward:true propagates operator results to parent
  */
-export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
+export const backprop = ( node:GraphNode ) => {
     
+    const root = node.__node
+    const parent = (node.__parent) ? node.__parent.__node.ref : null;
+
     if(node.__node.backward && parent instanceof GraphNode) {
 
-        graph.setListeners({
+        root.listeners.set({
             [parent.__node.tag]:{
                 [node.__node.tag]:parent
             }
@@ -34,30 +37,30 @@ export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
  * 
  * 
  */
-export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
+export const loop = ( node:GraphNode )=>{
 
     if(node.__operator && !node.__node.looperSet) {
         node.__node.looperSet = true;
         if(typeof node.__node.delay === 'number') {
             let fn = node.__operator;
-            node.__setOperator((...args:any[]) => {
+            node.__operator = (...args:any[]) => {
                 return new Promise((res,rej) => {
                     setTimeout(async ()=>{
                         res(await fn(...args));},node.__node.delay);
                 });
-            });
+            };
         } else if (node.__node.frame === true) {
             let fn = node.__operator;
-            node.__setOperator((...args:any[]) => {
+            node.__operator = (...args:any[]) => {
                 return new Promise((res,rej) => {
                     requestAnimationFrame(async ()=>{res(await fn(...args));});
                 });
-            });
+            };
         }
 
         if(typeof node.__node.repeat === 'number' || typeof node.__node.recursive === 'number') {
             let fn = node.__operator;
-            node.__setOperator(async (...args:any[]) => {
+            node.__operator  = async (...args:any[]) => {
                 let i = node.__node.repeat ? node.__node.repeat : node.__node.recursive; 
                 let result;
                 let repeater = async (tick,...inp:any[]) => {
@@ -77,26 +80,34 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
                 }
                 await repeater(i,...args);
                 return result;
-            });
+            };
         } 
                
         if(node.__node.loop && typeof node.__node.loop === 'number') {
             
+            const root = node.__node
+            let onstart
+            
             let fn = node.__operator;
-            node.__setOperator((...args) => {
+            node.__operator  = (...args) => {
                 if(!('looping' in node.__node)) node.__node.looping = true;
                 if(node.__node.looping) {
                     fn(...args);
                     setTimeout(()=>{node.__operator(...args)},node.__node.loop);
                 }
-            });
-            if(node.__node.looping) node.__operator();
+            };
+
+            if(node.__node.looping) onstart = () => node.__operator();
             
             let ondelete = (node) => {
                 if(node.__node.looping) node.__node.looping = false;
             }
 
-            node.__addOndisconnected(ondelete);
+            root.addOnConnected(() => {
+                if(onstart) onstart();
+            })
+
+            root.addOnDisconnected(ondelete);
         }
     }
 
@@ -111,27 +122,37 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
  * or node.__animation = (...args) => {}
  * 
  */
-export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
+export const animate =  ( node:GraphNode ) => {
     if(node.__node.animate === true || node.__animation) {
             let fn = node.__operator;
 
-            node.__setOperator((...args) => {
+            let onstart;
+            node.__operator = (...args) => {
                 if(!('animating' in node.__node)) node.__node.animating = true;
                 if(node.__node.animating) {
                     if(typeof node.__animation === 'function') node.__animation(...args);
                     else fn(...args);
-                    requestAnimationFrame(()=>{node.__operator(...args);});
+
+                    onstart = () => requestAnimationFrame(()=>{node.__operator(...args);});
                 }
-            });
-            if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.__animation)) 
-                setTimeout(()=>{requestAnimationFrame(node.__operator)},10);
+            }
+
+            if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.__animation)) {
+                onstart = () => setTimeout(()=>{requestAnimationFrame(node.__operator)},10);
+            }
+
+
+            const root = node.__node
+            root.addOnConnected(() => {
+                onstart();
+            })
         
 
         let ondelete = (node) => {
             if(node.__node.animating) node.__node.animating = false;
         }
 
-        node.__addOndisconnected(ondelete);
+        root.addOnDisconnected(ondelete);
     }
 }
 
@@ -147,7 +168,7 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
  * }
  * 
  */
-export const branching = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
+export const branching = ( node:GraphNode ) => {
     if(typeof node.__branch === 'object' && node.__operator && !node.__branchApplied) {
         let fn = node.__operator;
         node.__branchApplied = true;
@@ -207,7 +228,7 @@ export const branching = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => 
  *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, oncreate:any }
  * 
  */
-export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
+export const triggerListenerOncreate = ( node:GraphNode ) => {
     if(node.__listeners) {
         for(const key in node.__listeners) {
             if(typeof node.__listeners[key] === 'object') {
@@ -224,7 +245,7 @@ export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,gr
  *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, binding:{[key:string]:any} }
  * 
  */
-export const bindListener = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
+export const bindListener = ( node:GraphNode ) => {
     if(node.__listeners) {
         for(const key in node.__listeners) {
             if(typeof node.__listeners[key] === 'object') {
@@ -242,7 +263,7 @@ export const bindListener = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) 
  *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, transform:(result)=>any }
  * 
  */
-export const transformListenerResult = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
+export const transformListenerResult = ( node:GraphNode ) => {
     if(node.__listeners) {
         for(const key in node.__listeners) {
             if(typeof node.__listeners[key] === 'object') {
@@ -260,12 +281,13 @@ export const transformListenerResult = (node:GraphNode,parent:GraphNode|Graph,gr
 }
 
 
-export const substitute__operator = (node:GraphNode & GraphNodeProperties, parent:GraphNode|Graph,graph:Graph) => {
+export const substitute__operator = ( node:GraphNode & GraphNodeProperties ) => {
     //console.log('route', r)
+    const graph = node.__node.graph
     if(node.post && !node.__operator) {
-        node.__setOperator(node.post);
+        node.__operator = node.post;
     } else if (!node.__operator && typeof node.get == 'function') {
-        node.__setOperator(node.get);
+        node.__operator = node.get;
     } if(!node.get && node.__operator) {
         node.get = node.__operator;
     } if(node.aliases) {
@@ -275,7 +297,8 @@ export const substitute__operator = (node:GraphNode & GraphNodeProperties, paren
                 graph.__node.nodes.delete(a);
             }
     
-            node.__addOndisconnected(ondelete);
+            const root = node.__node
+            root.addOnDisconnected(ondelete);
         })
     }
     if(typeof graph.__node.roots?.[node.__node.tag] === 'object' && node.get) graph.__node.roots[node.__node.tag].get = node.get;

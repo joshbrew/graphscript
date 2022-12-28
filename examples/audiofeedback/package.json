@@ -22,11 +22,13 @@
   "author": "",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
+    "@capacitor-community/bluetooth-le": "^2.0.1",
     "browserfs": "^1.4.3",
     "device-decoder": "~0.3.4",
-    "graphscript": "~0.2.26",
+    "graphscript": "^0.2.28",
     "graphscript-services": "~0.2.26",
-    "howler": "~2.2.3"
+    "howler": "~2.2.3",
+    "web-worker": "^1.2.0"
   },
   "nodemonConfig": {
     "env": {

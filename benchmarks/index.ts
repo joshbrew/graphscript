@@ -2,10 +2,10 @@ import * as core from './core.benchmark'
 
 globalThis.escodeDemoLog = false
 
-// let results = {
-//     escode: {},
-//     graphscript: {}
-// } as any
+let results = {
+    other: {},
+    graphscript: {}
+} as any
 
 const decimals = 4
 
@@ -16,24 +16,24 @@ const message = (res, msg) => {
 
 const run = async (config) => {
     return {
-        instantiate: await config.instantiate().then((res) => message(res, 'Instantiate')),
-        listen: await config.listen().then((res) => message(res, 'Listen')),
+        instantiate: await config.instantiate(), //.then((res) => message(res, 'Instantiate')),
+        listen: await config.listen()//.then((res) => message(res, 'Listen')),
     }
 }
 
 const runGraphScript = async () => {
     // console.log(`\n--------------- GraphScript ---------------`)
     const res = await run(core)
-    // results.graphscript = res
+    results.graphscript = res
 }
 
-// const showResults = () => {
-//     console.log(`\n--------------- Results ---------------`)
-//     console.log('Time to Instantiation:', `${(results.escode.instantiate / results.graphscript.instantiate).toFixed(decimals)}x`)
-//     console.log('Time to Listen:', `${(results.escode.listen / results.graphscript.listen).toFixed(decimals)}x`)
-// }
+const showResults = () => {
+    // console.log('Ratio:', (results.graphscript.instantiate / results.graphscript.listen).toFixed(decimals))
+    console.log('Time to Instantiation:', `${(results.graphscript.instantiate).toFixed(decimals)}ms`)
+    console.log('Time to Listen:', `${(results.graphscript.listen).toFixed(decimals)}ms`)
+}
 
 // Run the demos
 // runESCode().then(runGraphScript).then(showResults)
 runGraphScript()
-// .then(showResults)
+.then(showResults)

@@ -8,14 +8,18 @@ export {HTMLNodeProperties} from './html.loader'
 // once the first web component template is registered with a new tagname, you can instantiate more down the tree
 
 export const wchtmlloader = (
-    node:GraphNode,
-    parent:Graph|GraphNode,
-    graph:Graph,
-    roots:any,
-    properties:GraphNodeProperties,
-    key:string
+    node:GraphNode
 ) => {
 
+    const root = node.__node
+    const parent = node.__parent
+    const graph = root.graph
+    // const key = root.tag
+    const key = root.tag.split('.').slice(-1)[0]
+
+    const properties = root.properties
+    let entries = Object.entries(properties); // Don't get all properties, just the enumerable ones, and before you set __props
+    
 
     if(node.__onresize) {
         let onresize = node.__onresize;
@@ -43,12 +47,11 @@ export const wchtmlloader = (
             else node.__props = document.createElement(node.__element);
         }
         if(!(node.__props instanceof HTMLElement)) return; 
-        node.__proxyObject(node.__props);
-        let keys = Object.getOwnPropertyNames(properties);
-        for(const k of keys) { 
-            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
-            else node.__props[k] = properties[k]; 
-        }
+
+        entries.forEach(([k,v]) => {
+            if(k === 'style' && typeof v === 'object') {Object.assign(node.__props.style, v);} // Ensure all style properties are set
+            // else node.__props[k] = v; 
+        })
     } else if (typeof node.__css === 'string') {
         node.__template = `<style> ${node.__css} </style>`; delete node.__css;
     }
@@ -79,14 +82,11 @@ export const wchtmlloader = (
         CustomElement.addElement(node.tagName);
 
         node.__props = document.createElement(node.tagName);
-
-        node.__proxyObject(node.__props);
         node.__props.node = node;
-        let keys = Object.getOwnPropertyNames(properties);
-        for(const k of keys) { 
-            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
-            else node.__props[k] = properties[k]; 
-        }
+        entries.forEach(([k,v]) => {
+            if(k === 'style' && typeof v === 'object') {Object.assign(node.__props.style, v);} // Ensure all style properties are set
+            // else node.__props[k] = v; 
+        })
 
     } else if(node.__props instanceof HTMLElement) {
 
@@ -105,7 +105,9 @@ export const wchtmlloader = (
     if(node.__props instanceof HTMLElement) {
         node.__props.id = key;
 
-        node.__addOnconnected((n) => { 
+        const root = node.__node
+
+        root.addOnConnected((n) => { 
             if(n.__props.parentNode) (n.__props as HTMLElement).remove(); 
             if(n.parentNode) {
                 if(typeof n.parentNode === 'string' && document.getElementById(n.parentNode))  
@@ -124,7 +126,7 @@ export const wchtmlloader = (
 
         });
 
-        node.__addOndisconnected((n) => { 
+        root.addOnDisconnected((n) => { 
             (n.__props as HTMLElement).remove(); 
 
             if(typeof n.__onremove === 'function') {

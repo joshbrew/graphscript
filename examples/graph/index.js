@@ -3,12 +3,14 @@ import { Graph } from "../../src/core/Graph";
 import { loaders } from "../../src/loaders";
 import list from "./list";
 import tree from './tree'
+import htmlLoader from '../../src/loaders/html/html.loader'
 
 const nodeAInstance = tree.nodeA
 
 let graph = new Graph({
     roots:tree,
     loaders:{
+        html: htmlLoader,
         ...loaders
     }
 });
@@ -41,31 +43,31 @@ graph.get('nodeA').jump(); //should trigger nodeC listener
 list.addCommand(`graph.run('nodeA.jump')`)
 graph.run('nodeA.jump'); //same
 
-let tree2 = {
-    graph
-};
+// let tree2 = {
+//     graph
+// };
 
-let graph2 = new Graph({roots:tree2});
+// let graph2 = new Graph({roots:tree2});
 
-list.addHeader('nodeB removed!')
-let popped = graph.remove('nodeB');
-console.log(popped.__node.tag, 'popped')
+// list.addHeader('nodeB removed!')
+// let popped = graph.remove('nodeB');
+// console.log(popped.__node.tag, 'popped')
 
-list.addCommand(`graph.get('nodeA').jump()`)
-graph.get('nodeA').jump(); //should NOT trigger nodeC listener
+// list.addCommand(`graph.get('nodeA').jump()`)
+// graph.get('nodeA').jump(); //should NOT trigger nodeC listener
 
 
-graph2.add(popped); //reparent nodeB to the parent graph
-const secondMessage = 'nodeB reparented to graph2'
-list.addCommand(secondMessage)
-console.log(secondMessage,popped,graph2);
-console.log(JSON.stringify(graph.__node.state.triggers)); //should be no triggers left
+// graph2.add(popped); //reparent nodeB to the parent graph
+// const secondMessage = 'nodeB reparented to graph2'
+// list.addCommand(secondMessage)
+// console.log(secondMessage,popped,graph2);
+// console.log(JSON.stringify(graph.__node.state.triggers)); //should be no triggers left
 
-list.addCommand(`popped.x += 1`)
-popped.x += 1; //should no longer trigger nodeA.x listener on nodeC
+// list.addCommand(`popped.x += 1`)
+// popped.x += 1; //should no longer trigger nodeA.x listener on nodeC
 
-list.addCommand(`popped.__children.nodeC.__operator(1)`)
-popped.__children.nodeC.__operator(1);
+// list.addCommand(`popped.__children.nodeC.__operator(1)`)
+// popped.__children.nodeC.__operator(1);
 
 list.addCommand(`graph.get('nodeA').jump()`)
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now

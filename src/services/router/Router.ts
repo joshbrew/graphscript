@@ -530,7 +530,8 @@ export class Router extends Service {
             }
             settings.onclose = options.onclose;
             if(settings.onclose) {
-                node.__addOndisconnected((n:GraphNode) => { if(settings.onclose) settings.onclose(settings,n); }) 
+                const root = node.__node
+                root.addOnDisconnected((n:GraphNode) => { if(settings.onclose) settings.onclose(settings,n); }) 
             }
         } else if (options.connection instanceof Graph) {
             if(options.connection.__node.nodes.get('open'))

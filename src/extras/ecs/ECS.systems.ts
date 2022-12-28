@@ -32,6 +32,7 @@ export const Systems = {
         __operator:function( entities:{[key:string]:Entity}){
 
             let keys = this.entityKeys;
+            
 
             for(let i = 0; i < keys.length; i++) {
                 const entity1 = entities[keys[i]];
@@ -754,6 +755,7 @@ export const Systems = {
         __operator: function (entities:{[key:string]:Entity}) {
 
             let keys = this.entityKeys;
+            
 
             for(let i = 0; i < keys.length; i++) {
                 const entity1 = entities[keys[i]];
@@ -994,6 +996,7 @@ export const Systems = {
         __operator:function(entities:{[key:string]:Entity}){
 
             let keys = this.entityKeys;
+            
 
             for(let i = 0; i < keys.length; i++) {
                 const entity = entities[keys[i]];
@@ -1140,6 +1143,7 @@ export const Systems = {
             this.lastTime = now;
 
             let keys = this.entityKeys;
+            
             let length = keys.length;
         
             let _timeStep = 1/timeStep;
@@ -1364,6 +1368,7 @@ export const Systems = {
             this.lastTime = now; 
 
             let keys = this.entityKeys;
+            
 
             for(let i = 0; i < keys.length; i++) {
                 const entity = entities[keys[i]];

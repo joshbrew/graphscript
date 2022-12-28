@@ -28,6 +28,7 @@ let model = {
         __props:scene
     },
 
+    // Good
     camera: {
         __props:camera,
         __transition:{
@@ -82,22 +83,30 @@ let model = {
     }
 }
 
-let modelLoader = (node, parent, graph) => {
+let modelLoader = (node) => {
+
+    const parent = node.__parent
     if(node.__props instanceof B.Mesh) {
         if(parent.__props instanceof B.Mesh) {
+
             if(parent.position) {
-                node.__localPosition = (node.position as B.Vector3).clone();
+                node.localPosition = (node.position as B.Vector3).clone();
                 node.position = (node.position as B.Vector3).add(parent.position);
             }
             if(parent.rotation) {
-                node.__localRotation = (node.rotation as B.Vector3).clone();
+                node.localRotation = (node.rotation as B.Vector3).clone();
                 node.rotation = (node.rotation as B.Vector3).add(parent.rotation);
             }
 
-            graph.setListeners({
+            const root = node.__node;
+            root.listeners.set({
                 [node.__node.tag]:{
-                    [parent.__node.tag+'.position']:function(newP) {node.position = (node.__localPosition as B.Vector3).add(newP);},
-                    [parent.__node.tag+'.rotation']:function(newR) {node.rotation = (node.__localRotation as B.Vector3).add(newR);},
+                    [parent.__node.tag+'.position']:function(newP) {
+                        node.position = (node.localPosition as B.Vector3).add(newP);
+                    },
+                    [parent.__node.tag+'.rotation']:function(newR) {
+                        node.rotation = (node.localRotation as B.Vector3).add(newR);
+                    },
                 }
             });
         }
@@ -115,20 +124,25 @@ type __transition = {
 }
 
 //very rudimentary camera tracking example. Better would be spring movement and better timing to remove judder at end of transition
-let cameraLoader = (node, parent, graph) => {
+let cameraLoader = (node) => {
 
+    const parent = node.__parent
     let animating = true;
-    if(!node.__props && parent.__props instanceof B.FreeCamera) {node.__props = parent.__props; node.__proxyObject(node.__props); }
+    if(!node.__props && parent.__props instanceof B.FreeCamera)  node.__props = parent.__props; 
     if(node.__props instanceof B.FreeCamera) {
         if(node.__transition) {
-            node.__setOperator(()=>{
+
+            node.__operator = ()=> {
+
                 let lastTime = performance.now()*0.001;
                 let startTime = lastTime;
                 let startPos = (node.position as B.Vector3).clone();
                 let startRot = (node.rotation as B.Vector3).clone();
+
                 if(node.__transition.position && !(node.__transition.position instanceof B.Vector3)) node.__transition.position = new B.Vector3(node.__transition.position.x,node.__transition.position.y,node.__transition.position.z);
                 if(node.__transition.rotation && !(node.__transition.rotation instanceof B.Vector3)) node.__transition.rotation = new B.Vector3(node.__transition.rotation.x,node.__transition.rotation.y,node.__transition.rotation.z);
                 let transition = async () => {
+
                     if(animating === false) return undefined; //aborts
                     else if (lastTime - startTime >= node.__transition.duration) {
                         if(node.__transition.position) {
@@ -154,6 +168,7 @@ let cameraLoader = (node, parent, graph) => {
                         }
                     }
                     else {
+
                         if(node.__transition.rotation) {
                             let newRot = startRot.add((node.__transition.rotation as B.Vector3).subtract(startRot).scale(dT))
                             if(node.__transition.rinterp) newRot = node.__transition.rinterp(newRot,node.rotation,currTime,startTime);
@@ -176,7 +191,7 @@ let cameraLoader = (node, parent, graph) => {
                 if(node.__transition.delay) {
                     return new Promise ((res) => {setTimeout(async()=>{ res(await transition()); }, node.__transition.delay);});
                 } else return new Promise (async (res) => {res(await transition()); });
-            });
+            }
         }
     }
 
@@ -195,10 +210,11 @@ let graph = new Graph({
     }
 });
 
+console.log('graph', graph)
+
 engine.runRenderLoop(function(){
     scene.render();
     graph.get('snowman').position = new B.Vector3(0, Math.sin(performance.now()*0.001)*5, 0);
-
 });
 // the canvas/window resize event handler
 window.addEventListener('resize', function(){

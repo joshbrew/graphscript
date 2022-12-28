@@ -98,7 +98,8 @@ export class WorkerService extends Service {
             let ondelete = (rt) => { //removing the original route will trigger ondelete
                 rt.worker?.terminate();
             }
-            rt.__addOndisconnected(ondelete);
+            const root = rt.__node
+            root.addOnDisconnected(ondelete);
         }
         //console.log(rt);
 

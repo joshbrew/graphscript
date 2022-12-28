@@ -7,7 +7,7 @@
 
 
 <p align="center">
-<img src="https://github.com/brainsatplay/graphscript/blob/master/gs_logo_min.png"  width=350px height=350px><br>
+<img src="./docs/assets/gs_logo_min.png"  width=350px height=350px><br>
 For happy code!
 </p>
 
