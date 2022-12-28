@@ -7,7 +7,7 @@
     "types": "dist/extras/index.gpu.services.d.ts",
     "type": "module",
     "scripts": {
-        "start": "tinybuild path=tinybuild.config.js && tinybuild path=tinybuild.gpu.config.js && tinybuild path=tinybuild.storage.config.js",
+        "start": "tinybuild",
         "build": "tinybuild build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",

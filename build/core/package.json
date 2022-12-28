@@ -7,7 +7,7 @@
     "types": "dist/index.d.ts",
     "type": "module",
     "scripts": {
-        "start": "tinybuild path=tinybuild.core.config.js",
+        "start": "tinybuild path=tinybuild.config.js",
         "build": "tinybuild build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",

@@ -2,7 +2,9 @@
   "name": "graphscript-services",
   "version": "0.0.0",
   "description": "Barebones esbuild and test node server implementation. For building",
-  "main": "index.js",
+  "main": "dist/index.services.js",
+  "module": "dist/index.services.esm.js",
+  "types": "dist/index.services.d.ts",
   "type": "module",
   "scripts": {
     "start": "tinybuild",
