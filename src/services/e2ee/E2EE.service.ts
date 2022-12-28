@@ -2,7 +2,7 @@
 
 import { GraphNode } from "../../core/Graph";
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
-import * as sjcl from "./sjcl"; //stanford javascript cryptography library, super minimal!
+import sjcl from "./sjcl"; //stanford javascript cryptography library, super minimal!
 
 //End to end encryption service, this will redirect transmits/receives through an encoder/decoder framework
 export class E2EEService extends Service {
