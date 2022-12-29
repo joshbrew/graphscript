@@ -779,13 +779,18 @@ export class Graph {
 
         if(typeof callback === 'string') {
             //console.log(node, callback, this.__node.nodes.keys());
+                    let key = callback;
             if(target) {
                 if(typeof this.get(target)?.[callback] === 'function') {
-                    let key = callback;
                     let node = this.get(target);
                     callback = function(inp) {node[key](inp)};
                 }
-            } else callback = this.get(callback)?.__operator;
+            } else {
+                if(this.get(callback)?.__operator) {
+                    let node = this.get(callback);
+                    callback = function(inp) { node.__operator(inp); }
+                }
+            }
         } 
 
         if(nd instanceof GraphNode) {
