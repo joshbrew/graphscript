@@ -779,7 +779,7 @@ export class Graph {
 
         if(typeof callback === 'string') {
             //console.log(node, callback, this.__node.nodes.keys());
-                    let key = callback;
+            let key = callback;
             if(target) {
                 if(typeof this.get(target)?.[callback] === 'function') {
                     let node = this.get(target);
