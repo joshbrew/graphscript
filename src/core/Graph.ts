@@ -534,8 +534,11 @@ export class Graph {
         if(typeof callback === 'string') {
             //console.log(node, callback, this.__node.nodes.keys());
             if(target) {
-                let method = this.get(target)?.[callback];
-                if(typeof method === 'function') callback = method;
+                if(typeof this.get(target)?.[callback] === 'function') {
+                    let key = callback;
+                    let node = this.get(target);
+                    callback = function(inp) {node[key](inp)};
+                }
             } else callback = this.get(callback)?.__operator;
         } 
 
