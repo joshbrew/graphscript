@@ -11,6 +11,7 @@ const CSV_REFERENCE:{
         lastX:number, //latest line, unjoined
         buffer:string, //appended strings waiting to be written to browserfs 
         buffered:number,
+        toFixed:number,
         bufferSize:number|undefined,
         xIncrement?:number|undefined
     }
@@ -37,9 +38,10 @@ function interpolerp(v0,v1,fit, floor=true) {
 export const appendCSV = async (
     newData:{[key:string]:number|number[]}, //assume uniformly sized data is passed in, so pass separate timestamp intervals separately
     filename:string,
-    header?:string[],
-    toFixed:number=5
+    header?:string[]
 ) => {
+
+    console.log(newData);
 
     //console.log('append',filename);
     if(!filename) {
@@ -59,6 +61,7 @@ export const appendCSV = async (
             buffer:'',
             buffered:0, //buffer numbers to be appended?
             bufferSize:0,
+            toFixed:0,
             xIncrement:undefined
         };
         csv = CSV_REFERENCE[filename];
@@ -173,7 +176,8 @@ export const appendCSV = async (
                 }
 
                 if(typeof toAppend[i][j] === 'number' && Math.floor(toAppend[i][j]) !== toAppend[i][j]) 
-                    toAppend[i][j] = toAppend[i][j].toFixed(toFixed)
+                    toAppend[i][j] = toAppend[i][j].toFixed(CSV_REFERENCE[filename].toFixed)
+                
             }
         }
     } else {
@@ -191,7 +195,8 @@ export const appendCSV = async (
 
             
             if(typeof toAppend[0][j] === 'number' && Math.floor(toAppend[0][j]) !== toAppend[0][j]) 
-                toAppend[0][j] = toAppend[0][j].toFixed(toFixed)
+                toAppend[0][j] = toAppend[0][j].toFixed(CSV_REFERENCE[filename].toFixed);
+                
         }
         
     }
@@ -278,6 +283,7 @@ export const updateCSVHeader = (header:any[],filename:string) => {
 export const createCSV = (
     filename:string,
     header:string[],
+    toFixed:number=5, //limit decimals (saves a ton of memory), set to 0 for integers
     bufferSize:number=0, //accumulate a certain number of lines before writing to BFS? (necessary for > 100 updates/sec fyi)
     xIncrement?:number //fixed time increment for newlines?
 ) => {
@@ -293,6 +299,7 @@ export const createCSV = (
         bufferSize,
         buffer:'',
         buffered:0,
+        toFixed,
         xIncrement
     };
 
@@ -351,16 +358,16 @@ export const visualizeDirectory = (dir:string, parentNode=document.body) => {
 }
 
 export const csvRoutes = {
-    appendCSV,
-    updateCSVHeader,
-    createCSV,
-    visualizeDirectory,
+    appendCSV:appendCSV,
+    updateCSVHeader:updateCSVHeader,
+    createCSV:createCSV,
+    visualizeDirectory:visualizeDirectory,
     openCSV:CSV.openCSV,
     saveCSV:CSV.saveCSV,
     openCSVRaw:CSV.openCSVRaw,
-    parseCSVData,
-    getCSVHeader,
-    writeToCSVFromDB,
-    readCSVChunkFromDB,
-    toISOLocal
+    parseCSVData:parseCSVData,
+    getCSVHeader:getCSVHeader,
+    writeToCSVFromDB:writeToCSVFromDB,
+    readCSVChunkFromDB:readCSVChunkFromDB,
+    toISOLocal:toISOLocal
 }

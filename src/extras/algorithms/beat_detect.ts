@@ -206,8 +206,8 @@ export const beat_detect = {
             if(('ir' in data) && !Array.isArray(data.red)) return pass((data.red  as number)+(data.ir as number),data.timestamp);
 
             let result;
-            if(data.ir) (data.red as number[]).map((v,i) => { return pass(v+(data as any).ir[i],(data.timestamp as number[])[i]); });
-            else (data.red as number[]).map((v,i) => { return pass(v,(data.timestamp as number[])[i]); });
+            if(data.ir) result = (data.red as number[]).map((v,i) => { return pass(v+(data as any).ir[i],(data.timestamp as number[])[i]); });
+            else result = (data.red as number[]).map((v,i) => { return pass(v,(data.timestamp as number[])[i]); });
             return result;
 
         } else if (data.raw) {

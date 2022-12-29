@@ -428,17 +428,17 @@ export const dirExists = async (fs, directory) => {
 
 
 export const BFSRoutes = {
-    initFS,
-    dirExists,
-    exists,
-    readFile,
-    readFileChunk,
-    getFilenames,
-    writeFile,
-    appendFile,
-    deleteFile,
-    readFileAsText,
-    getFileSize,
-    getCSVHeader,
-    listFiles
+    initFS:initFS,
+    dirExists:dirExists,
+    exists:exists,
+    readFile:readFile,
+    readFileChunk:readFileChunk,
+    getFilenames:getFilenames,
+    writeFile:writeFile,
+    appendFile:appendFile,
+    deleteFile:deleteFile,
+    readFileAsText:readFileAsText,
+    getFileSize:getFileSize,
+    getCSVHeader:getCSVHeader,
+    listFiles:listFiles
 };

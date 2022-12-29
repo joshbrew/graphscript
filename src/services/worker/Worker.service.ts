@@ -175,7 +175,7 @@ export class WorkerService extends Service {
                             if(rt.__node.tag !== rt.__parent && worker._id !== rt.__parent)
                                 rt.portId = this.establishMessageChannel(worker, rt.__parent) as string; 
                         }
-                        else if(rt.__node.tag !== rt.__parent?.__node?.tag && worker._id !== rt.__parent.tag) {
+                        else if(rt.__node.tag !== rt.__parent?.__node?.tag && worker._id !== rt.__parent?.tag) {
                             rt.portId = this.establishMessageChannel(worker, (rt.__parent as any).worker) as string; 
                         }
                     };
@@ -368,10 +368,9 @@ export class WorkerService extends Service {
             } else {
                 for(const key in workerSubs) {
                     if(typeof workerSubs[key].sub === 'number') {
-                        await run('unpipeWorkers',[workerSubs[key].route, workerSubs[key].portId, workerSubs[key].sub])
+                        await run('unpipeWorkers', [workerSubs[key].route, workerSubs[key].portId, workerSubs[key].sub]).then(console.log);
                     } workerSubs[key].sub = false;
                     
-                    console.log(JSON.stringify(workerSubs));
                 }
             }
             return true;
@@ -380,7 +379,7 @@ export class WorkerService extends Service {
         let terminate = () => {
             for(const key in workerSubs) {
                 if(typeof workerSubs[key].sub === 'number') {
-                    run('unpipeWorkers',[workerSubs[key].route,workerSubs[key].portId,workerSubs[key].sub])
+                    run('unpipeWorkers', [workerSubs[key].route, workerSubs[key].portId, workerSubs[key].sub]);
                 } workerSubs[key].sub = false;
             }
             return this.terminate(options._id);
@@ -521,7 +520,7 @@ export class WorkerService extends Service {
         return message;
     }
 
-    terminate = (worker:Worker|MessagePort|string) => {
+    terminate = (worker:Worker|MessagePort|string|WorkerInfo) => {
         let onclose;
         if(typeof worker === 'string') {
             let obj = this.workers[worker];
@@ -529,6 +528,11 @@ export class WorkerService extends Service {
                 delete this.workers[worker];
                 worker = obj.worker;
                 if(obj.onclose) onclose = obj.onclose;
+            }
+        } else if (typeof worker === 'object') {
+            if((worker as WorkerInfo)?._id) {
+                worker = (worker as WorkerInfo).worker;
+                delete this.workers[(worker as WorkerInfo)?._id];
             }
         }
         if(worker instanceof Worker) {
@@ -763,8 +767,10 @@ export class WorkerService extends Service {
         sub?:number
     ) => {
         if(typeof sourceWorker === 'string') sourceWorker = this.workers[sourceWorker];
-        if(sourceWorker)
+        if(typeof sourceWorker === 'object') {
+            console.log(sourceWorker,sourceRoute);
             return sourceWorker.run('unsubscribe',[sourceRoute,sub]);
+        }
     }
 
     //requires unsafe service to load on other end

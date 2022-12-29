@@ -37,7 +37,6 @@ export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
 export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
 
     if(node.__operator && !node.__node.looperSet) {
-        node.__node.looperSet = true;
         if(typeof node.__node.delay === 'number') {
             let fn = node.__operator;
             node.__setOperator((...args:any[]) => {
@@ -82,6 +81,7 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
                
         if(node.__node.loop && typeof node.__node.loop === 'number') {
             
+            node.__node.looperSet = true;
             let fn = node.__operator;
             node.__setOperator((...args) => {
                 if(!('looping' in node.__node)) node.__node.looping = true;

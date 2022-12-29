@@ -356,6 +356,7 @@ export const subprocessRoutes = {
         data:{[key:string]:any}, 
         _id?:string
     ){
+        console.log(data);
         if(!this.__node.graph.ALGORITHMS) this.__node.graph.ALGORITHMS = {};
 
         if(!_id) _id = Object.keys(this.__node.graph.ALGORITHMS)[0]; //run the first key if none specified

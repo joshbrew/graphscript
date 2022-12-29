@@ -81,7 +81,6 @@ export const wchtmlloader = (
         node.__props = document.createElement(node.tagName);
 
         node.__proxyObject(node.__props);
-        node.__props.node = node;
         let keys = Object.getOwnPropertyNames(properties);
         for(const k of keys) { 
             if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
@@ -104,7 +103,8 @@ export const wchtmlloader = (
     
     if(node.__props instanceof HTMLElement) {
         node.__props.id = key;
-
+        (node.__props as any).node = node;
+        
         node.__addOnconnected((n) => { 
             if(n.__props.parentNode) (n.__props as HTMLElement).remove(); 
             if(n.parentNode) {
