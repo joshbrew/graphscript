@@ -371,7 +371,7 @@ export class GraphNode {
     }
 
     __addOnconnected(callback:(node)=>void) {
-        if(Array.isArray(this.__ondisconnected)) { this.__onconnected.push(callback); }
+        if(Array.isArray(this.__onconnected)) { this.__onconnected.push(callback); }
         else if (typeof this.__onconnected === 'function') { this.__onconnected = [callback,this.__onconnected] }
         else this.__onconnected = callback;
     }

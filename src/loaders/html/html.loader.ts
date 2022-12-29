@@ -56,7 +56,6 @@ export const htmlloader = (
             else node.__props = document.createElement(node.__element);
         }
         if(!(node.__props instanceof HTMLElement)) return; 
-        node.__proxyObject(node.__props);
         let keys = Object.getOwnPropertyNames(properties);
         for(const k of keys) { 
             if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
@@ -65,6 +64,7 @@ export const htmlloader = (
     }
     
     if(node.__props instanceof HTMLElement) {
+        node.__proxyObject(node.__props);
 
         if(node.__onresize)
             window.addEventListener('resize', node.__onresize as EventListener);
