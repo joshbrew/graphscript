@@ -8,8 +8,8 @@ const checkIfSubscribed = (node) => {
         const parent = node.__parent
         const parentRef = parent ? node.__parent.__node.ref : null;
         if(parentRef instanceof GraphNode && node.__parent.__operator) {
-            let sub = parentRef.__subscribe(node);
-            let ondelete = () => { parent?.__unsubscribe(sub); delete root.__subscribedToParent;}
+            let sub = parentRef.__node.listeners.subscribe(node);
+            let ondelete = () => { if (parent) parent.__node.listeners.unsubscribe(sub); delete root.__subscribedToParent;}
             
             // TODO: Ensure this is available on the properties...
             root.addOnDisconnected(ondelete);

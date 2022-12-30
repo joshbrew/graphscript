@@ -519,10 +519,10 @@ export class Router extends Service {
             }
             settings.run = settings.post as any;
             settings.subscribe = async (callback:((res:any)=>void)) => {
-                return node.__subscribe(callback) as number;
+                return node.__node.listeners.subscribe(callback) as number;
             };
             settings.unsubscribe = async (sub:number) => {
-                return node.__unsubscribe(sub) as boolean;
+                return node.__node.listeners.unsubscribe(sub) as boolean;
             }
             settings.terminate = () => {
                 node.__node.graph.remove(node);
