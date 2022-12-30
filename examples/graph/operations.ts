@@ -7,13 +7,17 @@ import htmlLoader from '../../src/loaders/html/html.loader'
 import { isNode, log } from '../../tests/utils/index'
 
 type GlobalType = {
+    state: any,
+    nodeIdMap: any,
+    data: any,
+
     graph: Graph,
     nodeAInstance: any,
     graph2: Graph,
-    popped: GraphNode
+    popped: GraphNode,
 }
 
-export let globals: GlobalType
+export let globals = {} as GlobalType
 
 export const start = () => {
 
@@ -22,17 +26,35 @@ export const start = () => {
     } as any
 
     if (!isNode) loaders.html = htmlLoader;
+
+    const nodeIdMap = {}
+    const state = {
+        data: {}, // Will be replaced by graph state
+        get: function (node, key) { 
+            node = nodeIdMap[node]
+            const id = ((key) ? [node, key].join('.') : node)
+            return this.data[id] 
+        } // Get the latest state from a global object
+    }
+
+    globals.state = state
+    globals.nodeAInstance = model.nodeA
+
     const graph = new Graph({
         roots: model,
-        loaders
+        loaders,
     });
 
     log.addHeader('Graph constructed')
 
-    globals = {
-        graph: graph,
-        nodeAInstance: model.nodeA,
-    } as GlobalType
+    graph.__node.nodes.forEach(n => {
+        const root = n.__node
+        nodeIdMap[root.tag] = root.unique;
+    })
+
+    globals.state.data = graph.__node.state.data
+    globals.nodeIdMap = nodeIdMap
+    globals.graph = graph
 
     return graph;
 }
@@ -92,6 +114,9 @@ export const operations = [
         name: "graph.run('nodeA.jump')",
         function: () => globals.graph.run('nodeA.jump') //same
     },
+
+
+    // NOTE: Tests run up to here...
     {
         header: "graph2 constructed",
         function: () => {

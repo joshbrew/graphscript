@@ -5,6 +5,7 @@ class nodeClass { //treated as a class to instance rather than a function to set
     __operator = () => {
         const message = 'class instanced node called!'
         log.add(message)
+        return true
     }
 }
 
@@ -18,6 +19,10 @@ let tree = {
         __children:{
                 nodeC:{
                     z:4,
+                    listenerUpdates: {
+                        'nodeA.jump': undefined,
+                        'nodeA.x': undefined
+                    },
                     __operator:function(a) { 
                         this.z += a; 
                         const message = 'nodeC operator: nodeC z prop added to'
@@ -28,10 +33,12 @@ let tree = {
                         'nodeA.x':function(newX) { 
                             const message = 'nodeC listener: nodeA x prop updated'
                             log.add(message)
+                            this.listenerUpdates['nodeA.x'] = newX
                         },
                         'nodeA.jump':function(jump) { 
                             const message = 'nodeC listener: nodeA '
                             log.add(message)
+                            this.listenerUpdates['nodeA.jump'] = jump
                         }
                     }
                 }

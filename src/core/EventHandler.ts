@@ -1,5 +1,4 @@
 //mini state event handler for arbitrary data event callback handling
-
 //a graph representing a callstack of nodes which can be arranged arbitrarily with forward and backprop or propagation to wherever
 export class EventHandler {
 
@@ -11,9 +10,7 @@ export class EventHandler {
 
     setState = (updateObj:{[key:string]:any}) => {
         Object.assign(this.data, updateObj);
-        for (const prop of Object.getOwnPropertyNames(updateObj)) {
-            if (this.triggers[prop]) this.triggers[prop].forEach((obj) => obj.onchange(this.data[prop]));
-        }
+        for (const prop of Object.getOwnPropertyNames(updateObj)) this.triggerEvent(prop, this.data[prop])
         return this.data;
     }
     setValue = (key, value) => {
