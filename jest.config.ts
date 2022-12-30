@@ -18,7 +18,7 @@ const config: Config = {
   },
 
   testEnvironment: 'node',
-  testMatch: ['**/tests/**'],
+  testMatch: ['**/*.test.*'],
   testPathIgnorePatterns: ['/node_modules/'],
   coverageDirectory: './coverage',
   coveragePathIgnorePatterns: ['node_modules'],

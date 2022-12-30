@@ -44,11 +44,8 @@ let tree = {
 
     nodeE:{
         __operator:function (){
-            console.log('looped')
             const message = 'looped'
             log.add(message)
-            console.log(message);
-            
             return true;
         },
         __node:{

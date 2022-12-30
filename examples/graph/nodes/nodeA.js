@@ -12,15 +12,13 @@ export const jump = ()=>{
 
 export const __listeners = {
     'nodeB.x':'jump', //listeners in a scope are bound to 'this' node
-    'nodeB.nodeC':function(op_result){
+    'nodeB.nodeC':function(){
         const message = 'nodeA listener: nodeC operator returned:'
         log.add(message)
-        console.log(message, op_result, this.__node.tag)
     },
-    'nodeB.nodeC.z':function(newZ){
+    'nodeB.nodeC.z':function(){
         const message = 'nodeA listener: nodeC z prop changed:'
         log.add(message)
-        console.log(message,  newZ, this.__node.tag)
     },
     'nodeE': 'jump'
 }

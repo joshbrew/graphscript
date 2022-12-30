@@ -1,11 +1,10 @@
-
 export const isNode = typeof process === 'object'
 
 const elId = `escomposeOperationsManagerLog`
 
 const document = globalThis.document
 
-globalThis.escodeDemoLog = true
+globalThis.graphscriptDemoLog = true
 
 if (!isNode) {
     const ol = document.createElement('ol')
@@ -42,11 +41,11 @@ export const log = {
             var li = document.createElement('li');
             li.innerText = message;
             this.element.appendChild(li);
-        } else if (globalThis.escodeDemoLog) console.log(message)
+        } else if (globalThis.graphscriptDemoLog) console.log(message)
     },
     addCommand: function (message) {
 
-        if (globalThis.escodeDemoLog) console.log(`--------- ${message} ---------`)
+        if (globalThis.graphscriptDemoLog) console.log(`--------- ${message} ---------`)
         if (this.element) {
             var li = document.createElement('div');
             li.innerText = message;
@@ -55,7 +54,7 @@ export const log = {
         }
     },
     addHeader: function (message) {
-        if (globalThis.escodeDemoLog) console.log(`********* ${message} *********`)
+        if (globalThis.graphscriptDemoLog) console.log(`********* ${message} *********`)
         if (this.element) {
             var li = document.createElement('h3');
             li.innerText = message;
@@ -73,11 +72,13 @@ export type OperationsType = (Function | {
 })[]
 
 export type OperationsStart = Function
+export type OperationsStop = Function
 
 
 export type OperationsConfig = {
     operations?: OperationsType,
-    start?: OperationsStart
+    start?: OperationsStart,
+    stop?: OperationsStop
 }
 
 
@@ -96,9 +97,11 @@ export class OperationsManager {
     set iterations (val) {
         this.#iterations = val
         this.step = this.#iterations % this.operations.length
+        if (this.step === 0) this.stop()
     }
     
     startFunction?: OperationsStart
+    stopFunction?: OperationsStop
     started = false
 
     returned: any = {}
@@ -117,15 +120,14 @@ export class OperationsManager {
         else {
             if ('start' in config) this.setStart(config.start)
             if ('operations' in config) this.setOperations(config.operations)
+            if ('stop' in config) this.setStop(config.stop)
         }
     }
 
 
     start = (...args) => {
-        if (this.started) {
-            console.warn('Already started...')
-            return this.returned
-        } else {
+        if (this.started) return this.returned // Already started
+        else {
             this.started = true
             if (this.startFunction)  {
                 this.returned = this.startFunction.call(this, ...args)
@@ -134,9 +136,20 @@ export class OperationsManager {
         }
     }
 
+    stop = (...args) => {
+        if (this.started) {
+            this.started = false
+            if (this.stopFunction) return this.stopFunction.call(this, ...args)
+        }
+    }
+
     setStart(start){
         this.started = false
         this.startFunction = start
+    }
+
+    setStop(stop){
+        this.stopFunction = stop
     }
 
     setOperations(operations: OperationsType = []) {
@@ -147,9 +160,7 @@ export class OperationsManager {
     runAll = () => {
         if (this.step === 0) this.next()
 
-        let count = 0
         while (this.step > 0) {
-            count++
             this.next()
         }
     }

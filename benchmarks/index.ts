@@ -1,6 +1,6 @@
 import * as core from './core.benchmark'
 
-globalThis.escodeDemoLog = false
+globalThis.graphscriptDemoLog = false
 
 let results = {
     other: {},

@@ -310,7 +310,7 @@ export class Graph {
             (node as any).__node.tag = (node as any).__node.tag.substring((node as any).__node.tag.indexOf('.')+1);
         }
 
-        return node;
+        return node as GraphNode
     }
 
     run = (node:string|GraphNode, ...args:any[]) => {
