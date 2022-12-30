@@ -556,7 +556,8 @@ export class Graph {
                 if(!p.__node) p.__node = {};
                 if(!p.__node.tag) p.__node.tag = key;
                 if(!p.__node.initial) p.__node.initial = t[key];
-                if((this.get(p.__node.tag) && !(parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
+                if(((this.get(p.__node.tag) && !(!(parent instanceof Graph) && parent?.__node)) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag)))) continue; //don't duplicate a node we already have in the graph by tag
+    
                 let node: GraphNode;
                 if(instanced || p instanceof GraphNode) {
                     node = p;
