@@ -1,20 +1,16 @@
 import * as nodeA from './nodes/nodeA.js'
-import list from './list'
-
-export const isNode = typeof process === 'object'
-
-const nodeAInstance = Object.assign({}, nodeA)
+import { isNode, log } from '../../tests/utils/index'
 
 class nodeClass { //treated as a class to instance rather than a function to set as __operator
     __operator = () => {
         const message = 'class instanced node called!'
-        list.add(message)
+        log.add(message)
     }
 }
 
 let tree = {
 
-    nodeA: nodeAInstance,
+    nodeA: Object.assign({}, nodeA), // Avoid issues with ESM
 
     nodeB:{
         x:3,
@@ -25,17 +21,17 @@ let tree = {
                     __operator:function(a) { 
                         this.z += a; 
                         const message = 'nodeC operator: nodeC z prop added to'
-                        list.add(message)
+                        log.add(message)
                         return this.z; 
                     },
                     __listeners:{
                         'nodeA.x':function(newX) { 
                             const message = 'nodeC listener: nodeA x prop updated'
-                            list.add(message)
+                            log.add(message)
                         },
                         'nodeA.jump':function(jump) { 
                             const message = 'nodeC listener: nodeA '
-                            list.add(message)
+                            log.add(message)
                         }
                     }
                 }
@@ -50,7 +46,7 @@ let tree = {
         __operator:function (){
             console.log('looped')
             const message = 'looped'
-            list.add(message)
+            log.add(message)
             console.log(message);
             
             return true;
