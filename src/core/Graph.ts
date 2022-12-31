@@ -923,6 +923,9 @@ export const wrapArgs = (callback,argOrder,graph) => {
                 else if(graph.get(arg)?.__operator) {
                     let node = graph.get(arg);
                     args[i] = (...inp) => { node.__operator(...inp); };
+                } else if (graph.get(arg)) { //return the node itself (pass by reference :D)
+                    let node = graph.get(arg);
+                    args[i] = () => { return node; };
                 } else {
                     let arg = args[i];
                     args[i] = () => { return arg; };
