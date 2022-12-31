@@ -219,7 +219,7 @@ export const triggerListenerOncreate = (node:GraphNode,parent:GraphNode|Graph,gr
     }
 }
 
-/** Trigger listeners oncreate with specific arguments
+/** Bind listeners to a specific object instead of the node that owns it
  * 
  *  nodeA.__listeners['nodeB.x'] = { callback:(result)=>void, binding:{[key:string]:any} }
  * 

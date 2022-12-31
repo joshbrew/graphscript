@@ -81,7 +81,7 @@ export const htmlloader = (
     if(node.__props instanceof HTMLElement) {
         node.__props.id = key;
         (node.__props as any).node = node;
-
+        
         node.__addOnconnected((n) => { 
             if(n.__props.parentNode) (n.__props as HTMLElement).remove(); 
             if(n.parentNode) {
