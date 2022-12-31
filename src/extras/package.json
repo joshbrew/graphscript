@@ -1,15 +1,45 @@
 {
-    "name": "graphscript-extras",
-    "version": "0.2.27",
+    "name": "graphscript-services",
+    "version": "0.2.29",
     "description": "Extra services for graphscript.",
-    "private": true,
+    "main": "dist/index.services.js",
+    "module": "dist/index.services.esm.js",
+    "types": "dist/extras/index.services.d.ts",
     "scripts": {
-        "start": "npm run build",
-        "build": "cd build && cd gpu && tinybuild path=tinybuild.gpu.config.js && cd ../storage && tinybuild path=tinybuild.storage.config.js && cd ../services && tinybuild path=tinybuild.services.config.js"
+        "start": "tinybuild path=tinybuild.config.js && tinybuild path=tinybuild.gpu.config.js && tinybuild path=tinybuild.storage.config.js",
+        "build": "tinybuild build",
+        "serve": "tinybuild serve",
+        "init": "node tinybuild/init.js",
+        "concurrent": "concurrently \"npm run python\" \"npm start\"",
+        "dev": "npm run pip && npm i --save-dev concurrently && npm i --save-dev nodemon && npm run concurrent",
+        "startdev": "nodemon --exec \"node tinybuild.js\" -e ejs,js,ts,jsx,tsx,css,html,jpg,png,scss,txt,csv",
+        "python": "python python/server.py",
+        "pip": "pip install quart && pip install websockets",
+        "pwa": "npm i workbox-cli && workbox generateSW node_server/pwa/workbox-config.js && npm run build && npm start"
     },
     "keywords": [
         "esbuild"
     ],
     "author": "Joshua Brewster",
-    "license": "AGPL-3.0-or-later"
+    "license": "AGPL-3.0-or-later",
+    "dependencies": {
+        "brainsatplay-math": "~0.0.25",
+        "browserfs": "^1.4.3",
+        "bson-objectid": "~2.0.4",
+        "gpujsutils": "~1.0.12",
+        "web-worker": "^1.2.0",
+        "webgl-plot-utils": "~0.3.15"
+    },
+    "nodemonConfig": {
+        "env": {
+            "NODEMON": true
+        },
+        "ignore": [
+            "dist/",
+            ".temp/"
+        ]
+    },
+    "devDependencies": {
+        "@types/node": "~18.7.15"
+    }
 }

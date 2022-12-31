@@ -77,109 +77,145 @@ export class GraphNode {
     
     //pass GraphNodeProperties, functions, or tags of other nodes
     constructor(properties:any, parent?:{[key:string]:any}, graph?:Graph) {
+        this.__setProperties(properties,parent,graph);
+    }
 
-        let orig = properties;
-        if(typeof properties === 'function') {
-            if(isNativeClass(properties)) { //works on custom classes
-                //console.log(properties);
-                properties = new properties(); //this is a class that returns a node definition
-            } else properties = {
-                __operator:properties,
-                __node:{
-                    forward:true, //propagate operator results to children
-                    tag:properties.name
+    __setProperties = (properties, parent, graph) => {
+        
+        let enforceProperties = () => {
+            let orig = properties;
+            if(typeof properties === 'function') {
+                if(isNativeClass(properties)) { //works on custom classes
+                    //console.log(properties);
+                    properties = new properties(); //this is a class that returns a node definition
+                } else properties = {
+                    __operator:properties,
+                    __node:{
+                        forward:true, //propagate operator results to children
+                        tag:properties.name
+                    }
+                };
+            } else if (typeof properties === 'string') {
+                if(graph?.get(properties)) {
+                    properties = graph.get(properties);
                 }
-            };
-        } else if (typeof properties === 'string') {
-            if(graph?.get(properties)) {
-                properties = graph.get(properties);
             }
+            if(!properties.__node.initial) properties.__node.initial = orig; //original object or function
+    
         }
-        if(!properties.__node.initial) properties.__node.initial = orig; //original object or function
+
+        enforceProperties();
 
         if(typeof properties === 'object') {
-            if(properties.__node?.state) this.__node.state = properties.__node.state; //make sure we're subscribing to the right state if we're passing a custom one in
-            if(properties.__props) { //e.g. some generic javascript object or class constructor that we want to proxy. Functions passed here are treated as constructors. E.g. pass an HTML canvas element for the node then set this.width on the node to set the canvas width  
-                if (typeof properties.__props === 'function') properties.__props = new properties.__props();
-                if (typeof properties.__props === 'object') {
-                    this.__proxyObject(properties.__props);
-                }
+            
+            let assignState = () => {
+                if(properties.__node?.state) this.__node.state = properties.__node.state; //make sure we're subscribing to the right state if we're passing a custom one in
             }
 
-            if (typeof properties.__node === 'string') {
-                //copy
-                if(graph?.get(properties.__node.tag)) {
-                    properties = graph.get(properties.__node.tag);
-                } else properties.__node = {}
-            } else if(!properties.__node) properties.__node = {};
-
-            if(graph) {
-                properties.__node.graph = graph;
-            }
-
-            if(properties.__operator) {
-                if (typeof properties.__operator === 'string') {
-                    if(graph) {
-                        let n = graph.get(properties.__operator);
-                        if(n) properties.__operator = n.__operator;
-                        if(!properties.__node.tag && (properties.__operator as Function).name) 
-                            properties.__node.tag = (properties.__operator as Function).name;
+            let setProps = () => {
+                if(properties.__props) { //e.g. some generic javascript object or class constructor that we want to proxy. Functions passed here are treated as constructors. E.g. pass an HTML canvas element for the node then set this.width on the node to set the canvas width  
+                    if (typeof properties.__props === 'function') properties.__props = new properties.__props();
+                    if (typeof properties.__props === 'object') {
+                        this.__proxyObject(properties.__props);
                     }
                 }
-                if(typeof properties.__operator === 'function') 
-                    properties.__operator = this.__setOperator(properties.__operator);
+            }
+
+            let setNode = () => {
+                if (typeof properties.__node === 'string') {
+                    //copy
+                    if(graph?.get(properties.__node.tag)) {
+                        properties = graph.get(properties.__node.tag);
+                    } else properties.__node = {}
+                } else if(!properties.__node) properties.__node = {};
+    
+                if(graph) {
+                    properties.__node.graph = graph;
+                }
                 
+                if(properties instanceof Graph) properties.__node.source = properties; //keep tabs on source graphs passed to make nodes
             }
 
-            if(!properties.__node.tag) {
-                if(properties.__operator?.name)
-                    properties.__node.tag = properties.__operator.name;
-                else 
-                    properties.__node.tag = `node${Math.floor(Math.random()*1000000000000000)}`;
-            }
+            let setOp = () => {
 
-            //child/branch nodes get their parent tags prepended in their tag
-            if(!properties.__parent && parent) properties.__parent = parent;
-            if(parent?.__node && (!(parent instanceof Graph || properties instanceof Graph))) 
-                properties.__node.tag = parent.__node.tag + '.' + properties.__node.tag; //load parents first
-            
-            if(parent instanceof Graph && properties instanceof Graph) {
-
-                if(properties.__node.loaders) Object.assign(parent.__node.loaders ? parent.__node.loaders : {}, properties.__node.loaders); //let the parent graph adopt the child graph's loaders
-
-                if(parent.__node.mapGraphs) {
-                    //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
-                    properties.__node.nodes.forEach((n) => {parent.set(properties.__node.tag+'.'+n.__node.tag,n)});
-
-                    let ondelete = () => { properties.__node.nodes.forEach((n) => {parent.__node.nodes.delete(properties.__node.tag+'.'+n.__node.tag)}); }
-                    this.__addOndisconnected(ondelete);
-
+                if(properties.__operator) {
+                    if (typeof properties.__operator === 'string') {
+                        if(graph) {
+                            let n = graph.get(properties.__operator);
+                            if(n) properties.__operator = n.__operator;
+                            if(!properties.__node.tag && (properties.__operator as Function).name) 
+                                properties.__node.tag = (properties.__operator as Function).name;
+                        }
+                    }
+                    if(typeof properties.__operator === 'function') 
+                        properties.__operator = this.__setOperator(properties.__operator);
+                    
                 }
             }
 
-            properties.__node = Object.assign(this.__node,properties.__node);
-            
-            let keys = Object.getOwnPropertyNames(properties);
-            for(const key of keys) { this[key] = properties[key]; }
-
-            
-            if (typeof properties.default === 'function' && !properties.__operator) { //make it so the node is subscribable
-                let fn = properties.default.bind(this);
-                if(this.__args && this.__node.graph) fn = wrapArgs(fn, this.__args, this.__node.graph);
-                this.default = (...args) => {
-                    if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'input',args);
-                    let result = fn(...args);
-                    if(typeof result?.then === 'function') {
-                        result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.unique,res ) }).catch(console.error);
-                    } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
-                    return result;
-                } 
-
-                properties.default = this.default;
+            let setTag = () => {
+                if(!properties.__node.tag) {
+                    if(properties.__operator?.name)
+                        properties.__node.tag = properties.__operator.name;
+                    else 
+                        properties.__node.tag = `node${Math.floor(Math.random()*1000000000000000)}`;
+                }
             }
-            
-            if(properties instanceof Graph) this.__node.source = properties; //keep tabs on source graphs passed to make nodes
 
+            let setParent = () => {
+                //child/branch nodes get their parent tags prepended in their tag
+                if(!properties.__parent && parent) properties.__parent = parent;
+                if(parent?.__node && (!(parent instanceof Graph || properties instanceof Graph))) 
+                    properties.__node.tag = parent.__node.tag + '.' + properties.__node.tag; //load parents first
+                
+                if(parent instanceof Graph && properties instanceof Graph) {
+
+                    if(properties.__node.loaders) Object.assign(parent.__node.loaders ? parent.__node.loaders : {}, properties.__node.loaders); //let the parent graph adopt the child graph's loaders
+
+                    if(parent.__node.mapGraphs) {
+                        //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
+                        properties.__node.nodes.forEach((n) => {parent.set(properties.__node.tag+'.'+n.__node.tag,n)});
+
+                        let ondelete = () => { properties.__node.nodes.forEach((n) => {parent.__node.nodes.delete(properties.__node.tag+'.'+n.__node.tag)}); }
+                        this.__addOndisconnected(ondelete);
+
+                    }
+                }
+            }
+
+            let assignProps = () => {
+                properties.__node = Object.assign(this.__node,properties.__node);
+            
+                let keys = Object.getOwnPropertyNames(properties);
+                for(const key of keys) { this[key] = properties[key]; }
+            }
+
+            let setDefault = () => {
+                if (typeof properties.default === 'function' && !properties.__operator) { //make it so the node is subscribable
+                    let fn = properties.default.bind(this);
+                    if(this.__args && this.__node.graph) fn = wrapArgs(fn, this.__args, this.__node.graph);
+                    this.default = (...args) => {
+                        if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'input',args);
+                        let result = fn(...args);
+                        if(typeof result?.then === 'function') {
+                            result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.unique,res ) }).catch(console.error);
+                        } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
+                        return result;
+                    } 
+    
+                    properties.default = this.default;
+                }
+            }
+
+            //specific load order!!
+            assignState();
+            setProps();
+            setNode();
+            setOp();
+            setTag();
+            setParent();
+            assignProps();
+            setDefault();
             
         }
     }
@@ -411,7 +447,7 @@ export class Graph {
         unique:string,
         state:EventHandler,
         nodes:Map<string,GraphNode|any>,
-        roots?:{[key:string]:any}
+        roots:{[key:string]:any}
         mapGraphs?:boolean,
         [key:string]:any
     } = {
@@ -419,6 +455,7 @@ export class Graph {
         unique:`${Math.random()}`,
         nodes:new Map(),
         state,
+        roots:{}
         // mapGraphs:false //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
         // roots:undefined as any,
         // loaders:undefined as any,
@@ -431,7 +468,7 @@ export class Graph {
         this.init(options);
     }
 
-    init = (options:GraphOptions) => {
+    init = (options?:GraphOptions) => {
         if(options) {
             recursivelyAssign(this.__node, options); //assign loaders etc
             if(options.roots) this.load(options.roots);
@@ -498,7 +535,10 @@ export class Graph {
                 else properties = new properties(); //this is a class that returns a node definition 
             } else properties = { __operator:properties };
         }
-        else if (typeof properties === 'string') properties = this.__node.roots[properties];
+        else if (typeof properties === 'string') {
+            properties = this.__node.roots[properties];
+        }
+        if(!properties) return
         
         if(!instanced) {
             properties = Object.assign({},properties); //make sure we don't mutate the original object   
@@ -869,7 +909,7 @@ function recursivelyAssign (target,obj) {
 
 
 export function getAllProperties(obj){ //https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
-    var allProps = [], curr = obj
+    var allProps = [] as any[], curr = obj
     do{
         var props = Object.getOwnPropertyNames(curr)
         props.forEach(function(prop){
@@ -882,7 +922,7 @@ export function getAllProperties(obj){ //https://stackoverflow.com/questions/802
 
 export function instanceObject(obj) {
     let props = getAllProperties(obj); //e.g. Math
-    let instance = {};
+    let instance = {} as any;
     for(const key of props) {
         instance[key] = obj[key];
     }
@@ -900,7 +940,7 @@ export function isNativeClass (thing) {
 //we can provide an argument list to structure inputs into a function from a set of getters for other node properties and functions etc.
 //e.g. argOrder = ['__output','nodeA.x','nodeB.z']
 export const wrapArgs = (callback,argOrder,graph) => {
-        let args = [];
+        let args = [] as any[];
         //set up getters 
         argOrder.forEach((arg,i) => {
             if(arg === '__output') {
@@ -908,7 +948,7 @@ export const wrapArgs = (callback,argOrder,graph) => {
             } else if(typeof arg === 'string') {
                 if(arg.includes('.')) {
                     let split = arg.split('.');
-                    let popped = split.pop();
+                    let popped = split.pop() as any;
                     let joined = split.join('.');
                     if(graph.get(joined)?.[popped]) {
                         let node = graph.get(joined);

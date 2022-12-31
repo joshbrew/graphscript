@@ -2,19 +2,19 @@
 const config = {
     bundler: { //esbuild settings, set false to skip build step or add bundle:true to config object to only bundle (alt methods)
         entryPoints: [ //entry point file(s). These can include .js, .mjs, .ts, .jsx, .tsx, or other javascript files. Make sure your entry point is a ts file if you want to generate types
-            "index.storage.services.ts"
+            "index.node.ts"
         ],
-        outfile: "dist/index.storage.services", //exit point file, will append .js as well as indicators like .esm.js, .node.js for other build flags
+        outfile: "dist/index.node", //exit point file, will append .js as well as indicators like .esm.js, .node.js for other build flags
         //outdir:[]               //exit point files, define for multiple bundle files
-        bundleBrowser: true, //create plain js build? Can include globals and init scripts
-        bundleESM: true, //create esm module js files
+        bundleBrowser: false, //create plain js build? Can include globals and init scripts
+        bundleESM: false, //create esm module js files
         bundleTypes: true, //create .d.ts files, the entry point must be a typescript file! (ts, tsx, etc)
-        bundleNode: false, //create node platform plain js build, specify platform:'node' to do the rest of the files 
+        bundleNode: true, //create node platform plain js build, specify platform:'node' to do the rest of the files 
         bundleHTML: false, //wrap the first entry point file as a plain js script in a boilerplate html file, frontend scripts can be run standalone like a .exe! Server serves this as start page if set to true.
         //minify: false,
-        minifyWhitespace:true,
-        sourcemap: false
-        //platform:'node' //for bundling the node.ts file
+        minifyWhitespace:true, //https://esbuild.github.io/api/#minify
+        sourcemap: false,
+        platform:'node' //for bundling the node.ts file
         //globalThis:null //'mymodule'
         //globals:{'index.js':['Graph']}
         //init:{'index.js':function(bundle) { console.log('prepackaged bundle script!', bundle); }}      
@@ -30,11 +30,11 @@ const config = {
     //     //watch: ['../'], //watch additional directories other than the current working directory
     //     pwa: "dist/service-worker.js",  //pwa mode? Injects service worker registry code in (see pwa README.md)
     //     python: false,//7000,  //quart server port (configured via the python server script file still)
-    //     python__node: 7001, //websocket relay port (relays messages to client from nodejs that were sent to it by python)
+    //     python_node: 7001, //websocket relay port (relays messages to client from nodejs that were sent to it by python)
     //     errpage: "node_modules/tinybuild/tinybuild/node_server/other/404.html",  //default error page, etc.
     //     certpath: "node_modules/tinybuild/tinybuild/node_server/ssl/cert.pem", //if using https, this is required. See cert.pfx.md for instructions
     //     keypath: "node_modules/tinybuild/tinybuild/node_server/ssl/key.pem" //if using https, this is required. See cert.pfx.md for instructions
     // }
 }
 
-export default config; //
+module.exports = config; //es5 //export default config; //

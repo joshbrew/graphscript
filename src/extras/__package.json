@@ -1,13 +1,12 @@
 {
     "name": "graphscript-services.storage",
-    "version": "0.2.27",
+    "version": "0.2.29",
     "description": "Extra services for graphscript.",
     "main": "dist/index.storage.services.js",
     "module": "dist/index.storage.services.esm.js",
     "types": "dist/index.storage.services.d.ts",
-    "type": "module",
     "scripts": {
-        "start": "tinybuild",
+        "start": "tinybuild path=tinybuild.config.js && tinybuild path=tinybuild.gpu.config.js && tinybuild path=tinybuild.storage.config.js",
         "build": "tinybuild build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",
@@ -28,7 +27,7 @@
         "browserfs": "^1.4.3",
         "bson-objectid": "~2.0.4",
         "gpujsutils": "~1.0.12",
-        "webgl-plot-utils": "~0.3.15"
+        "webgl-plot-utils":"~0.3.15"
     },
     "nodemonConfig": {
         "env": {

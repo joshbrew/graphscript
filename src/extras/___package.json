@@ -1,12 +1,12 @@
 {
-    "name": "graphscript-node",
-    "version": "0.2.27",
-    "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "type": "module",
+    "name": "graphscript-services.gpu",
+    "version": "0.2.29",
+    "description": "Extra services for graphscript.",
+    "main": "dist/index.gpu.services.js",
+    "module": "dist/index.gpu.services.esm.js",
+    "types": "dist/extras/index.gpu.services.d.ts",
     "scripts": {
-        "start": "tinybuild path=tinybuild.config.js",
+        "start": "tinybuild path=tinybuild.config.js && tinybuild path=tinybuild.gpu.config.js && tinybuild path=tinybuild.storage.config.js",
         "build": "tinybuild build",
         "serve": "tinybuild serve",
         "init": "node tinybuild/init.js",
@@ -23,12 +23,11 @@
     "author": "Joshua Brewster",
     "license": "AGPL-3.0-or-later",
     "dependencies": {
-        "better-sse": "^0.8.0",
         "brainsatplay-math": "~0.0.25",
+        "browserfs": "^1.4.3",
         "bson-objectid": "~2.0.3",
-        "sjcl": "^1.0.8",
-        "web-worker": "~1.2.0",
-        "ws": "~8.11.0"
+        "gpujsutils": "~1.0.12",
+        "webgl-plot-utils":"~0.3.15"
     },
     "nodemonConfig": {
         "env": {
