@@ -440,8 +440,8 @@ export class Graph {
 
     load = (roots:{[key:string]:any}) => {
 
-        this.__node.roots = Object.assign(this.__node.roots ? this.__node.roots : {}, roots);
-
+        this.__node.roots = recursivelyAssign(this.__node.roots ? this.__node.roots : {}, roots);
+        
         let cpy = Object.assign({},roots);
         if(cpy.__node) delete cpy.__node; //we can specify __node behaviors on the roots too to specify listeners
 
@@ -449,7 +449,7 @@ export class Graph {
 
         //make the roots a node 
         if(roots.__node) {
-            if(!roots.__node.tag) roots.__node._tag = `roots${Math.floor(Math.random()*1000000000000000)}`
+            if(!roots.__node.tag) roots.__node._tag = `roots${Math.floor(Math.random()*1000000000000000)}`;
             else if (!this.get(roots.__node.tag)) {
                 let node = new GraphNode(roots,this,this); //blank node essentially for creating listeners
                 this.set(node.__node.tag,node);
