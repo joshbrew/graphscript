@@ -28,7 +28,7 @@ export type SSEChannelInfo = {
     request:(message:any, method?:string, sessionId?:string, eventName?:string)=>Promise<any>|Promise<any>[],
     post:(route:any, args?:any, method?:string, sessionId?:string, eventName?:string)=>void,
     run:(route:any, args?:any, method?:string, sessionId?:string, eventName?:string)=>Promise<any>|Promise<any>[],
-    subscribe:(route:any, callback?:((res:any)=>void)|string, sessionId?:string)=>Promise<number>|Promise<number>[]|undefined,
+    subscribe:(route:any, callback?:((res:any)=>void)|string,key?:string,args?:any[],subInput?:boolean,sessionId?:string,eventName?:string)=>Promise<number>|Promise<number>[]|undefined,
     unsubscribe:(route:any, sub:number, sessionId?:string, eventName?:string)=>Promise<boolean>|Promise<boolean>[],
     terminate:() => boolean,
     _id:string,
@@ -43,7 +43,8 @@ export type SSEClientInfo = {
     request:(message:any, method?:string,  eventName?:string)=>Promise<any>,
     post:(route:any, args?:any, method?:string, eventName?:string)=>void,
     run:(route:any, args?:any, method?:string, eventName?:string)=>Promise<any>,
-    subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
+    subscribe:(route:any, callback?:((res:any)=>void)|string,
+    key?:string,args?:any[],subInput?:boolean,sessionId?:string,eventName?:string)=>any,
     unsubscribe:(route:any, sub:number, eventName?:string)=>Promise<boolean>,
     terminate:() => boolean,
     onclose?:(session:any,sseinfo:any,_id:string,req:http.IncomingMessage,res:http.ServerResponse)=>void,
@@ -147,8 +148,10 @@ export class SSEbackend extends Service {
             return this.request(r, path, method, sessionId, eventName)
         }
 
-        let subscribe = (route:any, callback?:((res:any)=>void)|string, sessionId?:string):Promise<number>|Promise<number>[]|undefined => {
-            return this.subscribeToSSE(route, options.url, callback, sessionId);
+        let subscribe = (route:any, callback?:((res:any)=>void)|string, 
+            key?:string,args?:any[],subInput?:boolean,
+            sessionId?:string, eventName?:string):Promise<number>|Promise<number>[]|undefined => {
+            return this.subscribeToSSE(route, options.url, callback, key, args, subInput, sessionId, eventName);
         }
 
         let unsubscribe = (route:any, sub:number, sessionId?:string, eventName?:string):Promise<boolean>|Promise<boolean>[] => {
@@ -443,13 +446,14 @@ export class SSEbackend extends Service {
     subscribeSSE = (
         route:string, 
         path:string, 
+        key?:string,args?:any[],subInput?:boolean,
         sessionId?:string,
         eventName?:string
     ) => {
         if(this.servers[path]) {
             return this.subscribe(route, (res) => {
                 this.servers[path].send({args:res, callbackId:route}, eventName, sessionId);
-            })
+            }, key, args, subInput);
         }
     }
 
@@ -457,6 +461,7 @@ export class SSEbackend extends Service {
         route:string, 
         path:string, 
         callback?:string|((res:any)=>void), 
+        key?:string,args?:any[],subInput?:boolean,
         sessionId?:string,
         eventName?:string
     ) => {
@@ -475,7 +480,7 @@ export class SSEbackend extends Service {
                 if(this.servers[path].sessions[sessionId]) {
                     return this.eventsources[sessionId].run(
                         'subscribeSSE', 
-                        {route:'subscribeSSE',args:[route,path]}, 
+                        {route:'subscribeSSE',args:[route,path,key,args,subInput]}, 
                         undefined, 
                         eventName
                     ) as Promise<number>
@@ -486,7 +491,7 @@ export class SSEbackend extends Service {
                     promises.push(
                         this.eventsources[k].run(
                             'subscribeSSE', 
-                            {route:'subscribeSSE',args:[route,path]}, 
+                            {route:'subscribeSSE',args:[route,path,key,args,subInput]}, 
                             undefined, 
                             eventName
                         ) as Promise<number>

@@ -1,7 +1,7 @@
 //@ts-nocheck
 
 //resources
-import { Service, WorkerCanvas, GraphNodeProperties, loaders, htmlloader, HTMLNodeProperties } from '../../build/main/index';
+import { Service, WorkerCanvas, GraphNodeProperties, loaders, htmlloader, HTMLNodeProperties } from '../..//index';
 import { 
     initDevice, 
     workers, 

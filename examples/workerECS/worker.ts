@@ -4,9 +4,9 @@ import {
     workerCanvasRoutes,
     ECSService,
      //GPUService 
-} from '../../build/main/index'/////"../../GraphServiceRouter/index";//from 'graphscript'
+} from '../../index'/////"../../GraphServiceRouter/index";//from 'graphscript'
 
-import {Systems} from '../../src/extras/build/services/index.services'
+import {Systems} from '../../src/extras/index.services'
 
 import { CanvasProps } from '../../src/services/worker/WorkerCanvas';
 

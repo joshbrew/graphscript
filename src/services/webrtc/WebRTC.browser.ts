@@ -30,7 +30,7 @@ export type WebRTCInfo = {
     request:(message:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
     run:(route:any, args?:any, method?:string)=>Promise<any>,
-    subscribe:(route:any, callback?:((res:any)=>void)|string)=>Promise<number>,
+    subscribe:(route:any, callback?:((res:any)=>void)|string,key?:string,args?:any[],subInput?:boolean,channelId?:string)=>Promise<number>,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
     terminate:()=>boolean,
     graph:WebRTCfrontend
@@ -184,8 +184,12 @@ export class WebRTCfrontend extends Service {
                 });
             }
 
-            let subscribe = (route:any, callback?:((res:any)=>void)|string) => {
-                return this.subscribeToRTC(route, options._id, firstChannel, callback);
+            let subscribe = (route:any, callback?:((res:any)=>void)|string, key?:string,
+                args?:any[],
+                subInput?:boolean,
+                channelId?:string
+            ) => {
+                return this.subscribeToRTC(route, options._id, channelId ? channelId : firstChannel, callback, key, args, subInput);
             }
 
             let unsubscribe = (route:any, sub:number) => {
@@ -495,10 +499,17 @@ export class WebRTCfrontend extends Service {
         return res;
     }
             
-    subscribeRTC = (route:string, rtcId:string, channel:string|RTCDataChannel) => {
+    subscribeRTC = (
+        route:string, 
+        rtcId:string, 
+        key?:string,
+        args?:any[],
+        subInput?:boolean,
+        channel?:string|RTCDataChannel
+    ) => {
         if(typeof channel === 'string' && this.rtc[rtcId]) {
             channel = this.rtc[rtcId].channels[channel] as RTCDataChannel;
-        }
+        } else if (!channel) { channel = this.rtc[rtcId].channels[Object.keys(this.rtc[rtcId].channels)[0]] as RTCDataChannel }
         return this.subscribe(route, (res:any) => {
             //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
             if(res instanceof Promise) {
@@ -508,10 +519,15 @@ export class WebRTCfrontend extends Service {
             } else {
                 (channel as RTCDataChannel).send(JSON.stringify({args:res, callbackId:route}));
             }
-        });
+        },key,args,subInput);
     } 
 
-    subscribeToRTC = (route:string, rtcId:string, channelId:string, callback?:string|((res:any)=>void)) => {
+    subscribeToRTC = (
+        route:string, rtcId:string, channelId:string, callback?:string|((res:any)=>void),
+        key?:string,
+        args?:any[],
+        subInput?:boolean
+    ) => {
         if(typeof channelId === 'string' && this.rtc[rtcId]) {
             let c = this.rtc[rtcId];
             let channel = c.channels[channelId];
@@ -526,7 +542,7 @@ export class WebRTCfrontend extends Service {
                         else callback(res.args);
                     }
                 });
-                return c.request({route:'subscribeRTC', args:[route,channelId]});
+                return c.request({route:'subscribeRTC', args:[route,rtcId,key,args,subInput,channelId]});
             }
         }
     }

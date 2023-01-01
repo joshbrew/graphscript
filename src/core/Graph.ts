@@ -121,6 +121,16 @@ export class GraphNode {
                 }
             }
 
+            let setTag = () => {
+                if(!properties.__node.tag) {
+                    if(properties.__operator?.name)
+                        properties.__node.tag = properties.__operator.name;
+                    else 
+                        properties.__node.tag = `node${Math.floor(Math.random()*1000000000000000)}`;
+                }
+            }
+
+
             let setNode = () => {
                 if (typeof properties.__node === 'string') {
                     //copy
@@ -136,31 +146,6 @@ export class GraphNode {
                 if(properties instanceof Graph) properties.__node.source = properties; //keep tabs on source graphs passed to make nodes
             }
 
-            let setOp = () => {
-
-                if(properties.__operator) {
-                    if (typeof properties.__operator === 'string') {
-                        if(graph) {
-                            let n = graph.get(properties.__operator);
-                            if(n) properties.__operator = n.__operator;
-                            if(!properties.__node.tag && (properties.__operator as Function).name) 
-                                properties.__node.tag = (properties.__operator as Function).name;
-                        }
-                    }
-                    if(typeof properties.__operator === 'function') 
-                        properties.__operator = this.__setOperator(properties.__operator);
-                    
-                }
-            }
-
-            let setTag = () => {
-                if(!properties.__node.tag) {
-                    if(properties.__operator?.name)
-                        properties.__node.tag = properties.__operator.name;
-                    else 
-                        properties.__node.tag = `node${Math.floor(Math.random()*1000000000000000)}`;
-                }
-            }
 
             let setParent = () => {
                 //child/branch nodes get their parent tags prepended in their tag
@@ -180,6 +165,23 @@ export class GraphNode {
                         this.__addOndisconnected(ondelete);
 
                     }
+                }
+            }
+
+            let setOp = () => {
+
+                if(properties.__operator) {
+                    if (typeof properties.__operator === 'string') {
+                        if(graph) {
+                            let n = graph.get(properties.__operator);
+                            if(n) properties.__operator = n.__operator;
+                            if(!properties.__node.tag && (properties.__operator as Function).name) 
+                                properties.__node.tag = (properties.__operator as Function).name;
+                        }
+                    }
+                    if(typeof properties.__operator === 'function') 
+                        properties.__operator = this.__setOperator(properties.__operator);
+                    
                 }
             }
 
@@ -209,12 +211,12 @@ export class GraphNode {
 
             //specific load order!!
             assignState();
+            setTag();
             setProps();
             setNode();
-            setOp();
-            setTag();
             setParent();
             assignProps();
+            setOp();
             setDefault();
             
         }
@@ -255,7 +257,7 @@ export class GraphNode {
             if(typeof callback === 'string') {
                 if(typeof this[callback] === 'function') {
                     let fn = this[callback];
-                    callback = (inp) => {fn(inp);};
+                    callback = (...inp) => {fn(...inp);};
                 } else if(this.__node.graph?.get(callback)) subscribeToGraph(callback)
             }
             if(typeof callback !== 'function') return undefined;
@@ -267,7 +269,7 @@ export class GraphNode {
             if(typeof callback === 'function') sub = subscribeToFunction(k)
             else if((callback as GraphNode)?.__node) sub = subscribeToFunction(k, 
                 (callback, target) => target ? target : (callback as GraphNode).__node.unique,
-                (state:any)=>{ if((callback as any).__operator) (callback as any).__operator(state); }
+                (...inp:any)=>{ if((callback as any).__operator) (callback as any).__operator(...inp); }
             )
 
             return sub;
@@ -277,16 +279,15 @@ export class GraphNode {
             // Get node based on the graph
             if(typeof callback === 'string') {
                 if(this.__node.graph.get(callback)) callback = this.__node.graph.get(callback);
+                if(typeof callback !== 'object') return undefined;
             }
-            if(typeof callback !== 'object') return undefined;
             
-
             let sub;
             let k = subInput ? this.__node.unique+'input' : this.__node.unique;
             if(typeof callback === 'function') sub = subscribeToFunction(k)
             else if((callback as GraphNode)?.__node) sub = subscribeToFunction(k, 
                 (callback, target) => target ? target : (callback as GraphNode).__node.unique,
-                (state:any)=>{ if((callback as any).__operator) (callback as any).__operator(state); }
+                (...inp:any)=>{ if((callback as any).__operator) (callback as any).__operator(...inp); }
             )
 
             return sub;
@@ -314,8 +315,8 @@ export class GraphNode {
             return result;
         } 
 
-        if(!this.__subscribedToParent) { //for child nodes
-            if(this.__parent instanceof GraphNode && this.__parent.__operator) {
+        if(this.__parent instanceof GraphNode && !this.__subscribedToParent) { //for child nodes
+            if(this.__parent.__operator) {
                 let sub = this.__parent.__subscribe(this);
                 let ondelete = () => { this.__parent?.__unsubscribe(sub); delete this.__subscribedToParent;}
                 this.__addOndisconnected(ondelete);
@@ -721,12 +722,12 @@ export class Graph {
                                     let tag = k.substring(0,k.lastIndexOf('.'));
                                     nn = this.get(tag);
                                     if(n) {
-                                        sub = this.subscribe(nn,  listeners[key][k][kk].__callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k][kk].inputState, key, k, listeners[key][k][kk].args);
+                                        sub = this.subscribe(nn,  listeners[key][k][kk].__callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k][kk].args, listeners[key][k][kk].inputState, key, k);
                                         if(typeof node.__listeners[k][kk] !== 'object') node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState:listeners[key][k][kk]?.inputState };
                                         node.__listeners[k][kk].sub = sub;
                                     }
                                 } else {
-                                    sub = this.subscribe(nn, listeners[key][k][kk].__callback, undefined, listeners[key][k].inputState, key, k, listeners[key][k].args);
+                                    sub = this.subscribe(nn, listeners[key][k][kk].__callback, undefined, listeners[key][k].args, listeners[key][k].inputState, key, k);
                                     if(typeof node.__listeners[k][kk] !== 'object') node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState: listeners[key][k][kk]?.inputState };
                                     node.__listeners[k][kk].sub = sub;
                                 }
@@ -741,12 +742,12 @@ export class Graph {
                             let tag = k.substring(0,k.lastIndexOf('.'));
                             n = this.get(tag);
                             if(n) {
-                                sub = this.subscribe(n,  listeners[key][k].__callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState, key, k, listeners[key][k].args);
+                                sub = this.subscribe(n,  listeners[key][k].__callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k].args, listeners[key][k].inputState, key, k);
                                 if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState:listeners[key][k]?.inputState };
                                 node.__listeners[k].sub = sub;
                             }
                         } else {
-                            sub = this.subscribe(n, listeners[key][k].__callback, undefined, listeners[key][k].inputState, key, k, listeners[key][k].args);
+                            sub = this.subscribe(n, listeners[key][k].__callback, undefined, listeners[key][k].args, listeners[key][k].inputState, key, k);
                             if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState: listeners[key][k]?.inputState };
                             node.__listeners[k].sub = sub;
                         }
@@ -817,14 +818,17 @@ export class Graph {
         node:GraphNode|string, 
         callback:string|GraphNode|((...res:any)=>void), 
         key?:string|undefined, 
+        argOrder?:any[],
         subInput?:boolean, 
-        target?:string, bound?:string, argOrder?:any[]
+        target?:string|GraphNode, bound?:string, 
     ) => {
 
         let nd = node;
-        if(!(node instanceof GraphNode)) nd = this.get(node);
+        if(typeof node === 'string') nd = this.get(node);
 
         let sub;
+
+        if(target instanceof GraphNode) target = target.__node.tag;
 
         if(typeof callback === 'string') {
             //console.log(node, callback, this.__node.nodes.keys());
@@ -832,17 +836,19 @@ export class Graph {
             if(target) {
                 if(typeof this.get(target)?.[callback] === 'function') {
                     let node = this.get(target);
-                    callback = function(inp) { return node[key](inp)};
+                    callback = function(...inp) { return node[key](...inp)};
                 }
             } else {
                 if(this.get(callback)?.__operator) {
                     let node = this.get(callback);
-                    callback = function(inp) { return node.__operator(inp); }
+                    callback = function(...inp) { return node.__operator(...inp); }
                 }
             }
         } 
 
-        if(typeof callback === 'function' && argOrder) { 
+
+        if((typeof callback === 'function' || callback instanceof GraphNode) && argOrder) {
+            if(callback instanceof GraphNode && callback.__operator) callback = function(inp) { return (callback as GraphNode).__operator(inp); }
             callback = wrapArgs(callback, argOrder, this);
         }
 
@@ -942,12 +948,12 @@ export function isNativeClass (thing) {
 export const wrapArgs = (callback,argOrder,graph) => {
         let args = [] as any[];
         //set up getters 
-        argOrder.forEach((arg,i) => {
-            if(arg === '__output') {
+        argOrder.forEach((a,i) => {
+            if(a === '__output') {
                 args[i] = (inp) => {return inp;}; 
-            } else if(typeof arg === 'string') {
-                if(arg.includes('.')) {
-                    let split = arg.split('.');
+            } else if(typeof a === 'string') {
+                if(a.includes('.')) {
+                    let split = a.split('.');
                     let popped = split.pop() as any;
                     let joined = split.join('.');
                     if(graph.get(joined)?.[popped]) {
@@ -960,27 +966,28 @@ export const wrapArgs = (callback,argOrder,graph) => {
                             args[i] = () => { return arg; };
                         }
                     }
-                else if(graph.get(arg)?.__operator) {
-                    let node = graph.get(arg);
+                else if(graph.get(a)?.__operator) {
+                    let node = graph.get(a);
                     args[i] = (...inp) => { node.__operator(...inp); };
-                } else if (graph.get(arg)) { //return the node itself (pass by reference :D)
-                    let node = graph.get(arg);
+                } else if (graph.get(a)) { //return the node itself (pass by reference :D)
+                    let node = graph.get(a);
                     args[i] = () => { return node; };
                 } else {
-                    let arg = args[i];
+                    let arg = a;
                     args[i] = () => { return arg; };
                 }
             } else if (typeof args[i] === 'function') {
-                let fn = args[i];
+                let fn = a;
                 args[i] = (...inp) => { return fn(...inp); }
             } else {
-                let arg = args[i];
+                let arg = a;
                 args[i] = () => { return arg; };
             }
         });
 
         let fn = callback;
-        callback = (...inp) => {
+
+        callback = function (...inp) {
             fn(...args.map((arg) => { return arg(...inp); }));
         } 
 

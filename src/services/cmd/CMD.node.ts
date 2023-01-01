@@ -27,7 +27,7 @@ export type CMDInfo = {
     request:(message:ServiceMessage|any,method?:string) => Promise<any>,
     post:(route:string, args:any, method?:string) => boolean,
     run:(route:any, args?:any, method?:string) => Promise<any>,
-    subscribe:(route:any, callback?:((res:any)=>void)|string) => number,
+    subscribe:(route:any, callback?:((res:any)=>void)|string,key?:string, args?:any[], subInput?:boolean) => number,
     unsubscribe:(route:any, sub:number) => Promise<boolean>
 } & CMDRoute
 
@@ -152,8 +152,8 @@ export class CMDService extends Service {
                     }
 
                     
-                    newprocess.subscribe = (route:any, callback?:((res:any)=>void)|string) => {
-                        return this.subscribeToProcess(route, newprocess._id, callback);
+                    newprocess.subscribe = (route:any, callback?:((res:any)=>void)|string, key?:string, args?:any[], subInput?:boolean) => {
+                        return this.subscribeToProcess(route, newprocess._id, callback, key, args, subInput);
                     }
 
                     newprocess.unsubscribe = (route:any, sub:number) => {
@@ -226,7 +226,7 @@ export class CMDService extends Service {
         return res;
     }
 
-    subscribeProcess(route:string, childprocess:ChildProcess|string,key?:string, subInput?:boolean) {
+    subscribeProcess(route:string, childprocess:ChildProcess|string, key?:string, args?:any[], subInput?:boolean) {
         if(typeof childprocess === 'string' && this.processes[childprocess]) {
             childprocess = this.processes[childprocess].process;
         }
@@ -239,10 +239,10 @@ export class CMDService extends Service {
             } else {
                 (childprocess as ChildProcess).send(JSON.stringify({args:res, callbackId:route}));
             }
-        },key,subInput);
+        },key,args,subInput);
     } 
 
-    subscribeToProcess(route:string, processId:string, callback?:((res:any)=>void)|string, key?:string, subInput?:boolean) {
+    subscribeToProcess(route:string, processId:string, callback?:((res:any)=>void)|string, key?:string, args?:any[], subInput?:boolean) {
         if(typeof processId === 'string' && this.processes[processId]) {
             this.__node.state.subscribeEvent(processId, (res) => {
                 if(res?.callbackId === route) {
@@ -253,7 +253,7 @@ export class CMDService extends Service {
                     else callback(res.args);
                 }
             });
-            return this.processes[processId].request(JSON.stringify({route:'subscribeSocket', args:[route,processId,key,subInput]}));
+            return this.processes[processId].request(JSON.stringify({route:'subscribeSocket', args:[route,processId,key,args,subInput]}));
         }
     }
 

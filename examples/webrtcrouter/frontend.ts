@@ -4,7 +4,7 @@ import { EventSourceProps, SSEfrontend } from '../../src/services/sse/SSE.browse
 import { SessionsService } from '../../src/services/sessions/sessions.service';
 import { WebRTCfrontend, WebRTCInfo } from '../../src/services/webrtc/WebRTC.browser';
 import { WebSocketProps, WSSfrontend } from '../../src/services/wss/WSS.browser';
-import {Graph, htmlloader} from '../../build/main/index'
+import {Graph, htmlloader} from '../../index'
 
 const router = new Router({
     order:['webrtc','wss','sse'],

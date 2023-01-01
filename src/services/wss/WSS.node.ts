@@ -422,7 +422,7 @@ export class WSSbackend extends Service {
             };
         }
         if(ws instanceof WebSocketServer) { //broadcast to all clients
-            ws.clients.forEach((c:WebSocket) => {c.send(message)})
+            ws.clients.forEach((c:WebSocket) => {c.send(message as string)})
         }
         else if(ws instanceof WebSocket) ws.send(message);
     }
@@ -547,7 +547,7 @@ export class WSSbackend extends Service {
         return res;
     }
 
-    subscribeSocket = (route:string, socket:WebSocket|string, key?:string, subInput?:boolean) => {
+    subscribeSocket = (route:string, socket:WebSocket|string, key?:string, args?:any[], subInput?:boolean) => {
         if(typeof socket === 'string') {
             if(this.sockets[socket]) socket = this.sockets[socket].socket;
             else {
@@ -570,10 +570,10 @@ export class WSSbackend extends Service {
                         (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
                     }
                 } 
-            },key,subInput);
+            },key,args,subInput);
     } 
 
-    subscribeToSocket = (route:string, socketId:string, callback?:string|((res:any)=>void), key?:string, subInput?:boolean) => {
+    subscribeToSocket = (route:string, socketId:string, callback?:string|((res:any)=>void), key?:string, args?:any[], subInput?:boolean) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
             this.__node.state.subscribeEvent(socketId, (res) => {
                 if(res?.callbackId === route) {
@@ -584,7 +584,7 @@ export class WSSbackend extends Service {
                     else callback(res.args);
                 }
             })
-            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId,key,subInput]});
+            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId,key,args,subInput]});
         }
     }
 

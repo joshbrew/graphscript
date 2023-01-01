@@ -296,7 +296,7 @@ export class WSSfrontend extends Service {
         return res;
     }
 
-    subscribeSocket = (route:string, socket:WebSocket|string, key?:string, subInput?:boolean) => {
+    subscribeSocket = (route:string, socket:WebSocket|string, key?:string, args?:any[], subInput?:boolean) => {
         if(typeof socket === 'string' && this.sockets[socket]) {
             socket = this.sockets[socket].socket;
         }
@@ -313,10 +313,10 @@ export class WSSfrontend extends Service {
                         (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
                     }
                 }
-            },key,subInput);
+            },key,args,subInput);
     } 
 
-    subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string, key?:string, subInput?:boolean) => {
+    subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string, key?:string, args?:any[], subInput?:boolean) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
             this.__node.state.subscribeEvent(socketId, (res) => {
                 let msg = JSON.parse(res);
@@ -328,7 +328,7 @@ export class WSSfrontend extends Service {
                     else callback(msg.args);
                 }
             });
-            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId,key,subInput]});
+            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId, key,args, subInput]});
         }
     }
 

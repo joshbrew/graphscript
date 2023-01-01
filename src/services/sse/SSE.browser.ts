@@ -27,7 +27,7 @@ export type EventSourceInfo = {
     request:(message:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
     run:(route:any, args?:any, method?:string)=>Promise<any>,
-    subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
+    subscribe:(route:any, callback?:((res:any)=>void)|string,key?:string, args?:any[], subInput?:boolean)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
     terminate:() => void,
     graph:SSEfrontend
@@ -152,8 +152,8 @@ export class SSEfrontend extends Service {
             return this.request({route,args}, options.url, method, sessionId);
         }
 
-        let subscribe = (route:any, callback?:((res:any)=>void)|string):Promise<number> => {
-            return this.subscribeToSSE(route, options.url, callback, sse._id);
+        let subscribe = (route:any, callback?:((res:any)=>void)|string,key?:string, args?:any[], subInput?:boolean):Promise<number> => {
+            return this.subscribeToSSE(route, options.url, callback, key, args, subInput, sse._id);
         }
 
         let unsubscribe = (route:any, sub:number):Promise<any> => {
@@ -268,13 +268,19 @@ export class SSEfrontend extends Service {
         return res;
     }
 
-    subscribeSSE = (route:string,url:string,key?:string,subInput?:boolean) => {
+    subscribeSSE = (
+        route:string,
+        url:string,
+        key?:string,
+        args?:any[],
+        subInput?:boolean
+    ) => {
         return this.subscribe(route,(res) => {
             this.POST(res,url,'json');
-        },key,subInput)
+        },key,args,subInput)
     }
     
-    subscribeToSSE = (route:string, url:string, callback?:string|((res:any)=>void), sessionId?:string, key?:string, subInput?:boolean) => {
+    subscribeToSSE = (route:string, url:string, callback?:string|((res:any)=>void), key?:string, args?:any[], subInput?:boolean, sessionId?:string) => {
         if(url) {
             this.__node.state.subscribeEvent(url,(res) => {
                 let msg = JSON.parse(res);
@@ -287,7 +293,7 @@ export class SSEfrontend extends Service {
                 }
             });
 
-            return this.eventsources[url].run('subscribeSSE',[route,url,sessionId,key,subInput]);
+            return this.eventsources[url].run('subscribeSSE',[route,url,key,args,subInput,sessionId]);
         } 
     }
 

@@ -1,4 +1,4 @@
-import {Graph, wchtmlloader, HTMLNodeProperties} from '../../build/main/index'
+import {Graph, wchtmlloader, HTMLNodeProperties} from '../../index'
 
 let roots = {
 
