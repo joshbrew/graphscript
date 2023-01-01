@@ -255,12 +255,27 @@ export class GraphNode {
             }
              
             if(typeof callback === 'string') {
-                if(typeof this[callback] === 'function') {
+                if(target) {
+                    if(this.__node.graph?.get(target)) {
+                        let n = this.__node.graph?.get(target);
+                        if(typeof n[callback] === 'function') {
+                            let fn = n[callback];
+                            callback = (...inp) => { fn(...inp); };
+                        } else {
+                            let k = callback;
+                            let setter = (inp) => {
+                                n[k] = inp; //this callback is now a setter for a property on the target node
+                            }
+                            callback = setter;
+                        }
+                    }
+                }
+                else if(typeof this[callback] === 'function') {
                     let fn = this[callback];
                     callback = (...inp) => {fn(...inp);};
-                } else if(this.__node.graph?.get(callback)) subscribeToGraph(callback)
+                } else if(this.__node.graph?.get(callback)) subscribeToGraph(callback);
+                if(typeof callback !== 'function') return undefined;
             }
-            if(typeof callback !== 'function') return undefined;
 
             let sub;
             
@@ -834,9 +849,11 @@ export class Graph {
             //console.log(node, callback, this.__node.nodes.keys());
             let key = callback;
             if(target) {
-                if(typeof this.get(target)?.[callback] === 'function') {
-                    let node = this.get(target);
+                let node = this.get(target);
+                if(typeof node?.[callback] === 'function') {
                     callback = function(...inp) { return node[key](...inp)};
+                } else {
+                    callback = function(inp) { node[key] = inp; } //setter
                 }
             } else {
                 if(this.get(callback)?.__operator) {

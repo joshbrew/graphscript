@@ -11,7 +11,8 @@ let graph = new Graph({
             __operator:function add(a,b) {
                 console.log('run nodeA');
                 return a+b;
-            }
+            },
+            toAdd:2
         },
 
         nodeB:{
@@ -57,7 +58,7 @@ let nodeBSub = graph.subscribe(
     'nodeA',
     'nodeB',
     undefined,
-    ['__output',2],
+    ['__output','nodeA.toAdd'],
 );
 
 let nodeCSub = graph.subscribe(
