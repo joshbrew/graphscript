@@ -170,6 +170,10 @@ export class GraphNode {
 
             let setOp = () => {
 
+                if(typeof properties.default === 'function' && !properties.__operator) {
+                    properties.__operator = properties.default;
+                } //handle a default export treated as an operator
+
                 if(properties.__operator) {
                     if (typeof properties.__operator === 'string') {
                         if(graph) {
@@ -182,6 +186,8 @@ export class GraphNode {
                     if(typeof properties.__operator === 'function') 
                         properties.__operator = this.__setOperator(properties.__operator);
                     
+                
+                    if(properties.default) properties.default = properties.__operator;    
                 }
             }
 
@@ -192,23 +198,6 @@ export class GraphNode {
                 for(const key of keys) { this[key] = properties[key]; }
             }
 
-            let setDefault = () => {
-                if (typeof properties.default === 'function' && !properties.__operator) { //make it so the node is subscribable
-                    let fn = properties.default.bind(this);
-                    if(this.__args && this.__node.graph) fn = wrapArgs(fn, this.__args, this.__node.graph);
-                    this.default = (...args) => {
-                        if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'input',args);
-                        let result = fn(...args);
-                        if(typeof result?.then === 'function') {
-                            result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.unique,res ) }).catch(console.error);
-                        } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
-                        return result;
-                    } 
-    
-                    properties.default = this.default;
-                }
-            }
-
             //specific load order!!
             assignState();
             setTag();
@@ -217,7 +206,6 @@ export class GraphNode {
             setParent();
             assignProps();
             setOp();
-            setDefault();
             
         }
     }
