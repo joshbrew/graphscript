@@ -469,7 +469,23 @@ export class Graph {
 
     load = (roots:{[key:string]:any}) => {
 
-        this.__node.roots = recursivelyAssign(this.__node.roots ? this.__node.roots : {}, roots);
+
+        function recursivelyAssignChildren (target,obj) {
+            if(obj.__children) {
+                if(obj.__children?.constructor.name === 'Object' && !Array.isArray(obj.__children)) {
+                    if(target.__children?.constructor.name === 'Object' && !Array.isArray(target.__children)) 
+                    recursivelyAssignChildren(target.__children, obj.__children);
+                    else target.__children = recursivelyAssignChildren({},obj.__children); 
+                } else {
+                    target.__children = obj.__children;
+                    //if(typeof target[key] === 'function') target[key] = target[key].bind(this);
+                }
+            }
+        
+            return target;
+        }
+        
+        this.__node.roots = recursivelyAssignChildren(this.__node.roots ? this.__node.roots : {}, roots);
         
         let cpy = Object.assign({},roots);
         if(cpy.__node) delete cpy.__node; //we can specify __node behaviors on the roots too to specify listeners
