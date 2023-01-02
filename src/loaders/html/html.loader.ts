@@ -83,7 +83,7 @@ export const htmlloader = (
         (node.__props as any).node = node;
         
         node.__addOnconnected((n) => { 
-            if(n.__props.parentNode) (n.__props as HTMLElement).remove(); 
+            if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement) && n.__props.parentNode) (n.__props as HTMLElement).remove(); 
             if(properties.parentNode) {
                 if(typeof properties.parentNode === 'string' && document.getElementById(properties.parentNode))  
                     document.getElementById(properties.parentNode)?.appendChild(n.__props);
