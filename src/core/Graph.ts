@@ -54,7 +54,7 @@ export class GraphNode {
         [key:string]:any
     } = { //GraphNode-specific properties 
         tag:`node${Math.floor(Math.random()*1000000000000000)}`,
-        unique:`${Math.random()}`,
+        unique:`${Math.floor(Math.random()*1000000000000000)}`,
         state,
         // operator: undefined as any,
         // graph: undefined as any,
