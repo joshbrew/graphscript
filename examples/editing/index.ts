@@ -114,6 +114,6 @@ console.log(graph.__node.nodes);
 
 graph.run('nodeA', 3,4);
 
-graph.unsubscribe('nodeB'); //todo: specify e.g. unsubscribe nodeA.toAdd from nodeA
+graph.clearListeners('nodeC','nodeB'); 
 
 graph.run('nodeA', 4,5) //should only call nodeB now
