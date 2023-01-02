@@ -94,12 +94,14 @@ let modelLoader = (node, parent, graph) => {
                 node.rotation = (node.rotation as B.Vector3).add(parent.rotation);
             }
 
-            graph.setListeners({
-                [node.__node.tag]:{
-                    [parent.__node.tag+'.position']:function(newP) {node.position = (node.__localPosition as B.Vector3).add(newP);},
-                    [parent.__node.tag+'.rotation']:function(newR) {node.rotation = (node.__localRotation as B.Vector3).add(newR);},
-                }
-            });
+
+            let __listeners = {
+                [parent.__node.tag+'.position']:function(newP) {node.position = (node.__localPosition as B.Vector3).add(newP);},
+                [parent.__node.tag+'.rotation']:function(newR) {node.rotation = (node.__localRotation as B.Vector3).add(newR);},
+                
+            }; 
+            if(node.__listeners) Object.assign(node.__listeners,__listeners);
+            else node.__listeners = __listeners;
         }
     }
 }
