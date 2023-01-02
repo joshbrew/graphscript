@@ -91,7 +91,7 @@ export const htmlloader = (
             } else if(parent.__props instanceof HTMLElement) {
                 parent.__props.appendChild(node.__props);
             } else if (typeof graph.parentNode === 'string' && document.getElementById(properties.parentNode)) {  
-                document.getElementById(n.parentNode)?.appendChild(graph.__props);
+                document.getElementById(properties.parentNode)?.appendChild(graph.__props);
             } else if(graph.parentNode instanceof HTMLElement) {
                 graph.parentNode.appendChild(node.__props);
             } else if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement)) document.body.appendChild(node.__props);
