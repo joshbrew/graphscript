@@ -23,7 +23,7 @@ export type WebSocketInfo = {
     request:(message:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
     run:(route:any, args?:any, method?:string)=>Promise<any>,
-    subscribe:(route:any, callback?:((res:any)=>void)|string)=>any,
+    subscribe:(route:any, callback?:((res:any)=>void)|string, args?: any[], key?: string, subInput?: boolean)=>any,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
     terminate:()=>boolean,
     _id?:string,
@@ -178,8 +178,8 @@ export class WSSfrontend extends Service {
             });
         }
 
-        let subscribe = (route:any, callback?:((res:any)=>void)|string):Promise<number> => {
-            return this.subscribeToSocket(route, options._id, callback);
+        let subscribe = (route:any, callback?:((res:any)=>void)|string, args?: any[], key?: string, subInput?: boolean):Promise<number> => {
+            return this.subscribeToSocket(route, options._id, callback, args, key, subInput);
         }
 
         let unsubscribe = (route:any, sub:number):Promise<any> => {
@@ -296,7 +296,7 @@ export class WSSfrontend extends Service {
         return res;
     }
 
-    subscribeSocket = (route:string, socket:WebSocket|string, key?:string, args?:any[], subInput?:boolean) => {
+    subscribeSocket = (route:string, socket:WebSocket|string, args?:any[], key?:string, subInput?:boolean) => {
         if(typeof socket === 'string' && this.sockets[socket]) {
             socket = this.sockets[socket].socket;
         }
@@ -313,10 +313,10 @@ export class WSSfrontend extends Service {
                         (socket as WebSocket).send(JSON.stringify({args:res, callbackId:route}));
                     }
                 }
-            },key,args,subInput);
+            },args,key,subInput);
     } 
 
-    subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string, key?:string, args?:any[], subInput?:boolean) => {
+    subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string,  args?:any[], key?:string,subInput?:boolean) => {
         if(typeof socketId === 'string' && this.sockets[socketId]) {
             this.__node.state.subscribeEvent(socketId, (res) => {
                 let msg = JSON.parse(res);
@@ -328,7 +328,7 @@ export class WSSfrontend extends Service {
                     else callback(msg.args);
                 }
             });
-            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId, key,args, subInput]});
+            return this.sockets[socketId].request({route:'subscribeSocket', args:[route,socketId, args, key,subInput]});
         }
     }
 

@@ -236,7 +236,7 @@ export class Router extends Service {
             if(connection?.run) return connection.run(route, args, method, ...a);
         }
 
-        let subscribe = (route:any, callback?:((res:any)=>void)|string,...a:any[]) => {
+        let subscribe = (route:any, callback?:((res:any)=>void)|string, ...a:any[]) => {
             let connection = this.getConnection(user._id, 'subscribe');
             if(connection?.subscribe) return connection.subscribe(route, callback, ...a);
         }

@@ -49,10 +49,14 @@ let graph = new Graph({
                     }
                 }
             }
-        }
+        },
+
+        Math
 
     }
 });
+
+console.log(graph.__node.nodes);
 
 let nodeAInternalSub = graph.subscribe(
     'nodeA',
@@ -62,30 +66,29 @@ let nodeAInternalSub = graph.subscribe(
 let nodeBSub = graph.subscribe(
     'nodeA',
     'nodeB',
-    undefined,
     ['__output','nodeA.toAdd'],
 );
 
 let nodeCSub = graph.subscribe(
     'nodeB',
     'nodeC',
-    undefined,
-    ['__output',4]
+    ['__output', {
+        __input:'Math.cos',
+        __output:{
+            __input:'Math.pow',
+            __args:['__output', 4]
+        }
+    }]
 );
 
 let nodeDSub = graph.subscribe(
     'nodeC',
-    'log10',
-    undefined,
-    undefined,
-    undefined,
-    'nodeD'
+    'nodeD.log10'
 );
 
 let nodeDInternalSub = graph.subscribe(
+    'nodeD.log10',
     'nodeD',
-    'nodeD',
-    'log10',
     ['__output', 3]
 );
 

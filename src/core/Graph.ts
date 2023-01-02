@@ -138,11 +138,9 @@ export class GraphNode {
                         properties = graph.get(properties.__node.tag);
                     } else properties.__node = {}
                 } else if(!properties.__node) properties.__node = {};
-    
                 if(graph) {
                     properties.__node.graph = graph;
                 }
-                
                 if(properties instanceof Graph) properties.__node.source = properties; //keep tabs on source graphs passed to make nodes
             }
 
@@ -152,28 +150,21 @@ export class GraphNode {
                 if(!properties.__parent && parent) properties.__parent = parent;
                 if(parent?.__node && (!(parent instanceof Graph || properties instanceof Graph))) 
                     properties.__node.tag = parent.__node.tag + '.' + properties.__node.tag; //load parents first
-                
                 if(parent instanceof Graph && properties instanceof Graph) {
-
                     if(properties.__node.loaders) Object.assign(parent.__node.loaders ? parent.__node.loaders : {}, properties.__node.loaders); //let the parent graph adopt the child graph's loaders
-
                     if(parent.__node.mapGraphs) {
                         //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
                         properties.__node.nodes.forEach((n) => {parent.set(properties.__node.tag+'.'+n.__node.tag,n)});
-
                         let ondelete = () => { properties.__node.nodes.forEach((n) => {parent.__node.nodes.delete(properties.__node.tag+'.'+n.__node.tag)}); }
                         this.__addOndisconnected(ondelete);
-
                     }
                 }
             }
 
             let setOp = () => {
-
                 if(typeof properties.default === 'function' && !properties.__operator) {
                     properties.__operator = properties.default;
                 } //handle a default export treated as an operator
-
                 if(properties.__operator) {
                     if (typeof properties.__operator === 'string') {
                         if(graph) {
@@ -185,15 +176,12 @@ export class GraphNode {
                     }
                     if(typeof properties.__operator === 'function') 
                         properties.__operator = this.__setOperator(properties.__operator);
-                    
-                
                     if(properties.default) properties.default = properties.__operator;    
                 }
             }
 
             let assignProps = () => {
                 properties.__node = Object.assign(this.__node,properties.__node);
-            
                 let keys = Object.getOwnPropertyNames(properties);
                 for(const key of keys) { this[key] = properties[key]; }
             }
@@ -545,7 +533,10 @@ export class Graph {
         if(!properties) return
         
         if(!instanced) {
-            properties = Object.assign({},properties); //make sure we don't mutate the original object   
+            let keys = Object.getOwnPropertyNames(properties); //lets us copy e.g. Math
+            let cpy = {};
+            for(const key of keys) { cpy[key] = properties[key]; } //make sure we don't mutate the original object
+            properties = cpy;
         }
         if(!properties.__node) properties.__node = {};
         properties.__node.initial = properties; 
@@ -603,7 +594,10 @@ export class Graph {
             if(typeof p === 'object') {
                 
                 if(!instanced && !(p instanceof GraphNode)) {
-                    p = Object.assign({},p); //make sure we don't mutate the original object
+                    let keys = Object.getOwnPropertyNames(p); //lets us copy e.g. Math
+                    let cpy = {};
+                    for(const key of keys) { cpy[key] = p[key]; } //make sure we don't mutate the original object
+                    p = cpy;
                 }
                 if(!p.__node) p.__node = {};
                 if(!p.__node.tag) p.__node.tag = key;
@@ -725,12 +719,12 @@ export class Graph {
                                     let tag = k.substring(0,k.lastIndexOf('.'));
                                     nn = this.get(tag);
                                     if(n) {
-                                        sub = this.subscribe(nn,  listeners[key][k][kk].__callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k][kk].args, listeners[key][k][kk].inputState, key, k);
+                                        sub = this.subscribe(nn,  listeners[key][k][kk].__callback, listeners[key][k][kk].args, k.substring(k.lastIndexOf('.')+1), listeners[key][k][kk].inputState, key, k);
                                         if(typeof node.__listeners[k][kk] !== 'object') node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState:listeners[key][k][kk]?.inputState };
                                         node.__listeners[k][kk].sub = sub;
                                     }
                                 } else {
-                                    sub = this.subscribe(nn, listeners[key][k][kk].__callback, undefined, listeners[key][k].args, listeners[key][k].inputState, key, k);
+                                    sub = this.subscribe(nn, listeners[key][k][kk].__callback, listeners[key][k].args, undefined, listeners[key][k].inputState, key, k);
                                     if(typeof node.__listeners[k][kk] !== 'object') node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState: listeners[key][k][kk]?.inputState };
                                     node.__listeners[k][kk].sub = sub;
                                 }
@@ -745,12 +739,12 @@ export class Graph {
                             let tag = k.substring(0,k.lastIndexOf('.'));
                             n = this.get(tag);
                             if(n) {
-                                sub = this.subscribe(n,  listeners[key][k].__callback, k.substring(k.lastIndexOf('.')+1), listeners[key][k].args, listeners[key][k].inputState, key, k);
+                                sub = this.subscribe(n,  listeners[key][k].__callback, listeners[key][k].args, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState, key, k);
                                 if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState:listeners[key][k]?.inputState };
                                 node.__listeners[k].sub = sub;
                             }
                         } else {
-                            sub = this.subscribe(n, listeners[key][k].__callback, undefined, listeners[key][k].args, listeners[key][k].inputState, key, k);
+                            sub = this.subscribe(n, listeners[key][k].__callback, listeners[key][k].args,  undefined, listeners[key][k].inputState, key, k);
                             if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState: listeners[key][k]?.inputState };
                             node.__listeners[k].sub = sub;
                         }
@@ -818,72 +812,89 @@ export class Graph {
     }
 
     subscribe = (
-        node:GraphNode|string, 
-        callback:string|GraphNode|((...res:any)=>void), 
+        nodeEvent:GraphNode|string, 
+        onEvent:string|GraphNode|((...res:any)=>void), 
+        args?:any[],
         key?:string|undefined, 
-        argOrder?:any[],
         subInput?:boolean, 
         target?:string|GraphNode, bound?:string, 
     ) => {
 
-        let nd = node;
-        if(typeof node === 'string') nd = this.get(node);
+        let nd = nodeEvent;
+        if(typeof nodeEvent === 'string') {
+            nd = this.get(nodeEvent);
+            if(!nd && nodeEvent.includes('.')) {
+                nd = this.get(nodeEvent.substring(0,nodeEvent.lastIndexOf('.')))
+                key = nodeEvent.substring(nodeEvent.lastIndexOf('.')+1);
+            }
+        }
 
         let sub;
 
         if(target instanceof GraphNode) target = target.__node.tag;
 
-        if(typeof callback === 'string') {
+        if(typeof onEvent === 'string') {
             //console.log(node, callback, this.__node.nodes.keys());
-            let key = callback;
+            let key = onEvent;
+            
             if(target) {
                 let node = this.get(target);
-                if(typeof node?.[callback] === 'function') {
-                    callback = function(...inp) { return node[key](...inp)};
+                if(typeof node?.[onEvent] === 'function') {
+                    onEvent = function(...inp) { return node[key](...inp)};
                 } else {
-                    callback = function(inp) { node[key] = inp; } //setter
+                    onEvent = function(inp) { node[key] = inp; } //setter
                 }
             } else {
-                if(this.get(callback)?.__operator) {
-                    let node = this.get(callback);
-                    callback = function(...inp) { return node.__operator(...inp); }
-                }
+                if(this.get(onEvent)?.__operator) {
+                    let node = this.get(onEvent);
+                    onEvent = function(...inp) { return node.__operator(...inp); }
+                } else if(onEvent.includes('.')) {
+                    let n = this.get(onEvent.substring(0,onEvent.lastIndexOf('.')))
+                    let key = onEvent.substring(onEvent.lastIndexOf('.')+1);
+                    if(typeof n[key] === 'function') {
+                        onEvent = function(...inp) { return n[key](...inp); };
+                    } else {
+                        onEvent = function(inp) { n[key] = inp; } //setter
+                    }
+                    //console.log(n, fn);
+                } 
+                
             }
         } 
 
 
-        if((typeof callback === 'function' || callback instanceof GraphNode) && argOrder) {
-            if(callback instanceof GraphNode && callback.__operator) callback = function(inp) { return (callback as GraphNode).__operator(inp); }
-            callback = wrapArgs(callback, argOrder, this);
+        if((typeof onEvent === 'function' || onEvent instanceof GraphNode) && args) {
+            if(onEvent instanceof GraphNode && onEvent.__operator) onEvent = function(inp) { return (onEvent as GraphNode).__operator(inp); }
+            onEvent = wrapArgs(onEvent, args, this);
         }
 
         if(nd instanceof GraphNode) {
-            sub = nd.__subscribe(callback,key,subInput,target,bound);
+            sub = nd.__subscribe(onEvent,key,subInput,target,bound);
            
             let ondelete = () => {
                 (nd as GraphNode).__unsubscribe(sub,key,subInput);
             }
 
             nd.__addOndisconnected(ondelete);
-        } else if (typeof node === 'string') {
-            if(this.get(node)) {
-                if(callback instanceof GraphNode && callback.__operator) {
-                    sub = (this.get(node) as GraphNode).__subscribe(callback.__operator,key,subInput,target,bound); 
+        } else if (typeof nodeEvent === 'string') {
+            if(this.get(nodeEvent)) {
+                if(onEvent instanceof GraphNode && onEvent.__operator) {
+                    sub = (this.get(nodeEvent) as GraphNode).__subscribe(onEvent.__operator,key,subInput,target,bound); 
                     let ondelete = () => {
-                        this.get(node).__unsubscribe(sub)
+                        this.get(nodeEvent).__unsubscribe(sub)
                         //console.log('unsubscribed', key)
                     }
         
-                    callback.__addOndisconnected(ondelete);
+                    onEvent.__addOndisconnected(ondelete);
                 }
-                else if (typeof callback === 'function' || typeof callback === 'string') {
-                    sub = (this.get(node) as GraphNode).__subscribe(callback,key,subInput,target,bound); 
+                else if (typeof onEvent === 'function' || typeof onEvent === 'string') {
+                    sub = (this.get(nodeEvent) as GraphNode).__subscribe(onEvent,key,subInput,target,bound); 
                     
-                    this.__node.state.getEvent(this.get(node).__node.unique,sub).source = node;
+                    this.__node.state.getEvent(this.get(nodeEvent).__node.unique,sub).source = nodeEvent;
                 }
             } else {
-                if(typeof callback === 'string') callback = this.__node.nodes.get(callback).__operator; 
-                if(typeof callback === 'function') sub = this.__node.state.subscribeEvent(node, callback);
+                if(typeof onEvent === 'string') onEvent = this.__node.nodes.get(onEvent).__operator; 
+                if(typeof onEvent === 'function') sub = this.__node.state.subscribeEvent(nodeEvent, onEvent);
             }
         }
         return sub;
@@ -950,50 +961,89 @@ export function isNativeClass (thing) {
 
 //we can provide an argument list to structure inputs into a function from a set of getters for other node properties and functions etc.
 //e.g. argOrder = ['__output','nodeA.x','nodeB.z']
+
+type argObject = {
+    __input:string|((...args)=>any),
+    __output?:string|argObject|((...args)=>any),
+    __args?:any[]
+}
+
 export const wrapArgs = (callback,argOrder,graph) => {
         let args = [] as any[];
         //set up getters 
+
+        let getCallbackFromString = (a) => {
+            if(graph.get(a)?.__operator) {
+                let node = graph.get(a);
+                return (...inp) => { node.__operator(...inp); };
+            } else if(a.includes('.')) {
+                let split = a.split('.');
+                let popped = split.pop() as any;
+                let joined = split.join('.');
+                let node = graph.get(joined);
+                if(typeof graph.get(joined)?.[popped] === 'function') {
+                    return (...inp) => { return node[popped](...inp); };
+                } else return () => { return node[popped]; };
+            } else if (graph.get(a)) { //return the node itself (pass by reference :D)
+                let node = graph.get(a);
+                return () => { return node; };
+            } else {
+                let arg = a;
+                return () => { return arg; }; 
+            }
+        }
+
         argOrder.forEach((a,i) => {
             if(a === '__output') {
                 args[i] = (inp) => {return inp;}; 
             } else if(typeof a === 'string') {
-                if(a.includes('.')) {
-                    let split = a.split('.');
-                    let popped = split.pop() as any;
-                    let joined = split.join('.');
-                    if(graph.get(joined)?.[popped]) {
-                        let node = graph.get(joined);
-                        if(typeof graph.get(joined)?.[popped] === 'function') {
-                            args[i] = (...inp) => { return node[popped](...inp); };
-                        } else args[i] = () => { return node[popped]; };
-                    } else {
-                            let arg = args[i];
-                            args[i] = () => { return arg; };
-                        }
-                    }
-                else if(graph.get(a)?.__operator) {
-                    let node = graph.get(a);
-                    args[i] = (...inp) => { node.__operator(...inp); };
-                } else if (graph.get(a)) { //return the node itself (pass by reference :D)
-                    let node = graph.get(a);
-                    args[i] = () => { return node; };
-                } else {
-                    let arg = a;
-                    args[i] = () => { return arg; };
-                }
-            } else if (typeof args[i] === 'function') {
+                args[i] = getCallbackFromString(a);
+            } else if (typeof a === 'function') {
                 let fn = a;
                 args[i] = (...inp) => { return fn(...inp); }
+            } else if (typeof a === 'object' && a.__input) {
+                //wrap i/o functions and get methods from nodes, 
+                // recursively set arguments and the last nested 
+                //  input will resolve a value
+                function recursivelyCreateCallback (c:argObject) {
+                    let input = c.__input;
+                    if(typeof c.__input === 'string') {
+                        input = getCallbackFromString(c.__input);
+                        if(c.__input === 'Math.pow') {
+                            console.log(input,input(2,2));
+                        }
+                    }
+                    if(c.__args) {
+                        input = wrapArgs(input, c.__args, graph);
+                    }
+                    if(c.__output) {
+                        let output = c.__output;
+                        if(typeof c.__output === 'string') {
+                            output = getCallbackFromString(output);
+                        } else if (typeof a.__output === 'object') {
+                            output = recursivelyCreateCallback(output as argObject);
+                        }
+                        if(typeof output === 'function') {
+                            let fn = input;
+                            input = (...inp) => {
+                                return (output as Function)((fn as Function)(...inp));
+                            }
+                        }
+                    }
+                    return input;
+                }
+                args[i] = recursivelyCreateCallback(a);
             } else {
                 let arg = a;
                 args[i] = () => { return arg; };
             }
         });
 
-        let fn = callback;
+        if(typeof callback === 'string') callback = getCallbackFromString(callback);   
 
+        let fn = callback;   
         callback = function (...inp) {
-            fn(...args.map((arg) => { return arg(...inp); }));
+            return fn(...args.map((arg) => { return arg(...inp); }));
         } 
 
         return callback;
