@@ -84,13 +84,13 @@ export const htmlloader = (
         
         node.__addOnconnected((n) => { 
             if(n.__props.parentNode) (n.__props as HTMLElement).remove(); 
-            if(n.parentNode) {
-                if(typeof n.parentNode === 'string' && document.getElementById(n.parentNode))  
-                    document.getElementById(n.parentNode)?.appendChild(n.__props);
-                else if (n.parentNode instanceof HTMLElement) n.parentNode.appendChild(n.__props);
+            if(properties.parentNode) {
+                if(typeof properties.parentNode === 'string' && document.getElementById(properties.parentNode))  
+                    document.getElementById(properties.parentNode)?.appendChild(n.__props);
+                else if (properties.parentNode instanceof HTMLElement) n.parentNode.appendChild(properties.__props);
             } else if(parent.__props instanceof HTMLElement) {
                 parent.__props.appendChild(node.__props);
-            } else if (typeof graph.parentNode === 'string' && document.getElementById(n.parentNode)) {  
+            } else if (typeof graph.parentNode === 'string' && document.getElementById(properties.parentNode)) {  
                 document.getElementById(n.parentNode)?.appendChild(graph.__props);
             } else if(graph.parentNode instanceof HTMLElement) {
                 graph.parentNode.appendChild(node.__props);
