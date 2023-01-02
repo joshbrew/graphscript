@@ -842,7 +842,7 @@ export class Graph {
                 if(typeof node?.[onEvent] === 'function') {
                     onEvent = function(...inp) { return node[key](...inp)};
                 } else {
-                    onEvent = function(inp) { node[key] = inp; } //setter
+                    onEvent = function(inp) { node[key] = inp; return node[key]; } //setter
                 }
             } else {
                 if(this.get(onEvent)?.__operator) {
@@ -854,7 +854,7 @@ export class Graph {
                     if(typeof n[key] === 'function') {
                         onEvent = function(...inp) { return n[key](...inp); };
                     } else {
-                        onEvent = function(inp) { n[key] = inp; } //setter
+                        onEvent = function(inp) { n[key] = inp; return n[key]; } //setter
                     }
                     //console.log(n, fn);
                 } 
@@ -1009,9 +1009,6 @@ export const wrapArgs = (callback,argOrder,graph) => {
                     let input = c.__input;
                     if(typeof c.__input === 'string') {
                         input = getCallbackFromString(c.__input);
-                        if(c.__input === 'Math.pow') {
-                            console.log(input,input(2,2));
-                        }
                     }
                     if(c.__args) {
                         input = wrapArgs(input, c.__args, graph);
