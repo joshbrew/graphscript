@@ -727,7 +727,7 @@ export class Graph {
                         for(const kk in listeners[key][k]) {
                             if(typeof listeners[key][k][kk] !== 'object') {
                                 listeners[key][k][kk] = {__callback: listeners[key][k][kk]}
-                                if(listeners[key][k][kk].__callback === true) listeners[key][k][kk].__callback = node.__operator;
+                                if(listeners[key][k][kk].__callback === true || typeof listeners[key][k][kk].__callback === 'undefined') listeners[key][k][kk].__callback = node.__operator;
                             }
                             let nn = this.get(kk);
                             if(nn) {
@@ -747,8 +747,8 @@ export class Graph {
                             }
                         }
                     }
-                    if(listeners[key][k].__callback) {
-                        if(listeners[key][k].__callback === true) listeners[key][k].__callback = node.__operator;
+                    if('__callback' in listeners[key][k]) {
+                        if(listeners[key][k].__callback === true || typeof listeners[key][k].__callback === 'undefined') listeners[key][k].__callback = node.__operator;
                         if( typeof listeners[key][k].__callback === 'function') listeners[key][k].__callback = listeners[key][k].__callback.bind(node);
                         if(typeof node.__listeners !== 'object') node.__listeners = {}; //if we want to subscribe a node with listeners that doesn't predeclare them
                         if(!n) {
