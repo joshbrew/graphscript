@@ -420,12 +420,18 @@ export class GraphNode {
 
     __callConnected(node=this) {
         if(typeof this.__onconnected === 'function') { this.__onconnected(this); }
-        else if (Array.isArray(this.__onconnected)) { this.__onconnected.forEach((o:Function) => { o(this); }) }
+        else if (Array.isArray(this.__onconnected)) { 
+            let fn = (o:Function) => { o(this); }
+            this.__onconnected.forEach(fn) 
+        }
     }
 
     __callDisconnected(node=this) {
         if(typeof this.__ondisconnected === 'function') this.__ondisconnected(this);
-        else if (Array.isArray(this.__ondisconnected)) { this.__ondisconnected.forEach((o:Function) => {o(this)}); }
+        else if (Array.isArray(this.__ondisconnected)) { 
+            let fn = (o:Function) => {o(this)};
+            this.__ondisconnected.forEach(fn); 
+        }
     }
 
 }
@@ -949,11 +955,12 @@ function recursivelyAssign (target,obj) {
 export function getAllProperties(obj){ //https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
     var allProps = [] as any[], curr = obj
     do{
-        var props = Object.getOwnPropertyNames(curr)
-        props.forEach(function(prop){
+        var props = Object.getOwnPropertyNames(curr);
+        let fn = function(prop){
             if (allProps.indexOf(prop) === -1)
                 allProps.push(prop)
-        })
+        }
+        props.forEach(fn)
     }while(curr = Object.getPrototypeOf(curr))
     return allProps;
 }
@@ -1009,7 +1016,7 @@ export const wrapArgs = (callback,argOrder,graph) => {
             }
         }
 
-        argOrder.forEach((a,i) => {
+        let forArg = (a,i) => {
             if(a === '__output') {
                 args[i] = (inp) => {return inp;}; 
             } else if(typeof a === 'string') {
@@ -1050,13 +1057,16 @@ export const wrapArgs = (callback,argOrder,graph) => {
                 let arg = a;
                 args[i] = () => { return arg; };
             }
-        });
+        }
+
+        argOrder.forEach(forArg);
 
         if(typeof callback === 'string') callback = getCallbackFromString(callback);   
 
         let fn = callback;   
         callback = function (...inp) {
-            return fn(...args.map((arg) => { return arg(...inp); }));
+            let mapArg = (arg) => { return arg(...inp); };
+            return fn(...args.map(mapArg));
         } 
 
         return callback;

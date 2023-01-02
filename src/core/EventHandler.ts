@@ -11,8 +11,13 @@ export class EventHandler {
 
     setState = (updateObj:{[key:string]:any}) => {
         Object.assign(this.data, updateObj);
-        for (const prop of Object.getOwnPropertyNames(updateObj)) {
-            if (this.triggers[prop]) this.triggers[prop].forEach((obj) => obj.onchange(this.data[prop]));
+        
+        let props = Object.getOwnPropertyNames(updateObj)
+        for (const prop of props) {
+            if (this.triggers[prop]) {
+                let fn = (obj) => {obj.onchange(this.data[prop])};
+                this.triggers[prop].forEach(fn);
+            }
         }
         return this.data;
     }
@@ -21,7 +26,10 @@ export class EventHandler {
         this.triggerEvent(key,value);
     }
     triggerEvent = (key, value) => {
-        if(this.triggers[key]) this.triggers[key].forEach((obj) => obj.onchange(value));
+        if(this.triggers[key]) {
+            let fn = (obj) => {obj.onchange(value)};
+            this.triggers[key].forEach(fn);
+        }
     }
     subscribeEvent = (key:string,onchange:(res:any)=>void, refObject?:{[key:string]:any}, refKey?:string) => {
         if(key) {
