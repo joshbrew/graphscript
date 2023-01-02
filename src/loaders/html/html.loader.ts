@@ -87,7 +87,7 @@ export const htmlloader = (
             if(properties.parentNode) {
                 if(typeof properties.parentNode === 'string' && document.getElementById(properties.parentNode))  
                     document.getElementById(properties.parentNode)?.appendChild(n.__props);
-                else if (properties.parentNode instanceof HTMLElement) n.parentNode.appendChild(properties.__props);
+                else if (properties.parentNode instanceof HTMLElement) properties.parentNode.appendChild(n.__props);
             } else if(parent.__props instanceof HTMLElement) {
                 parent.__props.appendChild(node.__props);
             } else if (typeof graph.parentNode === 'string' && document.getElementById(properties.parentNode)) {  
