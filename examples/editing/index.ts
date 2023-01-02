@@ -12,13 +12,19 @@ let graph = new Graph({
                 console.log('run nodeA', a, b);
                 return a+b;
             },
-            toAdd:2
+            toAdd:2,
+            __listeners:{
+                'nodeA':'toAdd'
+            }
         },
 
         nodeB:{
             __operator:function multiply(a,b) {
                 console.log('run nodeB', a, b);
                 return a*b;
+            },
+            __listeners:{
+                'nodeA':{ __callback:true, __args:['__output', 'nodeA.toAdd'] }
             }
         },
 
@@ -26,6 +32,16 @@ let graph = new Graph({
             __operator:function exponent(a,b) {
                 console.log('run nodeC', a, b);
                 return Math.pow(a,b);
+            },
+            __listeners:{
+                'nodeB':{ __callback:true, __args: ['__output',{
+                    __input:'Math.cos',
+                    __output:{
+                        __input:'Math.pow', //this returns the final output for the argument list
+                        //__output:(inp)=>{ return inp; } //function or object, etc
+                        __args:['__output', 4]
+                    }
+                }] }
             }
         },
 
@@ -48,6 +64,10 @@ let graph = new Graph({
                         this.innerHTML = outp;
                     }
                 }
+            },
+            __listeners:{
+                'nodeC':'log10',
+                'nodeD.log10':{ __callback:true, __args:['__output', 3] }
             }
         },
 
@@ -58,42 +78,42 @@ let graph = new Graph({
 
 console.log(graph.__node.nodes);
 
-let nodeAInternalSub = graph.subscribe(
-    'nodeA',
-    'nodeA.toAdd'
-);
+// let nodeAInternalSub = graph.subscribe(
+//     'nodeA',
+//     'nodeA.toAdd'
+// );
 
-let nodeBSub = graph.subscribe(
-    'nodeA',
-    'nodeB',
-    ['__output','nodeA.toAdd'],
-);
+// let nodeBSub = graph.subscribe(
+//     'nodeA',
+//     'nodeB',
+//     ['__output','nodeA.toAdd'],
+// );
 
-let nodeCSub = graph.subscribe(
-    'nodeB',
-    'nodeC',
-    ['__output', {
-        __input:'Math.cos',
-        __output:{
-            __input:'Math.pow', //this returns the final output for the argument list
-            __args:['__output', 4]
-        }
-    }]
-);
+// let nodeCSub = graph.subscribe(
+//     'nodeB',
+//     'nodeC',
+//     ['__output', {
+//         __input:'Math.cos',
+//         __output:{
+//             __input:'Math.pow', //this returns the final output for the argument list
+//             __args:['__output', 4]
+//         }
+//     }]
+// );
 
-let nodeDSub = graph.subscribe(
-    'nodeC',
-    'nodeD.log10'
-);
+// let nodeDSub = graph.subscribe(
+//     'nodeC',
+//     'nodeD.log10'
+// );
 
-let nodeDInternalSub = graph.subscribe(
-    'nodeD.log10',
-    'nodeD',
-    ['__output', 3]
-);
+// let nodeDInternalSub = graph.subscribe(
+//     'nodeD.log10',
+//     'nodeD',
+//     ['__output', 3]
+// );
 
 graph.run('nodeA', 3,4);
 
-graph.unsubscribe('nodeB',nodeCSub);
+graph.unsubscribe('nodeB'); //todo: specify e.g. unsubscribe nodeA.toAdd from nodeA
 
 graph.run('nodeA', 4,5) //should only call nodeB now

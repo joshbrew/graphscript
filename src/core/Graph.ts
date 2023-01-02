@@ -719,12 +719,12 @@ export class Graph {
                                     let tag = k.substring(0,k.lastIndexOf('.'));
                                     nn = this.get(tag);
                                     if(n) {
-                                        sub = this.subscribe(nn,  listeners[key][k][kk].__callback, listeners[key][k][kk].args, k.substring(k.lastIndexOf('.')+1), listeners[key][k][kk].inputState, key, k);
+                                        sub = this.subscribe(nn,  listeners[key][k][kk].__callback, listeners[key][k][kk].__args, k.substring(k.lastIndexOf('.')+1), listeners[key][k][kk].inputState, key, k);
                                         if(typeof node.__listeners[k][kk] !== 'object') node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState:listeners[key][k][kk]?.inputState };
                                         node.__listeners[k][kk].sub = sub;
                                     }
                                 } else {
-                                    sub = this.subscribe(nn, listeners[key][k][kk].__callback, listeners[key][k].args, undefined, listeners[key][k].inputState, key, k);
+                                    sub = this.subscribe(nn, listeners[key][k][kk].__callback, listeners[key][k].__args, undefined, listeners[key][k].inputState, key, k);
                                     if(typeof node.__listeners[k][kk] !== 'object') node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState: listeners[key][k][kk]?.inputState };
                                     node.__listeners[k][kk].sub = sub;
                                 }
@@ -739,12 +739,12 @@ export class Graph {
                             let tag = k.substring(0,k.lastIndexOf('.'));
                             n = this.get(tag);
                             if(n) {
-                                sub = this.subscribe(n,  listeners[key][k].__callback, listeners[key][k].args, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState, key, k);
+                                sub = this.subscribe(n,  listeners[key][k].__callback, listeners[key][k].__args, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState, key, k);
                                 if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState:listeners[key][k]?.inputState };
                                 node.__listeners[k].sub = sub;
                             }
                         } else {
-                            sub = this.subscribe(n, listeners[key][k].__callback, listeners[key][k].args,  undefined, listeners[key][k].inputState, key, k);
+                            sub = this.subscribe(n, listeners[key][k].__callback, listeners[key][k].__args,  undefined, listeners[key][k].inputState, key, k);
                             if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState: listeners[key][k]?.inputState };
                             node.__listeners[k].sub = sub;
                         }
@@ -847,14 +847,14 @@ export class Graph {
             } else {
                 if(this.get(onEvent)?.__operator) {
                     let node = this.get(onEvent);
-                    onEvent = function(...inp) { return node.__operator(...inp); }
+                    onEvent = function(...inp) { return node.__operator(...inp); };
                 } else if(onEvent.includes('.')) {
-                    let n = this.get(onEvent.substring(0,onEvent.lastIndexOf('.')))
+                    let n = this.get(onEvent.substring(0,onEvent.lastIndexOf('.')));
                     let key = onEvent.substring(onEvent.lastIndexOf('.')+1);
                     if(typeof n[key] === 'function') {
                         onEvent = function(...inp) { return n[key](...inp); };
                     } else {
-                        onEvent = function(inp) { n[key] = inp; return n[key]; } //setter
+                        onEvent = function(inp) { n[key] = inp; return n[key]; }; //setter
                     }
                     //console.log(n, fn);
                 } 
