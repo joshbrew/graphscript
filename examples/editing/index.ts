@@ -75,7 +75,7 @@ let nodeCSub = graph.subscribe(
     ['__output', {
         __input:'Math.cos',
         __output:{
-            __input:'Math.pow',
+            __input:'Math.pow', //this returns the final output for the argument list
             __args:['__output', 4]
         }
     }]
