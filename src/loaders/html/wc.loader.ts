@@ -96,7 +96,7 @@ export const wchtmlloader = (
 
     if(node.__attributes && node.__props instanceof HTMLElement) { 
         for(const k in node.__attributes) {
-            if(k === 'style' && typeof node.__attribute[k] === 'object') {Object.assign(node.__props.style,node.__attribute[k]);}
+            if(k === 'style' && typeof node.__attributes[k] === 'object') {Object.assign(node.__props.style,node.__attributes[k]);}
             node.__props[k] = node.__attributes[k];
         }
     }
@@ -106,15 +106,15 @@ export const wchtmlloader = (
         (node.__props as any).node = node;
         
         node.__addOnconnected((n) => { 
-            if(n.__props.parentNode) (n.__props as HTMLElement).remove(); 
-            if(n.parentNode) {
-                if(typeof n.parentNode === 'string' && document.getElementById(n.parentNode))  
-                    document.getElementById(n.parentNode)?.appendChild(n.__props);
-                else if (n.parentNode instanceof HTMLElement) n.parentNode.appendChild(n.__props);
+            if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement) && n.__props.parentNode) (n.__props as HTMLElement).remove(); 
+            if(properties.parentNode) {
+                if(typeof properties.parentNode === 'string' && document.getElementById(properties.parentNode))  
+                    document.getElementById(properties.parentNode)?.appendChild(n.__props);
+                else if (properties.parentNode instanceof HTMLElement) properties.parentNode.appendChild(n.__props);
             } else if(parent.__props instanceof HTMLElement) {
                 parent.__props.appendChild(node.__props);
-            } else if (typeof graph.parentNode === 'string' && document.getElementById(n.parentNode)) {  
-                document.getElementById(n.parentNode)?.appendChild(graph.__props);
+            } else if (typeof graph.parentNode === 'string' && document.getElementById(properties.parentNode)) {  
+                document.getElementById(properties.parentNode)?.appendChild(graph.__props);
             } else if(graph.parentNode instanceof HTMLElement) {
                 graph.parentNode.appendChild(node.__props);
             } else if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement)) document.body.appendChild(node.__props);
