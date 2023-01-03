@@ -476,15 +476,28 @@ export class Graph {
     load = (roots:{[key:string]:any}) => {
 
 
-        function recursivelyAssignChildren (target,obj) {
-            if(obj.__children) {
-                if(obj.__children?.constructor.name === 'Object' && !Array.isArray(obj.__children)) {
-                    if(target.__children?.constructor.name === 'Object' && !Array.isArray(target.__children)) 
-                    recursivelyAssignChildren(target.__children, obj.__children);
-                    else target.__children = recursivelyAssignChildren({},obj.__children); 
+        function recursivelyAssignChildren (target,obj,inChildren=true, top=true) {
+            if(top) {
+                if(target) Object.assign(target,obj);
+                else target = Object.assign({},obj);
+                recursivelyAssignChildren(target,obj,true,false);
+            }
+
+            if(obj.__children && !inChildren) {
+                if(obj.__children?.constructor.name === 'Object') {
+                    if(target.__children?.constructor.name === 'Object') 
+                        recursivelyAssignChildren(target.__children, obj.__children, true,false);
+                    else target.__children = recursivelyAssignChildren({},obj.__children, true,false); 
                 } else {
                     target.__children = obj.__children;
                     //if(typeof target[key] === 'function') target[key] = target[key].bind(this);
+                }
+            } else if (inChildren) {
+                for(const key in obj) {
+                    target[key] = Object.assign({}, obj[key]);
+                    if(obj[key].__children) {
+                        recursivelyAssignChildren({},obj[key].__children,false,false);
+                    }
                 }
             }
         
@@ -493,12 +506,12 @@ export class Graph {
         
         this.__node.roots = recursivelyAssignChildren(this.__node.roots ? this.__node.roots : {}, roots);
         
-        let cpy = Object.assign({},roots);
+        let cpy = Object.assign({}, roots);
         if(cpy.__node) delete cpy.__node; //we can specify __node behaviors on the roots too to specify listeners
 
         let listeners = this.recursiveSet(cpy,this,undefined,roots);
 
-        //make the roots a node 
+        //make the root a node 
         if(roots.__node) {
             if(!roots.__node.tag) roots.__node._tag = `roots${Math.floor(Math.random()*1000000000000000)}`;
             else if (!this.get(roots.__node.tag)) {
