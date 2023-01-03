@@ -1,5 +1,7 @@
 import {Graph} from '../../src/core/Graph'
 import { htmlloader } from '../../src/loaders/html/html.loader';
+import Editor from './Editor';
+const ui = document.getElementById('ui')
 
 let graph = new Graph({
     loaders:{
@@ -59,6 +61,7 @@ let graph = new Graph({
                 output: {
                     __element:'div',
                     innerHTML:'operator output',
+                    parentNode: ui,
                     __operator:function(outp) {
                         console.log('child node received: ', outp);
                         this.innerHTML = outp;
@@ -76,7 +79,11 @@ let graph = new Graph({
     }
 });
 
-console.log(graph.__node.nodes);
+
+const list = document.querySelector('#editor');
+const editor = new Editor(graph);
+if (list) editor.setUI(list)
+console.log('Editor', editor)
 
 // let nodeAInternalSub = graph.subscribe(
 //     'nodeA',
@@ -117,3 +124,11 @@ graph.run('nodeA', 3,4);
 graph.clearListeners('nodeC','nodeB'); 
 
 graph.run('nodeA', 4,5) //should only call nodeB now
+
+
+// const animate = () => {
+//     graph.run('nodeA', 3,4) //should only call nodeB now
+//     setTimeout(animate, 100);
+// }
+
+// animate()

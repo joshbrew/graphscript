@@ -2,8 +2,30 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                margin: 0;
+                padding: 0;
+                height: 100vh;
+                width: 100vw;
+                overflow: hidden;
+            }
+
+            #active select {
+                pointer-events: none;
+            }
+        </style>
     </head>
     <body>  
+        <div id="ui" style="padding: 25px;"></div>
+
+        <div id="editor" style="position: absolute; height: 100vh; overflow: scroll; top: 0; right: 0; background: rgba(255,255,255, 0.6); padding: 10px;">
+        </div>
+
         <script src="dist/index.js">
         </script>
     </body>
