@@ -73,7 +73,7 @@ export const htmlloader = (
 
     if(node.__attributes && node.__props instanceof HTMLElement) { 
         for(const k in node.__attributes) {
-            if(k === 'style' && typeof node.__attribute[k] === 'object') {Object.assign(node.__props.style,node.__attribute[k]);}
+            if(k === 'style' && typeof node.__attributes[k] === 'object') {Object.assign(node.__props.style,node.__attributes[k]);}
             node.__props[k] = node.__attributes[k];
         }
     }
