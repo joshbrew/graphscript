@@ -7,7 +7,7 @@ export type HTMLNodeProperties = GraphNodeProperties & {
     __onremove?:(elm:HTMLElement) => void,
     __onrender?:(elm:HTMLElement) => void,
     tagName?:string, //can provide this instead of an element or html template string
-    parentNode?:string, //can define a specific parentNode, else a parent graph node with an HTMLElement as __props will be selected, else graph.parentNode if defined, else document.body 
+    parentNode?:string|HTMLElement, //can define a specific parentNode, else a parent graph node with an HTMLElement as __props will be selected, else graph.parentNode if defined, else document.body 
     style?:Partial<CSSStyleDeclaration>, //supply an object with style properties for this element's inline styles
     //applies to custom webcomponent only:
     __template?:string,
