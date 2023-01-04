@@ -200,14 +200,15 @@ export const beat_detect = {
             return beat;
         }
 
-        //console.log(context); console.log(data);
+        //console.log(context); 
 
         if(data.red) {
             if(('ir' in data) && !Array.isArray(data.red)) return pass((data.red  as number)+(data.ir as number),data.timestamp);
-
+            
             let result;
             if(data.ir) result = (data.red as number[]).map((v,i) => { return pass(v+(data as any).ir[i],(data.timestamp as number[])[i]); });
             else result = (data.red as number[]).map((v,i) => { return pass(v,(data.timestamp as number[])[i]); });
+            
             return result;
 
         } else if (data.raw) {

@@ -345,7 +345,7 @@ export const subprocessRoutes = {
             if(typeof options?.ondata === 'function') ctx = createSubprocess(options,inputs);
             if(ctx) this.__node.graph.ALGORITHMS[ctx._id] = ctx;
 
-            console.log(ctx,options);
+            //console.log(ctx,options);
 
             if(ctx) return ctx._id;
         }
@@ -356,7 +356,7 @@ export const subprocessRoutes = {
         data:{[key:string]:any}, 
         _id?:string
     ){
-        console.log(data);
+        //console.log(data);
         if(!this.__node.graph.ALGORITHMS) this.__node.graph.ALGORITHMS = {};
 
         if(!_id) _id = Object.keys(this.__node.graph.ALGORITHMS)[0]; //run the first key if none specified
