@@ -3,6 +3,8 @@
 export * from './src/core/Graph'
 export * from './src/loaders'
 
+export { methodstrings } from './src/loaders/methodstrings'
+
 export * from './src/services/Service'
 export * from './src/services/unsafe/Unsafe.service'
 
@@ -27,7 +29,7 @@ export * from './src/services/cmd/CMD.node'
 
 // export * from './src/services/webrtc/WebRTC.browser'
 
-//export * from './src/services/worker/Worker.service'
+//export * from './src/services/worker/Worker.service' //this needs a polyfill to work in nodejs
 //export * from './src/services/worker/Subprocess'
 
 export * from './src/services/sessions/sessions.service'

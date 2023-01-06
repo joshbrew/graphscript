@@ -1,6 +1,8 @@
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import Worker from 'web-worker' //cross platform for node and browser
 import { Graph, GraphNode, GraphNodeProperties } from "../../core/Graph";
+import { methodstrings } from "../../loaders/methodstrings";
+import { recursivelyStringifyFunctions } from "../utils";
 
 declare var WorkerGlobalScope;
 
@@ -43,7 +45,7 @@ export type WorkerInfo = {
     stop:(route?:string, portId?:string)=>Promise<boolean>,
     workerSubs:{[key:string]:{sub:number|false, route:string, portId:string, callback?:((res:any)=>void)|string, blocking?:boolean}},
     terminate:()=>boolean,
-    postMessage:(message:any,transfer:any[])=>void, //original worker post message
+    postMessage:(message:any,transfer?:any[])=>void, //original worker post message
     graph:WorkerService,
     _id:string
 } & WorkerProps & WorkerRoute
@@ -800,6 +802,38 @@ export class WorkerService extends Service {
                 className
             ] 
         } as ServiceMessage);
+    }
+
+    receiveNode(properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }) {
+        if(properties.__methods) { //stringified methods
+            if(!this.__node.graph.loaders.methodstrings) {
+                (this.__node.graph as Graph).__node.loaders.methodstrings = methodstrings;
+            }
+        }
+        let node = this.__node.graph.add(properties);
+
+        return node.__node.tag;
+        
+    }
+
+    transferNode(name:string, properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }, worker:WorkerInfo | Worker) {
+        if(!properties.__node) { properties.__node = {}; }
+        properties.__node.tag = name;
+
+        for(const key in properties) {
+            if(typeof properties[key] === 'function') {
+                if(!properties.__methods) properties.__methods = {};
+                properties.__methods[key] = properties[key].toString();
+            }
+        }
+
+        if((worker as WorkerInfo).run) 
+            return (worker as WorkerInfo).run('receiveNode',[recursivelyStringifyFunctions(properties)]);
+        else if (worker.postMessage) {
+            worker.postMessage({route:'receiveNode', args:recursivelyStringifyFunctions(properties)},undefined);
+            return new Promise ((r) => r(name));
+        }
+    
     }
 
 }

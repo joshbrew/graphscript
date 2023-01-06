@@ -829,19 +829,15 @@ export class Graph {
 
     getProps = (node:GraphNode|string, getInitial?:boolean) => {
         if(typeof node === 'string') node = this.get(node);
-
         if(node instanceof GraphNode) {
-            
             let cpy;
             if(getInitial) cpy = Object.assign({}, this.__node.roots[node.__node.tag]);
             else {
                 cpy = Object.assign({},node) as any;
                 //remove graphnode methods to return the arbitrary props
-                delete cpy.__unsubscribe;
-                delete cpy.__setOperator;
-                delete cpy.__node;
-                delete cpy.__subscribeState;
-                delete cpy.__subscribe;
+                for(const key in cpy) {
+                    if(key.includes('__')) delete cpy[key]; //remove node methods
+                }
             }
         }
     }

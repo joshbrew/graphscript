@@ -1,7 +1,8 @@
 import { parseFunctionFromText } from '../utils';
 import { WorkerInfo, WorkerService } from './Worker.service';
 import { unsafeRoutes } from '../unsafe/Unsafe.service';
-
+import { Graph, GraphNodeProperties } from '../../core/Graph';
+import {methodstrings} from '../../loaders/methodstrings'
 export type Subprocess = (context:SubprocessContext,data:{[key:string]:any}|any)=>{[key:string]:any}|undefined
 
 export type SubprocessContextProps = {
@@ -99,7 +100,6 @@ let recursivelyAssign = (target,obj) => {
 
     return target;
 }
-
 
 
 export const subprocessRoutes = {

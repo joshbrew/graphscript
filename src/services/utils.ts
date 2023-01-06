@@ -1,3 +1,19 @@
+
+
+export let recursivelyStringifyFunctions = (obj:{[key:string]:any}) => {
+    let cpy = {};
+    for(const key in obj) {
+        if(typeof obj[key] === 'object') {
+            cpy[key] = recursivelyStringifyFunctions(obj[key]);
+        }
+        else if (typeof obj[key] === 'function') {
+            cpy[key] = obj[key].toString();
+        }
+    } 
+    return cpy;
+}
+
+
 export function parseFunctionFromText(method='') {
     //Get the text inside of a function (regular or arrow);
     let getFunctionBody = (methodString) => {
@@ -276,3 +292,4 @@ if((JSON as any).stringifyFast === undefined) {
     //Workaround for objects containing DOM nodes, which can't be stringified with JSON. From: https://stackoverflow.com/questions/4816099/chrome-sendrequest-error-typeerror-converting-circular-structure-to-json
     (JSON as any).stringifyFast = stringifyFast;
 }
+

@@ -1,7 +1,11 @@
 //frontend (browser-compatible) exports
 
+
 export * from './src/core/Graph'
 export * from './src/loaders'
+export * from './src/services/utils'
+
+export { methodstrings } from './src/loaders/methodstrings'
 
 export * from './src/services/Service'
 export * from './src/services/unsafe/Unsafe.service'
