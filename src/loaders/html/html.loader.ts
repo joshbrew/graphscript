@@ -10,7 +10,7 @@ export type HTMLNodeProperties = GraphNodeProperties & {
     parentNode?:string|HTMLElement, //can define a specific parentNode, else a parent graph node with an HTMLElement as __props will be selected, else graph.parentNode if defined, else document.body 
     style?:Partial<CSSStyleDeclaration>, //supply an object with style properties for this element's inline styles
     //applies to custom webcomponent only:
-    __template?:string,
+    __template?:string|((...args:any[]) => string),
     __renderonchanged?:(elm:HTMLElement) => void,
     useShadow?:boolean,
     __css?:string, //stylesheet template string for use with web components (just prepends a <style> sheet before the new divs)
@@ -97,7 +97,7 @@ export const htmlloader = (
             } else if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement)) document.body.appendChild(node.__props);
         
             //add slight delay for sizing etc to kick in correctly
-            if(node.__onrender && !node.__template) setTimeout(()=>{node.__onrender(node.__props)},0.01);
+            if(node.__onrender) setTimeout(()=>{node.__onrender(node.__props)},0.01);
 
         });
 

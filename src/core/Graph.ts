@@ -468,7 +468,9 @@ export class Graph {
 
     init = (options?:GraphOptions) => {
         if(options) {
-            recursivelyAssign(this.__node, options); //assign loaders etc
+            let cpy = Object.assign({},options);
+            delete cpy.roots; //prevent overflow
+            recursivelyAssign(this.__node, cpy); //assign loaders etc
             if(options.roots) this.load(options.roots);
         }
     }

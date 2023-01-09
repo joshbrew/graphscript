@@ -816,7 +816,7 @@ export class WorkerService extends Service {
         
     }
 
-    transferNode(name:string, properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }, worker:WorkerInfo | Worker) {
+    transferNode(properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }, worker:WorkerInfo | Worker, name?:string ) {
         if(!properties.__node) { properties.__node = {}; }
         properties.__node.tag = name;
 
