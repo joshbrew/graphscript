@@ -41,7 +41,7 @@ export const appendCSV = async (
     header?:string[]
 ) => {
 
-    console.log(newData);
+    //console.log(newData);
 
     //console.log('append',filename);
     if(!filename) {
