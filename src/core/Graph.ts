@@ -898,6 +898,7 @@ export class Graph {
                     }
                     //console.log(n, fn);
                 } 
+                return onEvent;
             }
 
             if(target) {
@@ -907,10 +908,10 @@ export class Graph {
                 } else if(node[key]) {
                     onEvent = function(inp) { node[key] = inp; return node[key]; } //setter
                 } else {
-                    setOnEventFromString(onEvent);
+                    onEvent = setOnEventFromString(onEvent);
                 }
             } else {
-                setOnEventFromString(onEvent);
+                onEvent = setOnEventFromString(onEvent);
             }
         } 
 
