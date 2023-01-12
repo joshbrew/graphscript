@@ -592,8 +592,8 @@ export class Graph {
                 for(const key in node.__listeners) {
                     if(node[key]) { //subscribe to a key on the node
                         let listener = node.__listeners[key];
-                        delete listeners[key];
-                        listeners[node.tag+'.'+key] = listener;
+                        delete listeners[node.__node.tag][key];
+                        listeners[node.__node.tag][node._node.tag+'.'+key] = listener;
                     }
                 }
             }
@@ -666,8 +666,8 @@ export class Graph {
                         for(const key in node.__listeners) {
                             if(node[key]) { //subscribe to a key on the node
                                 let listener = node.__listeners[key];
-                                delete listeners[key];
-                                listeners[node.tag+'.'+key] = listener;
+                                delete listeners[node.__node.tag][key];
+                                listeners[node.__node.tag][node._node.tag+'.'+key] = listener;
                             }
                         }
                     }
