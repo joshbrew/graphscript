@@ -601,9 +601,9 @@ export class Graph {
                         listeners[node.__node.tag][node.__node.tag+'.'+key] = listener;
                     } 
                     if (typeof listener === 'string') {
-                        if(node.__children?.[key]) {
+                        if(node.__children?.[listener]) {
                             listeners[node.__node.tag][key] = node.__node.tag+'.'+listener;
-                        } else if (parent instanceof GraphNode && (parent.__node.tag === key || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === key))) {
+                        } else if (parent instanceof GraphNode && (parent.__node.tag === listener || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === listener))) {
                             listeners[node.__node.tag][key] = parent.__node.tag;
                         }
                     }
@@ -688,9 +688,9 @@ export class Graph {
                                 listeners[node.__node.tag][node.__node.tag+'.'+key] = listener;
                             } 
                             if (typeof listener === 'string') {
-                                if(node.__children?.[key]) {
+                                if(node.__children?.[listener]) {
                                     listeners[node.__node.tag][key] = node.__node.tag+'.'+listener;
-                                } else if (parent instanceof GraphNode && (parent.__node.tag === key || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === key))) {
+                                } else if (parent instanceof GraphNode && (parent.__node.tag === listener || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === listener))) {
                                     listeners[node.__node.tag][key] = parent.__node.tag;
                                 }
                             }
