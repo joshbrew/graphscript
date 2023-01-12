@@ -817,12 +817,14 @@ export class Graph {
                             n = this.get(tag);
                             if(n) {
                                 sub = this.subscribe(n,  listeners[key][k].__callback, listeners[key][k].__args, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState, key, k);
-                                if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState:listeners[key][k]?.inputState };
+                                if(typeof node.__listeners[k] !== 'object') 
+                                    node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState:listeners[key][k]?.inputState };
                                 node.__listeners[k].sub = sub;
                             }
                         } else {
                             sub = this.subscribe(n, listeners[key][k].__callback, listeners[key][k].__args,  undefined, listeners[key][k].inputState, key, k);
-                            if(typeof node.__listeners[k] !== 'object') node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState: listeners[key][k]?.inputState };
+                            if(typeof node.__listeners[k] !== 'object') 
+                                node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState: listeners[key][k]?.inputState };
                             node.__listeners[k].sub = sub;
                         }
                         //console.log(sub);
@@ -927,7 +929,8 @@ export class Graph {
                     let n = this.get(onEvent.substring(0,onEvent.lastIndexOf('.')));
                     let key = onEvent.substring(onEvent.lastIndexOf('.')+1);
                     if(typeof n[key] === 'function') {
-                        onEvent = function(...inp) { return n[key](...inp); };
+                        if(n[key] instanceof GraphNode) onEvent = n[key];
+                        else onEvent = function(...inp) { return n[key](...inp); };
                     } else {
                         onEvent = function(inp) { n[key] = inp; return n[key]; }; //setter
                     }
@@ -941,7 +944,8 @@ export class Graph {
                 if(typeof node?.[onEvent] === 'function') {
                     onEvent = function(...inp) { return node[key](...inp)};
                 } else if(node[key]) {
-                    onEvent = function(inp) { node[key] = inp; return node[key]; } //setter
+                    if(node[key] instanceof GraphNode) onEvent = node[key];
+                    else onEvent = function(inp) { node[key] = inp; return node[key]; } //setter
                 } else {
                     onEvent = setOnEventFromString(onEvent);
                 }
