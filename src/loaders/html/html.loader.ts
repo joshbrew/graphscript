@@ -56,11 +56,7 @@ export const htmlloader = (
             else node.__props = document.createElement(node.__element);
         }
         if(!(node.__props instanceof HTMLElement)) return; 
-        let keys = Object.getOwnPropertyNames(properties);
-        for(const k of keys) { 
-            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
-            else node.__props[k] = properties[k]; 
-        }
+        
     }
     
     if(node.__props instanceof HTMLElement) {
@@ -71,10 +67,18 @@ export const htmlloader = (
 
     } 
 
-    if(node.__attributes && node.__props instanceof HTMLElement) { 
-        for(const k in node.__attributes) {
-            if(k === 'style' && typeof node.__attributes[k] === 'object') {Object.assign(node.__props.style,node.__attributes[k]);}
-            node.__props[k] = node.__attributes[k];
+    if(node.__props instanceof HTMLElement) {
+        let keys = Object.getOwnPropertyNames(properties);
+        for(const k of keys) { 
+            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
+            else node.__props[k] = properties[k]; 
+        }
+
+        if(node.__attributes) { 
+            for(const k in node.__attributes) {
+                if(k === 'style' && typeof node.__attributes[k] === 'object') {Object.assign(node.__props.style,node.__attributes[k]);}
+                node.__props[k] = node.__attributes[k];
+            }
         }
     }
     

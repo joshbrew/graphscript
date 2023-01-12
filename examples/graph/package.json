@@ -21,8 +21,9 @@
   ],
   "author": "",
   "license": "AGPL-3.0-or-later",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "web-worker": "^1.2.0"
+  },
   "nodemonConfig": {
     "env": {
       "NODEMON": true

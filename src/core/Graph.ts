@@ -186,6 +186,22 @@ export class GraphNode {
                 for(const key of keys) { this[key] = properties[key]; }
             }
 
+            let bindCallbacks = () => {
+                if(this.__onconnected) {
+                    if(typeof this.__onconnected === 'function') {
+                        this.__onconnected = this.__onconnected.bind(this);
+                    } else if (Array.isArray(this.__onconnected)) {
+                        this.__onconnected = this.__onconnected.map((f) => { return f.bind(this); })
+                    }
+                    if(typeof this.__ondisconnected === 'function') {
+                        this.__ondisconnected = this.__ondisconnected.bind(this);
+                    } else if (Array.isArray(this.__ondisconnected)) {
+                        this.__ondisconnected = this.__ondisconnected.map((f) => { return f.bind(this); })
+                    }
+                }
+            }
+
+
             //specific load order!!
             assignState();
             setTag();
@@ -193,6 +209,7 @@ export class GraphNode {
             setNode();
             setParent();
             assignProps();
+            bindCallbacks();
             setOp();
             
         }
@@ -287,8 +304,15 @@ export class GraphNode {
     
     //unsub the callback
     __unsubscribe = (sub?:number, key?:string, unsubInput?:boolean) => {
-        if(key) return this.__node.state.unsubscribeEvent(unsubInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, sub);
-        else return this.__node.state.unsubscribeEvent(unsubInput ? this.__node.unique+'input' : this.__node.unique, sub);
+        if(key) 
+            return this.__node.state.unsubscribeEvent(
+                unsubInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, 
+                sub
+            );
+        else 
+            return this.__node.state.unsubscribeEvent(
+                unsubInput ? this.__node.unique+'input' : this.__node.unique, sub
+            );
     }
 
     __setOperator = (fn:(...args:any[])=>any) => {
@@ -407,12 +431,14 @@ export class GraphNode {
     }
 
     __addOnconnected(callback:(node)=>void) {
+        callback = callback.bind(this);
         if(Array.isArray(this.__onconnected)) { this.__onconnected.push(callback); }
         else if (typeof this.__onconnected === 'function') { this.__onconnected = [callback,this.__onconnected] }
         else this.__onconnected = callback;
     }
 
     __addOndisconnected(callback:(node)=>void) {
+        callback = callback.bind(this);
         if(Array.isArray(this.__ondisconnected)) { this.__ondisconnected.push(callback); }
         else if (typeof this.__ondisconnected === 'function') { this.__ondisconnected = [callback,this.__ondisconnected] }
         else this.__ondisconnected = callback;
@@ -736,6 +762,8 @@ export class Graph {
                         this.clearListeners(t[key]);
                     }
 
+                    console.log(key,t[key].__listeners);
+
                     t[key].__callDisconnected();
                    
                     if(t[key].__children) {
@@ -847,27 +875,27 @@ export class Graph {
                     n = this.get(key.substring(0,key.lastIndexOf('.')));
                     //console.log(key.substring(0,key.lastIndexOf('.')),key,n,node.__listeners[key]);
                     if(n) {
-                        if(!node.__listeners[key]?.__callback) {
+                        if(typeof node.__listeners[key] === 'object' && !node.__listeners[key]?.__callback) {
                             for(const k in node.__listeners[key]) {
-                                if(node.__listeners[key][k]?.sub) {
+                                if(typeof node.__listeners[key][k]?.sub === 'number') {
                                     this.unsubscribe(n,node.__listeners[key][k].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key][k].inputState);
                                     node.__listeners[key][k].sub = undefined;
                                 }
                             }
-                        } else if(node.__listeners[key]?.sub) {
+                        } else if(typeof node.__listeners[key]?.sub  === 'number') {
                             this.unsubscribe(n,node.__listeners[key].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key].inputState);
                             node.__listeners[key].sub = undefined;
                         }
                     }
                 } else {
-                    if(!node.__listeners[key]?.__callback) {
+                    if(typeof !node.__listeners[key]?.__callback === 'number') {
                         for(const k in node.__listeners[key]) {
                             if(node.__listeners[key][k]?.sub) {
                                 this.unsubscribe(n,node.__listeners[key][k].sub, undefined, node.__listeners[key][k].inputState);
                                 node.__listeners[key][k].sub = undefined;
                             }
                         }
-                    } else if(node.__listeners[key]?.sub) {
+                    } else if(typeof node.__listeners[key]?.sub === 'number') {
                         this.unsubscribe(n,node.__listeners[key].sub, undefined, node.__listeners[key].inputState);
                         node.__listeners[key].sub = undefined;
                     }

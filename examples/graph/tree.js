@@ -42,8 +42,9 @@ let tree = {
                 },
         
                 __onconnected: function() {
-                    const animate =  () => {
+                    const animate = () => {
                         // this.latest = Date.now()
+                        console.log(this);
                         this.__operator(Date.now())
                         // workers.default.run('top.test', this.latest)
                         setTimeout(animate, 1000)
@@ -53,6 +54,7 @@ let tree = {
                 },
         
                 latest: Date.now(),
+
                 __operator: function (data) {
                     this.latest = data
                     console.log('First level!',data )
