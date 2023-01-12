@@ -586,21 +586,30 @@ export class Graph {
             this.runLoaders(node, parent, properties, node.__node.tag);
             this.__node.roots[node.__node.tag] = properties; //reference the original props by tag in the roots for children
             //console.log('old:',properties.__node,'new:',node.__node);
-            
-            if(node.__listeners) {
-                listeners[node.__node.tag] = Object.assign({},node.__listeners);
-                for(const key in node.__listeners) {
-                    if(node[key]) { //subscribe to a key on the node
-                        let listener = node.__listeners[key];
-                        delete listeners[node.__node.tag][key];
-                        listeners[node.__node.tag][node._node.tag+'.'+key] = listener;
-                    }
-                }
-            }
-    
+
             if(node.__children) {
                 node.__children = Object.assign({},node.__children);
                 this.recursiveSet(node.__children, node, listeners,node.__children);
+            }
+                        
+            if(node.__listeners) {
+                listeners[node.__node.tag] = Object.assign({},node.__listeners);
+                for(const key in node.__listeners) {
+                    let listener = node.__listeners[key];
+                    if(node[key]) { //subscribe to a key on the node
+                        delete listeners[node.__node.tag][key];
+                        listeners[node.__node.tag][node._node.tag+'.'+key] = listener;
+                    } 
+                    if (typeof listener === 'string') {
+                        if(node.__children?.[key]) {
+                            delete listeners[node.__node.tag][key];
+                            listeners[node.__node.tag][key] = node.__node.tag+'.'+key;
+                        } else if (node.__parent && (node.__parent.__node.tag === key || (node.__parent.__node.tag.includes('.') && node.__parent.__node.tag.split('.').pop() === key))) {
+                            listeners[node.__node.tag][key] = node.__parent.__node.tag;
+                        }
+                    }
+                    
+                }
             }
     
             //now setup event listeners
@@ -661,19 +670,30 @@ export class Graph {
                     this.runLoaders(node, parent, t[key], key); //run any passes on the nodes to set things up further
                     t[key] = node; //replace child with a graphnode
                     this.__node.roots[node.__node.tag] = p; //reference the original props by tag in the roots for children
-                    if(node.__listeners) {
-                        listeners[node.__node.tag] = Object.assign({},node.__listeners);
-                        for(const key in node.__listeners) {
-                            if(node[key]) { //subscribe to a key on the node
-                                let listener = node.__listeners[key];
-                                delete listeners[node.__node.tag][key];
-                                listeners[node.__node.tag][node._node.tag+'.'+key] = listener;
-                            }
-                        }
-                    }
+                    
                     if(node.__children) {
                         node.__children = Object.assign({},node.__children);
                         this.recursiveSet(node.__children, node, listeners,node.__children);
+                    }
+
+                    if(node.__listeners) {
+                        listeners[node.__node.tag] = Object.assign({},node.__listeners);
+                        for(const key in node.__listeners) {
+                            let listener = node.__listeners[key];
+                            if(node[key]) { //subscribe to a key on the node
+                                delete listeners[node.__node.tag][key];
+                                listeners[node.__node.tag][node._node.tag+'.'+key] = listener;
+                            } 
+                            if (typeof listener === 'string') {
+                                if(node.__children?.[key]) {
+                                    delete listeners[node.__node.tag][key];
+                                    listeners[node.__node.tag][key] = node.__node.tag+'.'+key;
+                                } else if (node.__parent && (node.__parent.__node.tag === key || (node.__parent.__node.tag.includes('.') && node.__parent.__node.tag.split('.').pop() === key))) {
+                                    listeners[node.__node.tag][key] = node.__parent.__node.tag;
+                                }
+                            }
+                            
+                        }
                     }
                     
                     node.__callConnected();
