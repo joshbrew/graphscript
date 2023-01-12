@@ -588,7 +588,14 @@ export class Graph {
             //console.log('old:',properties.__node,'new:',node.__node);
             
             if(node.__listeners) {
-                listeners[node.__node.tag] = node.__listeners;
+                listeners[node.__node.tag] = Object.assign({},node.__listeners);
+                for(const key in node.__listeners) {
+                    if(node[key]) { //subscribe to a key on the node
+                        let listener = node.__listeners[key];
+                        delete listeners[key];
+                        listeners[node.tag+'.'+key] = listener;
+                    }
+                }
             }
     
             if(node.__children) {
@@ -655,7 +662,14 @@ export class Graph {
                     t[key] = node; //replace child with a graphnode
                     this.__node.roots[node.__node.tag] = p; //reference the original props by tag in the roots for children
                     if(node.__listeners) {
-                        listeners[node.__node.tag] = node.__listeners;
+                        listeners[node.__node.tag] = Object.assign({},node.__listeners);
+                        for(const key in node.__listeners) {
+                            if(node[key]) { //subscribe to a key on the node
+                                let listener = node.__listeners[key];
+                                delete listeners[key];
+                                listeners[node.tag+'.'+key] = listener;
+                            }
+                        }
                     }
                     if(node.__children) {
                         node.__children = Object.assign({},node.__children);
@@ -870,14 +884,7 @@ export class Graph {
             //console.log(node, callback, this.__node.nodes.keys());
             let key = onEvent;
             
-            if(target) {
-                let node = this.get(target);
-                if(typeof node?.[onEvent] === 'function') {
-                    onEvent = function(...inp) { return node[key](...inp)};
-                } else {
-                    onEvent = function(inp) { node[key] = inp; return node[key]; } //setter
-                }
-            } else {
+            let setOnEventFromString = (onEvent:any) => {
                 if(this.get(onEvent)?.__operator) {
                     let node = this.get(onEvent);
                     onEvent = function(...inp) { return node.__operator(...inp); };
@@ -891,7 +898,19 @@ export class Graph {
                     }
                     //console.log(n, fn);
                 } 
-                
+            }
+
+            if(target) {
+                let node = this.get(target);
+                if(typeof node?.[onEvent] === 'function') {
+                    onEvent = function(...inp) { return node[key](...inp)};
+                } else if(node[key]) {
+                    onEvent = function(inp) { node[key] = inp; return node[key]; } //setter
+                } else {
+                    setOnEventFromString(onEvent);
+                }
+            } else {
+                setOnEventFromString(onEvent);
             }
         } 
 

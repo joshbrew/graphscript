@@ -106,7 +106,7 @@ export const Systems = {
             }
             return false
         },
-        sphereCollisionCheck:(
+        sphereCollisionCheck:( //simplest collisions
             body1:{
                 position:{x:number,y:number,z:number},
                 collisionRadius:number,
@@ -125,7 +125,7 @@ export const Systems = {
 
             return (dist as number) < (body1.collisionRadius + body2.collisionRadius);
         },
-        boxCollisionCheck:(
+        boxCollisionCheck:( //also simple but corners are a problem
             body1:{
                 position:{x:number,y:number,z:number},
                 collisionRadius:number,
@@ -311,8 +311,8 @@ export const Systems = {
             }
         },
         dot:(
-            v1:any,
-            v2:any
+            v1:{[key:string]:number},
+            v2:{[key:string]:number}
         )=>{
             let dot = 0;
             for(const key in v1) {
@@ -331,8 +331,8 @@ export const Systems = {
             };
         },
         vecadd:(
-            v1:any,
-            v2:any
+            v1:{[key:string]:number},
+            v2:{[key:string]:number}
         )=>{ //v1+v2
             let result = Object.assign({},v1);
             for(const key in result) {
@@ -341,8 +341,8 @@ export const Systems = {
             return result;
         },
         vecsub:(
-            v1:any,
-            v2:any
+            v1:{[key:string]:number},
+            v2:{[key:string]:number}
         )=>{ //v1-v2, e.g. a point is v2 - v1
             let result = Object.assign({},v1);
             for(const key in result) {
@@ -351,8 +351,8 @@ export const Systems = {
             return result;
         },
         vecmul:(
-            v1:any,
-            v2:any
+            v1:{[key:string]:number},
+            v2:{[key:string]:number}
         )=>{ //v1*v2
             let result = Object.assign({},v1);
             for(const key in result) {
@@ -361,8 +361,8 @@ export const Systems = {
             return result;
         },
         vecdiv:(
-            v1:any,
-            v2:any
+            v1:{[key:string]:number},
+            v2:{[key:string]:number}
         )=>{ //v1/v2
             let result = Object.assign({},v1);
             for(const key in result) {
@@ -371,7 +371,7 @@ export const Systems = {
             return result;
         },
         vecscale:(
-            v1:any,
+            v1:{[key:string]:number},
             scalar:number
         )=>{ //v1*v2
             let result = Object.assign({},v1);
@@ -381,8 +381,8 @@ export const Systems = {
             return result;
         },
         distance:(
-            v1:any,
-            v2:any
+            v1:{[key:string]:number},
+            v2:{[key:string]:number}
         )=>{
             let distance = 0;
             for(const key in v1) {
@@ -391,7 +391,7 @@ export const Systems = {
             return Math.sqrt(distance);
         },
         magnitude:(
-            v:any
+            v:{[key:string]:number}
         ) => {
             let magnitude = 0;
             for(const key in v) {
@@ -400,11 +400,11 @@ export const Systems = {
             return Math.sqrt(magnitude);
         },
         normalize:(
-            v:any
+            v:{[key:string]:number}
         ) => {
             let magnitude = Systems.collision.magnitude(v);
             let _mag = magnitude ? 1/magnitude : 0;
-            let vn = Object.assign({},v);
+            let vn = {};
             for(const key in v) {
                 vn[key] = v[key]*_mag;
             }
