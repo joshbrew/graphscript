@@ -598,14 +598,13 @@ export class Graph {
                     let listener = node.__listeners[key];
                     if(node[key]) { //subscribe to a key on the node
                         delete listeners[node.__node.tag][key];
-                        listeners[node.__node.tag][node._node.tag+'.'+key] = listener;
+                        listeners[node.__node.tag][node.__node.tag+'.'+key] = listener;
                     } 
                     if (typeof listener === 'string') {
                         if(node.__children?.[key]) {
-                            delete listeners[node.__node.tag][key];
-                            listeners[node.__node.tag][key] = node.__node.tag+'.'+key;
+                            listeners[node.__node.tag][key] = node.__node.tag+'.'+listener;
                         } else if (parent instanceof GraphNode && (parent.__node.tag === key || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === key))) {
-                            listeners[node.__node.tag][key] = node.__parent.__node.tag;
+                            listeners[node.__node.tag][key] = parent.__node.tag;
                         }
                     }
                     
@@ -686,14 +685,13 @@ export class Graph {
                             let listener = node.__listeners[key];
                             if(node[key]) { //subscribe to a key on the node
                                 delete listeners[node.__node.tag][key];
-                                listeners[node.__node.tag][node._node.tag+'.'+key] = listener;
+                                listeners[node.__node.tag][node.__node.tag+'.'+key] = listener;
                             } 
                             if (typeof listener === 'string') {
                                 if(node.__children?.[key]) {
-                                    delete listeners[node.__node.tag][key];
-                                    listeners[node.__node.tag][key] = node.__node.tag+'.'+key;
+                                    listeners[node.__node.tag][key] = node.__node.tag+'.'+listener;
                                 } else if (parent instanceof GraphNode && (parent.__node.tag === key || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === key))) {
-                                    listeners[node.__node.tag][key] = node.__parent.__node.tag;
+                                    listeners[node.__node.tag][key] = parent.__node.tag;
                                 }
                             }
                             
