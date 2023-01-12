@@ -683,18 +683,19 @@ export class Graph {
                         listeners[node.__node.tag] = Object.assign({},node.__listeners);
                         for(const key in node.__listeners) {
                             let listener = node.__listeners[key];
+                            let k = key;
                             if(node[key]) { //subscribe to a key on the node
                                 delete listeners[node.__node.tag][key];
-                                listeners[node.__node.tag][node.__node.tag+'.'+key] = listener;
+                                k = node.__node.tag+'.'+key;
+                                listeners[node.__node.tag][k] = listener;
                             } 
                             if (typeof listener === 'string') {
                                 if(node.__children?.[listener]) {
-                                    listeners[node.__node.tag][key] = node.__node.tag+'.'+listener;
+                                    listeners[node.__node.tag][k] = node.__node.tag+'.'+listener;
                                 } else if (parent instanceof GraphNode && (parent.__node.tag === listener || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === listener))) {
-                                    listeners[node.__node.tag][key] = parent.__node.tag;
+                                    listeners[node.__node.tag][k] = parent.__node.tag;
                                 }
                             }
-                            
                         }
                     }
                     
@@ -779,7 +780,8 @@ export class Graph {
                 for(const k in listeners[key]) {
                     let n = this.get(k);
                     let sub;
-                    if( typeof listeners[key][k] !== 'object' ) listeners[key][k] = { __callback:listeners[key][k] };
+                    if( typeof listeners[key][k] !== 'object' ) 
+                        listeners[key][k] = { __callback:listeners[key][k] };
                     else if(!listeners[key][k].__callback) { //this is an object specifying multiple inputs
                         for(const kk in listeners[key][k]) {
                             if(typeof listeners[key][k][kk] !== 'object') {
@@ -793,12 +795,14 @@ export class Graph {
                                     nn = this.get(tag);
                                     if(n) {
                                         sub = this.subscribe(nn,  listeners[key][k][kk].__callback, listeners[key][k][kk].__args, k.substring(k.lastIndexOf('.')+1), listeners[key][k][kk].inputState, key, k);
-                                        if(typeof node.__listeners[k][kk] !== 'object') node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState:listeners[key][k][kk]?.inputState };
+                                        if(typeof node.__listeners[k][kk] !== 'object') 
+                                            node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState:listeners[key][k][kk]?.inputState };
                                         node.__listeners[k][kk].sub = sub;
                                     }
                                 } else {
                                     sub = this.subscribe(nn, listeners[key][k][kk].__callback, listeners[key][k].__args, undefined, listeners[key][k].inputState, key, k);
-                                    if(typeof node.__listeners[k][kk] !== 'object') node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState: listeners[key][k][kk]?.inputState };
+                                    if(typeof node.__listeners[k][kk] !== 'object') 
+                                        node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState: listeners[key][k][kk]?.inputState };
                                     node.__listeners[k][kk].sub = sub;
                                 }
                             }
