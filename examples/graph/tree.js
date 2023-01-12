@@ -14,6 +14,61 @@ class nodeClass { //treated as a class to instance rather than a function to set
 
 let tree = {
 
+    // NOTE: This is a dummy case where the operators no longer flow because of the proxying
+    top: {
+        __element: 'div',
+        innerText: 'Broken Operator Chain',
+        __children: {
+            test: {
+                __element:'div',
+                __children: {
+                    testChild: {
+                        __element:'div',
+                        __children: {
+                            testChild2: {
+                                __element:'div',
+                                __operator: (data) => {
+                                    console.log('Third level!', data)
+                                    return data
+                                }
+                            }
+                        },
+
+                        __operator: (data) => {
+                            console.log('Second level!', data)
+                            return data
+                        }
+                    }
+                },
+        
+                __onconnected: function() {
+                    const animate =  () => {
+                        // this.latest = Date.now()
+                        this.__operator(Date.now())
+                        // workers.default.run('top.test', this.latest)
+                        setTimeout(animate, 1000)
+                    }
+        
+                    animate()
+                },
+        
+                latest: Date.now(),
+                __operator: function (data) {
+                    this.latest = data
+                    console.log('First level!',data )
+                    return data
+                },
+
+                __listeners: {
+                    // 'latest': 'top.test.testChild',
+                    // 'top.test.latest': 'top.test.testChild'
+                    // 'top.test.latest': 'testChild'
+                    'latest': 'testChild'
+                },
+            },
+        },
+    },         
+
     nodeA: nodeAInstance,
 
     nodeB:{

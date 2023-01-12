@@ -14,10 +14,7 @@ export class EventHandler {
         
         let props = Object.getOwnPropertyNames(updateObj)
         for (const prop of props) {
-            if (this.triggers[prop]) {
-                let fn = (obj) => {obj.onchange(this.data[prop])};
-                this.triggers[prop].forEach(fn);
-            }
+            this.triggerEvent(prop, this.data[prop]);
         }
         return this.data;
     }
@@ -26,8 +23,9 @@ export class EventHandler {
         this.triggerEvent(key,value);
     }
     triggerEvent = (key, value) => {
+
         if(this.triggers[key]) {
-            let fn = (obj) => {obj.onchange(value)};
+            let fn = (obj) => obj.onchange(value)
             this.triggers[key].forEach(fn);
         }
     }

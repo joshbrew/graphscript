@@ -4,14 +4,42 @@ import { loaders } from "../../src/loaders";
 import list from "./list";
 import tree from './tree'
 
+import { 
+    subprocessRoutes, 
+    WorkerService, 
+    workerCanvasRoutes, 
+    htmlloader
+// } from 'graphscript';////"../../graphscript/index"
+} from "../../index"
+
+const loadAsWorkers = true
+
 const nodeAInstance = tree.nodeA
 
-let graph = new Graph({
-    roots:tree,
-    loaders:{
-        ...loaders
-    }
-});
+let graph;
+
+if (loadAsWorkers) {
+    graph = new WorkerService({
+        loaders:{
+            ...loaders,
+            html: htmlloader // Remove this and it "works"
+        },
+        roots:{
+            ...workerCanvasRoutes,
+            ...subprocessRoutes
+        }
+    }); 
+    
+    graph.load(tree);
+
+} else {
+    graph = new Graph({
+        roots:tree,
+        loaders:{
+            ...loaders
+        }
+    });
+}
 
 
 list.addHeader('Graph constructor finished')
