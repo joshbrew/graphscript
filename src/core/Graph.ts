@@ -847,20 +847,29 @@ export class Graph {
                     if(n) {
                         if(!node.__listeners[key]?.__callback) {
                             for(const k in node.__listeners[key]) {
-                                if(node.__listeners[key][k]?.sub) this.unsubscribe(n,node.__listeners[key][k].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key][k].inputState);
+                                if(node.__listeners[key][k]?.sub) {
+                                    this.unsubscribe(n,node.__listeners[key][k].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key][k].inputState);
+                                    node.__listeners[key][k].sub = undefined;
+                                }
                             }
-                        } else if(node.__listeners[key]?.sub) this.unsubscribe(n,node.__listeners[key].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key].inputState);
+                        } else if(node.__listeners[key]?.sub) {
+                            this.unsubscribe(n,node.__listeners[key].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key].inputState);
+                            node.__listeners[key].sub = undefined;
+                        }
                     }
                 } else {
                     if(!node.__listeners[key]?.__callback) {
                         for(const k in node.__listeners[key]) {
-                            if(node.__listeners[key][k]?.sub) this.unsubscribe(n,node.__listeners[key][k].sub, undefined, node.__listeners[key][k].inputState);
+                            if(node.__listeners[key][k]?.sub) {
+                                this.unsubscribe(n,node.__listeners[key][k].sub, undefined, node.__listeners[key][k].inputState);
+                                node.__listeners[key][k].sub = undefined;
+                            }
                         }
-                    } else if(node.__listeners[key]?.sub) this.unsubscribe(n,node.__listeners[key].sub, undefined, node.__listeners[key].inputState);
+                    } else if(node.__listeners[key]?.sub) {
+                        this.unsubscribe(n,node.__listeners[key].sub, undefined, node.__listeners[key].inputState);
+                        node.__listeners[key].sub = undefined;
+                    }
                 }
-
-                //console.log('unsubscribed', key)
-                delete node.__listeners[key];
             }
         }
     }
