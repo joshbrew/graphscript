@@ -604,7 +604,7 @@ export class Graph {
                         if(node.__children?.[key]) {
                             delete listeners[node.__node.tag][key];
                             listeners[node.__node.tag][key] = node.__node.tag+'.'+key;
-                        } else if (node.__parent && (node.__parent.__node.tag === key || (node.__parent.__node.tag.includes('.') && node.__parent.__node.tag.split('.').pop() === key))) {
+                        } else if (parent instanceof GraphNode && (parent.__node.tag === key || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === key))) {
                             listeners[node.__node.tag][key] = node.__parent.__node.tag;
                         }
                     }
@@ -658,10 +658,14 @@ export class Graph {
                 if(((this.get(p.__node.tag) && !(!(parent instanceof Graph) && parent?.__node)) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag)))) continue; //don't duplicate a node we already have in the graph by tag
     
                 let node: GraphNode;
+                let newnode = false;
                 if(instanced || p instanceof GraphNode) {
                     node = p;
-                } else node = new GraphNode(p, parent as GraphNode, this); 
-                if(p instanceof GraphNode && !instanced && parent instanceof GraphNode) { //make sure this node is subscribed to the parent, can use this to subscribe a node multiple times as a child
+                } else {
+                    node = new GraphNode(p, parent as GraphNode, this); 
+                    newnode = true;
+                }
+                if(!newnode && p instanceof GraphNode && !instanced && parent instanceof GraphNode) { //make sure this node is subscribed to the parent, can use this to subscribe a node multiple times as a child
                     let sub = this.subscribe(parent.__node.tag, node.__node.tag);
                     let ondelete = (node) => {this.unsubscribe(parent.__node.tag, sub);}
                     node.__addOndisconnected(ondelete); //cleanup sub
@@ -688,7 +692,7 @@ export class Graph {
                                 if(node.__children?.[key]) {
                                     delete listeners[node.__node.tag][key];
                                     listeners[node.__node.tag][key] = node.__node.tag+'.'+key;
-                                } else if (node.__parent && (node.__parent.__node.tag === key || (node.__parent.__node.tag.includes('.') && node.__parent.__node.tag.split('.').pop() === key))) {
+                                } else if (parent instanceof GraphNode && (parent.__node.tag === key || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === key))) {
                                     listeners[node.__node.tag][key] = node.__parent.__node.tag;
                                 }
                             }
