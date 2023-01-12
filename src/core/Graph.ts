@@ -839,24 +839,24 @@ export class Graph {
             //console.log(node.__listeners);
             for(const key in node.__listeners) {
                 if(listener && key !== listener) continue; 
-                if(typeof node.__listeners[key].sub !== 'number') continue;
+                if(typeof node.__listeners[key]?.sub !== 'number') continue;
                 let n = this.get(key);
                 if(!n) {
                     n = this.get(key.substring(0,key.lastIndexOf('.')));
                     //console.log(key.substring(0,key.lastIndexOf('.')),key,n,node.__listeners[key]);
                     if(n) {
-                        if(!node.__listeners[key].__callback) {
+                        if(!node.__listeners[key]?.__callback) {
                             for(const k in node.__listeners[key]) {
-                                this.unsubscribe(n,node.__listeners[key][k].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key][k].inputState);
+                                if(node.__listeners[key][k]?.sub) this.unsubscribe(n,node.__listeners[key][k].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key][k].inputState);
                             }
-                        } else this.unsubscribe(n,node.__listeners[key].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key].inputState);
+                        } else if(node.__listeners[key]?.sub) this.unsubscribe(n,node.__listeners[key].sub, key.substring(key.lastIndexOf('.')+1), node.__listeners[key].inputState);
                     }
                 } else {
-                    if(!node.__listeners[key].__callback) {
+                    if(!node.__listeners[key]?.__callback) {
                         for(const k in node.__listeners[key]) {
-                            this.unsubscribe(n,node.__listeners[key][k].sub, undefined, node.__listeners[key][k].inputState);
+                            if(node.__listeners[key][k]?.sub) this.unsubscribe(n,node.__listeners[key][k].sub, undefined, node.__listeners[key][k].inputState);
                         }
-                    } else this.unsubscribe(n,node.__listeners[key].sub, undefined, node.__listeners[key].inputState);
+                    } else if(node.__listeners[key]?.sub) this.unsubscribe(n,node.__listeners[key].sub, undefined, node.__listeners[key].inputState);
                 }
 
                 //console.log('unsubscribed', key)
