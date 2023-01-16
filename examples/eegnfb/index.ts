@@ -190,8 +190,7 @@ const webappHtml = {
                                         //let recording = false;
 
                                         let info = await initDevice(
-                                            mode as 'BLE'|'USB'|'BLE_OTHER'|'USB_OTHER'|'OTHER', 
-                                            selected, 
+                                            Devices[mode][selected], 
                                             {
                                                 devices:Devices,
                                                 workerUrl:gsworker,

@@ -116,8 +116,7 @@ const webappHtml = {
                                     console.log(selected,',',mode,', sps:',Devices[mode][selected].sps)
 
                                     let info = initDevice(
-                                        mode as 'BLE'|'USB', 
-                                        selected, 
+                                        Devices[mode][selected],
                                         {
                                             ondecoded:
                                                 (data:{
