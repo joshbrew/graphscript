@@ -2,6 +2,8 @@
 
 The HTTPbackend service puts the power of graphs and services into a full featured HTTP or HTTPS server. This lets you serve static assets or dynamic content straight from routes all through standard or customizable http fetch calls. This means you can implement your entire own http protocols and state machines willy nilly and feel like a backend master, it's a lot of fun! 
 
+To call a node on the HTTPbackend, you can specify any url e.g. https://localhost:8080/ping and a method e.g. GET, POST, or any arbitrary method with inputs in the body. This will return results or if a string template is specified on a GET request then it will return a page response to you. You can easily specify site redirects this way, too, or specify as many different custom methods on a single URL as you want.
+
 See `examples/httpserver` to get started with a simple implementation.
 
 The extended `RouteProp` when declaring routes/nodes in Service.ts was made for this:
@@ -106,8 +108,10 @@ http.setupServer(
 
 Easy!
 
-The page specification lets you quickly set up static and dynamic page behaviors, if you pass an object then the routes are interpreted as node definitions which you can make as complicated as you want to run graph trees.
+The page specification lets you quickly set up static and dynamic page behaviors, if you pass an object then the routes are interpreted as node definitions which you can make as complicated as you want to run graph trees. Then a REST API can make any common or custom HTTP requests with any jsonifiable inputs in the request body.
 
-If a node's .get/.template returns a file path it will see if it can load the file on the server, just a nice way for dynamic file routing. 
+If a node's .get/.template string returns a findable file path or remote url, it will see if it can load the file on the server. This is a nice way for dynamic file routing. 
+
+Later we need to implement security features but you can easily add custom features into the onrequest functions in each URL, e.g. to require passwords in the request body.
 
 From here we can apply websocket, sse, and other services to build efficient web servers. See `examples/httpserver` for a quick implementation
