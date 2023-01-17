@@ -1,4 +1,3 @@
-
 # graphscript
 [![Npm package version](https://img.shields.io/npm/v/graphscript)](https://npmjs.com/package/graphscript)
 [![Npm package monthly downloads](https://badgen.net/npm/dm/graphscript)](https://npmjs.ccom/package/graphscript)
@@ -7,38 +6,48 @@
 
 
 <p align="center">
-<img src="https://github.com/brainsatplay/graphscript/blob/master/gs_logo_min.png"  width=350px height=350px><br>
+<img src="./gs_logo_min.png"  width=350px height=350px><br>
 For happy code!
 </p>
 
-For Browser:
-`npm i graphscript` ~198kb dist minified
+**GraphScript** is an extensible standard for defining special properties on a hierarchy of reactive objects.
 
-For NodeJS
-`npm i graphscript-node` ~230kb dist minified
+Check out the code in [examples](./examples) for very clear, compelling implementatons that flex our features.
 
-Core (Graph and Loaders only) ~21kb dist minified
-`npm i graphscript-core`
+## Core Concepts
+**graphscript** is organized by the principles of graph theory:
 
-For additional services (currently gpu.js service and the compiled worker dataurl as `gsworker` (or use `graphscript/dist/Worker`))
-`npm i graphscript-services`
+1. **Nodes:** There is a hierarchy of objects.
+2. **Graph:** These are contained in a shared scope.
+3. **Edges:** Within each shared scope, properties can be linked in order to react to each other.
 
-# READMEs:
+Beyond these basic concepts, other GraphScript properties (distinguished with a *__*) can be selectively enabled using **loaders**.
 
-Before reading and getting immediately confused by this alien API and the currently-lacking documentation, scroll through the code in [Examples](https://github.com/brainsatplay/graphscript/blob/master/examples) for very clear, compelling implementatons that flex our feature sets.
+### Loaders
+Loaders are supportive of a DIY hierarchical programming architecture by allowing nodes to be modified and GraphScript properties to be enabled using simple functions.
 
-## * [Graphs and GraphNodes](https://github.com/brainsatplay/graphscript/blob/master/docs/Graph.md)
-## * [Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md)
-   * * [Included Services](https://github.com/brainsatplay/graphscript/blob/master/docs/Service.md#included-services)
+Our exiting collection of loaders includes: 
+- `html-loader`: Enables GraphScript properties to translate into HTML Elements
 
-(WIP)
+### Graphs and Graph Nodes
+See [Graphs and GraphNodes](./docs/Graph.md) for more information.
 
+### Services
+See [Services](./docs/Service.md) for more information.
 
-> **Note:** **graphscript** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
+[Included Services](./docs/Service.md#included-services) contains a reference of the services included in the main graphscript packages.
 
+## Packages
+- `graphscript`: A GraphScript distribution for the browser (~190kb)
+
+- `graphscript-node`: A GraphScript distribution for Node.js (~220Kb)
+
+- `graphscript-core` : A minimal GraphScript distribution (~20Kb)
+
+-  `graphscript-services`: A collection of additional GraphScript services
 
 ## Acknowledgments
-This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
+This library is maintained by [Joshua Brewster](https://github.com/joshbrew) and [Garrett Flynn](https://github.com/garrettmflynn), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
 
 ### Backers
 [Support us with a monthly donation](https://opencollective.com/brainsatplay#backer) and help us continue our activities!
