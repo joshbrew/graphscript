@@ -5,7 +5,7 @@ The Graph and GraphNode classes are an implementation of the acyclic graphs and 
 
 ### First Steps
 
-To create a Graph, simply declare an object as your "tree" or your program hierarchy with lists of node definitions, then load it into the graph. After that your nodes become interactive through both the definition objects and through accessors on the Graph instance.
+To create a Graph, simply declare an object as your "roots" or your program hierarchy with lists of node definitions, then load it into the graph. After that your nodes become interactive through both the definition objects and through accessors on the Graph instance.
 
 ```ts
 
@@ -40,12 +40,12 @@ let nodeB = {
             }
 };
 
-let tree = {
+let roots = {
     nodeA,
     nodeB
 };
 
-let graph = new Graph({tree});
+let graph = new Graph({ roots });
 
 
 nodeB.x += 1; //should trigger nodeA listener 'nodeB.x'

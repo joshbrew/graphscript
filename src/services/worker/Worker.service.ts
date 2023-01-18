@@ -242,6 +242,7 @@ export class WorkerService extends Service {
             let result = this.receive(ev.data); //this will handle graph logic and can run requests for the window or messsage ports etc etc.
             //console.log(JSON.stringify(ev.data), JSON.stringify(result),JSON.stringify(Array.from((self as any).SERVICE.nodes.keys())))
             //console.log(result);
+
             if(this.__node.keepState) this.setState({[this.name]:result}); //subscribe to all outputs
         } //this will work for iframes too
     }
@@ -618,7 +619,10 @@ export class WorkerService extends Service {
     }
 
     runRequest = (message:ServiceMessage|any, worker:undefined|string|Worker|MessagePort, callbackId:string|number) => {
+
+
         let res = this.receive(message);
+
         if(typeof worker === 'string' && this.workers[worker]) {
             if(this.workers[worker].port) worker = this.workers[worker].port;
             else worker = this.workers[worker].worker;
@@ -822,6 +826,7 @@ export class WorkerService extends Service {
     transferNode = (properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }, worker:WorkerInfo | Worker, name?:string ) => {
         if(!properties.__node) { properties.__node = {}; }
         properties.__node.tag = name;
+        
 
         for(const key in properties) {
             if(typeof properties[key] === 'function') {
@@ -830,10 +835,12 @@ export class WorkerService extends Service {
             }
         }
 
+        const recursive = recursivelyStringifyFunctions(properties)
+
         if((worker as WorkerInfo).run) 
-            return (worker as WorkerInfo).run('receiveNode',[recursivelyStringifyFunctions(properties)]);
+            return (worker as WorkerInfo).run('receiveNode',[recursive]);
         else if (worker.postMessage) {
-            worker.postMessage({route:'receiveNode', args:recursivelyStringifyFunctions(properties)},undefined);
+            worker.postMessage({route:'receiveNode', args:recursive},undefined);
             return new Promise ((r) => r(name));
         }
     
