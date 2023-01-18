@@ -118,7 +118,7 @@ export declare const subprocessRoutes: {
             [key: string]: string | Function;
         };
     }), name?: string) => string | false;
-    loadFromTemplate: (templateName: string) => any;
+    loadFromTemplate: (templateName: string, name?: string) => any;
     setMethod: (route: string, fn: string | (() => any), methodKey?: string) => boolean;
     assignNode: (nodeTag: string, source: {
         [key: string]: any;

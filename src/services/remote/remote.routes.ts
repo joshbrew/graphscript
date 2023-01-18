@@ -70,7 +70,10 @@ export const remoteGraphRoutes = {
         } else return false;
     },
 
-    makeNodeTransferrable:function (properties:GraphNodeProperties,name?:string) {
+    makeNodeTransferrable:function (
+        properties:GraphNodeProperties,
+        name?:string
+    ) {
         if(!properties.__node) { properties.__node = {}; }
         if(name) properties.__node.tag = name;
         
@@ -87,7 +90,8 @@ export const remoteGraphRoutes = {
     },
 
     setTemplate:function(        
-        properties:string|((...args:[])=>any)|(GraphNodeProperties & { __methods?:{[key:string]:Function|string} }), name?:string
+        properties:string|((...args:[])=>any)|(GraphNodeProperties & { __methods?:{[key:string]:Function|string} }), 
+        name?:string
     ) {
         if(typeof properties === 'object') {
             if(properties.__methods) { //stringified methods
@@ -99,8 +103,8 @@ export const remoteGraphRoutes = {
         if(typeof properties === 'string') {
             let f = parseFunctionFromText(properties);
             if(typeof f === 'function') {
-                properties = f;
                 if(!name) name = f.name;
+                properties = {__operator:f, __node:{tag:name}};
             }
             else {
                 f = JSON.parse(properties);
@@ -117,15 +121,25 @@ export const remoteGraphRoutes = {
         } else return false;
     },
 
-    loadFromTemplate:function(templateName:string) {
+    loadFromTemplate:function(
+        templateName:string, 
+        name?:string
+    ) {
         if(nodeTemplates[templateName]) {
             let cpy = recursivelyAssign({},nodeTemplates[templateName]);
+            if(name) {
+                if(!cpy.__node) cpy.__node = {};
+                cpy.__node.tag = name;
+            }
             let node = this.__node.graph.add(cpy);
             return node.__node.tag;
         }
     },
 
-    setMethod:function(route:string,fn:string|((...args:[])=>any),methodKey?:string){ //set a method on a route
+    setMethod:function(
+        route:string,fn:string|((...args:[])=>any),
+        methodKey?:string
+    ){ //set a method on a route
         //console.log(fn, fnName)
         if(typeof fn === 'string') {
             let f = parseFunctionFromText(fn);
@@ -148,7 +162,11 @@ export const remoteGraphRoutes = {
         }
     },
 
-    transferClass:(classObj:any, connection:any | Worker | WebSocket, className?:string, )=>{ //send a class over a remote service
+    transferClass:(
+        classObj:any, 
+        connection:any | Worker | WebSocket, 
+        className?:string 
+    )=>{ //send a class over a remote service
         if(typeof classObj === 'object') {
             let str = classObj.toString();//needs to be a class prototype
             let message = {route:'receiveClass',args:[str,className]};
