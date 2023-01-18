@@ -8,7 +8,7 @@ export let recursivelyStringifyFunctions = (obj:{[key:string]:any}) => {
         }
         else if (typeof obj[key] === 'function') {
             cpy[key] = obj[key].toString();
-        }
+        } else cpy[key] = obj[key];
     } 
     return cpy;
 }

@@ -788,6 +788,7 @@ export class Graph {
     }
 
     run = (node:string|GraphNode, ...args:any[]) => {
+
         if(typeof node === 'string') {
             let nd = this.get(node);
             if(!nd && node.includes('.')) {
