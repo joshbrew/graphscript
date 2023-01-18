@@ -330,6 +330,8 @@ export class WebRTCfrontend extends Service {
     
     }
 
+    open = this.openRTC; //for the router
+
     addIceCandidate(rtc:RTCPeerConnection, candidate:RTCIceCandidate) {
         return rtc.addIceCandidate(candidate);
     }

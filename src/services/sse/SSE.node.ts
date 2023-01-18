@@ -75,7 +75,7 @@ export class SSEbackend extends Service {
         this.load(this);
     }
 
-    setupSSE = (options:SSEProps) => {
+    openSSE = (options:SSEProps) => {
 
         const server = options.server; 
         let path = options.path;
@@ -287,7 +287,7 @@ export class SSEbackend extends Service {
 
     }
 
-    open = this.setupSSE;
+    open = this.openSSE;
 
     streamIterable = (
         path:string,

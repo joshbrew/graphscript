@@ -189,6 +189,11 @@ export class SessionsService extends Service {
         return options;
     }
 
+    open = (options:any,userId?:string) => {
+        if(options.listener) this.openPrivateSession(options,userId);
+        else this.openSharedSession(options,userId);
+    }
+
     //update session properties, also invoke basic permissions checks for who is updating
     updateSession = (
         options:PrivateSessionProps | SharedSessionProps, 

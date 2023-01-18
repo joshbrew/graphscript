@@ -421,6 +421,9 @@ export class WorkerService extends Service {
         return this.workers[options._id];
     }
 
+    open = this.addWorker; //for the router
+
+
     //new Worker(urlFromString)
     toObjectURL = (scriptTemplate:string) => {
         let blob = new Blob([scriptTemplate],{type:'text/javascript'});
@@ -781,7 +784,7 @@ export class WorkerService extends Service {
     }
 
     //requires unsafe service to load on other end
-    transferFunction(worker:WorkerInfo, fn:Function, fnName?:string) {
+    transferFunction = (worker:WorkerInfo, fn:Function, fnName?:string) => {
         if(!fnName) fnName = fn.name;
         return worker.request({
             route:'setRoute',
@@ -793,7 +796,7 @@ export class WorkerService extends Service {
     }
 
     //requires unsafe service to load on other end
-    transferClass(worker:WorkerInfo, cls:Function, className?:string) {
+    transferClass = (worker:WorkerInfo, cls:Function, className?:string) => {
         if(!className) className = cls.name;
         return worker.request({
             route:'receiveClass',
@@ -804,19 +807,19 @@ export class WorkerService extends Service {
         } as ServiceMessage);
     }
 
-    receiveNode(properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }) {
+    receiveNode = (properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }) => {
         if(properties.__methods) { //stringified methods
-            if(!this.__node.graph.loaders.methodstrings) {
-                (this.__node.graph as Graph).__node.loaders.methodstrings = methodstrings;
+            if(!this.__node.loaders.methodstrings) {
+                this.__node.loaders.methodstrings = methodstrings;
             }
         }
-        let node = this.__node.graph.add(properties);
+        let node = this.add(properties);
 
         return node.__node.tag;
         
     }
 
-    transferNode(properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }, worker:WorkerInfo | Worker, name?:string ) {
+    transferNode = (properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }, worker:WorkerInfo | Worker, name?:string ) => {
         if(!properties.__node) { properties.__node = {}; }
         properties.__node.tag = name;
 

@@ -81,16 +81,14 @@ export class HTTPbackend extends Service {
 
     constructor(
         options?:ServiceOptions,
-        settings?:{ host?:string, port?:number, protocol?:'http'|'https', certpath?:string, keypath?:string }
+        settings?:ServerProps
     ) {
         super(options);
         this.load(this);
 
         //console.log(settings);
         if(settings) {
-            if(settings.protocol === 'https') {
-                this.setupHTTPSserver( settings as any )
-            } else this.setupHTTPserver( settings as any);
+            this.setupServer(settings);
         }
     
     }
@@ -101,7 +99,7 @@ export class HTTPbackend extends Service {
             ${protocol}://${host}:${port}/`
         );
     }
-
+    
     setupServer = (
         options:ServerProps={
             protocol:'http',
