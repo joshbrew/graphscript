@@ -104,7 +104,7 @@ export class WorkerService extends Service {
         }
         //console.log(rt);
 
-        //requires unsafeRoutes on the worker (enabled on the default worker)
+        //requires remoteGraphRoutes on the worker (enabled on the default worker)
         if(rt.transferFunctions) {
             for(const prop in rt.transferFunctions) {
                 this.transferFunction(worker,rt.transferFunctions[prop],prop)
@@ -130,11 +130,11 @@ export class WorkerService extends Service {
                 }
             }
 
-            if(rt.init) { //requires unsafeRoutes
+            if(rt.init) { //requires remoteGraphRoutes
                 worker.run(rt.init,rt.initArgs,rt.initTransfer);
             } 
 
-            // //need unsafeRoutes loaded
+            // //need remoteGraphRoutes loaded
             // worker.run('setValue',[rt.callback+'_routeProxy', rt.callback]);
 
             // this.transferFunction(
@@ -785,65 +785,6 @@ export class WorkerService extends Service {
             //console.log(sourceWorker,sourceRoute);
             return sourceWorker.run('unsubscribe',[sourceRoute,sub]);
         }
-    }
-
-    //requires unsafe service to load on other end
-    transferFunction = (worker:WorkerInfo, fn:Function, fnName?:string) => {
-        if(!fnName) fnName = fn.name;
-        return worker.request({
-            route:'setRoute',
-            args:[
-                fn.toString(),
-                fnName
-            ]
-        } as ServiceMessage);
-    }
-
-    //requires unsafe service to load on other end
-    transferClass = (worker:WorkerInfo, cls:Function, className?:string) => {
-        if(!className) className = cls.name;
-        return worker.request({
-            route:'receiveClass',
-            args:[
-                cls.toString(),
-                className
-            ] 
-        } as ServiceMessage);
-    }
-
-    receiveNode = (properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }) => {
-        if(properties.__methods) { //stringified methods
-            if(!this.__node.loaders.methodstrings) {
-                this.__node.loaders.methodstrings = methodstrings;
-            }
-        }
-        let node = this.add(properties);
-
-        return node.__node.tag;
-        
-    }
-
-    transferNode = (properties:GraphNodeProperties & { __methods?:{[key:string]:Function|string} }, worker:WorkerInfo | Worker, name?:string ) => {
-        if(!properties.__node) { properties.__node = {}; }
-        properties.__node.tag = name;
-        
-
-        for(const key in properties) {
-            if(typeof properties[key] === 'function') {
-                if(!properties.__methods) properties.__methods = {};
-                properties.__methods[key] = properties[key].toString();
-            }
-        }
-
-        const recursive = recursivelyStringifyFunctions(properties)
-
-        if((worker as WorkerInfo).run) 
-            return (worker as WorkerInfo).run('receiveNode',[recursive]);
-        else if (worker.postMessage) {
-            worker.postMessage({route:'receiveNode', args:recursive},undefined);
-            return new Promise ((r) => r(name));
-        }
-    
     }
 
 }

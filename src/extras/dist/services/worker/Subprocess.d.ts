@@ -1,4 +1,5 @@
 import { WorkerInfo, WorkerService } from './Worker.service';
+import { GraphNodeProperties } from '../../core/Graph';
 export declare type Subprocess = (context: SubprocessContext, data: {
     [key: string]: any;
 } | any) => {
@@ -101,17 +102,30 @@ export declare const subprocessRoutes: {
     runSubprocess: (data: {
         [key: string]: any;
     }, _id?: string) => any;
-    setRoute: (fn: string | (() => any), fnName?: string) => boolean;
-    setNode: (fn: string | (() => any), fnName?: string) => boolean;
-    setMethod: (route: string, fn: string | (() => any), fnName?: string) => boolean;
-    assignRoute: (route: string, source: {
+    transferNode: (properties: string | Function | (GraphNodeProperties & {
+        __methods?: {
+            [key: string]: string | Function;
+        };
+    }), connection: any, name?: string) => any;
+    setNode: (properties: string | (() => any) | (GraphNodeProperties & {
+        __methods?: {
+            [key: string]: string | Function;
+        };
+    })) => any;
+    makeNodeTransferrable: (properties: GraphNodeProperties, name?: string) => {};
+    setTemplate: (properties: string | (() => any) | (GraphNodeProperties & {
+        __methods?: {
+            [key: string]: string | Function;
+        };
+    }), name?: string) => string | false;
+    loadFromTemplate: (templateName: string) => any;
+    setMethod: (route: string, fn: string | (() => any), methodKey?: string) => boolean;
+    assignNode: (nodeTag: string, source: {
         [key: string]: any;
     }) => void;
-    transferClass: (classObj: any, className?: string) => false | {
-        route: string;
-        args: any[];
-    };
+    transferClass: (classObj: any, connection: any, className?: string) => any;
     receiveClass: (stringified: string, className?: string) => boolean;
+    transferFunction: (fn: Function, connection: any, fnName?: string) => any;
     setGlobal: (key: string, value: any) => boolean;
     assignGlobalObject: (target: string, source: {
         [key: string]: any;
@@ -121,7 +135,5 @@ export declare const subprocessRoutes: {
         [key: string]: any;
     }) => boolean;
     setGlobalFunction: (fn: any, fnName?: string) => boolean;
-    assignFunctionToGlobalObject: (globalObjectName: string, fn: any, fnName: any) => boolean;
-    setFunction: (fn: any, fnName?: string) => boolean;
-    assignFunctionToObject: (objectName: string, fn: any, fnName: any) => boolean;
+    setGraphFunction: (fn: any, fnName?: string) => boolean;
 };

@@ -1,6 +1,6 @@
 import { 
     WorkerService, 
-    unsafeRoutes, 
+    remoteGraphRoutes, 
     workerCanvasRoutes,
     ECSService
      //GPUService 
@@ -25,7 +25,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         services:{
             //GPUService,
             ECSService,
-            unsafeRoutes, //allows dynamic route loading
+            remoteGraphRoutes, //allows dynamic route loading
         },
         roots:{
             ...workerCanvasRoutes,

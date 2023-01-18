@@ -59,13 +59,7 @@ export declare class HTTPbackend extends Service {
     mimeTypes: {
         [key: string]: string;
     };
-    constructor(options?: ServiceOptions, settings?: {
-        host?: string;
-        port?: number;
-        protocol?: 'http' | 'https';
-        certpath?: string;
-        keypath?: string;
-    });
+    constructor(options?: ServiceOptions, settings?: ServerProps);
     onStarted: (protocol: 'http' | 'https' | string, host: string, port: number) => void;
     setupServer: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
     open: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;

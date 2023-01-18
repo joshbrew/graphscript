@@ -1,6 +1,6 @@
 import { parseFunctionFromText } from '../utils';
 import { WorkerInfo, WorkerService } from './Worker.service';
-import { unsafeRoutes } from '../unsafe/Unsafe.service';
+import { remoteGraphRoutes } from '../remote/remote.routes';
 import { Graph, GraphNodeProperties } from '../../core/Graph';
 import {methodstrings} from '../../loaders/methodstrings'
 export type Subprocess = (context:SubprocessContext,data:{[key:string]:any}|any)=>{[key:string]:any}|undefined
@@ -103,9 +103,9 @@ let recursivelyAssign = (target,obj) => {
 
 
 export const subprocessRoutes = {
-    ...unsafeRoutes,
+    ...remoteGraphRoutes,
     loadAlgorithms:loadAlgorithms,
-    'initSubprocesses':async function initSubprocesses( //requires unsafeRoutes
+    'initSubprocesses':async function initSubprocesses( //requires remoteGraphRoutes
         subprocesses:{ //use secondary workers to run processes and report results back to the main thread or other
             [key:string]:SubprocessWorkerProps
         },

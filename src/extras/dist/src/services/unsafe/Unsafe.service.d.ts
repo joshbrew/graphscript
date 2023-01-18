@@ -1,4 +1,4 @@
-export declare const unsafeRoutes: {
+export declare const remoteGraphRoutes: {
     setRoute: (fn: string | (() => any), fnName?: string) => boolean;
     setNode: (fn: string | (() => any), fnName?: string) => boolean;
     setMethod: (route: string, fn: string | (() => any), fnName?: string) => boolean;

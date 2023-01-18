@@ -62,6 +62,7 @@ export declare class WebRTCfrontend extends Service {
         };
     }) => MediaStream;
     openRTC: (options?: WebRTCProps) => Promise<WebRTCInfo>;
+    open: (options?: WebRTCProps) => Promise<WebRTCInfo>;
     addIceCandidate(rtc: RTCPeerConnection, candidate: RTCIceCandidate): Promise<void>;
     answerPeer(rtc: RTCPeerConnection, options: WebRTCProps): Promise<unknown>;
     addUserMedia: (rtc: RTCPeerConnection, options?: MediaStreamConstraints) => any[];

@@ -117,6 +117,7 @@ export declare class SessionsService extends Service {
     };
     openPrivateSession: (options?: PrivateSessionProps, userId?: string) => any;
     openSharedSession: (options: SharedSessionProps, userId?: string) => any;
+    open: (options: any, userId?: string) => void;
     updateSession: (options: PrivateSessionProps | SharedSessionProps, userId?: string) => any;
     joinSession: (sessionId: string, userId: string, options?: SharedSessionProps | PrivateSessionProps) => any;
     leaveSession: (sessionId: string, userId: string, clear?: boolean) => boolean;

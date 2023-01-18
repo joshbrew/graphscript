@@ -196,7 +196,9 @@ export declare const Systems: {
             x: number;
             y: number;
             z: number;
-        }) => any;
+        }) => {
+            [key: string]: number;
+        };
         calcNormal: (t0: {
             x: number;
             y: number;
@@ -209,8 +211,12 @@ export declare const Systems: {
             x: number;
             y: number;
             z: number;
-        }, positive?: boolean) => any;
-        dot: (v1: any, v2: any) => number;
+        }, positive?: boolean) => {};
+        dot: (v1: {
+            [key: string]: number;
+        }, v2: {
+            [key: string]: number;
+        }) => number;
         makeVec(p1: {
             x: number;
             y: number;
@@ -224,14 +230,50 @@ export declare const Systems: {
             y: number;
             z: number;
         };
-        vecadd: (v1: any, v2: any) => any;
-        vecsub: (v1: any, v2: any) => any;
-        vecmul: (v1: any, v2: any) => any;
-        vecdiv: (v1: any, v2: any) => any;
-        vecscale: (v1: any, scalar: number) => any;
-        distance: (v1: any, v2: any) => number;
-        magnitude: (v: any) => number;
-        normalize: (v: any) => any;
+        vecadd: (v1: {
+            [key: string]: number;
+        }, v2: {
+            [key: string]: number;
+        }) => {
+            [key: string]: number;
+        };
+        vecsub: (v1: {
+            [key: string]: number;
+        }, v2: {
+            [key: string]: number;
+        }) => {
+            [key: string]: number;
+        };
+        vecmul: (v1: {
+            [key: string]: number;
+        }, v2: {
+            [key: string]: number;
+        }) => {
+            [key: string]: number;
+        };
+        vecdiv: (v1: {
+            [key: string]: number;
+        }, v2: {
+            [key: string]: number;
+        }) => {
+            [key: string]: number;
+        };
+        vecscale: (v1: {
+            [key: string]: number;
+        }, scalar: number) => {
+            [key: string]: number;
+        };
+        distance: (v1: {
+            [key: string]: number;
+        }, v2: {
+            [key: string]: number;
+        }) => number;
+        magnitude: (v: {
+            [key: string]: number;
+        }) => number;
+        normalize: (v: {
+            [key: string]: number;
+        }) => {};
         distance3D(v1: {
             x: number;
             y: number;

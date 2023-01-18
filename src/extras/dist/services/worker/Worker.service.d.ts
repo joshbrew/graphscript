@@ -73,6 +73,13 @@ export declare class WorkerService extends Service {
         onmessage?: (ev: any) => void;
         onerror?: (ev: any) => void;
     }) => WorkerInfo;
+    open: (options: {
+        url?: URL | string | Blob;
+        port?: MessagePort;
+        _id?: string;
+        onmessage?: (ev: any) => void;
+        onerror?: (ev: any) => void;
+    }) => WorkerInfo;
     toObjectURL: (scriptTemplate: string) => string;
     getTransferable(message: any): any;
     transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: StructuredSerializeOptions) => any;
@@ -85,16 +92,4 @@ export declare class WorkerService extends Service {
     triggerSubscription: (route: string, workerId: string, result: any) => Promise<boolean>;
     pipeWorkers: (sourceWorker: WorkerInfo | string, listenerWorker: WorkerInfo | string, sourceRoute: string, listenerRoute: string, portId?: string, args?: any[], key?: any, subInput?: boolean, blocking?: boolean) => Promise<number>;
     unpipeWorkers: (sourceRoute: string, sourceWorker: WorkerInfo | string, sub?: number) => Promise<any>;
-    transferFunction(worker: WorkerInfo, fn: Function, fnName?: string): Promise<any>;
-    transferClass(worker: WorkerInfo, cls: Function, className?: string): Promise<any>;
-    receiveNode(properties: GraphNodeProperties & {
-        __methods?: {
-            [key: string]: Function | string;
-        };
-    }): any;
-    transferNode(properties: GraphNodeProperties & {
-        __methods?: {
-            [key: string]: Function | string;
-        };
-    }, worker: WorkerInfo | Worker, name?: string): Promise<unknown>;
 }

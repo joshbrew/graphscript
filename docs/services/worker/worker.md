@@ -5,7 +5,7 @@ To use workers within our graph hierarchy, we need to establish a worker service
 e.g. worker.ts
 ```ts
 //functionality
-import { WorkerService, workerCanvasRoutes, workerCanvasRoutes, unsafeRoutes, ECSService } from 'graphscript';
+import { WorkerService, workerCanvasRoutes, workerCanvasRoutes, remoteGraphRoutes, ECSService } from 'graphscript';
 
 //wonder if we can have a scheme to dynamic import within the services? e.g. to bring in node-only or browser-only services without additional workers
 
@@ -19,7 +19,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         }
         roots:{
             ...workerCanvasRoutes,
-            ...unsafeRoutes //allows dynamic route loading
+            ...remoteGraphRoutes //allows dynamic route loading
         },
         includeClassName:false
     });
@@ -35,4 +35,4 @@ This worker implements several useful services including a dedicated gpu.js inst
 
 Now you can post commands and subscribe to results easily, or chain threads via message ports easily (see worker.service.md).
 
-Note the unsafeRoutes allow writing functions, properties, and classes to the thread from another thread. Use with caution!
+Note the remoteGraphRoutes allow writing functions, properties, and classes to the thread from another thread. Use with caution!

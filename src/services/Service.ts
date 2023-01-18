@@ -239,8 +239,8 @@ export function isTypedArray(x:any) { //https://stackoverflow.com/a/40319428
 
 export const recursivelyAssign = (target,obj) => {
     for(const key in obj) {
-        if(typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-            if(typeof target[key] === 'object' && !Array.isArray(target[key])) recursivelyAssign(target[key], obj[key]);
+        if(obj[key].constructor.name === 'Object' && !Array.isArray(obj[key])) {
+            if(obj[key].constructor.name === 'Object' && !Array.isArray(target[key])) recursivelyAssign(target[key], obj[key]);
             else target[key] = recursivelyAssign({},obj[key]); 
         } else target[key] = obj[key];
     }

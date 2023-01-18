@@ -83,7 +83,7 @@ let worker2 = workers.addWorker({url:worker});
 
 const portId = workers.establishMessageChannel(worker1.worker,worker2.worker)
 
-//if unsafeService is enabled on the worker you can quickly write in functions from the main thread
+//if the remoteGraphRoutes are enabled on the worker you can quickly write in functions from the main thread
 workers.transferFunction(
     worker1,
     function add1(input) {
@@ -203,7 +203,7 @@ Worker:
 ```ts
 import { 
     WorkerService, 
-    unsafeRoutes, 
+    remoteGraphRoutes, 
     workerCanvasRoutes,
      //GPUService 
 } from 'graphscript'/////"../../GraphServiceRouter/index";//from 'graphscript'
@@ -216,7 +216,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         roots:[
             //GPUService as any,
             ...workerCanvasRoutes,
-            ...unsafeRoutes //allows dynamic route loading
+            ...remoteGraphRoutes //allows dynamic route loading
         ],
         includeClassName:false
     });
@@ -471,7 +471,7 @@ And to set up the worker, we add an intermediate function to the worker's `setup
 
 import { 
     WorkerService, 
-    unsafeRoutes, 
+    remoteGraphRoutes, 
     workerCanvasRoutes,
     ECSService,
     Systems
@@ -494,7 +494,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         routes:[
             //GPUService,
             ECSService,
-            unsafeRoutes, //allows dynamic route loading
+            remoteGraphRoutes, //allows dynamic route loading
             {
                 ...workerCanvasRoutes,
                 receiveThreeCanvas:function(options:WorkerCanvasReceiveProps){ //modified canvas receiver that installs desired threejs modules

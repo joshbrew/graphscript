@@ -65,7 +65,7 @@ export declare class SSEbackend extends Service {
         };
     };
     constructor(options?: ServiceOptions);
-    setupSSE: (options: SSEProps) => false | SSEChannelInfo;
+    openSSE: (options: SSEProps) => false | SSEChannelInfo;
     open: (options: SSEProps) => false | SSEChannelInfo;
     streamIterable: (path: string, iterable: Iterable<any> | AsyncIterable<any>, sessionId?: string, eventName?: string) => Promise<void> | Promise<void>[];
     streamReadable: (path: string, readable: Readable, sessionId?: string, eventName?: string) => Promise<boolean> | Promise<boolean>[];

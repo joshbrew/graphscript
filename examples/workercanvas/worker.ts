@@ -1,7 +1,7 @@
 import { Math2 } from 'brainsatplay-math';
 import { 
     WorkerService, 
-    unsafeRoutes, 
+    remoteGraphRoutes, 
     workerCanvasRoutes,
      //GPUService 
 } from '../../build/main/index'/////"../../GraphServiceRouter/index";//from 'graphscript'
@@ -14,7 +14,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         services:{
             //GPUService as any,
             workerCanvasRoutes,
-            unsafeRoutes, //allows dynamic route loading
+            remoteGraphRoutes, //allows dynamic route loading
             Math,
             Math2
         }
