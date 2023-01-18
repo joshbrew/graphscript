@@ -40,14 +40,11 @@ export function parseFunctionFromText(method='') {
         let varName = newFuncHead.split('(')[1].split(')')[0]
         newFunc = new Function(varName, newFuncBody);
     } else {
-        if(newFuncHead.substring(0,6) === newFuncBody.substring(0,6)) {
-        //newFuncBody = newFuncBody.substring(newFuncHead.length);
-        let varName = newFuncHead.split('(')[1].split(')')[0]
-        //console.log(varName, newFuncHead ,newFuncBody);
-        newFunc = new Function(varName, newFuncBody.substring(newFuncBody.indexOf('{')+1,newFuncBody.length-1));
-        }
-        else {
-        try {newFunc = (0,eval)(newFuncHead + newFuncBody + "}");} catch {}
+        if (newFuncHead.substring(0, 6) === newFuncBody.substring(0, 6)) {
+            let varName = newFuncHead.split('(')[1].split(')')[0]
+            newFunc = new Function(varName, newFuncBody.substring(newFuncBody.indexOf('{') + 1, newFuncBody.length - 1));
+        } else {
+            try { newFunc = (0, eval)(method); } catch { } // Just evaluate the method
         }
     }
 
