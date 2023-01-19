@@ -408,6 +408,7 @@ export class GraphNode {
     //we can proxy an original object and function outputs on the node
     __proxyObject = (obj) => {
         const allProps = getAllProperties(obj);
+
         for(const k of allProps) {
             //if(!(k in this)) {
             if(typeof obj[k] === 'function') {

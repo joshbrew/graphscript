@@ -42,13 +42,18 @@ export const wchtmlloader = (
             if(node.__element instanceof HTMLElement) node.__props = node.__element;
             else node.__props = document.createElement(node.__element);
         }
+
         if(!(node.__props instanceof HTMLElement)) return; 
+        
+        let cpy = Object.assign({},properties);
         node.__proxyObject(node.__props);
-        let keys = Object.getOwnPropertyNames(properties);
+        let keys = Object.getOwnPropertyNames(cpy);
         for(const k of keys) { 
-            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
-            else node.__props[k] = properties[k]; 
+            if(!(k in cpy)) continue;
+            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,cpy[k]);}
+            else node.__props[k] = cpy[k]; 
         }
+    
     } else if (typeof node.__css === 'string') {
         node.__template = `<style> ${node.__css} </style>`; delete node.__css;
     }
@@ -80,11 +85,13 @@ export const wchtmlloader = (
 
         node.__props = document.createElement(node.tagName);
 
+        let cpy = Object.assign({},properties);
         node.__proxyObject(node.__props);
-        let keys = Object.getOwnPropertyNames(properties);
+        let keys = Object.getOwnPropertyNames(cpy);
         for(const k of keys) { 
-            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
-            else node.__props[k] = properties[k]; 
+            if(!(k in cpy)) continue;
+            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,cpy[k]);}
+            else node.__props[k] = cpy[k]; 
         }
 
     } else if(node.__props instanceof HTMLElement) {

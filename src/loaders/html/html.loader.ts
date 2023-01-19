@@ -60,18 +60,13 @@ export const htmlloader = (
     }
     
     if(node.__props instanceof HTMLElement) {
+        let cpy = Object.assign({},properties);
         node.__proxyObject(node.__props);
-
-        if(node.__onresize)
-            window.addEventListener('resize', node.__onresize as EventListener);
-
-    } 
-
-    if(node.__props instanceof HTMLElement) {
-        let keys = Object.getOwnPropertyNames(properties);
+        let keys = Object.getOwnPropertyNames(cpy);
         for(const k of keys) { 
-            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,properties[k]);}
-            else node.__props[k] = properties[k]; 
+            if(!(k in cpy)) continue;
+            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,cpy[k]);}
+            else node.__props[k] = cpy[k]; 
         }
 
         if(node.__attributes) { 
@@ -80,6 +75,10 @@ export const htmlloader = (
                 node.__props[k] = node.__attributes[k];
             }
         }
+
+        if(node.__onresize)
+            window.addEventListener('resize', node.__onresize as EventListener);
+
     }
     
     if(node.__props instanceof HTMLElement) {
