@@ -603,7 +603,6 @@ export class Graph {
         }
         if(!properties) return
         
-        properties.__node.initial = properties; 
         if(!instanced) {
             let keys = Object.getOwnPropertyNames(properties); //lets us copy e.g. Math
             let cpy = {};
@@ -611,6 +610,7 @@ export class Graph {
             properties = cpy;
         }
         if(!properties.__node) properties.__node = {};
+        properties.__node.initial = properties; 
 
         if(typeof properties === 'object' && (!properties?.__node?.tag || !this.get(properties.__node.tag))) {
             let node;

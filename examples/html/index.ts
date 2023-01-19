@@ -1,5 +1,18 @@
 import {Graph, wchtmlloader, HTMLNodeProperties} from '../../index'
 
+let component = {
+    __template:`<div id='wcdiv'>Hello world!</div>`,
+    __element:'web-component',
+    __onrender:function (elm){
+        console.log('rendered!');
+        (document.getElementById('wcdiv') as HTMLElement).onclick = (ev) => {
+            if((ev.target as HTMLElement).style.backgroundColor !== 'red') 
+            setTimeout(()=>{(ev.target as HTMLElement).style.backgroundColor = '';},1000); 
+            (ev.target as HTMLElement).style.backgroundColor = 'red'; 
+        }
+    }
+} as HTMLNodeProperties
+
 let roots = {
 
     mainbody:{
@@ -24,18 +37,7 @@ let roots = {
                     ev.target.innerHTML = 'Clicked!'; 
                 }
             } as HTMLNodeProperties,
-            component:{
-                __template:`<div id='wcdiv'>Hello world!</div>`,
-                __element:'web-component',
-                __onrender:function (elm){
-                    console.log('rendered!');
-                    (document.getElementById('wcdiv') as HTMLElement).onclick = (ev) => {
-                        if((ev.target as HTMLElement).style.backgroundColor !== 'red') 
-                        setTimeout(()=>{(ev.target as HTMLElement).style.backgroundColor = '';},1000); 
-                        (ev.target as HTMLElement).style.backgroundColor = 'red'; 
-                    }
-                }
-            } as HTMLNodeProperties
+            component
         }
     } as HTMLNodeProperties
 }
