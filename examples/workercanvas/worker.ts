@@ -4,7 +4,7 @@ import {
     remoteGraphRoutes, 
     workerCanvasRoutes,
      //GPUService 
-} from '../../build/main/index'/////"../../GraphServiceRouter/index";//from 'graphscript'
+} from '../../index'/////"../../GraphServiceRouter/index";//from 'graphscript'
 
 
 declare var WorkerGlobalScope;
