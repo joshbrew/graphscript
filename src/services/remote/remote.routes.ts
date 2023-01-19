@@ -64,7 +64,7 @@ export const remoteGraphRoutes = {
         }
         if(typeof properties === 'object' || typeof properties === 'function') {
             let template = Object.assign({},properties);
-            let node = this.add(properties);
+            let node = this.__node.graph.add(properties);
             nodeTemplates[node.__node.tag] = template; //can just instantiate this again later
             return node.__node.tag;
         } else return false;
