@@ -1,6 +1,6 @@
 {
     "name": "graphscript",
-    "version": "0.2.48",
+    "version": "0.2.49",
     "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
     "main": "dist/index.js",
     "module": "dist/index.esm.js",
