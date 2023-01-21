@@ -26,15 +26,15 @@ export declare type CanvasProps = {
 };
 export declare type CanvasControls = {
     _id: string;
-    draw: (props?: any) => void;
+    draw: (props?: any, transfer?: any) => void;
     update: (props: {
         [key: string]: any;
-    }) => void;
+    }, transfer?: any) => void;
     clear: () => void;
     init: () => void;
     stop: () => void;
     start: () => void;
-    set: (newDrawProps: CanvasProps) => void;
+    set: (newDrawProps: CanvasProps, transfer?: any) => void;
 };
 export declare type WorkerCanvasControls = {
     worker: Worker | MessagePort;
@@ -69,7 +69,7 @@ export declare function setProps(props?: {
     [key: string]: any;
 }, _id?: string): string;
 export declare function startAnim(_id?: string, draw?: string | ((this: any, canvas: any, context: any) => void)): string;
-export declare function stopAnim(_id?: string): string;
+export declare function stopAnim(_id: string): string;
 export declare const workerCanvasRoutes: {
     Renderer: typeof Renderer;
     transferCanvas: typeof transferCanvas;

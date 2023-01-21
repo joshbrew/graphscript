@@ -70,6 +70,60 @@ export const remoteGraphRoutes = {
         } else return false;
     },
 
+    proxyRemoteNode:function (
+        name:string,
+        connection:any, //put any info connection template in with a .run function, does not work with base workers/sockets etc as it relies on our promise system
+    ) {
+        return new Promise((res,rej) => {
+            connection.run('getNodeProperties',name).then((props:any)=>{
+                let proxy = {};
+                if(typeof props === 'object') {
+                    for(const key in props) {
+                        if(props[key] === 'function') {
+                           proxy[key] = (...args:any) => {
+                                return new Promise((r) => {
+                                    connection.run(
+                                        name,
+                                        args,
+                                        key
+                                    ).then(r);
+                                });
+                           }
+                        } else {
+                            Object.defineProperty(
+                                proxy,
+                                key,
+                                {
+                                    get:()=>{
+                                        return new Promise((r)=>{
+                                            connection.run(
+                                                name,
+                                                undefined,
+                                                key
+                                            ).then((r))
+                                        });
+                                    },
+                                    set:(value) => {
+                                        connection.post(
+                                            name,
+                                            value,
+                                            key
+                                        )
+                                    },
+                                    configurable:true,
+                                    enumerable:true
+                                }
+                            )
+                        }
+                    }
+                }
+
+                res(proxy);
+
+            });
+        });
+    },
+
     makeNodeTransferrable:function (
         properties:GraphNodeProperties,
         name?:string
@@ -160,6 +214,18 @@ export const remoteGraphRoutes = {
         if(this.__node.graph.get(nodeTag) && typeof source === 'object') {
             Object.assign(this.__node.graph.get(nodeTag),source);
         }
+    },
+
+    getNodeProperties:function(nodeTag:string) {
+        let node = this.__node.graph.get(nodeTag);
+        if(node) {
+            let properties = Object.getOwnPropertyNames(node);
+            let result = {};
+            for(const key in properties) {
+                result[key] = typeof node[key];
+            }
+            return result;
+        } return undefined;
     },
 
     transferClass:(

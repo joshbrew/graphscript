@@ -89,10 +89,17 @@ export class Service extends Graph {
         }
         if(src?.[m]) {
             if(typeof src[m] !== 'function') {
-                if(args) src[m] = args; //if args were passed set the value
+                if(args) { 
+                    if(Array.isArray(args) && args.length === 1) src[m] = args[0];
+                    else src[m] = args; 
+                    return; //set value, don't echo
+                } //if args were passed set the value
                 return src[m]; //could just be a stored local variable we are returning like a string or object
             }
-            else return src[m](args); 
+            else {
+                if(Array.isArray(args)) return src[m](...args);
+                else return src[m](args);
+            } 
             
         }//these could be any function or property call
         else return this.handleServiceMessage({route,args,method}) //process normally if the method doesn't return

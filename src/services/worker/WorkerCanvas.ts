@@ -1,4 +1,5 @@
 //provide routes for applying canvases to workers
+import { GraphNode } from '../../core/Graph';
 import { proxyElementWorkerRoutes, initProxyElement } from './ProxyListener';
 
 declare var WorkerGlobalScope;
@@ -32,13 +33,13 @@ export type CanvasProps = { //defined in worker thread
 
 export type CanvasControls = {
     _id:string,
-    draw:(props?:any)=>void,
-    update:(props:{[key:string]:any})=>void,
+    draw:(props?:any,transfer?:any)=>void,
+    update:(props:{[key:string]:any},transfer?:any)=>void,
     clear:()=>void,
     init:()=>void,
     stop:()=>void,
     start:()=>void,
-    set:(newDrawProps:CanvasProps)=>void
+    set:(newDrawProps:CanvasProps,transfer?:any)=>void
 }
 
 export type WorkerCanvasControls = {
@@ -137,11 +138,11 @@ export function transferCanvas(
         width:options.width,
         height:options.height,
         worker,
-        draw:(props?:any)=>{
-            worker.postMessage({route:'drawFrame',args:[props,options._id]});
+        draw:(props?:any,transfer?:any)=>{
+            worker.postMessage({route:'drawFrame',args:[props,options._id]},transfer);
         },
-        update:(props:{[key:string]:any})=>{
-            worker.postMessage({route:'updateCanvas',args:[props,options._id]})
+        update:(props:{[key:string]:any,transfer?:any})=>{
+            worker.postMessage({route:'updateCanvas',args:[props,options._id]},transfer)
         },
         clear:()=>{
             worker.postMessage({route:'clearCanvas',args:options._id})
@@ -156,8 +157,8 @@ export function transferCanvas(
         start:()=>{
             worker.postMessage({route:'startAnim',args:options._id})
         },
-        set:(newDrawProps:CanvasProps)=>{
-            worker.postMessage({route:'setDraw',args:[newDrawProps,options._id]});
+        set:(newDrawProps:CanvasProps,transfer?:any)=>{
+            worker.postMessage({route:'setDraw',args:[newDrawProps,options._id]},transfer);
         },
         terminate:()=>{
             (worker as Worker).terminate();
@@ -199,19 +200,19 @@ export function setDraw(
         if(settings.height) canvasopts.canvas.height = settings.height;
         if(typeof settings.draw === 'string') settings.draw = parseFunctionFromText(settings.draw);
         if(typeof settings.draw === 'function') {
-            canvasopts.draw = settings.draw;
+            canvasopts.draw = settings.draw.bind(settings);
         }
         if(typeof settings.update === 'string') settings.update = parseFunctionFromText(settings.update);
         if(typeof settings.update === 'function') {
-            canvasopts.update = settings.update;
+            canvasopts.update = settings.update.bind(settings);
         }
         if(typeof settings.init === 'string') settings.init = parseFunctionFromText(settings.init);
         if(typeof settings.init === 'function') {
-            canvasopts.init = settings.init;
+            canvasopts.init = settings.init.bind(settings);
         }
         if(typeof settings.clear === 'string') settings.clear = parseFunctionFromText(settings.clear);
         if(typeof settings.clear === 'function') {
-            canvasopts.clear = settings.clear;
+            canvasopts.clear = settings.clear.bind(settings);
         }
         return settings._id;
     }
@@ -238,7 +239,16 @@ export function setupCanvas(
     } else if(globalThis.CANVASES?.[canvasOptions._id]) {
         setDraw(canvasOptions);
     } else {
-        if(this?.__node?.graph) canvasOptions.graph = this.__node.graph;
+        if(this?.__node?.graph) {
+            canvasOptions.graph = this.__node.graph;
+            if(!canvasOptions.__node) {canvasOptions.__node = {}}
+            if(!canvasOptions.__node.tag) canvasOptions.__node.tag = canvasOptions._id;
+            canvasOptions = this.__node.graph.add(canvasOptions); //replace with node
+            canvasOptions.__addOndisconnected = () => {
+                canvasOptions.stop();
+                delete this.__node.graph.CANVASES[canvasOptions._id];
+            }
+        }
 
         if(this?.__node?.graph) this.__node.graph.CANVASES[canvasOptions._id] = canvasOptions;
         else globalThis.CANVASES[canvasOptions._id] = canvasOptions;
@@ -254,22 +264,22 @@ export function setupCanvas(
         if(typeof canvasOptions.draw === 'string') {
             canvasOptions.draw = parseFunctionFromText(canvasOptions.draw);
         } else if(typeof canvasOptions.draw === 'function') {
-            canvasOptions.draw = canvasOptions.draw;
+            canvasOptions.draw = canvasOptions.draw.bind(canvasOptions);
         }    
         if(typeof canvasOptions.update === 'string') {
             canvasOptions.update = parseFunctionFromText(canvasOptions.update);
         }  else if(typeof canvasOptions.update === 'function') {
-            canvasOptions.update = canvasOptions.update;
+            canvasOptions.update = canvasOptions.update.bind(canvasOptions);
         }       
         if(typeof canvasOptions.init === 'string') {
             canvasOptions.init = parseFunctionFromText(canvasOptions.init);
         } else if(typeof canvasOptions.init === 'function') {
-            canvasOptions.init = canvasOptions.init;
+            canvasOptions.init = canvasOptions.init.bind(canvasOptions);
         }        
         if(typeof canvasOptions.clear === 'string') {
             canvasOptions.clear = parseFunctionFromText(canvasOptions.clear);
         } else if(typeof canvasOptions.clear === 'function') {
-            canvasOptions.clear = canvasOptions.clear;
+            canvasOptions.clear = canvasOptions.clear.bind(canvasOptions);
         } 
 
         if(typeof canvasOptions.init === 'function') 
@@ -297,37 +307,42 @@ export function setupCanvas(
     if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
         return canvasOptions._id as string;
     else {
-            //lets add some utilities to make it easy to update the thread
-    const canvascontrols = {
-        _id:options._id,
-        width:options.width,
-        height:options.height,
-        draw:(props?:any)=>{
-            drawFrame(props,options._id);
-        },
-        update:(props:{[key:string]:any})=>{
-            updateCanvas(props,options._id);
-        },
-        clear:()=>{
-            clearCanvas(options._id);
-        },
-        init:()=>{
-            //console.log('Posting init')
-            initCanvas(options._id);
-        },
-        stop:()=>{
-            stopAnim(options._id);
-        },
-        start:()=>{
-            startAnim(options._id);
-        },
-        set:(newDrawProps:CanvasProps)=>{
-            setDraw(newDrawProps,options._id);
-        },
-        terminate:()=>{
-            stopAnim(options._id);
+        //lets add some utilities to make it easy to update the thread
+        const canvascontrols = {
+            _id:options._id,
+            width:options.width,
+            height:options.height,
+            draw:(props?:any)=>{
+                drawFrame(props,options._id);
+            },
+            update:(props:{[key:string]:any})=>{
+                updateCanvas(props,options._id);
+            },
+            clear:()=>{
+                clearCanvas(options._id);
+            },
+            init:()=>{
+                //console.log('Posting init')
+                initCanvas(options._id);
+            },
+            stop:()=>{
+                stopAnim(options._id);
+            },
+            start:()=>{
+                startAnim(options._id);
+            },
+            set:(newDrawProps:CanvasProps)=>{
+                setDraw(newDrawProps,options._id);
+            },
+            terminate:()=>{
+                if(this.__node?.graph) this.__node.graph.remove(options._id);
+                else {
+                    stopAnim(options._id); 
+                    if(this?.__node?.graph) delete this.__node.graph.CANVASES[canvasOptions._id];
+                    else delete globalThis.CANVASES[canvasOptions._id];
+                }
+            }
         }
-    }
 
         return canvascontrols as CanvasControls;
     }
@@ -428,13 +443,14 @@ export function startAnim(_id?:string, draw?:string|((this:any,canvas:any,contex
     return undefined;
 }
 
-export function stopAnim(_id?:string){
+export function stopAnim(_id:string){
 
     let canvasopts = getCanvas.call(this, _id);
 
     if(canvasopts) {
         canvasopts.animating = false;
-        if(typeof canvasopts.clear === 'function') canvasopts.clear(canvasopts, canvasopts.canvas, canvasopts.context);
+        if(typeof canvasopts.clear === 'function') 
+            requestAnimationFrame(canvasopts.clear(canvasopts, canvasopts.canvas, canvasopts.context));    
         return _id;
     }
     return undefined;

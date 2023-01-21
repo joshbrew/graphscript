@@ -112,6 +112,7 @@ export declare const subprocessRoutes: {
             [key: string]: string | Function;
         };
     })) => any;
+    proxyRemoteNode: (name: string, connection: any) => Promise<unknown>;
     makeNodeTransferrable: (properties: GraphNodeProperties, name?: string) => {};
     setTemplate: (properties: string | (() => any) | (GraphNodeProperties & {
         __methods?: {
@@ -123,6 +124,7 @@ export declare const subprocessRoutes: {
     assignNode: (nodeTag: string, source: {
         [key: string]: any;
     }) => void;
+    getNodeProperties: (nodeTag: string) => {};
     transferClass: (classObj: any, connection: any, className?: string) => any;
     receiveClass: (stringified: string, className?: string) => boolean;
     transferFunction: (fn: Function, connection: any, fnName?: string) => any;

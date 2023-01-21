@@ -36,9 +36,9 @@ export type WorkerProps = {
 export type WorkerInfo = {
     worker:Worker|MessagePort,
     send:(message:any,transfer?:any)=>void,
-    request:(message:any, transfer?:any, method?:string)=>Promise<any>,
+    request:(message:any, method?:string,transfer?:any)=>Promise<any>,
     post:(route:any, args?:any, transfer?:any)=>void,
-    run:(route:any, args?:any, transfer?:any, method?:string)=>Promise<any>
+    run:(route:any, args?:any, method?:string,transfer?:any)=>Promise<any>
     subscribe:(route:any, callback?:((res:any)=>void)|string, args?:any[], key?:string, subInput?:boolean, blocking?:boolean)=>Promise<any>,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,
     start:(route?:any, portId?:string, callback?:((res:any)=>void)|string, blocking?:boolean)=>Promise<boolean>,
@@ -131,7 +131,7 @@ export class WorkerService extends Service {
             }
 
             if(rt.init) { //requires remoteGraphRoutes
-                worker.run(rt.init,rt.initArgs,rt.initTransfer);
+                worker.run(rt.init,rt.initArgs,undefined,rt.initTransfer);
             } 
 
             // //need remoteGraphRoutes loaded
@@ -285,7 +285,7 @@ export class WorkerService extends Service {
             return this.transmit(message,worker,transfer);
         }
 
-        let post = (route:any,args?:any,transfer?:any, method?:string) => {
+        let post = (route:any,args?:any,method?:string, transfer?:any) => {
             //console.log('sent', message)
             let message:any = {
                 route,
@@ -296,7 +296,7 @@ export class WorkerService extends Service {
             return this.transmit(message,worker,transfer);
         }
 
-        let run = (route:any,args?:any, transfer?:any, method?:string) => {
+        let run = (route:any, args?:any, method?:string, transfer?:any) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
                 let req = {route:'runRequest', args:[{route, args}, options._id, callbackId]} as any;
@@ -316,7 +316,7 @@ export class WorkerService extends Service {
             });
         }
         
-        let request = (message:ServiceMessage|any, transfer?:any, method?:string) => {
+        let request = (message:ServiceMessage|any, method?:string, transfer?:any) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
                 let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
