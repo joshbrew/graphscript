@@ -1,23 +1,21 @@
 import { Math2 } from 'brainsatplay-math';
-import { SubprocessContextProps } from '../../services/worker/Subprocess';
+import { GraphNodeProperties } from '../../core/Graph';
 //convert accelerometer and gyro data into cartesian position changes
 //https://howtomechatronics.com/tutorials/arduino/arduino-and-mpu6050-accelerometer-and-gyroscope-tutorial/
 
 export const accel_gyro = {
-    structs:{
-        accelConstant: 1/8192,  //+/-4g mpu6050    //1/16384, //+/- 2g mpu6050
-        gyroConstant: 1/65.5,   //500deg/s         //1/131, //250deg/s mpu6050
-        gyroXAngle:0,
-        gyroYAngle:0,
-        gyroZAngle:0,
-        px:0,
-        py:0,
-        pz:0,
-        sps:100,
-        lastAccelTime:Date.now(),
-        lastGyroTime:Date.now()
-    },
-    ondata:(ctx, data:{
+    accelConstant: 1/8192,  //+/-4g mpu6050    //1/16384, //+/- 2g mpu6050
+    gyroConstant: 1/65.5,   //500deg/s         //1/131, //250deg/s mpu6050
+    gyroXAngle:0,
+    gyroYAngle:0,
+    gyroZAngle:0,
+    px:0,
+    py:0,
+    pz:0,
+    sps:100,
+    lastAccelTime:Date.now(),
+    lastGyroTime:Date.now(),
+    __operator:function(data:{
         ax:number|number[],
         ay:number|number[],
         az:number|number[],
@@ -37,7 +35,7 @@ export const accel_gyro = {
         gz:number|number[],
         [key:string]:any,
         timestamp?:number|number[]
-    })=>{
+    }) {
 
         if(!('ax' in data) && !('gx' in data)) return undefined; //invalid data
 
@@ -45,7 +43,7 @@ export const accel_gyro = {
             if((data.ax && Array.isArray(data.ax)) || (data.gx && Array.isArray(data.gx))) { //assume timestamp
                 let len = data.ax ? data.ax.length : data.gx.length;
                 let now = Date.now();
-                let toInterp = [now - len*ctx.sps*1000, now];
+                let toInterp = [now - len*this.sps*1000, now];
                 data.timestamp = Math2.upsample(toInterp,len);
             } else {
                 data.timestamp = Date.now();
@@ -57,12 +55,12 @@ export const accel_gyro = {
         if(data.ax) {
             let apass = (timestamp,ax,ay,az) => {
 
-                ax = ax*ctx.accelConstant; //assume raw data
-                ay = ay*ctx.accelConstant;
-                az = az*ctx.accelConstant;
+                ax = ax*this.accelConstant; //assume raw data
+                ay = ay*this.accelConstant;
+                az = az*this.accelConstant;
     
-                const accelXAngle = Math.atan((ay/Math.sqrt(ax*ax)) + az*az*180/Math.PI) + ctx.accelXError;
-                const accelYAngle = Math.atan((-ax/Math.sqrt(ay*ay)) + az*az*180/Math.PI) + ctx.accelYError;
+                const accelXAngle = Math.atan((ay/Math.sqrt(ax*ax)) + az*az*180/Math.PI) + this.accelXError;
+                const accelYAngle = Math.atan((-ax/Math.sqrt(ay*ay)) + az*az*180/Math.PI) + this.accelYError;
             
                 return {
                     ax,
@@ -81,24 +79,24 @@ export const accel_gyro = {
         }
         if(data.gx) {
             let gpass = (timestamp,gx,gy,gz) => { 
-                const elapsed = timestamp - ctx.lastGyroTime;
-                ctx.lastGyroTime = timestamp;
+                const elapsed = timestamp - this.lastGyroTime;
+                this.lastGyroTime = timestamp;
 
-                gx = gx*ctx.gyroConstant+ctx.gyroXError; //assume raw data
-                gy = gy*ctx.gyroConstant+ctx.gyroYError;
-                gz = gz*ctx.gyroConstant+ctx.gyroZError;
+                gx = gx*this.gyroConstant+this.gyroXError; //assume raw data
+                gy = gy*this.gyroConstant+this.gyroYError;
+                gz = gz*this.gyroConstant+this.gyroZError;
     
-                ctx.gyroXAngle += gx*elapsed;
-                ctx.gyroYAngle += gy*elapsed;
-                ctx.gyroZAngle += gz*elapsed;
+                this.gyroXAngle += gx*elapsed;
+                this.gyroYAngle += gy*elapsed;
+                this.gyroZAngle += gz*elapsed;
 
                 return {
                     gx,
                     gy,
                     gz,
-                    roll:ctx.gyroXAngle,
-                    pitch:ctx.gyroYAngle,
-                    yaw:ctx.gyroZAngle
+                    roll:this.gyroXAngle,
+                    pitch:this.gyroYAngle,
+                    yaw:this.gyroZAngle
                 }
 
             }
@@ -124,26 +122,26 @@ export const accel_gyro = {
                     result.yaw = res.yaw;
                 } else result = res;
             }
-        } else if(ctx.gyroXAngle || ctx.gyroYAngle || ctx.gyroZAngle) { //e.g. if accel and gyro are reported separately (looking at you, muse O__O)
-            result.roll = result.roll*0.04 + ctx.gyroXAngle*0.96;  //complementary filter
-            result.pitch = result.pitch*0.04 + ctx.gyroYAngle*0.96;
-            result.yaw = ctx.gyroXAngle;
+        } else if(this.gyroXAngle || this.gyroYAngle || this.gyroZAngle) { //e.g. if accel and gyro are reported separately (looking at you, muse O__O)
+            result.roll = result.roll*0.04 + this.gyroXAngle*0.96;  //complementary filter
+            result.pitch = result.pitch*0.04 + this.gyroYAngle*0.96;
+            result.yaw = this.gyroXAngle;
         }
 
         //add estimated position offsets px, py, pz
         if(result.ax) {
 
             const setPositionOffset = (timestamp, result) => {
-                const elapsed = timestamp - ctx.lastAccelTime;
-                ctx.lastAccelTime = timestamp;
+                const elapsed = timestamp - this.lastAccelTime;
+                this.lastAccelTime = timestamp;
 
-                ctx.px += result.ax*elapsed*elapsed*Math.cos(ctx.pitch*Math.PI*0.005555555555); //correct for angle in local coordinate space
-                ctx.py += result.ay*elapsed*elapsed*Math.cos(ctx.roll*Math.PI*0.005555555555);
-                ctx.pz += result.az*elapsed*elapsed*Math.sin(ctx.pitch*Math.PI*0.005555555555);
+                this.px += result.ax*elapsed*elapsed*Math.cos(this.pitch*Math.PI*0.005555555555); //correct for angle in local coordinate space
+                this.py += result.ay*elapsed*elapsed*Math.cos(this.roll*Math.PI*0.005555555555);
+                this.pz += result.az*elapsed*elapsed*Math.sin(this.pitch*Math.PI*0.005555555555);
 
-                result.px = ctx.px;
-                result.py = ctx.py;
-                result.pz = ctx.pz;
+                result.px = this.px;
+                result.py = this.py;
+                result.pz = this.pz;
 
                 return result;
 
@@ -161,6 +159,6 @@ export const accel_gyro = {
 
         return result;
     }
-} as SubprocessContextProps
+} as GraphNodeProperties
 
 //e.g. combine with gps to get local absolute position changes

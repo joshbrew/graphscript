@@ -1,3 +1,4 @@
+declare function focusEventHandler(event: any, sendFn: any): void;
 declare function wheelEventHandler(event: any, sendFn: any): void;
 declare function preventDefaultHandler(event: any): void;
 declare function touchEventHandler(event: any, sendFn: any): void;
@@ -10,6 +11,11 @@ export declare const eventHandlers: {
     pointerdown: (event: any, sendFn: any) => void;
     pointermove: (event: any, sendFn: any) => void;
     pointerup: (event: any, sendFn: any) => void;
+    pointerlockchange: (event: any, sendFn: any) => void;
+    webkitpointerlockchange: (event: any, sendFn: any) => void;
+    focus: typeof focusEventHandler;
+    blur: typeof focusEventHandler;
+    pointerout: (event: any, sendFn: any) => void;
     touchstart: typeof touchEventHandler;
     touchmove: typeof touchEventHandler;
     touchend: typeof touchEventHandler;
@@ -48,6 +54,7 @@ export declare class ElementProxyReceiver extends EventDispatcher {
     };
     handleEvent: (data: any) => void;
     focus(): void;
+    blur(): void;
 }
 export declare class ProxyManager {
     targets: any;

@@ -14,68 +14,87 @@ const mouseEventHandler = makeSendPropertiesHandler([
     'pageX',
     'pageY',
   ]);
-  const wheelEventHandlerImpl = makeSendPropertiesHandler([
-    'deltaX',
-    'deltaY',
-  ]);
-  const keydownEventHandler = makeSendPropertiesHandler([
-    'ctrlKey',
-    'metaKey',
-    'shiftKey',
-    'keyCode',
-  ]);
-  
-  function wheelEventHandler(event, sendFn) {
-    event.preventDefault();
-    wheelEventHandlerImpl(event, sendFn);
-  }
-  
-  function preventDefaultHandler(event) {
-    event.preventDefault();
-  }
-  
-  function copyProperties(src, properties, dst) {
-    for (const name of properties) {
-        dst[name] = src[name];
-    }
-  }
-  
-  function makeSendPropertiesHandler(properties) {
-    return function sendProperties(event, sendFn) {
-      const data = {type: event.type};
-      copyProperties(event, properties, data);
-      sendFn(data);
-    };
-  }
-  
-  function touchEventHandler(event, sendFn) {
-    const touches = [];
-    const data = {type: event.type, touches};
-    for (let i = 0; i < event.touches.length; ++i) {
-      const touch = event.touches[i];
-      touches.push({
-        pageX: touch.pageX,
-        pageY: touch.pageY,
-      });
-    }
-    sendFn(data);
-  }
-  
-  // The four arrow keys
-  const orbitKeys = {
-    '37': true,  // left
-    '38': true,  // up
-    '39': true,  // right
-    '40': true,  // down
-  };
 
-  function filteredKeydownEventHandler(event, sendFn) {
-    const {keyCode} = event;
-    if (orbitKeys[keyCode]) {
-      event.preventDefault();
-      keydownEventHandler(event, sendFn);
-    }
+const wheelEventHandlerImpl = makeSendPropertiesHandler([
+  'deltaX',
+  'deltaY',
+]);
+const keydownEventHandler = makeSendPropertiesHandler([
+  'ctrlKey',
+  'metaKey',
+  'shiftKey',
+  'keyCode',
+]);
+
+function focusEventHandler(event, sendFn) {
+  const data = { type:event.type } as any;
+  data.isTrusted = event.isTrusted;
+  data.bubbles = event.bubbles;
+  data.cancelBubble = event.cancelBubble;
+  data.cancelable = event.cancelable;
+  data.composed = event.composed;
+  data.defaultPrevent = event.defaultPrevented;
+  data.eventPhase = event.eventPhase;
+  data.returnValue = event.returnValue;
+
+  data.currentTarget = event.currentTarget.id ? event.currentTarget.id : event.currentTarget.constructor.name;
+  data.target = data.currentTarget;
+  data.srcElement = data.currentTarget;
+
+  sendFn(data);
+}
+
+function wheelEventHandler(event, sendFn) {
+  event.preventDefault();
+  wheelEventHandlerImpl(event, sendFn);
+}
+
+function preventDefaultHandler(event) {
+  event.preventDefault();
+}
+
+function copyProperties(src, properties, dst) {
+  for (const name of properties) {
+      dst[name] = src[name];
   }
+}
+
+function makeSendPropertiesHandler(properties) {
+  return function sendProperties(event, sendFn) {
+    const data = {type: event.type};
+    copyProperties(event, properties, data);
+    sendFn(data);
+  };
+}
+
+function touchEventHandler(event, sendFn) {
+  const touches = [];
+  const data = {type: event.type, touches};
+  for (let i = 0; i < event.touches.length; ++i) {
+    const touch = event.touches[i];
+    touches.push({
+      pageX: touch.pageX,
+      pageY: touch.pageY,
+    });
+  }
+  sendFn(data);
+}
+
+let i = 1;
+let keys = {};
+while(i < 222) { //proxy all key events
+  if(i !== 123) keys[i] = true; //avoid F12 to not kill the console
+  i++;
+}
+
+
+function filteredKeydownEventHandler(event, sendFn) {
+  const {keyCode} = event;
+  if (keys[keyCode]) {
+    if(event.preventDefault) event.preventDefault();
+    keydownEventHandler(event, sendFn);
+  }
+}
 
 export const eventHandlers = { //you can register more event handlers in this object
   contextmenu: preventDefaultHandler,
@@ -85,6 +104,11 @@ export const eventHandlers = { //you can register more event handlers in this ob
   pointerdown: mouseEventHandler,
   pointermove: mouseEventHandler,
   pointerup: mouseEventHandler,
+  pointerlockchange: mouseEventHandler,
+  webkitpointerlockchange: mouseEventHandler,
+  focus: focusEventHandler,
+  blur: focusEventHandler,
+  pointerout: mouseEventHandler,
   touchstart: touchEventHandler,
   touchmove: touchEventHandler,
   touchend: touchEventHandler,
@@ -113,6 +137,24 @@ export function initProxyElement(element, worker, id) {
         handler(event, sendEvent);
       });
     }
+
+    if(eventHandlers.keydown) {
+      globalThis.addEventListener('keydown', function(ev) {
+        eventHandlers.keydown(ev, sendEvent);
+      })
+    }
+
+    // if(eventHandlers.focus) {
+    //   globalThis.addEventListener('focus', function(ev) {
+    //     eventHandlers.focus(ev, sendEvent);
+    //   })
+    // }
+
+    // if(eventHandlers.blur) {
+    //   globalThis.addEventListener('blur', function(ev) {
+    //     eventHandlers.blur(ev, sendEvent);
+    //   })
+    // }
 
     const sendSize = () => {
       
@@ -144,6 +186,7 @@ export class EventDispatcher {
 
 
 	addEventListener( type, listener ) {
+    //console.log(type,listener);
 		if ( this.__listeners === undefined ) this.__listeners = {};
 		const listeners = this.__listeners;
 		if ( listeners[ type ] === undefined ) {
@@ -188,7 +231,7 @@ export class EventDispatcher {
 			for ( let i = 0, l = array.length; i < l; i ++ ) {
 				array[ i ].call( this, event );
 			}
-			event.target = null;
+			//event.target = null;
 		}
 	}
 }
@@ -255,6 +298,8 @@ export class ElementProxyReceiver extends EventDispatcher  {
 
   focus() {}
 
+  blur() {}
+
 }
 
 /////////////https://threejsfundamentals.org/threejs/lessons/threejs-offscreencanvas.html
@@ -263,7 +308,11 @@ export class ProxyManager {
     targets:any={};
 
     constructor() {
-      if(!globalThis.document) globalThis.document = {} as any; //threejs hack for workers
+      if(!globalThis.document) globalThis.document = {
+        elementFromPoint:(...args:any[])=>{ //hax
+          return this.targets[Object.keys(this.targets)[0]].proxied;
+        }
+      } as any; //threejs hack for workers
     }
 
     makeProxy = (id, addTo=undefined) => {    //addTo installs the desirable functions to the object you want     
@@ -300,6 +349,7 @@ export class ProxyManager {
           addTo.handleEvent = proxy.handleEvent.bind(proxy);
           addTo.dispatchEvent = proxy.dispatchEvent.bind(proxy);
           addTo.focus = proxy.focus.bind(proxy);
+          addTo.blur = proxy.blur.bind(proxy);
         }
     }
 

@@ -1,2 +1,2 @@
-import { SubprocessContextProps } from '../../services/worker/Subprocess';
-export declare const blink_detect: SubprocessContextProps;
+import { GraphNodeProperties } from '../../core/Graph';
+export declare const blink_detect: GraphNodeProperties;

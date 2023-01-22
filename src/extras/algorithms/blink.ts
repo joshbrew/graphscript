@@ -1,25 +1,23 @@
-import { SubprocessContextProps } from '../../services/worker/Subprocess';
+import { GraphNodeProperties } from '../../core/Graph';
 import { Biquad } from './util/BiquadFilters';
 import { Math2 } from 'brainsatplay-math';
 
 
 export const blink_detect = {
-    structs:{
-        sps:250,
-        intervals:{},
-        watch:['0'],
-        tolerance:0.2 //absolute tolerance e.g. 0.2mV
-    },
-    oncreate:(ctx) => {
-        ctx.watch.forEach((ch) => ctx.intervals[ch] = {
-            lowpass:new Biquad('lowpass',20,ctx.sps),
+    sps:250,
+    intervals:{},
+    watch:['0'],
+    tolerance:0.2, //e.g. mV
+    __onconnected:(node) => {
+        node.watch.forEach((ch) => node.intervals[ch] = {
+            lowpass:new Biquad('lowpass',20,node.sps),
             filtered:[] as number[],
             averaged:[] as number[]
         })
     },
-    ondata:(ctx,data:{
+    __operator:function(data:{
         [key:string]:number|number[]
-    }) => {
+    }) {
         let checkCt = 5;
         let averageCt = 50;
 
@@ -28,25 +26,25 @@ export const blink_detect = {
 
 
         let pass = (key,n) => {
-            let next = ctx.intervals[key].lowpass.applyFilter(n)
-            ctx.intervals[key].filtered.push(next);
-            ctx.intervals[key].averaged.push(next);
-            if(ctx.intervals[key].filtered.length > checkCt) {
-                if(ctx.intervals[key].averaged.length > averageCt) {
-                    ctx.intervals[key].averaged.splice(0,checkCt);
-                    let mean = Math2.mean(ctx.intervals[key].averaged);
-                    if(Math.abs(Math.min(...ctx.intervals[key].filtered)) > Math.abs(mean) + ctx.tolerance) {
-                        ctx.intervals[key].filtered.length = 0; //reset
+            let next = this.intervals[key].lowpass.applyFilter(n)
+            this.intervals[key].filtered.push(next);
+            this.intervals[key].averaged.push(next);
+            if(this.intervals[key].filtered.length > checkCt) {
+                if(this.intervals[key].averaged.length > averageCt) {
+                    this.intervals[key].averaged.splice(0,checkCt);
+                    let mean = Math2.mean(this.intervals[key].averaged);
+                    if(Math.abs(Math.min(...this.intervals[key].filtered)) > Math.abs(mean) + this.tolerance) {
+                        this.intervals[key].filtered.length = 0; //reset
                         passed = true;
                         found[key] = true;
                     }
                 } else 
-                    ctx.intervals[key].filtered.shift();
+                    this.intervals[key].filtered.shift();
             }
         }
         
 
-        for(const key in ctx.intervals) {
+        for(const key in this.intervals) {
             if(data[key]) {
                 if(Array.isArray(data[key])) {
                     (data[key] as any).forEach((n) => {
@@ -59,4 +57,4 @@ export const blink_detect = {
         if(passed) return found;
         
     } 
-} as SubprocessContextProps
+} as GraphNodeProperties

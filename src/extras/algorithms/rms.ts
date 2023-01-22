@@ -1,45 +1,43 @@
 //root mean square doer thinger
 
-import { SubprocessContextProps } from "../../services/worker/Subprocess";
+import { GraphNodeProperties } from "../../core/Graph";
 import { ByteParser } from "./util/ByteParser";
 
-export const rms:SubprocessContextProps = {
-    structs:{
-        sps:250, //sample rate of data 
-        nSec:1, //number of seconds of data to buffer
-        watch:['0','1','2','3'],
-        data:{},
-        rms:{}
-    },
-    //oncreate:(ctx) => { },
-    ondata:(ctx,data) => {
+export const rms:GraphNodeProperties = {
+    sps:250, //sample rate of data 
+    nSec:1, //number of seconds of data to buffer
+    watch:['0','1','2','3'],
+    data:{},
+    rms:{},
+    //__onconnected:(node) => { },
+    __operator:function (data) {
 
-        ctx.watch.forEach((key) => {
+        this.watch.forEach((key) => {
             if(data[key]) {
-                if(!ctx.data[key]) {
+                if(!this.data[key]) {
                     if(Array.isArray(data[key])) {
-                        ctx.data[key] = new Array(Math.floor(ctx.sps*ctx.nSec)).fill(data[key][0]);
-                    } else ctx.data[key] = new Array(Math.floor(ctx.sps*ctx.nSec)).fill(data[key]);
+                        this.data[key] = new Array(Math.floor(this.sps*this.nSec)).fill(data[key][0]);
+                    } else this.data[key] = new Array(Math.floor(this.sps*this.nSec)).fill(data[key]);
                 }
-                ByteParser.circularBuffer(ctx.data[key],data[key]);
+                ByteParser.circularBuffer(this.data[key],data[key]);
             }
         });
 
         if(data.timestamp) {
             if(Array.isArray(data.timestamp)) {
-                ctx.rms.timestamp = data.timestamp[data.timestamp.length - 1];
-            } else ctx.rms.timestamp = data.timestamp;
-        } else ctx.rms.timestamp = Date.now();
+                this.rms.timestamp = data.timestamp[data.timestamp.length - 1];
+            } else this.rms.timestamp = data.timestamp;
+        } else this.rms.timestamp = Date.now();
 
         //console.log(ctx.rms,ctx.data);
 
         return new Promise(async res => {
-            await Promise.all(ctx.watch.map(async (key) => {
-                if(ctx.data[key]) ctx.rms[key] = Math.sqrt(Math.abs((ctx.data[key] as number[]).reduce((p,v,i) => p + v*v )/ctx.data[key].length)); //root mean square sum
-                else delete ctx.rms[key];
+            await Promise.all(this.watch.map(async (key) => {
+                if(this.data[key]) this.rms[key] = Math.sqrt(Math.abs((this.data[key] as number[]).reduce((p,v,i) => p + v*v )/this.data[key].length)); //root mean square sum
+                else delete this.rms[key];
             }))
 
-            res(ctx.rms);
+            res(this.rms);
         }) 
 
     }

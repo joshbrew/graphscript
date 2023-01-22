@@ -34,7 +34,7 @@ export * from './src/services/webrtc/WebRTC.browser'
 export * from './src/services/worker/Worker.service'
 export * from './src/services/worker/ProxyListener'
 export * from './src/services/worker/WorkerCanvas'
-export * from './src/services/worker/Subprocess'
+//export * from './src/services/worker/Subprocess'
 
 export * from './src/services/sessions/sessions.service'
 

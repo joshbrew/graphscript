@@ -1,2 +1,2 @@
-import { SubprocessContextProps } from '../../services/worker/Subprocess';
-export declare const accel_gyro: SubprocessContextProps;
+import { GraphNodeProperties } from '../../core/Graph';
+export declare const accel_gyro: GraphNodeProperties;

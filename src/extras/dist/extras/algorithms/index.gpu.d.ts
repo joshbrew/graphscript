@@ -1,4 +1,4 @@
 export declare const gpualgorithms: {
-    dft: import("../../services/worker/Subprocess").SubprocessContextProps;
-    coherence: import("../../services/worker/Subprocess").SubprocessContextProps;
+    dft: import("../../core/Graph").GraphNodeProperties;
+    coherence: import("../../core/Graph").GraphNodeProperties;
 };

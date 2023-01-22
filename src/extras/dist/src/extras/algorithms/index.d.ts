@@ -1,2 +1,2 @@
-import { algorithms } from "../../services/worker/Subprocess";
-export { algorithms };
+import { nodeTemplates } from "../../services/remote/remote.routes";
+export { nodeTemplates };

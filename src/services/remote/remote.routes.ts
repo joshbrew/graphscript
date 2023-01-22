@@ -177,7 +177,8 @@ export const remoteGraphRoutes = {
 
     loadFromTemplate:function(
         templateName:string, 
-        name?:string
+        name?:string,
+        properties?:{[key:string]:any}
     ) {
         if(nodeTemplates[templateName]) {
             let cpy = recursivelyAssign({},nodeTemplates[templateName]);
@@ -185,6 +186,7 @@ export const remoteGraphRoutes = {
                 if(!cpy.__node) cpy.__node = {};
                 cpy.__node.tag = name;
             }
+            if(properties) Object.assign(cpy,properties);
             let node = this.__node.graph.add(cpy);
             return node.__node.tag;
         }

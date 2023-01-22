@@ -1,9 +1,11 @@
-import { parseFunctionFromText } from '../utils';
-import { WorkerInfo, WorkerService } from './Worker.service';
-import { remoteGraphRoutes } from '../remote/remote.routes';
-import { Graph, GraphNodeProperties } from '../../core/Graph';
-import {methodstrings} from '../../loaders/methodstrings'
+import { parseFunctionFromText } from '../src/services/utils';
+import { WorkerInfo, WorkerService } from '../src/services/worker/Worker.service';
+import { remoteGraphRoutes } from '../src/services/remote/remote.routes';
+import { Graph, GraphNodeProperties } from '../src/core/Graph';
+import {methodstrings} from '../src/loaders/methodstrings'
 export type Subprocess = (context:SubprocessContext,data:{[key:string]:any}|any)=>{[key:string]:any}|undefined
+
+//deprecated, just use remoteRoutes and normal node routines
 
 export type SubprocessContextProps = {
     ondata:Subprocess,

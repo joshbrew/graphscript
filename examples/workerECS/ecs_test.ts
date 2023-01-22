@@ -393,7 +393,6 @@ let ret = router.load({
                                 ['x','y','z'] //or for arrays could be the array values
                             );
 
-
                             return {
                                 entityId:this.__node.graph.entityId, 
                                 positions:positionBuffer

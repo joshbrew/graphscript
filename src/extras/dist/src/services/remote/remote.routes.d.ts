@@ -18,7 +18,9 @@ export declare const remoteGraphRoutes: {
             [key: string]: string | Function;
         };
     }), name?: string) => string | false;
-    loadFromTemplate: (templateName: string, name?: string) => any;
+    loadFromTemplate: (templateName: string, name?: string, properties?: {
+        [key: string]: any;
+    }) => any;
     setMethod: (route: string, fn: string | (() => any), methodKey?: string) => boolean;
     assignNode: (nodeTag: string, source: {
         [key: string]: any;
