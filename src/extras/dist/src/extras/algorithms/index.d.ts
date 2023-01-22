@@ -1,2 +1,5 @@
-import { nodeTemplates } from "../../services/remote/remote.routes";
-export { nodeTemplates };
+import { GraphNodeProperties } from "../../core/Graph";
+declare const algorithms: {
+    [key: string]: GraphNodeProperties;
+};
+export { algorithms };
