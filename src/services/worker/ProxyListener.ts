@@ -19,10 +19,12 @@ const wheelEventHandlerImpl = makeSendPropertiesHandler([
   'deltaX',
   'deltaY',
 ]);
+
 const keydownEventHandler = makeSendPropertiesHandler([
   'ctrlKey',
   'metaKey',
   'shiftKey',
+  'isComposing',
   'keyCode',
 ]);
 
@@ -83,15 +85,15 @@ function touchEventHandler(event, sendFn) {
 let i = 1;
 let keys = {};
 while(i < 222) { //proxy all key events
-  if(i !== 123) keys[i] = true; //avoid F12 to not kill the console
+  keys[i] = true; //avoid F keys
   i++;
 }
 
 
 function filteredKeydownEventHandler(event, sendFn) {
-  const {keyCode} = event;
+  let {keyCode} = event;
   if (keys[keyCode]) {
-    if(event.preventDefault) event.preventDefault();
+    if(event.preventDefault && (keyCode < 110 && keyCode > 123)) event.preventDefault();
     keydownEventHandler(event, sendFn);
   }
 }
@@ -114,6 +116,7 @@ export const eventHandlers = { //you can register more event handlers in this ob
   touchend: touchEventHandler,
   wheel: wheelEventHandler,
   keydown: filteredKeydownEventHandler,
+  keyup: filteredKeydownEventHandler
 };
 
   //do this on main thread
@@ -141,6 +144,12 @@ export function initProxyElement(element, worker, id) {
     if(eventHandlers.keydown) {
       globalThis.addEventListener('keydown', function(ev) {
         eventHandlers.keydown(ev, sendEvent);
+      })
+    }
+
+    if(eventHandlers.keyup) {
+      globalThis.addEventListener('keyup', function(ev) {
+        eventHandlers.keyup(ev, sendEvent);
       })
     }
 

@@ -21,6 +21,7 @@ export declare const eventHandlers: {
     touchend: typeof touchEventHandler;
     wheel: typeof wheelEventHandler;
     keydown: typeof filteredKeydownEventHandler;
+    keyup: typeof filteredKeydownEventHandler;
 };
 export declare function initProxyElement(element: any, worker: any, id: any): any;
 export declare class EventDispatcher {
