@@ -38,11 +38,11 @@ See [Services](./docs/Service.md) for more information.
 [Included Services](./docs/Service.md#included-services) contains a reference of the services included in the main graphscript packages.
 
 ## Packages
-- `graphscript`: A GraphScript distribution for the browser (~190kb)
+- `graphscript`: A GraphScript distribution for the browser (~199kb)
 
-- `graphscript-node`: A GraphScript distribution for Node.js (~220Kb)
+- `graphscript-node`: A GraphScript distribution for Node.js (~231Kb)
 
-- `graphscript-core` : A minimal GraphScript distribution (~20Kb)
+- `graphscript-core` : A minimal GraphScript distribution (~24kb)
 
 -  `graphscript-services`: A collection of additional GraphScript services
 
