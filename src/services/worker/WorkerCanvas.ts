@@ -482,7 +482,8 @@ export const workerCanvasRoutes = {
     updateCanvas:updateCanvas,
     setProps:setProps,
     startAnim:startAnim,
-    stopAnim:stopAnim
+    stopAnim:stopAnim,
+    getCanvas:getCanvas
 };
 
 function parseFunctionFromText(method='') {

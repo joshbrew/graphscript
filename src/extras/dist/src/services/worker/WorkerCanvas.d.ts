@@ -70,6 +70,7 @@ export declare function setProps(props?: {
 }, _id?: string): string;
 export declare function startAnim(_id?: string, draw?: string | ((this: any, canvas: any, context: any) => void)): string;
 export declare function stopAnim(_id: string): string;
+declare function getCanvas(_id?: string): any;
 export declare const workerCanvasRoutes: {
     Renderer: typeof Renderer;
     transferCanvas: typeof transferCanvas;
@@ -82,7 +83,9 @@ export declare const workerCanvasRoutes: {
     setProps: typeof setProps;
     startAnim: typeof startAnim;
     stopAnim: typeof stopAnim;
+    getCanvas: typeof getCanvas;
     initProxyElement: typeof initProxyElement;
     makeProxy: (id: any, elm?: any) => any;
     handleProxyEvent: (data: any, id: any) => any;
 };
+export {};
