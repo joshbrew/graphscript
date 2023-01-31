@@ -664,9 +664,9 @@ export class Graph {
             if(Array.isArray(p)) continue;
             let instanced;
             if(typeof p === 'function') {
-                if(isNativeClass(p)) { //works on custom classes
+                if(isNativeClass(p) && p.toString().startsWith('class')) { //works on custom classes
                     p = new p(); //this is a class that returns a node definition
-                    if(p instanceof GraphNode) { p = p.prototype.constructor(p,parent,this); instanced = true; } //re-instance a new node
+                    if(p instanceof GraphNode) { p = p.prototype.constructor(p,parent,this); instanced = true; } //re-instance a new node    
                 } else p = { __operator:p };
             } else if (typeof p === 'string') {
                 if(this.__node.nodes.get(p)) p = this.__node.nodes.get(p);
