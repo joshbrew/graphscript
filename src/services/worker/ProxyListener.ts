@@ -13,6 +13,11 @@ const mouseEventHandler = makeSendPropertiesHandler([
     'clientY',
     'pageX',
     'pageY',
+    'movementX',
+    'movementY',
+    'x',
+    'y',
+    'timeStamp'
   ]);
 
 const wheelEventHandlerImpl = makeSendPropertiesHandler([
@@ -24,8 +29,13 @@ const keydownEventHandler = makeSendPropertiesHandler([
   'ctrlKey',
   'metaKey',
   'shiftKey',
+  'altKey',
   'isComposing',
   'keyCode',
+  'key',
+  'code',
+  'repeat',
+  'timeStamp'
 ]);
 
 function focusEventHandler(event, sendFn) {
