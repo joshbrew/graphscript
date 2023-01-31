@@ -76,9 +76,8 @@ export const appendCSV = async (
     
     let maxLen = 1; //max length of new arrays being appended, if any
     for(const key in newData) {
-        if(csv.header.indexOf(key) > -1 && (newData[key] as any)?.length > maxLen) {
-            maxLen = (newData[key] as any)?.length;
-        } 
+        const value = newData[key]
+        if(csv.header.indexOf(key) > -1 && value && Array.isArray(value) && value?.length > maxLen) maxLen = value?.length;
     }
     
 
