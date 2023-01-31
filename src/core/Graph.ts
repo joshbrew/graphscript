@@ -664,7 +664,7 @@ export class Graph {
             if(Array.isArray(p)) continue;
             let instanced;
             if(typeof p === 'function') {
-                if(isNativeClass(p) && p.toString().startsWith('class')) { //works on custom classes
+                if(isNativeClass(p)) { //works on custom classes
                     p = new p(); //this is a class that returns a node definition
                     if(p instanceof GraphNode) { p = p.prototype.constructor(p,parent,this); instanced = true; } //re-instance a new node    
                 } else p = { __operator:p };
@@ -1082,8 +1082,22 @@ export function instanceObject(obj) {
     //simply copies methods, nested objects will not be instanced to limit recursion, unless someone wants to add circular reference detection >___> ... <___< 
 }
 
-export function isNativeClass (thing) {
-    return typeof thing === 'function' && thing.hasOwnProperty('prototype') && !thing.hasOwnProperty('arguments')
+export function isNativeClass (thing: any) {
+    return isFunction(thing) === 'class'
+}
+
+export function isFunction(x: any) {
+    const res = typeof x === 'function'
+        ? x.prototype
+            ? Object.getOwnPropertyDescriptor(x, 'prototype')?.writable
+                ? 'function'
+                : 'class'
+        : x.constructor.name === 'AsyncFunction'
+        ? 'async'
+        : 'arrow'
+    : '';
+
+    return res
 }
 
 // export default Graph

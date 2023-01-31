@@ -120,4 +120,5 @@ export declare class Graph {
 export declare function getAllProperties(obj: any): any[];
 export declare function instanceObject(obj: any): any;
 export declare function isNativeClass(thing: any): boolean;
+export declare function isFunction(x: any): "function" | "class" | "async" | "arrow" | "";
 export declare const wrapArgs: (callback: any, argOrder: any, graph: any) => any;
