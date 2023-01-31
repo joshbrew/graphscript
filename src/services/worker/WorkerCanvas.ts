@@ -123,15 +123,15 @@ export function transferCanvas(
         else message.args.clear = options.clear;
     }
 
-    let transfer = [offscreen];
+    let tr = [offscreen];
     if(options.transfer) {
-        transfer.push(...options.transfer);
+        tr.push(...options.transfer);
         delete options.transfer;
     }
 
     //console.log(worker,message);
 
-    worker.postMessage(message,transfer);
+    worker.postMessage(message,tr);
 
     //lets add some utilities to make it easy to update the thread
     const canvascontrols = {
@@ -142,8 +142,8 @@ export function transferCanvas(
         draw:(props?:any,transfer?:any)=>{
             worker.postMessage({route:'drawFrame',args:[props,options._id]},transfer);
         },
-        update:(props:{[key:string]:any,transfer?:any})=>{
-            worker.postMessage({route:'updateCanvas',args:[props,options._id]},transfer)
+        update:(props:{[key:string]:any},transfer?:any)=>{
+            worker.postMessage({route:'updateCanvas',args:[props,options._id]}, transfer);
         },
         clear:()=>{
             worker.postMessage({route:'clearCanvas',args:options._id})

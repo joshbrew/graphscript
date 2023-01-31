@@ -103,7 +103,7 @@ while(i < 222) { //proxy all key events
 function filteredKeydownEventHandler(event, sendFn) {
   let {keyCode} = event;
   if (keys[keyCode]) {
-    if(event.preventDefault && (keyCode < 110 && keyCode > 123)) event.preventDefault();
+    if(event.preventDefault && (keyCode < 110 || keyCode > 123)) event.preventDefault();
     keydownEventHandler(event, sendFn);
   }
 }

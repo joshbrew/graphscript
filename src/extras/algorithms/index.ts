@@ -19,7 +19,6 @@ const algorithms = {
     [key:string]:GraphNodeProperties
 };
 
-algorithms['breath'].structs = JSON.parse( JSON.stringify( algorithms['breath'].structs ));
-(algorithms['breath'].structs as any).maxFreq = 0.2; //another quick preset
+algorithms['breath'].maxFreq = 0.2; //another quick preset
 
 export { algorithms };

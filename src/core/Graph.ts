@@ -511,7 +511,6 @@ export class Graph {
 
     load = (roots:{[key:string]:any}) => {
 
-
         function recursivelyAssignChildren (target,obj,inChildren=true, top=true) {
             if(top) {
                 if(target) Object.assign(target,obj);
@@ -586,7 +585,7 @@ export class Graph {
         } else if (typeof this.__node.loaders[l] === 'function') this.__node.loaders[l](node, parent, this, this.__node.roots, properties, key); } //run any passes on the nodes to set things up further 
     }
 
-    add = (properties:any, parent?:GraphNode|string) => {
+    add = (properties:any, parent?:GraphNode|string):GraphNode|undefined => {
 
         let listeners = {}; //collect listener props declared
         if(typeof parent === 'string') parent = this.get(parent);
@@ -657,7 +656,7 @@ export class Graph {
         return;
     }
 
-    recursiveSet = (t,parent,listeners={},origin) =>  {
+    recursiveSet = (t,parent,listeners:any={},origin) =>  {
         let keys = Object.getOwnPropertyNames(origin);
         for(const key of keys) {
             if(key.includes('__')) continue;

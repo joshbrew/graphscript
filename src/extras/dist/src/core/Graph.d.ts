@@ -97,8 +97,8 @@ export declare class Graph {
         [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, props: any, key: string) => void;
     }, replace?: boolean) => any;
     runLoaders: (node: any, parent: any, properties: any, key: any) => void;
-    add: (properties: any, parent?: GraphNode | string) => any;
-    recursiveSet: (t: any, parent: any, listeners: {}, origin: any) => {};
+    add: (properties: any, parent?: GraphNode | string) => GraphNode | undefined;
+    recursiveSet: (t: any, parent: any, listeners: any, origin: any) => any;
     remove: (node: GraphNode | string, clearListeners?: boolean) => string | GraphNode;
     run: (node: string | GraphNode, ...args: any[]) => any;
     setListeners: (listeners: {
