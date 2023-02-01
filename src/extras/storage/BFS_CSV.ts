@@ -38,7 +38,10 @@ function interpolerp(v0,v1,fit, floor=true) {
 export const appendCSV = async (
     newData:{[key:string]:number|number[]}, //assume uniformly sized data is passed in, so pass separate timestamp intervals separately
     filename:string,
-    header?:string[]
+    header?:string[],
+    options?: {
+        json?:boolean 
+    }
 ) => {
 
     //console.log(newData);
@@ -205,7 +208,8 @@ export const appendCSV = async (
 
     if(header) csvProcessed += header.join(',') + '\n'; //append new headers when they show up
     toAppend.forEach((arr) => {
-        csvProcessed += arr.join(',') + '\n';    
+        csvProcessed += ((options?.json) ? arr.map(v => JSON.stringify(v)) : arr).join(',') + '\n';    
+        // csvProcessed += arr.join(',') + '\n';    
         if(csv.bufferSize) csv.buffered++;
     });
 

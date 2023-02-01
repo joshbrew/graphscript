@@ -339,9 +339,11 @@ export const getCSVHeader = async (path='data', onopen=(header, filename)=>{cons
 
 
 //returns an object with the headers and correctly sized outputs (e.g. single values or arrays pushed in columns)
-export async function readCSVChunkFromDB(path='data', start=0, end='end', transpose = false) {
+export async function readCSVChunkFromDB(path='data', start=0, end='end', options={}) {
     if(!fsInited) await initFS([path.split('/')[0]]);
     else await dirExists(fs,path.split('/')[0]);
+
+    const transpose = options.transpose || false;
 
 
     let head = await getCSVHeader(path);
@@ -370,17 +372,24 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end', transp
 
     let data = (await readFileChunk(path,start,end)).split('\n').slice(1, -1) // exclude header and last pseudoline
 
+    let preprocess = (value) => {
+        if (options.json) {
+            try { value = JSON.parse(value) } catch {}
+        } 
+        return value
+    }
+    
     data.forEach((r,i) => {
         let row = r.split(',');
         if (transpose) {
             const entry = {}
-            row.forEach((v, idx) => entry[resultNames[idx]] = v)
+            row.forEach((v, idx) => entry[resultNames[idx]] = preprocess(v))
             results.push(entry)
         } else {
             row.forEach((v,i) => {
                 const header = resultNames[i]
                 if (!results[header]) results[header] = [];
-                results[header].push(v)
+                results[header].push(preprocess(v))
             })
         }
     });
@@ -389,7 +398,6 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end', transp
     return results;
 
 }
-
 
 let directories = {};
 export const dirExists = async (fs, directory) => {
