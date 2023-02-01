@@ -68,7 +68,10 @@ export const appendCSV = async (
             xIncrement:undefined
         };
         csv = CSV_REFERENCE[filename];
-        header = csv.header;
+        
+        const existingHeader = await getCSVHeader(filename).catch(() => null);
+        const isDifferent = (!existingHeader || existingHeader !== csv.header.join(','))
+        if (isDifferent) header = csv.header; // Only push header if it's different
     } 
     if (!csv.header || csv.header?.length === 0) {
         let keys = Array.from(Object.keys(newData)); if (keys.indexOf('timestamp') > -1) keys.splice(keys.indexOf('timestamp'), 1);
