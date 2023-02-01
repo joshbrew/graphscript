@@ -368,7 +368,7 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end', transp
         end = size;
     }
 
-    let data = (await readFileChunk(path,start,end)).split('\n').slice(1) // exclude header
+    let data = (await readFileChunk(path,start,end)).split('\n').slice(1, -1) // exclude header and last pseudoline
 
     data.forEach((r,i) => {
         let row = r.split(',');
