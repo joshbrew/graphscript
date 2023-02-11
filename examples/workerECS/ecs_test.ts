@@ -9,14 +9,15 @@ import {
     WorkerCanvasControls,
     WorkerInfo,
     htmlloader,
-    HTMLNodeProperties
+    HTMLNodeProperties,
+    remoteGraphRoutes
 } from '../../index'//'graphscript'
 
 import gsworker from './worker'
 
 const workers = new WorkerService();
 
-const router = new Router({ services:{ workers, workerCanvasRoutes }, loaders:{htmlloader} });
+const router = new Router({ services:{ workers, workerCanvasRoutes, remoteGraphRoutes }, loaders:{htmlloader} });
 
 console.log(router);
 
@@ -399,18 +400,18 @@ let ret = router.load({
                             }; //typedarrays are automatically transferred
                         };
 
-                        workers.transferFunction(
-                            entities, 
+                        workers.run('transferFunction',
                             bufferPositions,
+                            entities, 
                             'bufferPositions'
                         );
                         
-                        workers.transferFunction(
-                            entities2, 
+                        workers.run('transferFunction',
                             bufferPositions,
+                            entities2, 
                             'bufferPositions'
                         );
-
+                    
                         entities.post('ECSService.subscribe',[
                             'movement',
                             'bufferPositions'

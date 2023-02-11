@@ -29,6 +29,7 @@ if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope
         },
         roots:{
             ...workerCanvasRoutes,
+            ...remoteGraphRoutes,
              receiveThreeCanvas:function(options:CanvasProps){ //modified canvas receiver that installs desired threejs modules
                  const ThreeProps = { //e.g. install these systems to 'self', which is the worker canvas
                      THREE,

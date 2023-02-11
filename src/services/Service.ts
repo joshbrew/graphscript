@@ -62,7 +62,7 @@ export class Service extends Graph {
                     (services[s] as Graph).set(tag,node);
                     return set(tag,node);
                 }
-
+                
                 let del = this.delete;
 
                 this.delete = (tag:string) => {
@@ -246,8 +246,8 @@ export function isTypedArray(x:any) { //https://stackoverflow.com/a/40319428
 
 export const recursivelyAssign = (target,obj) => {
     for(const key in obj) {
-        if(obj[key].constructor.name === 'Object' && !Array.isArray(obj[key])) {
-            if(obj[key].constructor.name === 'Object' && !Array.isArray(target[key])) recursivelyAssign(target[key], obj[key]);
+        if(obj[key]?.constructor.name === 'Object' && !Array.isArray(obj[key])) {
+            if(target[key]?.constructor.name === 'Object' && !Array.isArray(target[key])) recursivelyAssign(target[key], obj[key]);
             else target[key] = recursivelyAssign({},obj[key]); 
         } else target[key] = obj[key];
     }

@@ -37,7 +37,7 @@ export type WorkerInfo = {
     worker:Worker|MessagePort,
     send:(message:any,transfer?:any)=>void,
     request:(message:any, method?:string,transfer?:any)=>Promise<any>,
-    post:(route:any, args?:any, transfer?:any)=>void,
+    post:(route:any, args?:any, method?:string, transfer?:any)=>void,
     run:(route:any, args?:any, method?:string,transfer?:any)=>Promise<any>
     subscribe:(route:any, callback?:((res:any)=>void)|string, args?:any[], key?:string, subInput?:boolean, blocking?:boolean)=>Promise<any>,
     unsubscribe:(route:any, sub:number)=>Promise<boolean>,

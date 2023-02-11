@@ -1044,8 +1044,8 @@ export class Graph {
 
 function recursivelyAssign (target,obj) {
     for(const key in obj) {
-        if(obj[key]?.constructor.name === 'Object' && !Array.isArray(obj[key])) {
-            if(target[key]?.constructor.name === 'Object' && !Array.isArray(target[key])) 
+        if(obj[key]?.constructor.name === 'Object') {
+            if(target[key]?.constructor.name === 'Object') 
                 recursivelyAssign(target[key], obj[key]);
             else target[key] = recursivelyAssign({},obj[key]); 
         } else {

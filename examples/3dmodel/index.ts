@@ -210,5 +210,4 @@ window.addEventListener('resize', function(){
 setTimeout(()=>{
     engine.resize();
     graph.run('camera');
-
 },0.1)

@@ -104,8 +104,9 @@ export const appendCSV = async (
             
         }
     }
-    else x = newData[csv.header[0]]; //first csv value treated as x for reference for growing the csv, mainly to generate timestamps if being used but not defined
-    
+    else if(newData[csv.header[0]]) x = newData[csv.header[0]]; //first csv value treated as x for reference for growing the csv, mainly to generate timestamps if being used but not defined
+    else x = Date.now();
+
     if(typeof csv.lastX === 'undefined') csv.lastX = Array.isArray(x) ? x[0] : x;
     if(typeof x === 'undefined') {
         if(csv.header[0].includes('time')) {

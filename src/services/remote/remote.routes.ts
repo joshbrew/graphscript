@@ -45,8 +45,9 @@ export const remoteGraphRoutes = {
     },
 
     setNode:function (
-        properties:string|((...args:[])=>any)|(GraphNodeProperties & { __methods?:{[key:string]:Function|string} })
+        properties:string|((...args:[])=>any)|(GraphNodeProperties & { __methods?:{[key:string]:Function|string} }), name?:string
     ) {
+        console.log('setting node', properties);
         if(typeof properties === 'object') {
             if(properties.__methods) { //stringified methods
                 if(!this.__node.graph.__node.loaders.methodstrings) {
@@ -56,14 +57,16 @@ export const remoteGraphRoutes = {
         }
         if(typeof properties === 'string') {
             let f = parseFunctionFromText(properties);
-            if(typeof f === 'function') properties = {__operator:f, __node:{tag:f.name}};
+            if(typeof f === 'function') properties = {__operator:f, __node:{tag:name ? name : f.name}};
             else {
                 f = JSON.parse(properties);
                 if(typeof f === 'object') properties = f;
             }
         }
         if(typeof properties === 'object' || typeof properties === 'function') {
-            let template = Object.assign({},properties);
+            let template = {} as GraphNodeProperties;
+            if(typeof properties === 'object') Object.assign(template,properties);
+            else template.__operator = properties;
             let node = this.__node.graph.add(properties);
             nodeTemplates[node.__node.tag] = template; //can just instantiate this again later
             return node.__node.tag;
@@ -193,7 +196,8 @@ export const remoteGraphRoutes = {
     },
 
     setMethod:function(
-        route:string,fn:string|((...args:[])=>any),
+        nodeTag:string,
+        fn:string|((...args:[])=>any),
         methodKey?:string
     ){ //set a method on a route
         //console.log(fn, fnName)
@@ -203,8 +207,8 @@ export const remoteGraphRoutes = {
         }
         //console.log(fn);
         if(!methodKey && typeof fn === 'function') methodKey = fn.name;
-        if(this.__node.graph.get(route)) {
-            this.__node.graph.get(route)[methodKey] = fn; //overwrite method
+        if(this.__node.graph.get(nodeTag)) {
+            this.__node.graph.get(nodeTag)[methodKey] = fn; //overwrite method
         }
         else (this.__node.graph as Graph).add({__node:{tag:methodKey,[methodKey]:fn}});
         //console.log(this)
@@ -273,14 +277,14 @@ export const remoteGraphRoutes = {
     transferFunction: (fn:Function, connection:any | Worker | WebSocket, fnName?:string) => {
         if(!fnName) fnName = fn.name;
         let str = fn.toString();//needs to be a class prototype
-        let message = {route:'receiveClass',args:[str,fnName]};
+        let message = {route:'setNode',args:[str,fnName]};
         if((connection as any).run) 
-            return (connection as any).run('setFunction',[str,fnName]);
+            return (connection as any).run('setNode',[str,fnName]);
         else if ((connection as Worker).postMessage) {
-            (connection as Worker).postMessage({route:'setFunction', args:[str,fnName]},undefined);
+            (connection as Worker).postMessage({route:'setNode', args:[str,fnName]},undefined);
             return new Promise ((r) => r(name));
         } else if ((connection as WebSocket).send) {
-            (connection as WebSocket).send(JSON.stringify({route:'setFunction', args:[str,fnName]}));
+            (connection as WebSocket).send(JSON.stringify({route:'setNode', args:[str,fnName]}));
             return new Promise ((r) => r(name));
         }
         return message;

@@ -10,7 +10,7 @@ export declare const remoteGraphRoutes: {
         __methods?: {
             [key: string]: string | Function;
         };
-    })) => any;
+    }), name?: string) => any;
     proxyRemoteNode: (name: string, connection: any) => Promise<unknown>;
     makeNodeTransferrable: (properties: GraphNodeProperties, name?: string) => {};
     setTemplate: (properties: string | (() => any) | (GraphNodeProperties & {
@@ -21,7 +21,7 @@ export declare const remoteGraphRoutes: {
     loadFromTemplate: (templateName: string, name?: string, properties?: {
         [key: string]: any;
     }) => any;
-    setMethod: (route: string, fn: string | (() => any), methodKey?: string) => boolean;
+    setMethod: (nodeTag: string, fn: string | (() => any), methodKey?: string) => boolean;
     assignNode: (nodeTag: string, source: {
         [key: string]: any;
     }) => void;

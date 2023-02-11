@@ -6,8 +6,10 @@ declare var WorkerGlobalScope;
 const mouseEventHandler = makeSendPropertiesHandler([
     'ctrlKey',
     'metaKey',
+    'altKey',
     'shiftKey',
     'button',
+    'which',
     'pointerType',
     'clientX',
     'clientY',
@@ -17,6 +19,7 @@ const mouseEventHandler = makeSendPropertiesHandler([
     'movementY',
     'x',
     'y',
+    'which',
     'timeStamp'
   ]);
 
@@ -57,12 +60,12 @@ function focusEventHandler(event, sendFn) {
 }
 
 function wheelEventHandler(event, sendFn) {
-  event.preventDefault();
+  if(event.preventDefault) event.preventDefault();
   wheelEventHandlerImpl(event, sendFn);
 }
 
 function preventDefaultHandler(event) {
-  event.preventDefault();
+  if(event.preventDefault) event.preventDefault();
 }
 
 function copyProperties(src, properties, dst) {
@@ -255,8 +258,7 @@ export class EventDispatcher {
 	}
 }
 
-function noop() {
-};
+function noop() {};
 /////////////https://threejsfundamentals.org/threejs/lessons/threejs-offscreencanvas.html
 export class ElementProxyReceiver extends EventDispatcher  {
 

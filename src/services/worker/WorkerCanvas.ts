@@ -457,7 +457,7 @@ export function stopAnim(_id:string){
     return undefined;
 }
 
-function getCanvas (_id?:string) {
+export function getCanvas (_id?:string) {
     let canvasopts;
     if(this?.__node?.graph) {
         if(!_id) canvasopts = this.__node.graph.CANVASES?.[Object.keys(this.__node.graph.CANVASES)[0]];
