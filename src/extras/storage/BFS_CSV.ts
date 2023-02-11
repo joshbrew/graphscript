@@ -38,7 +38,10 @@ function interpolerp(v0,v1,fit, floor=true) {
 export const appendCSV = async (
     newData:{[key:string]:number|number[]}, //assume uniformly sized data is passed in, so pass separate timestamp intervals separately
     filename:string,
-    header?:string[]
+    header?:string[],
+    options?: {
+        json?:boolean 
+    }
 ) => {
 
     //console.log(newData);
@@ -65,7 +68,10 @@ export const appendCSV = async (
             xIncrement:undefined
         };
         csv = CSV_REFERENCE[filename];
-        header = csv.header;
+        
+        const existingHeader = await getCSVHeader(filename).catch(() => null);
+        const isDifferent = (!existingHeader || existingHeader !== csv.header.join(','))
+        if (isDifferent) header = csv.header; // Only push header if it's different
     } 
     if (!csv.header || csv.header?.length === 0) {
         let keys = Array.from(Object.keys(newData)); if (keys.indexOf('timestamp') > -1) keys.splice(keys.indexOf('timestamp'), 1);
@@ -76,9 +82,8 @@ export const appendCSV = async (
     
     let maxLen = 1; //max length of new arrays being appended, if any
     for(const key in newData) {
-        if(csv.header.indexOf(key) > -1 && (newData[key] as any)?.length > maxLen) {
-            maxLen = (newData[key] as any)?.length;
-        } 
+        const value = newData[key]
+        if(csv.header.indexOf(key) > -1 && value && Array.isArray(value) && value?.length > maxLen) maxLen = value?.length;
     }
     
 
@@ -207,7 +212,8 @@ export const appendCSV = async (
 
     if(header) csvProcessed += header.join(',') + '\n'; //append new headers when they show up
     toAppend.forEach((arr) => {
-        csvProcessed += arr.join(',') + '\n';    
+        csvProcessed += ((options?.json) ? arr.map(v => JSON.stringify(v)) : arr).join(',') + '\n';    
+        // csvProcessed += arr.join(',') + '\n';    
         if(csv.bufferSize) csv.buffered++;
     });
 
