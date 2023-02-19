@@ -1,6 +1,7 @@
 //frontend (browser-compatible) exports
 
 export * from './src/core/Graph'
+export * from './src/core/EventHandler'
 export * from './src/loaders'
 
 export { methodstrings } from './src/loaders/methodstrings'

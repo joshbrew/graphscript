@@ -10,6 +10,8 @@ export declare class EventHandler {
     }) => {};
     setValue: (key: any, value: any) => void;
     triggerEvent: (key: any, value: any) => void;
+    subscribeState: (onchange: (res: any) => void) => number;
+    unsubscribeState: (sub: number) => boolean;
     subscribeEvent: (key: string, onchange: (res: any) => void, refObject?: {
         [key: string]: any;
     }, refKey?: string) => number;

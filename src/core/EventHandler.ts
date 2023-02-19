@@ -16,6 +16,9 @@ export class EventHandler {
         for (const prop of props) {
             this.triggerEvent(prop, this.data[prop]);
         }
+        if(this.triggers['__state__']) 
+            this.triggers['__state__'].forEach((fn) => { fn(updateObj); })
+        
         return this.data;
     }
     setValue = (key, value) => {
@@ -23,11 +26,16 @@ export class EventHandler {
         this.triggerEvent(key,value);
     }
     triggerEvent = (key, value) => {
-
         if(this.triggers[key]) {
             let fn = (obj) => obj.onchange(value)
             this.triggers[key].forEach(fn);
         }
+    }
+    subscribeState = (onchange:(res:any)=>void) => { 
+        return this.subscribeEvent('__state__', onchange);
+    }
+    unsubscribeState = (sub:number) => { 
+        return this.unsubscribeEvent('__state__', sub);
     }
     subscribeEvent = (key:string,onchange:(res:any)=>void, refObject?:{[key:string]:any}, refKey?:string) => {
         if(key) {
@@ -50,8 +58,9 @@ export class EventHandler {
                 this.triggers[key] = [];
             }
 
-            let l = this.triggers[key].length;
-
+            let biggest = 0;
+            for(const trigger of this.triggers[key]) { if(trigger.sub > biggest) biggest = trigger.sub; }
+            let l = biggest+1; //works like a counter, ensures no overlap
 
             this.triggers[key].push({sub:l, onchange});
             return this.triggers[key].length-1;

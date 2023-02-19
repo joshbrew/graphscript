@@ -13,7 +13,7 @@ export const pseudoObjectId = (m = Math, d = Date, h = 16, s = s => m.floor(s).t
 export class StructFrontend extends Service {
     name='structs'
 
-    currentUser: User //user from the UserRouter whose endpoints we want to use 
+    currentUser: User //user from the endpoint service (e.g. websockets, Router) whose endpoints we want to use 
     tablet = new DataTablet(); //DataTablet 
     collections = this.tablet.collections;
     id: string = randomId()
