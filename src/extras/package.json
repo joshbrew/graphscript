@@ -1,6 +1,6 @@
 {
     "name": "graphscript-services",
-    "version": "0.2.72",
+    "version": "0.2.74",
     "description": "Extra services for graphscript.",
     "main": "dist/index.services.js",
     "module": "dist/index.services.esm.js",
@@ -28,7 +28,7 @@
         "bson-objectid": "~2.0.4",
         "gpujsutils": "~1.0.12",
         "web-worker": "~1.2.0",
-        "webgl-plot-utils": "~0.3.19"
+        "webgl-plot-utils": "~0.3.20"
     },
     "nodemonConfig": {
         "env": {
