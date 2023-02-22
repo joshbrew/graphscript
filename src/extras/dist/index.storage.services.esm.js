@@ -4,9 +4,13 @@ var __create=Object.create;var __defProp=Object.defineProperty;var __getOwnPropD
                         <button class='bfsdownloadbtn' id='download${listing}'>Download CSV</button>
                         ${listing.indexOf(".")>-1?`<button class='bfsdeletebtn' id='delete${listing}'>Delete</button>`:""}
                     </div>`);if(document.getElementById(`delete${listing}`)){document.getElementById(`delete${listing}`).onclick=()=>{deleteFile(dir2+"/"+listing,()=>{visualizeDirectory(dir2,parentNode)})}}if(document.getElementById(`download${listing}`)){document.getElementById(`download${listing}`).onclick=()=>{writeToCSVFromDB(dir2+"/"+listing,10)}}});res(directory)}).catch(rej)})};var csvRoutes={appendCSV,updateCSVHeader,createCSV,visualizeDirectory,openCSV:CSV.openCSV,saveCSV:CSV.saveCSV,openCSVRaw:CSV.openCSVRaw,parseCSVData,getCSVHeader,writeToCSVFromDB,readCSVChunkFromDB,toISOLocal};export{BFSRoutes,CSV,appendCSV,appendFile2 as appendFile,createCSV,csvRoutes,deleteFile,dirExists,exists,fs2 as fs,fsInited,getCSVHeader,getFileSize,getFilenames,initFS,listFiles,parseCSVData,processDataForCSV,readCSVChunkFromDB,readFile,readFileAsText,readFileChunk,toISOLocal,updateCSVHeader,visualizeDirectory,writeFile,writeToCSVFromDB};
-/*!
-* The buffer module from node.js, for the browser.
-*
-* @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
-* @license  MIT
+/*! Bundled license information:
+
+browserfs/dist/browserfs.js:
+  (*!
+  * The buffer module from node.js, for the browser.
+  *
+  * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+  * @license  MIT
+  *)
 */

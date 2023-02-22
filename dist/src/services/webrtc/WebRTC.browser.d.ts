@@ -1,5 +1,5 @@
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
-export declare type WebRTCProps = {
+export type WebRTCProps = {
     _id?: string;
     channels?: {
         [key: string]: (true | RTCDataChannelInit | RTCDataChannel);
@@ -25,7 +25,7 @@ export declare type WebRTCProps = {
     oniceconnectionstatechange?: (ev: Event) => void;
     onclose?: (rtc: WebRTCInfo) => void;
 };
-export declare type WebRTCInfo = {
+export type WebRTCInfo = {
     _id: string;
     rtc: RTCPeerConnection;
     send: (message: any) => void;

@@ -1,5 +1,5 @@
 import { initProxyElement } from './ProxyListener';
-export declare type WorkerCanvasTransferProps = {
+export type WorkerCanvasTransferProps = {
     canvas: HTMLCanvasElement;
     context?: string;
     _id?: string;
@@ -11,7 +11,7 @@ export declare type WorkerCanvasTransferProps = {
     animating?: boolean;
     [key: string]: any;
 };
-export declare type CanvasProps = {
+export type CanvasProps = {
     canvas: any;
     context?: string | CanvasRenderingContext2D | WebGL2RenderingContext | WebGLRenderingContext;
     _id?: string;
@@ -24,7 +24,7 @@ export declare type CanvasProps = {
     animating?: boolean;
     [key: string]: any;
 };
-export declare type CanvasControls = {
+export type CanvasControls = {
     _id: string;
     draw: (props?: any, transfer?: any) => void;
     update: (props: {
@@ -36,11 +36,11 @@ export declare type CanvasControls = {
     start: () => void;
     set: (newDrawProps: CanvasProps, transfer?: any) => void;
 };
-export declare type WorkerCanvasControls = {
+export type WorkerCanvasControls = {
     worker: Worker | MessagePort;
     terminate: () => void;
 } & CanvasControls;
-export declare type WorkerCanvas = {
+export type WorkerCanvas = {
     graph: any;
     canvas: any;
     context?: CanvasRenderingContext2D | WebGL2RenderingContext | WebGLRenderingContext;

@@ -1,13 +1,13 @@
 import { Graph, GraphNode, GraphOptions } from "../../src/core/Graph";
-export declare type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
-export declare type ServiceMessage = {
+export type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
+export type ServiceMessage = {
     route?: string;
     args?: any;
     method?: string;
     node?: string | GraphNode;
     [key: string]: any;
 };
-export declare type ServiceOptions = GraphOptions & {
+export type ServiceOptions = GraphOptions & {
     services?: {
         [key: string]: Service | Function | {
             [key: string]: any;

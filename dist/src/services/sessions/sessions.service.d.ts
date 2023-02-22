@@ -1,6 +1,6 @@
 import { Service, ServiceOptions } from "../Service";
 import { User } from "../router/Router";
-export declare type PrivateSessionProps = {
+export type PrivateSessionProps = {
     _id?: string;
     settings?: {
         listener: string;
@@ -27,14 +27,14 @@ export declare type PrivateSessionProps = {
     lastTransmit?: string | number;
     [key: string]: any;
 };
-export declare type SessionUser = {
+export type SessionUser = {
     _id: string;
     sessions: {
         [key: string]: any;
     };
     [key: string]: any;
 } & Partial<User>;
-export declare type SharedSessionProps = {
+export type SharedSessionProps = {
     _id?: string;
     settings?: {
         name: string;
@@ -81,7 +81,7 @@ export declare type SharedSessionProps = {
     lastTransmit?: string | number;
     [key: string]: any;
 };
-export declare type StreamInfo = {
+export type StreamInfo = {
     [key: string]: {
         object: {
             [key: string]: any;

@@ -1,6 +1,6 @@
 import { Graph, GraphNode } from "../../core/Graph";
 import { Service, ServiceOptions } from "../Service";
-export declare type User = {
+export type User = {
     _id: string;
     send: (...args: any[]) => any;
     request: (...args: any[]) => Promise<any> | Promise<any>[] | undefined;
@@ -12,7 +12,7 @@ export declare type User = {
     onclose?: (user: User) => void;
     [key: string]: any;
 };
-export declare type ConnectionProps = {
+export type ConnectionProps = {
     connection: GraphNode | Graph | {
         [key: string]: any;
     } | string;
@@ -20,7 +20,7 @@ export declare type ConnectionProps = {
     source?: string;
     onclose?: (connection: ConnectionInfo, ...args: any[]) => void;
 };
-export declare type ConnectionInfo = {
+export type ConnectionInfo = {
     connection: GraphNode | Graph | {
         [key: string]: any;
     };
@@ -38,7 +38,7 @@ export declare type ConnectionInfo = {
     terminate: (...a: any[]) => boolean;
     onclose?: (connection: ConnectionInfo, ...args: any[]) => void;
 };
-export declare type RouterOptions = {
+export type RouterOptions = {
     graph?: {
         [key: string]: Service | Graph | any | {
             service: Service | Graph | any;

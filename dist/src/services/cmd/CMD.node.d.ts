@@ -1,8 +1,9 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { ChildProcess, Serializable } from 'child_process';
 import { Service, ServiceMessage, ServiceOptions } from '../Service';
 import { Graph, GraphNode, GraphNodeProperties } from '../../core/Graph';
-export declare type CMDRoute = {
+export type CMDRoute = {
     command: string | ChildProcess;
     args?: string[];
     options?: {
@@ -17,7 +18,7 @@ export declare type CMDRoute = {
     onerror?: (error: Error) => void;
     onclose?: (code: number | null, signal: NodeJS.Signals | null) => void;
 } & GraphNodeProperties;
-export declare type CMDInfo = {
+export type CMDInfo = {
     process: ChildProcess;
     _id: string;
     controller: AbortController;

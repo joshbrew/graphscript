@@ -1,7 +1,7 @@
 export function readFileChunk(path?: string, begin?: number, end?: number, onread?: (data: any) => void): Promise<any>;
 export function readCSVChunkFromDB(path?: string, start?: number, end?: string, options?: {}): Promise<{}>;
 export let fsInited: boolean;
-export const fs: import("browserfs/dist/node/core/FS").FSModule;
+export const fs: import("browserfs/dist/node/core/FS.js").FSModule;
 export function initFS(dirs?: string[], oninit?: (exists?: any[]) => void, onerror?: (e: any) => void, filesystem?: string): Promise<any>;
 export function exists(path?: string): Promise<any>;
 export function readFile(path?: string): Promise<any>;

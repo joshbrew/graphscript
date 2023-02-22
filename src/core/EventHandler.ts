@@ -17,8 +17,10 @@ export class EventHandler {
         for (const prop of props) {
             this.triggerEvent(prop, this.data[prop]);
         }
-        if(this.triggers['__state__']) 
-            this.triggers['__state__'].forEach((fn) => { fn(updateObj); })
+        if(this.triggers[statesubKey]) {
+            let run = (fn) => { fn(updateObj); }
+            this.triggers[statesubKey].forEach(run);
+        }
         
         return this.data;
     }
@@ -33,10 +35,10 @@ export class EventHandler {
         }
     }
     subscribeState = (onchange:(res:any)=>void) => { 
-        return this.subscribeEvent('__state__', onchange);
+        return this.subscribeEvent(statesubKey, onchange);
     }
     unsubscribeState = (sub:number) => { 
-        return this.unsubscribeEvent('__state__', sub);
+        return this.unsubscribeEvent(statesubKey, sub);
     }
     subscribeEvent = (key:string,onchange:(res:any)=>void, refObject?:{[key:string]:any}, refKey?:string) => {
         if(key) {
@@ -116,4 +118,5 @@ export class EventHandler {
     onRemoved:(trigger:{sub:number, onchange:Function})=>void;
 }
 
+let statesubKey = '*s';
 

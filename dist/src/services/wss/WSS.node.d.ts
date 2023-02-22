@@ -1,9 +1,11 @@
 /// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import WebSocket, { WebSocketServer } from 'ws';
 import http from 'http';
 import https from 'https';
-export declare type SocketServerProps = {
+export type SocketServerProps = {
     server: http.Server | https.Server;
     host: 'localhost' | '127.0.0.1' | string;
     port: 7000 | number;
@@ -18,7 +20,7 @@ export declare type SocketServerProps = {
     type?: 'wss';
     [key: string]: any;
 };
-export declare type SocketServerInfo = {
+export type SocketServerInfo = {
     wss: WebSocketServer;
     clients: {
         [key: string]: WebSocket;
@@ -33,7 +35,7 @@ export declare type SocketServerInfo = {
     terminate: (socketId?: string) => boolean;
     graph: WSSbackend;
 } & SocketServerProps;
-export declare type SocketProps = {
+export type SocketProps = {
     host?: string;
     port?: number;
     path?: string;
@@ -49,7 +51,7 @@ export declare type SocketProps = {
     _id?: string;
     keepState?: boolean;
 };
-export declare type SocketInfo = {
+export type SocketInfo = {
     socket: WebSocket;
     address?: string;
     send: (message: any) => void;

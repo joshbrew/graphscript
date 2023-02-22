@@ -1,5 +1,5 @@
 import { GraphNode, GraphNodeProperties, Graph } from '../../core/Graph';
-export declare type HTMLNodeProperties = GraphNodeProperties & {
+export type HTMLNodeProperties = GraphNodeProperties & {
     __props?: HTMLElement;
     __onresize?: (elm: HTMLElement) => void;
     __onremove?: (elm: HTMLElement) => void;

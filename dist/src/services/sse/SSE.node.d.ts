@@ -1,10 +1,11 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import { Session, SessionState, Channel } from 'better-sse';
 import http from 'http';
 import https from 'https';
 import { Readable } from "node:stream";
-export declare type SSEProps = {
+export type SSEProps = {
     server: http.Server | https.Server;
     path: string;
     channels?: string[];
@@ -15,7 +16,7 @@ export declare type SSEProps = {
     _id?: string;
     [key: string]: any;
 };
-export declare type SSEChannelInfo = {
+export type SSEChannelInfo = {
     channel: Channel<Record<string, unknown>>;
     sessions: {
         [key: string]: Session<SessionState>;
@@ -33,7 +34,7 @@ export declare type SSEChannelInfo = {
     _id: string;
     graph: SSEbackend;
 } & SSEProps;
-export declare type SSEClientInfo = {
+export type SSEClientInfo = {
     _id: string;
     session: Session<SessionState>;
     served: SSEChannelInfo;

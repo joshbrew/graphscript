@@ -1,5 +1,5 @@
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
-export declare type RequestOptions = {
+export type RequestOptions = {
     method: string;
     url: string | URL;
     data?: Document | string | Blob | BufferSource | FormData | URLSearchParams;

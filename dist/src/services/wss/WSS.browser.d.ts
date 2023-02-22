@@ -1,5 +1,5 @@
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
-export declare type WebSocketProps = {
+export type WebSocketProps = {
     host: string;
     port: number;
     path?: string;
@@ -13,7 +13,7 @@ export declare type WebSocketProps = {
     _id?: string;
     [key: string]: any;
 };
-export declare type WebSocketInfo = {
+export type WebSocketInfo = {
     socket: WebSocket;
     address: string;
     send: (message: any) => void;

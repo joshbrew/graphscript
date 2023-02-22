@@ -1,7 +1,7 @@
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import Worker from 'web-worker';
 import { GraphNode, GraphNodeProperties } from "../../core/Graph";
-export declare type WorkerRoute = {
+export type WorkerRoute = {
     worker?: WorkerInfo;
     workerUrl?: string | URL | Blob;
     workerId?: string;
@@ -20,7 +20,7 @@ export declare type WorkerRoute = {
     initArgs?: any[];
     initTransfer?: any[];
 } & GraphNodeProperties & WorkerProps;
-export declare type WorkerProps = {
+export type WorkerProps = {
     worker?: WorkerInfo;
     workerUrl?: string | URL | Blob;
     url?: URL | string | Blob;
@@ -30,7 +30,7 @@ export declare type WorkerProps = {
     onerror?: (ev: any) => void;
     onclose?: (worker: Worker | MessagePort) => void;
 };
-export declare type WorkerInfo = {
+export type WorkerInfo = {
     worker: Worker | MessagePort;
     send: (message: any, transfer?: any) => void;
     request: (message: any, method?: string, transfer?: any) => Promise<any>;

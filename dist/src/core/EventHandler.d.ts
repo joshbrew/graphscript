@@ -2,6 +2,7 @@ export declare class EventHandler {
     pushToState: {};
     data: {};
     triggers: {};
+    ctr: number;
     constructor(data?: {
         [key: string]: any;
     });

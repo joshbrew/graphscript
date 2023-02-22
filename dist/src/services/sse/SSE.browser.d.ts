@@ -1,5 +1,5 @@
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
-export declare type EventSourceProps = {
+export type EventSourceProps = {
     url: string;
     events: {
         message?: (ev: any, sseinfo?: EventSourceInfo) => void;
@@ -17,7 +17,7 @@ export declare type EventSourceProps = {
     _id?: string;
     keepState?: boolean;
 };
-export declare type EventSourceInfo = {
+export type EventSourceInfo = {
     source: EventSource;
     send: (message: any) => any;
     request: (message: any, method?: string) => Promise<any>;

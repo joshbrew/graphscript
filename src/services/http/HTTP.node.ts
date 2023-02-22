@@ -165,7 +165,11 @@ export class HTTPbackend extends Service {
             ...options
         } as ServerInfo
 
-        if(!requestListener) requestListener =  (request:http.IncomingMessage,response:http.ServerResponse) => { 
+        if(!requestListener) 
+            requestListener = (
+                request:http.IncomingMessage,
+                response:http.ServerResponse
+            ) => { 
             
             let received:any = {
                 args:{request, response}, 
@@ -177,22 +181,42 @@ export class HTTPbackend extends Service {
             if(!url) url = '/';
             //console.log(options)
             if(options.pages) {
-                if(typeof options.pages[url] === 'object') {
-                    if((options.pages[url] as any).onrequest) {
-                        if(typeof (options.pages[url] as any).onrequest === 'string') {
-                            (options.pages[url] as any).onrequest = this.__node.nodes.get((url).onrequest);
-                        }
-                        if(typeof (options.pages[url] as any).onrequest === 'object') {
-                            if((options.pages[url] as any).onrequest.__operator) {
-                                ((options.pages[url] as any).onrequest as GraphNode).__operator(options.pages[url], request, response);
+                let pageOptions = options.pages[url]; // e.g. 'home'
+                if(!pageOptions) { //check if there is a * url which can serve the same thing to multiple pages of the same root
+                    let url2 = '/'+url;
+                    pageOptions = options.pages[url2]; // e.g. '/home'
+                    if(!pageOptions) {
+                        let split = url.split('/');
+                        let testurl = split[0]+'/*';
+                        if(options.pages[testurl]) { // e.g. /* or home/*
+                            pageOptions = options.pages[testurl];
+                        } else { 
+                            // e.g. /home with /* specified, or /home/* etc.
+                            let spl = url2.split('/'); //split the modified string so the beginning is a blank string
+                            spl[spl.length-1] = ''; //replace with empty string e.g. /home -> ['','']
+                            let jn = spl.join('/')+'*'; //now merge url
+                            if(options.pages[jn]) {
+                                pageOptions = options.pages[jn];
                             } 
-                        } else if(typeof (options.pages[url] as any).onrequest === 'function') {
-                            (options.pages[url] as any).onrequest(this, this.__node.nodes.get(options.port + '/' + url), request, response);
                         }
                     }
-                    if((options.pages[url] as any).redirect) {
-                        url = (options.pages[url] as any).redirect;
+                }
+                if(typeof pageOptions === 'object') {
+                    if((pageOptions as any).redirect) {
+                        url = (pageOptions as any).redirect;
                         received.redirect = url;
+                    }
+                    if((pageOptions as any).onrequest) {
+                        if(typeof (pageOptions as any).onrequest === 'string') {
+                            (pageOptions as any).onrequest = this.__node.nodes.get((pageOptions as any).onrequest);
+                        }
+                        if(typeof (pageOptions as any).onrequest === 'object') {
+                            if((pageOptions as any).onrequest.__operator) {
+                                ((pageOptions as any).onrequest as GraphNode).__operator(pageOptions, request, response);
+                            } 
+                        } else if(typeof (pageOptions as any).onrequest === 'function') {
+                            (pageOptions as any).onrequest(this,pageOptions, request, response);
+                        }
                     }
                 }
             }
@@ -286,22 +310,43 @@ export class HTTPbackend extends Service {
 
             let url = (request as any).url.slice(1);
             if(!url) url = '/';
+
             if(options.pages) {
-                if(typeof options.pages[url] === 'object') {
-                    if((options.pages[url] as any).redirect) {
-                        url = (options.pages[url] as any).redirect;
+                let pageOptions = options.pages[url];;
+                if(!pageOptions) { //check if there is a * url which can serve the same thing to multiple pages of the same root
+                    let url2 = '/'+url;
+                    pageOptions = options.pages[url2]; // e.g. '/home'
+                    if(!pageOptions) {
+                        let split = url.split('/');
+                        let testurl = split[0]+'/*';
+                        if(options.pages[testurl]) { // e.g. /* or home/*
+                            pageOptions = options.pages[testurl];
+                        } else { 
+                            // e.g. /home with /* specified, or /home/* etc.
+                            let spl = url2.split('/'); //split the modified string so the beginning is a blank string
+                            spl[spl.length-1] = ''; //replace with empty string e.g. /home -> ['','']
+                            let jn = spl.join('/')+'*'; //now merge url
+                            if(options.pages[jn]) {
+                                pageOptions = options.pages[jn];
+                            } 
+                        }
+                    }
+                }
+                if(typeof pageOptions === 'object') {
+                    if((pageOptions as any).redirect) {
+                        url = (pageOptions as any).redirect;
                         received.redirect = url;
                     }
-                    if((options.pages[url] as any).onrequest) {
-                        if(typeof (options.pages[url] as any).onrequest === 'string') {
-                            (options.pages[url] as any).onrequest = this.__node.nodes.get((options.pages[url] as any).onrequest);
+                    if((pageOptions as any).onrequest) {
+                        if(typeof (pageOptions as any).onrequest === 'string') {
+                            (pageOptions as any).onrequest = this.__node.nodes.get((pageOptions as any).onrequest);
                         }
-                        if(typeof (options.pages[url] as any).onrequest === 'object') {
-                            if((options.pages[url] as any).onrequest.__operator) {
-                                ((options.pages[url] as any).onrequest as GraphNode).__operator(options.pages[url], request, response);
+                        if(typeof (pageOptions as any).onrequest === 'object') {
+                            if((pageOptions as any).onrequest.__operator) {
+                                ((pageOptions as any).onrequest as GraphNode).__operator(pageOptions, request, response);
                             } 
-                        } else if(typeof (options.pages[url] as any).onrequest === 'function') {
-                            (options.pages[url] as any).onrequest(this,options.pages[url], request, response);
+                        } else if(typeof (pageOptions as any).onrequest === 'function') {
+                            (pageOptions as any).onrequest(this,pageOptions, request, response);
                         }
                     }
                 }
@@ -974,3 +1019,4 @@ export class HTTPbackend extends Service {
     }
 
 }
+

@@ -1,10 +1,13 @@
 /// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import * as http from 'http';
 import * as https from 'https';
 import * as path from 'path';
 import { GraphNode, GraphNodeProperties } from "../../core/Graph";
-export declare type ServerProps = {
+export * from './boilerplate/index';
+export type ServerProps = {
     host: string;
     port: number;
     certpath?: string;
@@ -30,14 +33,14 @@ export declare type ServerProps = {
     _id?: string;
     [key: string]: any;
 };
-export declare type ServerInfo = {
+export type ServerInfo = {
     server: https.Server | http.Server;
     address: string;
     terminate: () => void;
     graph: HTTPbackend;
     _id: string;
 } & ServerProps;
-export declare type ReqOptions = {
+export type ReqOptions = {
     protocol: 'http' | 'https' | string;
     host: string;
     port: number;
