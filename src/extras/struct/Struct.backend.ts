@@ -68,17 +68,26 @@ export class StructBackend extends Service {
     ) {
         super(options);
         this.load(this);
+        
+        if(dboptions) {
+            this.initDB(dboptions);
+        }
+
+
+    }
+
+    initDB(dboptions) {
         if(dboptions?.users) this.users = dboptions.users; //set the reference so this keeps concurrent with the user router
-        if(dboptions?.db) this.mode = (this.db) ? ((dboptions.mode) ? dboptions.mode : 'local') : 'local'
+        if(!this.mode && dboptions?.db) this.mode = (this.db) ? ((dboptions.mode) ? dboptions.mode : 'local') : 'local'
+        this.db = dboptions.db;
         if(dboptions?.collections) this.collections = dboptions.collections;
+        this.db = dboptions.db;
         defaultCollections.forEach(k => {
             if (!this.collections[k])  {
                 this.collections[k] = (this.db) ? {instance: this.db.collection(k)} : {}
                 this.collections[k].reference = {}
             }
-        })
-
-
+        });
     }
 
     //------------------------------------

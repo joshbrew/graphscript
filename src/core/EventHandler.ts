@@ -6,6 +6,7 @@ export class EventHandler {
     pushToState={}
     data={}
     triggers={}
+    ctr = 0; //sub counter, always ensures unique values
 
     constructor(data?:{[key:string]:any}) { if(typeof data === 'object') this.data = data; }
 
@@ -58,10 +59,9 @@ export class EventHandler {
                 this.triggers[key] = [];
             }
 
-            let biggest = 0;
-            for(const trigger of this.triggers[key]) { if(trigger.sub > biggest) biggest = trigger.sub; }
-            let l = biggest+1; //works like a counter, ensures no overlap
-
+            let l = this.ctr; 
+            this.ctr++;
+            
             this.triggers[key].push({sub:l, onchange});
             return this.triggers[key].length-1;
         } else return undefined;

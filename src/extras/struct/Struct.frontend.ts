@@ -892,7 +892,7 @@ export class StructFrontend extends Service {
 
         if(props._id) user.id = props._id; //references the token id
         else if(props.id) user.id = props.id;
-        else user.id = 'user'+Math.floor(Math.random()*10000000000);
+        else user.id = 'user'+Math.floor(Math.random()*1000000000000000);
         user._id = user.id as any; //for mongo stuff
         user.ownerId = user.id;
         for(const prop in props) {

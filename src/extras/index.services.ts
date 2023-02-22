@@ -9,8 +9,8 @@ export * from './ecs/ECS.systems'
 
 export * from './webgl-plot/webglplot.routes'
 
-import gsworker from '../services/worker/Worker' //compiles the worker in the dist
+//import gsworker from '../services/worker/Worker' //compiles the worker in the dist
 
 export { algorithms } from './algorithms/index'; //modified algorithms object with presets 
 
-export { gsworker } //available as a dataurl
+//export { gsworker } //available as a dataurl
