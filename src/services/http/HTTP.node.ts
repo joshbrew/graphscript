@@ -321,6 +321,7 @@ export class HTTPbackend extends Service {
                         let testurl = split[0]+'/*';
                         if(options.pages[testurl]) { // e.g. /* or home/*
                             pageOptions = options.pages[testurl];
+                            received.route = testurl;
                         } else { 
                             // e.g. /home with /* specified, or /home/* etc.
                             let spl = url2.split('/'); //split the modified string so the beginning is a blank string
@@ -328,10 +329,11 @@ export class HTTPbackend extends Service {
                             let jn = spl.join('/')+'*'; //now merge url
                             if(options.pages[jn]) {
                                 pageOptions = options.pages[jn];
+                                received.route = jn;
                             } 
                         }
-                    }
-                }
+                    } else received.route = url2;
+                } else received.route = url;
                 if(typeof pageOptions === 'object') {
                     if((pageOptions as any).redirect) {
                         url = (pageOptions as any).redirect;
@@ -351,7 +353,6 @@ export class HTTPbackend extends Service {
                     }
                 }
             }
-            received.route = url;
             this.receive(received); 
         } //default requestListener
 
