@@ -30,7 +30,7 @@ let server = router.run(
         host:'localhost',
         port:8080,
         pages:{
-            '/':{
+            '/*':{
                 template:`<div>Nice...</div>`,
                 onrequest:(self,node,req,res)=>{ 
                     node.get = `<h3>Hello World!! The Time: ${new Date(Date.now()).toISOString()}</h3>`  

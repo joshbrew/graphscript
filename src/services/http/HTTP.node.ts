@@ -115,12 +115,13 @@ export class HTTPbackend extends Service {
         if(options.pages) {
             for(const key in options.pages) {
                 if (typeof options.pages[key] === 'string') {
-                    this.addPage(`${options.port}/${key}`,options.pages[key] as string)
-                } else if (typeof options.pages[key] === 'object') {
+                    this.addPage(`${options.port}/${key}`, options.pages[key] as string)
+                } else if (typeof options.pages[key] === 'object' || typeof options.pages[key] === 'function') {
                     if((options.pages[key] as any).template) {
                         (options.pages[key] as any).get = (options.pages[key] as any).template;
                     }
-                    if(key !== '_all') this.load({[`${options.port}/${key}`]:options.pages[key]});
+                    let rt = `${options.port}/${key}`;
+                    if(key !== '_all') this.load({[rt]:options.pages[key]});
                 }
             }
         }
@@ -180,47 +181,11 @@ export class HTTPbackend extends Service {
             let url = (request as any).url.slice(1);
             if(!url) url = '/';
             //console.log(options)
+            
             if(options.pages) {
-                let pageOptions = options.pages[url]; // e.g. 'home'
-                if(!pageOptions) { //check if there is a * url which can serve the same thing to multiple pages of the same root
-                    let url2 = '/'+url;
-                    pageOptions = options.pages[url2]; // e.g. '/home'
-                    if(!pageOptions) {
-                        let split = url.split('/');
-                        let testurl = split[0]+'/*';
-                        if(options.pages[testurl]) { // e.g. /* or home/*
-                            pageOptions = options.pages[testurl];
-                        } else { 
-                            // e.g. /home with /* specified, or /home/* etc.
-                            let spl = url2.split('/'); //split the modified string so the beginning is a blank string
-                            spl[spl.length-1] = ''; //replace with empty string e.g. /home -> ['','']
-                            let jn = spl.join('/')+'*'; //now merge url
-                            if(options.pages[jn]) {
-                                pageOptions = options.pages[jn];
-                            } 
-                        }
-                    }
-                }
-                if(typeof pageOptions === 'object') {
-                    if((pageOptions as any).redirect) {
-                        url = (pageOptions as any).redirect;
-                        received.redirect = url;
-                    }
-                    if((pageOptions as any).onrequest) {
-                        if(typeof (pageOptions as any).onrequest === 'string') {
-                            (pageOptions as any).onrequest = this.__node.nodes.get((pageOptions as any).onrequest);
-                        }
-                        if(typeof (pageOptions as any).onrequest === 'object') {
-                            if((pageOptions as any).onrequest.__operator) {
-                                ((pageOptions as any).onrequest as GraphNode).__operator(pageOptions, request, response);
-                            } 
-                        } else if(typeof (pageOptions as any).onrequest === 'function') {
-                            (pageOptions as any).onrequest(this,pageOptions, request, response);
-                        }
-                    }
-                }
-            }
-            received.route = url;
+                getPageOptions.call(this, url, received, options.pages, request, response, options.port);
+            } else received.route = url;
+
             this.receive(received); 
         } //default requestListener
 
@@ -312,47 +277,9 @@ export class HTTPbackend extends Service {
             if(!url) url = '/';
 
             if(options.pages) {
-                let pageOptions = options.pages[url];;
-                if(!pageOptions) { //check if there is a * url which can serve the same thing to multiple pages of the same root
-                    let url2 = '/'+url;
-                    pageOptions = options.pages[url2]; // e.g. '/home'
-                    if(!pageOptions) {
-                        let split = url.split('/');
-                        let testurl = split[0]+'/*';
-                        if(options.pages[testurl]) { // e.g. /* or home/*
-                            pageOptions = options.pages[testurl];
-                            received.route = testurl;
-                        } else { 
-                            // e.g. /home with /* specified, or /home/* etc.
-                            let spl = url2.split('/'); //split the modified string so the beginning is a blank string
-                            spl[spl.length-1] = ''; //replace with empty string e.g. /home -> ['','']
-                            let jn = spl.join('/')+'*'; //now merge url
-                            if(options.pages[jn]) {
-                                pageOptions = options.pages[jn];
-                                received.route = jn;
-                            } 
-                        }
-                    } else received.route = url2;
-                } else received.route = url;
-                if(typeof pageOptions === 'object') {
-                    if((pageOptions as any).redirect) {
-                        url = (pageOptions as any).redirect;
-                        received.redirect = url;
-                    }
-                    if((pageOptions as any).onrequest) {
-                        if(typeof (pageOptions as any).onrequest === 'string') {
-                            (pageOptions as any).onrequest = this.__node.nodes.get((pageOptions as any).onrequest);
-                        }
-                        if(typeof (pageOptions as any).onrequest === 'object') {
-                            if((pageOptions as any).onrequest.__operator) {
-                                ((pageOptions as any).onrequest as GraphNode).__operator(pageOptions, request, response);
-                            } 
-                        } else if(typeof (pageOptions as any).onrequest === 'function') {
-                            (pageOptions as any).onrequest(this,pageOptions, request, response);
-                        }
-                    }
-                }
-            }
+                getPageOptions.call(this, url, received, options.pages, request, response, options.port);
+            } else received.route = url;
+
             this.receive(received); 
         } //default requestListener
 
@@ -563,7 +490,7 @@ export class HTTPbackend extends Service {
                
                 //return;
             }
-
+            
             if(method === 'GET' || method === 'get') {
                 //process the request, in this case simply reading a file based on the request url    
                 var requestURL = '.' + request.url;
@@ -697,22 +624,22 @@ export class HTTPbackend extends Service {
                     
                     let route,method,args;
                     if(body?.route){ //if arguments were posted 
-                        route = this.__node.roots?.[body.route];
+                        route = body.route;
                         method = body.method;
                         args = body.args;
                         if(!route) {
                             if(typeof body.route === 'string') if(body.route.includes('/') && body.route.length > 1) body.route = body.route.split('/').pop();
-                            route = this.__node.roots?.[body.route];
+                            route = body.route;
                         }
                     }
                     if(!route) { //body post did not provide argument so use the request route
                         if (message?.route) {
-                            let route = this.__node.roots?.[message.route];
+                            let route = message.route;
                             method = message.method;
                             args = message.args;
                             if(!route) {
                                 if(typeof message.route === 'string') if(message.route.includes('/') && message.route.length > 1) message.route = message.route.split('/').pop() as string;
-                                route = this.__node.roots?.[message.route];
+                                route = message.route;
                             }
                         }
                     }
@@ -928,8 +855,8 @@ export class HTTPbackend extends Service {
                 for(const key in obj) {
                     appendTemplate(obj,key,res); //recursive append
                 }
-            } else if(this.__node.roots?.[r]?.get) {
-                let toAdd = this.__node.roots[r]?.get;
+            } else if(this.__node.nodes.get(r)?.get) {
+                let toAdd = this.__node.nodes.get(r)?.get;
                 if(typeof toAdd === 'function') toAdd = toAdd(obj[r]);
                 if(typeof toAdd === 'string')  {
                     let lastDiv = res.lastIndexOf('<');
@@ -939,10 +866,10 @@ export class HTTPbackend extends Service {
                     } res += toAdd; 
                 }
                 
-            } else if (typeof this.__node.roots?.[r] === 'function' || this.__node.roots?.[r]?.__operator) {
+            } else if (typeof this.__node.nodes.get(r) === 'function' || this.__node.nodes.get(r)?.__operator) {
                 let routeresult;
-                if(this.__node.roots[r]?.__operator) routeresult = this.__node.roots[r].__operator(obj[r]); 
-                else routeresult = (this.__node.roots[r] as Function)(obj[r]); //template function, pass props
+                if(this.__node.nodes.get(r)?.__operator) routeresult = this.__node.nodes.get(r).__operator(obj[r]); 
+                else routeresult = (this.__node.nodes.get(r) as Function)(obj[r]); //template function, pass props
                 if(typeof routeresult === 'string') {   
                     let lastDiv = res.lastIndexOf('<');
                     if(lastDiv > 0) {
@@ -952,7 +879,7 @@ export class HTTPbackend extends Service {
                     else res += routeresult;
                     //console.log(lastDiv, res, routeresult)
                 }
-            } else if (typeof this.__node.roots?.[r] === 'string') res += this.__node.roots[r];
+            } else if (typeof this.__node.nodes.get(r) === 'string') res += this.__node.nodes.get(r);
             return res;
         }
 
@@ -1021,3 +948,55 @@ export class HTTPbackend extends Service {
 
 }
 
+
+
+function getPageOptions(url, received, pages, request, response, port) {
+    let pageOptions = pages[url];
+    let key = url;
+    //check alternative page definition keys
+    if(!pageOptions) { 
+        let url2 = '/'+url; // e.g. '/home'
+        pageOptions = pages[url2]; 
+        key = url2;
+        if(!pageOptions) {
+            let split = url.split('/');
+            key = split[0]+'/*';
+            if(pages[key]) { // e.g. /* or home/*
+                pageOptions = pages[key];
+                received.route = key;
+            } else { 
+                // e.g. /home with /* specified, or /home/* etc.
+                let spl = url2.split('/'); //split the modified string so the beginning is a blank string
+                spl[spl.length-1] = ''; //replace with empty string e.g. /home -> ['','']
+                key = spl.join('/')+'*'; //now merge url
+                if(pages[key]) {
+                    pageOptions = pages[key];
+                    received.route = key;
+                } 
+            }
+        } else received.route = url2;
+    } else received.route = url;
+    if(typeof pageOptions === 'object') {
+        if((pageOptions as any).redirect) {
+            url = (pageOptions as any).redirect;
+            received.redirect = url;
+        }
+        if((pageOptions as any).onrequest) {
+            if(typeof (pageOptions as any).onrequest === 'string') {
+                (pageOptions as any).onrequest = this.__node.nodes.get((pageOptions as any).onrequest);
+            }
+            if(typeof (pageOptions as any).onrequest === 'object') {
+                if((pageOptions as any).onrequest.__operator) {
+                    ((pageOptions as any).onrequest as GraphNode).__operator(pageOptions, request, response);
+                } 
+            } else if(typeof (pageOptions as any).onrequest === 'function') {
+                (pageOptions as any).onrequest(
+                    this, 
+                    this.__node.nodes.get(`${port}/${key}`), 
+                    request, 
+                    response
+                );
+            }
+        }
+    }
+}
