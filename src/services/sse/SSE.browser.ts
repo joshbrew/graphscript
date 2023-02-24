@@ -134,7 +134,7 @@ export class SSEfrontend extends Service {
         }
 
         let request = (message:ServiceMessage|any, method?:string,  sessionId?:string) => {
-            return this.request(message, options.url, sessionId, method);
+            return this.request(message, options.url, method, sessionId);
         }
 
         let post = (route:any, args?:any, method?:string) => {
