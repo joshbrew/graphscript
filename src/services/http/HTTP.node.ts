@@ -389,12 +389,11 @@ export class HTTPbackend extends Service {
                     mimeType = this.mimeTypes[extname] || 'application/octet-stream';
 
                     result = fs.readFileSync(path.join(process.cwd(),result));
-
                     if(mimeType === 'text/html' && (message.served?.pages?._all || message.served?.pages?.[message.route])) {
                         result = this.injectPageCode(result.toString(),message.route,message.served as any) as any;
                     }
                 }
-                if(typeof result === 'string' && result.includes('<') && result.includes('>') && (result.indexOf('<') < result.indexOf('>'))) //probably an html template
+                else if(typeof result === 'string' && result.includes('<') && result.includes('>') && (result.indexOf('<') < result.indexOf('>'))) //probably an html template
                     {
                         if(message?.served?.pages?._all || message?.served?.pages?.[message.route]) {
                             result = this.injectPageCode(result,message.route,message.served) as any;
@@ -418,7 +417,6 @@ export class HTTPbackend extends Service {
         url:string,             
         served:ServerInfo 
     ) => { 
-        
         if ((served?.pages?.[url] as any)?.inject) { //inject per url
             if(typeof (served as any).pages[url].inject === 'object') 
                 templateString = this.buildPage((served as any).pages[url].inject as any, templateString);
@@ -567,6 +565,7 @@ export class HTTPbackend extends Service {
                         }
                     });
                 } else if (message.route) {
+                    console.log(requestURL, message.route);
                     let route;
                     if(served) {
                         let rt = `${served.port}/${message.route}`;
@@ -898,7 +897,6 @@ export class HTTPbackend extends Service {
     }
 
     hotreload = (socketURL:string|URL=`http://localhost:8080/wss`) => { 
-            
         if(socketURL instanceof URL) socketURL = socketURL.toString();
 
         const HotReloadClient = (url=`http://localhost:8080/wss`) => {
@@ -958,7 +956,7 @@ function getPageOptions(url, received, pages, request, response, port) {
         let url2 = '/'+url; // e.g. '/home'
         pageOptions = pages[url2]; 
         key = url2;
-        if(!pageOptions) {
+        if(!pageOptions && !path.extname(url)) {
             let split = url.split('/');
             key = split[0]+'/*';
             if(pages[key]) { // e.g. /* or home/*

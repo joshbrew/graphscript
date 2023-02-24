@@ -144,13 +144,12 @@ export class WSSfrontend extends Service {
                 let req = {route:'runRequest', args:[{route, args}, this.sockets[address]._id, callbackId]} as any;
                 if(method) req.args[0].method = method;
                 let onmessage = (ev)=>{
-                    console.log(ev);
                     let data = ev.data;
                     if(typeof data === 'string' && data.indexOf('{') > -1) data = JSON.parse(ev.data);
                     if(typeof data === 'object') {
                         if(data.callbackId === callbackId) {
                             socket.removeEventListener('message',onmessage);
-                            res(ev.data.args); //resolve the request with the corresponding message
+                            res(data.args); //resolve the request with the corresponding message
                         }
                     }
                 }
@@ -171,7 +170,7 @@ export class WSSfrontend extends Service {
                     if(typeof data === 'object') {
                         if(data.callbackId === callbackId) {
                             socket.removeEventListener('message',onmessage);
-                            res(ev.data.args); //resolve the request with the corresponding message
+                            res(data.args); //resolve the request with the corresponding message
                         }
                     }
                 }
