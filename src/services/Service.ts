@@ -237,6 +237,14 @@ export class Service extends Graph {
         this.transmit(...args);
         return args;
     }
+    log = (...args:any)=>{
+        console.log(...args);
+        return true;
+    }
+    error = (...args:any) => {
+        console.error(...args);
+        return true;
+    }
     
 }
 
