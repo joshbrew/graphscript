@@ -145,9 +145,10 @@ export class WSSfrontend extends Service {
                 //console.log(req)
                 if(method) req.args[0].method = method;
                 let onmessage = (ev)=>{
-                    if(typeof ev.data === 'string' && ev.data.indexOf('{') > -1) ev.data = JSON.parse(ev.data);
-                    if(typeof ev.data === 'object') {
-                        if(ev.data.callbackId === callbackId) {
+                    let data = ev.data;
+                    if(typeof data === 'string' && data.indexOf('{') > -1) data = JSON.parse(ev.data);
+                    if(typeof data === 'object') {
+                        if(data.callbackId === callbackId) {
                             socket.removeEventListener('message',onmessage);
                             res(ev.data.args); //resolve the request with the corresponding message
                         }
@@ -165,9 +166,10 @@ export class WSSfrontend extends Service {
                 //console.log(req)
                 if(method) req.method = method;
                 let onmessage = (ev)=>{
-                    if(typeof ev.data === 'string' && ev.data.indexOf('{') > -1) ev.data = JSON.parse(ev.data);
-                    if(typeof ev.data === 'object') {
-                        if(ev.data.callbackId === callbackId) {
+                    let data = ev.data;
+                    if(typeof data === 'string' && data.indexOf('{') > -1) data = JSON.parse(ev.data);
+                    if(typeof data === 'object') {
+                        if(data.callbackId === callbackId) {
                             socket.removeEventListener('message',onmessage);
                             res(ev.data.args); //resolve the request with the corresponding message
                         }
