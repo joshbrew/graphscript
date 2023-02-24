@@ -565,7 +565,6 @@ export class HTTPbackend extends Service {
                         }
                     });
                 } else if (message.route) {
-                    console.log(requestURL, message.route);
                     let route;
                     if(served) {
                         let rt = `${served.port}/${message.route}`;
@@ -862,13 +861,12 @@ export class HTTPbackend extends Service {
                     if(lastDiv > 0) {
                         let end = res.substring(lastDiv)
                         res = res.substring(0,lastDiv) + toAdd + end;
-                    } res += toAdd; 
+                    } else res += toAdd; 
                 }
                 
-            } else if (typeof this.__node.nodes.get(r) === 'function' || this.__node.nodes.get(r)?.__operator) {
+            } else if (this.__node.nodes.get(r)?.__operator) {
                 let routeresult;
                 if(this.__node.nodes.get(r)?.__operator) routeresult = this.__node.nodes.get(r).__operator(obj[r]); 
-                else routeresult = (this.__node.nodes.get(r) as Function)(obj[r]); //template function, pass props
                 if(typeof routeresult === 'string') {   
                     let lastDiv = res.lastIndexOf('<');
                     if(lastDiv > 0) {
@@ -892,7 +890,6 @@ export class HTTPbackend extends Service {
             }
         } else if (typeof pageStructure === 'string') result += pageStructure;
         else if (typeof pageStructure === 'function') result += pageStructure();
-        //console.log(result,pageStructure,this.routes)
         return result;
     }
 
