@@ -356,7 +356,7 @@ export class WSSbackend extends Service {
         let run = (route:any,args?:any, method?:string):Promise<any> => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
-                let req = {route:'runRequest', args:[{route, args}, address, callbackId]} as any;
+                let req = {route:'runRequest', args:[{route, args}, this.sockets[address]._id, callbackId]} as any;
                 //console.log(req)
                 if(method) req.args[0].method = method;
                 let onmessage = (ev)=>{
@@ -376,11 +376,11 @@ export class WSSbackend extends Service {
         }
         
         let request = (message:ServiceMessage|any, method?:string):Promise<any> => {
-            return this.request(message,socket, address, method);
+            return this.request(message,socket, this.sockets[address]._id as string, method);
         }
 
         let subscribe = (route:any, callback?:((res:any)=>void)|string) => {
-            return this.subscribeToSocket(route, address, callback);
+            return this.subscribeToSocket(route, this.sockets[address]._id as string, callback);
         }
 
         let unsubscribe = (route:any, sub:number):Promise<any> => {
@@ -388,7 +388,7 @@ export class WSSbackend extends Service {
         }
 
         let terminate = () => {
-            this.terminate(address);
+            this.terminate(this.sockets[address]._id as string);
         }
 
         this.sockets[address] = {
@@ -517,7 +517,7 @@ export class WSSbackend extends Service {
         ws:WebSocket|string, 
         callbackId:string|number
     ) => { //send result back
-        let res = this.receive(message);        
+        let res = this.receive(message);  
         if(ws) {
             if(typeof ws === 'string') {
                 for(const key in this.servers) {
@@ -530,7 +530,7 @@ export class WSSbackend extends Service {
                         if(s === ws) {ws = this.sockets[s].socket; break;}
                     }
                 }
-            }
+            } 
 
             if(res instanceof Promise) {
                 res.then((v) => {

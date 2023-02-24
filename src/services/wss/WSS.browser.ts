@@ -141,10 +141,10 @@ export class WSSfrontend extends Service {
         let run = (route:any,args?:any,method?:string) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
-                let req = {route:'runRequest', args:[{route, args}, options._id, callbackId]} as any;
-                //console.log(req)
+                let req = {route:'runRequest', args:[{route, args}, this.sockets[address]._id, callbackId]} as any;
                 if(method) req.args[0].method = method;
                 let onmessage = (ev)=>{
+                    console.log(ev);
                     let data = ev.data;
                     if(typeof data === 'string' && data.indexOf('{') > -1) data = JSON.parse(ev.data);
                     if(typeof data === 'object') {
@@ -162,7 +162,7 @@ export class WSSfrontend extends Service {
         let request = (message:ServiceMessage|any, method?:string) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
-                let req = {route:'runRequest', args:[message,options._id,callbackId]} as any;
+                let req = {route:'runRequest', args:[message,this.sockets[address]._id,callbackId]} as any;
                 //console.log(req)
                 if(method) req.method = method;
                 let onmessage = (ev)=>{
@@ -181,7 +181,7 @@ export class WSSfrontend extends Service {
         }
 
         let subscribe = (route:any, callback?:((res:any)=>void)|string, args?: any[], key?: string, subInput?: boolean):Promise<number> => {
-            return this.subscribeToSocket(route, options._id, callback, args, key, subInput);
+            return this.subscribeToSocket(route, this.sockets[address]._id, callback, args, key, subInput);
         }
 
         let unsubscribe = (route:any, sub:number):Promise<any> => {
@@ -189,7 +189,7 @@ export class WSSfrontend extends Service {
         }
 
         let terminate = () => {
-            return this.terminate(options._id);
+            return this.terminate(this.sockets[address]._id);
         }
 
         this.sockets[address] = {

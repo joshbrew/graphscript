@@ -107,7 +107,7 @@ export class Service extends Graph {
 
     handleServiceMessage(message:ServiceMessage) {
         let call; 
-        console.log(message);
+        //console.log(message);
         if(typeof message === 'object') {
             if(message.route) call = message.route; else if (message.node) call = message.node;
         }
