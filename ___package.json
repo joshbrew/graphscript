@@ -1,6 +1,6 @@
 {
     "name": "graphscript-core",
-    "version": "0.2.76",
+    "version": "0.2.78",
     "description": "Comprehensive acyclic-graph based application architecture with microservices and networking.",
     "main": "dist/index.core.js",
     "module": "dist/index.core.esm.js",

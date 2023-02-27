@@ -65,7 +65,7 @@ export class EventHandler {
             this.ctr++;
             
             this.triggers[key].push({sub:l, onchange});
-            return this.triggers[key].length-1;
+            return l;
         } else return undefined;
     }
     unsubscribeEvent = (key:string,sub?:number) => {

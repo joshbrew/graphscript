@@ -247,7 +247,6 @@ let ret = router.load({
 
                                     const scene = new THREE.Scene();
 
-                                    
                                     canvas.addEventListener('resize', (ev) => {
                                         //console.log('resizing', canvas.clientWidth, canvas.clientHeight)
                                         renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);

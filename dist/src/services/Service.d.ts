@@ -36,6 +36,7 @@ export declare class Service extends Graph {
     ping: () => string;
     echo: (...args: any) => any;
     log: (...args: any) => boolean;
+    error: (...args: any) => boolean;
 }
 export declare function isTypedArray(x: any): boolean;
 export declare const recursivelyAssign: (target: any, obj: any) => any;

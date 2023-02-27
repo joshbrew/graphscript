@@ -60,6 +60,7 @@ export class WSSfrontend extends Service {
             }
         }
     ) => {
+
         let protocol = options.protocol;
         if(!protocol) protocol = 'ws';
         let address = `${protocol}://${options.host}`;
@@ -76,31 +77,31 @@ export class WSSfrontend extends Service {
         const socket = new WebSocket(address);
 
         if(!options.onmessage) {
-            if(!options._id){
-            options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { 
-                if(data) if(typeof data === 'string') {
-                    let substr = data.substring(0,8);
-                    if(substr.includes('{') || substr.includes('[')) {    
-                        if(substr.includes('\\')) data = data.replace(/\\/g,"");
-                        if(data[0] === '"') { data = data.substring(1,data.length-1)};
-                        //console.log(message)
-                        data = JSON.parse(data); //parse stringified objects
+            if(!options._id) {
+                options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { 
+                    if(data) if(typeof data === 'string') {
+                        let substr = data.substring(0,8);
+                        if(substr.includes('{') || substr.includes('[')) {    
+                            if(substr.includes('\\')) data = data.replace(/\\/g,"");
+                            if(data[0] === '"') { data = data.substring(1,data.length-1)};
+                            //console.log(message)
+                            data = JSON.parse(data); //parse stringified objects
 
-                        if(data.route === 'setId') {
-                            this.sockets[address]._id = data.args;
-                            options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { //clear extra logic after id is set
-                                this.receive(data); 
-                                if(options.keepState) {
-                                    this.setState({[address as string]:data});
+                            if(data.route === 'setId') {
+                                this.sockets[address]._id = data.args;
+                                options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { //clear extra logic after id is set
+                                    this.receive(data); 
+                                    if(options.keepState) {
+                                        this.setState({[address as string]:data});
+                                    }
                                 }
                             }
                         }
-                    }
-                } 
-                
-                let res = this.receive(data); 
-                if(options.keepState) this.setState({[address]:data}); 
-            } //default onmessage
+                    } 
+                    
+                    let res = this.receive(data); 
+                    if(options.keepState) this.setState({[address]:data}); 
+                } //default onmessage
             }
             else {
                 options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo)=> {
@@ -108,16 +109,12 @@ export class WSSfrontend extends Service {
                     if(options.keepState) {
                         this.setState({[address]:data});
                     }
-                }; //clear this extra logic after id is set
+                };
             }
         }
 
-        if((options as any).onmessage) {
-            socket.addEventListener('message',(ev)=>{
-                (this.sockets[address] as any).onmessage(ev.data, socket, this.sockets[address]);
-            });
-        }
-        socket.addEventListener('open',(ev)=>{if(this.sockets[address].onopen) (this.sockets[address] as any).onopen(ev,socket, this.sockets[address]);});
+        if((options as any).onmessage) {socket.addEventListener('message',(ev)=>{(this.sockets[address] as any).onmessage(ev.data, socket, this.sockets[address]);});}
+        socket.addEventListener('open',(ev)=>{if(this.sockets[address].onopen) (this.sockets[address] as any).onopen(ev, socket, this.sockets[address]);});
         socket.addEventListener('close',(ev)=>{if(this.sockets[address].onclose) (this.sockets[address] as any).onclose(ev,socket, this.sockets[address]);});
         socket.addEventListener('error',(ev)=>{if(this.sockets[address].onerror) (this.sockets[address] as any).onerror(ev,socket, this.sockets[address]);});
 

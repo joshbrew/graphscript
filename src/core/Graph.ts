@@ -223,6 +223,7 @@ export class GraphNode {
 
             // Add details to trigger
             let trigger = this.__node.state.getEvent(k,sub);
+            if(!trigger) return undefined;
             trigger.source = this.__node.tag;
             if(key) trigger.key = key;
             trigger.target = setTarget(callback); // Non-string value
