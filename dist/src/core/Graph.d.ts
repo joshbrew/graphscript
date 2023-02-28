@@ -1,10 +1,12 @@
 import { EventHandler } from "./EventHandler";
 export declare const state: EventHandler;
 export type GraphNodeProperties = {
-    __props?: Function | GraphNodeProperties;
+    __props?: Function | {
+        [key: string]: any;
+    } | GraphNodeProperties | GraphNode;
     __operator?: ((...args: any[]) => any) | string;
     __children?: {
-        [key: string]: GraphNodeProperties;
+        [key: string]: any;
     };
     __listeners?: {
         [key: string]: true | string | ((result: any) => void) | {
@@ -26,10 +28,11 @@ export type GraphNodeProperties = {
     [key: string]: any;
 };
 export type Loader = (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, properties: GraphNodeProperties, key: string) => void;
+export type Roots = {
+    [key: string]: any;
+};
 export type GraphOptions = {
-    roots?: {
-        [key: string]: any;
-    };
+    roots?: Roots;
     loaders?: {
         [key: string]: Loader | {
             init?: Loader;
@@ -111,7 +114,7 @@ export declare class Graph {
     set: (tag: string, node: GraphNode) => Map<string, any>;
     delete: (tag: string) => boolean;
     getProps: (node: GraphNode | string, getInitial?: boolean) => void;
-    subscribe: (nodeEvent: GraphNode | string, onEvent: string | GraphNode | ((...res: any) => void), args?: any[], key?: string | undefined, subInput?: boolean, target?: string | GraphNode, bound?: string) => any;
+    subscribe: (nodeEvent: GraphNode | string, onEvent: string | GraphNode | ((...res: any) => void), args?: any[], key?: string | undefined, subInput?: boolean, target?: string | GraphNode, bound?: string) => number;
     unsubscribe: (node: GraphNode | string, sub?: number, key?: string, subInput?: boolean) => any;
     setState: (update: {
         [key: string]: any;

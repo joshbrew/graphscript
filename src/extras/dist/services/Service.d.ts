@@ -27,7 +27,7 @@ export declare class Service extends Graph {
     handleGraphNodeCall(route: string | GraphNode, args: any): any;
     transmit: (...args: any[]) => any | void;
     receive: (...args: any[]) => any | void;
-    pipe: (source: GraphNode | string, destination: string, endpoint?: string | any, method?: string, callback?: (res: any) => any | void) => any;
+    pipe: (source: GraphNode | string, destination: string, endpoint?: string | any, method?: string, callback?: (res: any) => any | void) => number;
     pipeOnce: (source: GraphNode | string, destination: string, endpoint?: string | any, method?: string, callback?: (res: any) => any | void) => void;
     terminate: (...args: any) => void;
     isTypedArray: typeof isTypedArray;

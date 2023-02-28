@@ -83,11 +83,24 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
             
             node.__node.looperSet = true;
             let fn = node.__operator;
+            let time = node.__node.loop;
             node.__setOperator((...args) => {
                 if(!('looping' in node.__node)) node.__node.looping = true;
                 if(node.__node.looping) {
+                    let last = performance.now();
                     fn(...args);
-                    setTimeout(()=>{node.__operator(...args)},node.__node.loop);
+                    setTimeout(
+                        ()=>{
+                            let now = performance.now();
+                            let overshoot = (now - last) - node.__node.loop;
+                            if(overshoot > 0) time = node.__node.loop - overshoot; 
+                            else time = node.__node.loop;
+                            if(time <= 0) time = node.__node.loop;
+                            node.__operator(...args);
+                            //
+                        }, 
+                        time 
+                    );
                 }
             });
             if(node.__node.looping) node.__operator();

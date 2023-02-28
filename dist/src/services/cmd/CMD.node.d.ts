@@ -50,6 +50,6 @@ export declare class CMDService extends Service {
     send: (childprocess: ChildProcess, data: Serializable) => boolean;
     request: (message: ServiceMessage | any, processId: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, callbackId: string | number, childprocess?: ChildProcess | string) => any;
-    subscribeProcess(route: string, childprocess: ChildProcess | string, args?: any[], key?: string, subInput?: boolean): any;
+    subscribeProcess(route: string, childprocess: ChildProcess | string, args?: any[], key?: string, subInput?: boolean): number;
     subscribeToProcess(route: string, processId: string, callback?: ((res: any) => void) | string, args?: any[], key?: string, subInput?: boolean): any;
 }

@@ -89,6 +89,6 @@ export declare class WSSbackend extends Service {
     terminate: (ws: WebSocketServer | WebSocket | string) => boolean;
     request: (message: ServiceMessage | any, ws: WebSocket, _id: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, ws: WebSocket | string, callbackId: string | number) => any;
-    subscribeSocket: (route: string, socket: WebSocket | string, args?: any[], key?: string, subInput?: boolean) => any;
+    subscribeSocket: (route: string, socket: WebSocket | string, args?: any[], key?: string, subInput?: boolean) => number;
     subscribeToSocket: (route: string, socketId: string, callback?: string | ((res: any) => void), args?: any[], key?: string, subInput?: boolean) => Promise<any>;
 }

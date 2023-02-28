@@ -1,6 +1,6 @@
 {
     "name": "graphscript-services.gpu",
-    "version": "0.2.78",
+    "version": "0.2.79",
     "description": "Extra services for graphscript.",
     "main": "dist/index.gpu.services.js",
     "module": "dist/index.gpu.services.esm.js",

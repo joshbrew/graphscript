@@ -7,9 +7,9 @@ export const state = new EventHandler(); //default shared global state
 
 
 export type GraphNodeProperties = {
-    __props?:Function|GraphNodeProperties, //a class constructor function (calls 'new x()') or an object we want to proxy all of the methods on this node. E.g. an html element gains 'this' access through operators and listeners on this node.
+    __props?:Function|{[key:string]:any}|GraphNodeProperties|GraphNode, //Proxy objects or from a class constructor function (calls 'new x()') or an object we want to proxy all of the methods on this node. E.g. an html element gains 'this' access through operators and listeners on this node.
     __operator?:((...args:any[])=>any)|string, //The 'main' function of the graph node, children will call this function if triggered by a parent. Functions passed as graphnodeproperties become the operator which can set state.
-    __children?:{[key:string]:GraphNodeProperties}, //child nodes belonging to this node, e.g. for propagating results
+    __children?:{[key:string]:any}, //child nodes belonging to this node, e.g. for propagating results
     __listeners?:{[key:string]:true|string|((result)=>void)|{__callback:string|((result)=>void)|true,subInput?:boolean,[key:string]:any}}|{[key:string]:((result)=>void)|true|string}, //subscribe by tag to nodes or their specific properties and method outputs
     __onconnected?:((node)=>void|((node)=>void)[]), //what happens once the node is created?
     __ondisconnected?:((node)=>void|((node)=>void)[]), //what happens when the node is deleted?
@@ -31,8 +31,12 @@ export type Loader = (
     key:string
 )=>void;
 
+export type Roots = {
+    [key:string]:any
+} //node definitions
+
 export type GraphOptions = {
-    roots?:{[key:string]:any}, //node definitions
+    roots?:Roots, //node definitions
     loaders?:{
         [key:string]:Loader|{
             init?:Loader, 
@@ -56,13 +60,8 @@ export class GraphNode {
         tag:`node${Math.floor(Math.random()*1000000000000000)}`,
         unique:`${Math.floor(Math.random()*1000000000000000)}`,
         state,
-        // operator: undefined as any,
         // graph: undefined as any,
-        // children: undefined as any,
         // localState: undefined as any,
-        // oncreate:undefined as any, //function or array of functions
-        // ondelete:undefined as any, //function or array of functions
-        // listeners:undefined as any, //e.g. { 'nodeA.x':(newX)=>{console.log('nodeA.x changed:',x)}  }
         // source:undefined as any// source graph if a graph is passed as properties
     }
 
@@ -72,7 +71,8 @@ export class GraphNode {
     __listeners?;
     __props?;
     __args:any[] //can structure input arguments, include '__result' when generically calling operators for where to pass the original input in in a set of arguments
-
+    // __onconnected:undefined as any, //function or array of functions
+    // __ondisconnected:undefined as any, //function or array of functions
     [key:string]:any
     
     //pass GraphNodeProperties, functions, or tags of other nodes
@@ -218,12 +218,13 @@ export class GraphNode {
     //subscribe an output or input with an arbitrary callback
     __subscribe = (callback:string|GraphNode|((res)=>void), key?:string, subInput?:boolean, bound?:string, target?:string) => {
 
+        //console.log('subbing', this.__node.tag, key)
         const subscribeToFunction = (k, setTarget = (callback, target?) => callback, triggerCallback=callback as (res: any) => void) => {
             let sub = this.__node.state.subscribeEvent(k, triggerCallback, this, key);
 
             // Add details to trigger
             let trigger = this.__node.state.getEvent(k,sub);
-            if(!trigger) return undefined;
+            if(!trigger) return sub;
             trigger.source = this.__node.tag;
             if(key) trigger.key = key;
             trigger.target = setTarget(callback); // Non-string value
@@ -292,7 +293,9 @@ export class GraphNode {
             }
             
             let sub;
+
             let k = subInput ? this.__node.unique+'input' : this.__node.unique;
+
             if(typeof callback === 'function') sub = subscribeToFunction(k)
             else if((callback as GraphNode)?.__node) sub = subscribeToFunction(k, 
                 (callback, target) => target ? target : (callback as GraphNode).__node.unique,
@@ -305,11 +308,14 @@ export class GraphNode {
     
     //unsub the callback
     __unsubscribe = (sub?:number, key?:string, unsubInput?:boolean) => {
-        if(key) 
+        
+        //console.log('unsubbing', this.__node.tag, sub, key)
+        if(key) { 
             return this.__node.state.unsubscribeEvent(
                 unsubInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key, 
                 sub
             );
+        }
         else 
             return this.__node.state.unsubscribeEvent(
                 unsubInput ? this.__node.unique+'input' : this.__node.unique, sub
@@ -326,7 +332,7 @@ export class GraphNode {
             if(this.__node.state.triggers[this.__node.unique]) { //don't set state (i.e. copy the result) if no subscriptions
                 if(typeof result?.then === 'function') {
                     result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.unique,res ) }).catch(console.error);
-                } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
+                } else if(result !== undefined) this.__node.state.setValue(this.__node.unique, result);
             }
             return result;
         } 
@@ -741,6 +747,7 @@ export class Graph {
     }
 
     remove = (node:GraphNode|string, clearListeners:boolean=true) => {
+
         this.unsubscribe(node);
 
         if(typeof node === 'string') node = this.get(node);
@@ -770,7 +777,7 @@ export class Graph {
                         this.clearListeners(t[key]);
                     }
 
-                    console.log(key,t[key].__listeners);
+                    //console.log(key,t[key].__listeners);
 
                     t[key].__callDisconnected();
                    
@@ -787,10 +794,12 @@ export class Graph {
             }
         }
 
-        if((node as any)?.__node.tag && (node as any)?.__parent) {
-            delete (node as any)?.__parent;
-            (node as any).__node.tag = (node as any).__node.tag.substring((node as any).__node.tag.indexOf('.')+1);
+        if((node as GraphNode)?.__node.tag && (node as GraphNode)?.__parent) {
+            delete (node as GraphNode)?.__parent;
+            (node as GraphNode).__node.tag = (node as GraphNode).__node.tag.substring((node as GraphNode).__node.tag.indexOf('.')+1);
         }
+
+        if((node as GraphNode)?.__node.graph) (node as GraphNode).__node.graph = undefined;
 
         return node;
     }
@@ -813,6 +822,7 @@ export class Graph {
         //now setup event listeners
         for(const key in listeners) {
             let node = this.get(key);
+            if(!node) continue;
             if(typeof listeners[key] === 'object') {
                 for(const k in listeners[key]) {
                     let n = this.get(k);
@@ -823,25 +833,41 @@ export class Graph {
                         for(const kk in listeners[key][k]) {
                             if(typeof listeners[key][k][kk] !== 'object') {
                                 listeners[key][k][kk] = {__callback: listeners[key][k][kk]}
-                                if(listeners[key][k][kk].__callback === true || typeof listeners[key][k][kk].__callback === 'undefined') listeners[key][k][kk].__callback = node.__operator;
+                                if(node.__operator && (listeners[key][k][kk].__callback === true || typeof listeners[key][k][kk].__callback === 'undefined')) 
+                                    listeners[key][k][kk].__callback = node.__operator;
                             }
                             let nn = this.get(kk);
-                            if(nn) {
-                                if(!nn) {
-                                    let tag = k.substring(0,k.lastIndexOf('.'));
-                                    nn = this.get(tag);
-                                    if(n) {
-                                        sub = this.subscribe(nn,  listeners[key][k][kk].__callback, listeners[key][k][kk].__args, k.substring(k.lastIndexOf('.')+1), listeners[key][k][kk].inputState, key, k);
-                                        if(typeof node.__listeners[k][kk] !== 'object') 
-                                            node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState:listeners[key][k][kk]?.inputState };
-                                        node.__listeners[k][kk].sub = sub;
-                                    }
-                                } else {
-                                    sub = this.subscribe(nn, listeners[key][k][kk].__callback, listeners[key][k].__args, undefined, listeners[key][k].inputState, key, k);
+                            if(!nn) {
+                                let tag = k.substring(0,k.lastIndexOf('.'));
+                                nn = this.get(tag);
+                                if(nn) {
+                                    let prop = k.substring(k.lastIndexOf('.')+1)
+                                    sub = this.subscribe(
+                                        nn,  
+                                        listeners[key][k][kk].__callback, 
+                                        listeners[key][k][kk].__args, 
+                                        prop, 
+                                        listeners[key][k][kk].inputState, 
+                                        key,
+                                        k
+                                    );
                                     if(typeof node.__listeners[k][kk] !== 'object') 
-                                        node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState: listeners[key][k][kk]?.inputState };
+                                        node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState:listeners[key][k][kk]?.inputState, target:key, bound:k };
                                     node.__listeners[k][kk].sub = sub;
                                 }
+                            } else {
+                                sub = this.subscribe(
+                                    nn, 
+                                    listeners[key][k][kk].__callback, 
+                                    listeners[key][k].__args, 
+                                    undefined, 
+                                    listeners[key][k].inputState, 
+                                    key, 
+                                    k
+                                );
+                                if(typeof node.__listeners[k][kk] !== 'object') 
+                                    node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState: listeners[key][k][kk]?.inputState, target:key, bound:k };
+                                node.__listeners[k][kk].sub = sub;
                             }
                         }
                     }
@@ -849,19 +875,36 @@ export class Graph {
                         if(listeners[key][k].__callback === true || typeof listeners[key][k].__callback === 'undefined') listeners[key][k].__callback = node.__operator;
                         if( typeof listeners[key][k].__callback === 'function') listeners[key][k].__callback = listeners[key][k].__callback.bind(node);
                         if(typeof node.__listeners !== 'object') node.__listeners = {}; //if we want to subscribe a node with listeners that doesn't predeclare them
+                        
                         if(!n) {
                             let tag = k.substring(0,k.lastIndexOf('.'));
                             n = this.get(tag);
                             if(n) {
-                                sub = this.subscribe(n,  listeners[key][k].__callback, listeners[key][k].__args, k.substring(k.lastIndexOf('.')+1), listeners[key][k].inputState, key, k);
+                                sub = this.subscribe(
+                                    n,  
+                                    listeners[key][k].__callback, 
+                                    listeners[key][k].__args, 
+                                    k.substring(k.lastIndexOf('.')+1), 
+                                    listeners[key][k].inputState, 
+                                    key, 
+                                    k
+                                );
                                 if(typeof node.__listeners[k] !== 'object') 
-                                    node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState:listeners[key][k]?.inputState };
+                                    node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState:listeners[key][k]?.inputState, target:key, bound:k };
                                 node.__listeners[k].sub = sub;
                             }
                         } else {
-                            sub = this.subscribe(n, listeners[key][k].__callback, listeners[key][k].__args,  undefined, listeners[key][k].inputState, key, k);
+                            sub = this.subscribe(
+                                n, 
+                                listeners[key][k].__callback, 
+                                listeners[key][k].__args,  
+                                undefined, 
+                                listeners[key][k].inputState, 
+                                key, 
+                                k
+                            );
                             if(typeof node.__listeners[k] !== 'object') 
-                                node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState: listeners[key][k]?.inputState };
+                                node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState: listeners[key][k]?.inputState, target:key, bound:k };
                             node.__listeners[k].sub = sub;
                         }
                         //console.log(sub);
@@ -875,7 +918,6 @@ export class Graph {
         if(typeof node === 'string') node = this.get(node) as GraphNode;
         if(node?.__listeners) {
             //console.log(node?.__listeners);
-            //console.log(node.__listeners);
             for(const key in node.__listeners) {
                 if(listener && key !== listener) continue; 
                 if(typeof node.__listeners[key]?.sub !== 'number') continue;
@@ -950,8 +992,6 @@ export class Graph {
             }
         }
 
-        let sub;
-
         if(target instanceof GraphNode) target = target.__node.tag;
 
         if(typeof onEvent === 'string') {
@@ -997,29 +1037,93 @@ export class Graph {
             onEvent = wrapArgs(onEvent, args, this);
         }
 
-        if(nd instanceof GraphNode) {
-            sub = nd.__subscribe(onEvent,key,subInput,target,bound);
-           
-            let ondelete = () => {
-                (nd as GraphNode).__unsubscribe(sub,key,subInput);
-            }
+        let sub:number;
 
-            nd.__addOndisconnected(ondelete);
+        if(nd instanceof GraphNode) {
+            const doSub = () => {
+                sub = (nd as GraphNode).__subscribe(onEvent, key, subInput, target as string, bound);
+
+                if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) 
+                    this.get(target as string).__listeners[bound].sub = sub;
+
+                let ondelete = () => {
+                    if(sub !== undefined) (nd as GraphNode).__unsubscribe(sub, key, subInput);
+                    sub = undefined;
+                }
+    
+                (nd as GraphNode).__addOndisconnected(()=>{
+                    ondelete();
+                    (nd as GraphNode).__addOnconnected(() => { //need to update the listener object on the listening node
+                        if(sub === undefined && (nd as GraphNode).__node.graph.__node.tag === this.__node.tag) doSub();
+                                
+                        //console.log(key,bound,this.get(target as string).__listeners[bound]);
+                    })   
+                });
+
+                if(typeof onEvent === 'string' && this.get(onEvent)) onEvent = this.get(onEvent);
+                if(onEvent instanceof GraphNode) {
+                    onEvent.__addOndisconnected(() => {
+                        ondelete(); 
+                    });
+                }
+            } 
+
+            doSub();
+
         } else if (typeof nodeEvent === 'string') {
-            if(this.get(nodeEvent)) {
+            let node = this.get(nodeEvent) as GraphNode;
+            if(node) {
                 if(onEvent instanceof GraphNode && onEvent.__operator) {
-                    sub = (this.get(nodeEvent) as GraphNode).__subscribe(onEvent.__operator,key,subInput,target,bound); 
-                    let ondelete = () => {
-                        this.get(nodeEvent).__unsubscribe(sub)
-                        //console.log('unsubscribed', key)
+                    const doSub = () => {
+                        sub = node.__subscribe((onEvent as GraphNode).__operator, key, subInput, target as string, bound); 
+                        
+                        if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) 
+                            this.get(target as string).__listeners[bound].sub = sub;
+
+
+                        let ondelete = () => {
+                            if(sub !== undefined) node.__unsubscribe(sub, key, subInput);  
+                        }
+            
+                        node.__addOndisconnected(()=>{
+                            ondelete();
+                            (node as GraphNode).__addOnconnected(() => { //if reconnected
+                                if(sub === undefined && node.__node.graph.__node.tag === this.__node.tag) doSub();
+                            });
+                        });
+
+                        (onEvent as GraphNode).__addOndisconnected(ondelete);
                     }
-        
-                    onEvent.__addOndisconnected(ondelete);
+                    
+                    doSub();
                 }
                 else if (typeof onEvent === 'function' || typeof onEvent === 'string') {
-                    sub = (this.get(nodeEvent) as GraphNode).__subscribe(onEvent,key,subInput,target,bound); 
-                    
-                    this.__node.state.getEvent(this.get(nodeEvent).__node.unique,sub).source = nodeEvent;
+                    const doSub = () => {
+                        sub = node.__subscribe(onEvent, key, subInput, target as string, bound); 
+
+                        if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) 
+                            this.get(target as string).__listeners[bound].sub = sub;
+
+
+                        let ondelete = () => {
+                            if(sub !== undefined) node.__unsubscribe(sub, key, subInput);
+                            sub = undefined;
+                        }
+
+                        node.__addOndisconnected(()=>{
+                            ondelete();
+                            //console.log('unsubscribed', key)
+                            (node as GraphNode).__addOnconnected(() => { //if reconnected
+                                if(sub === undefined && node.__node.graph.__node.tag === this.__node.tag) doSub();
+                            });
+                        });
+                            
+                        if(typeof onEvent === 'string' && this.get(onEvent)) this.get(onEvent).__addOndisconnected(ondelete);
+
+                        this.__node.state.getEvent(node.__node.unique,sub).source = nodeEvent;
+                    } 
+
+                    doSub();
                 }
             } else {
                 if(typeof onEvent === 'string') onEvent = this.__node.nodes.get(onEvent).__operator; 
@@ -1030,6 +1134,8 @@ export class Graph {
     }
 
     unsubscribe = ( node:GraphNode|string, sub?:number, key?:string, subInput?:boolean) => {
+        
+        
         if(node instanceof GraphNode) {
             return node.__unsubscribe(sub,key,subInput);
         }
@@ -1138,7 +1244,7 @@ export const wrapArgs = (callback,argOrder,graph) => {
         }
 
         let forArg = (a,i) => {
-            if(a === '__output') {
+            if(a === '__output' || a === '__input') {
                 args[i] = (inp) => {return inp;}; 
             } else if(typeof a === 'string') {
                 args[i] = getCallbackFromString(a);

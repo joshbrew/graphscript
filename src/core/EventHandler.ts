@@ -19,7 +19,7 @@ export class EventHandler {
         }
         if(this.triggers[statesubKey]) {
             let run = (fn) => { fn(updateObj); }
-            this.triggers[statesubKey].forEach(run);
+            this.triggers[statesubKey].forEach((v) => {run(v.onchange);});
         }
         
         return this.data;
@@ -30,7 +30,7 @@ export class EventHandler {
     }
     triggerEvent = (key, value) => {
         if(this.triggers[key]) {
-            let fn = (obj) => obj.onchange(value)
+            let fn = (obj) => obj.onchange(value, this.triggers[key])
             this.triggers[key].forEach(fn);
         }
     }
@@ -69,22 +69,22 @@ export class EventHandler {
         } else return undefined;
     }
     unsubscribeEvent = (key:string,sub?:number) => {
-        let triggers = this.triggers[key]
+        let triggers = this.triggers[key];
         if (triggers){
-            if(!sub) {
+            if(sub === undefined) {
                 delete this.triggers[key];
                 delete this.data[key]; //garbage collect useless data
             }
             else {
-                let sub = undefined;
+                let idx = undefined;
                 let obj = triggers.find((o,i)=>{
                     if(o.sub===sub) {
-                        sub = i;
+                        idx = i;
                         return true;
                     }
                 });
 
-                if(obj) triggers.splice(sub,1);
+                if(obj) triggers.splice(idx,1);
                 if(Object.keys(triggers).length === 0) {
                     delete this.triggers[key];
                     delete this.data[key]; //garbage collect useless data

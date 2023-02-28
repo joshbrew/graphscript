@@ -73,6 +73,6 @@ export declare class WebRTCfrontend extends Service {
     terminate: (rtc: RTCPeerConnection | WebRTCInfo | string) => boolean;
     request: (message: ServiceMessage | any, channel: RTCDataChannel, _id: string, method?: string) => Promise<unknown>;
     runRequest: (message: any, channel: RTCDataChannel | string, callbackId: string | number) => any;
-    subscribeRTC: (route: string, rtcId: string, args?: any[], key?: string, subInput?: boolean, channel?: string | RTCDataChannel) => any;
+    subscribeRTC: (route: string, rtcId: string, args?: any[], key?: string, subInput?: boolean, channel?: string | RTCDataChannel) => number;
     subscribeToRTC: (route: string, rtcId: string, channelId: string, callback?: string | ((res: any) => void), args?: any[], key?: string, subInput?: boolean) => Promise<any>;
 }

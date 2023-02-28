@@ -45,7 +45,7 @@ export declare class SSEfrontend extends Service {
     transmit: (message: any | ServiceMessage, url: string | URL) => Promise<unknown>;
     request: (message: ServiceMessage | any, url: string, method?: string, sessionId?: string) => Promise<unknown>;
     runRequest: (message: any, url: string | any, callbackId: string | number, sessionId?: string) => any;
-    subscribeSSE: (route: string, url: string, args?: any[], key?: string, subInput?: boolean) => any;
+    subscribeSSE: (route: string, url: string, args?: any[], key?: string, subInput?: boolean) => number;
     subscribeToSSE: (route: string, url: string, callback?: string | ((res: any) => void), args?: any[], key?: string, subInput?: boolean, sessionId?: string) => Promise<any>;
     terminate: (sse: EventSourceInfo | EventSource | string) => void;
 }

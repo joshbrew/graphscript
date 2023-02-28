@@ -73,7 +73,7 @@ export declare class SSEbackend extends Service {
     transmit: (data: string | ServiceMessage, path?: string, eventName?: string, sessionId?: string) => boolean;
     request: (message: any, path: string, method?: string, sessionId?: string, eventName?: string) => Promise<any>;
     runRequest: (message: any, path: string, callbackId: string | number, sessionId?: string) => any;
-    subscribeSSE: (route: string, path: string, args?: any[], key?: string, subInput?: boolean, sessionId?: string, eventName?: string) => any;
+    subscribeSSE: (route: string, path: string, args?: any[], key?: string, subInput?: boolean, sessionId?: string, eventName?: string) => number;
     subscribeToSSE: (route: string, path: string, callback?: string | ((res: any) => void), args?: any[], key?: string, subInput?: boolean, sessionId?: string, eventName?: string) => Promise<number> | Promise<number>[];
     terminate: (sse: string | SSEChannelInfo) => boolean;
 }
