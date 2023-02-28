@@ -17,9 +17,9 @@ Check out the code in [examples](./examples) for very clear, compelling implemen
 ## Core Concepts
 **graphscript** is organized by the principles of graph theory:
 
-1. **Nodes:** There is a hierarchy of objects.
-2. **Graph:** These are contained in a shared scope.
-3. **Edges:** Within each shared scope, properties can be linked in order to react to each other.
+1. **Graph:** These are contained in a shared scope.
+2. **Nodes:** There is a hierarchy of objects.
+3. **Connections:** Within each shared scope, properties can be linked in order to react to each other.
 
 Beyond these basic concepts, other GraphScript properties (distinguished with a *__*) can be selectively enabled using **loaders**.
 
