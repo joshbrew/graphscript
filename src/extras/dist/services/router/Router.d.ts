@@ -8,6 +8,12 @@ export type User = {
     run: (...args: any[]) => Promise<any> | Promise<any>[] | undefined;
     subscribe: (...args: any[]) => Promise<number> | Promise<number>[] | undefined;
     unsubscribe: (...args: any[]) => Promise<boolean> | Promise<boolean>[] | undefined;
+    sendAll: (...args: any[]) => any;
+    requestAll: (...args: any[]) => Promise<any> | Promise<any>[] | undefined;
+    postAll: (...args: any[]) => void;
+    runAll: (...args: any[]) => Promise<any> | Promise<any>[] | undefined;
+    subscribeAll: (...args: any[]) => Promise<number> | Promise<number>[] | undefined;
+    unsubscribeAll: (...args: any[]) => Promise<boolean> | Promise<boolean>[] | undefined;
     terminate: (...args: any[]) => boolean;
     onclose?: (user: User) => void;
     [key: string]: any;
@@ -124,3 +130,7 @@ export declare class Router extends Service {
         [key: string]: any;
     }) => boolean;
 }
+export declare function connectionHasId(connection: {
+    _id?: string;
+    [key: string]: any;
+}): Promise<boolean>;

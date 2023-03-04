@@ -8,7 +8,7 @@ export type WebSocketProps = {
     onmessage?:(data:string | ArrayBufferLike | Blob | ArrayBufferView,  ws:WebSocket, wsinfo:WebSocketInfo)=>void, //will use this.receive as default
     onopen?:(ev:any, ws:WebSocket, wsinfo:WebSocketInfo)=>void,
     onclose?:(ev:any,  ws:WebSocket, wsinfo:WebSocketInfo)=>void,
-    onerror?:(ev:any,  ws:WebSocket, wsinfo:WebSocketInfo)=>void
+    onerror?:(ev:any,  ws:WebSocket, wsinfo:WebSocketInfo)=>void,
     protocol?:'ws'|'wss',
     keepState?:boolean,
     type?:'socket',
@@ -89,6 +89,7 @@ export class WSSfrontend extends Service {
 
                             if(data.route === 'setId') {
                                 this.sockets[address]._id = data.args;
+
                                 options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { //clear extra logic after id is set
                                     this.receive(data); 
                                     if(options.keepState) {

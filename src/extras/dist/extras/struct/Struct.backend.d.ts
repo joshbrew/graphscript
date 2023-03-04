@@ -22,13 +22,13 @@ export declare class StructBackend extends Service {
         [key: string]: User;
     };
     collections: CollectionsType;
-    mode: 'local' | 'mongodb' | string;
+    mode: 'local' | 'mongo' | string;
     useAuths: boolean;
     constructor(options?: any, dboptions?: {
         users?: {
             [key: string]: User;
         };
-        mode?: 'local' | 'mongodb' | string;
+        mode?: 'local' | 'mongo' | string;
         db?: any;
         collections?: CollectionsType;
     });

@@ -52,16 +52,16 @@ export class StructBackend extends Service {
     debug:boolean=false;
 
     db: any; // mongodb instance (mongoose)
-    users:{[key:string]:User} = {}
-    collections: CollectionsType = {}
-    mode: 'local' | 'mongodb' | string 
-    useAuths: boolean = true //check if the user querying has the correct permissions 
+    users:{[key:string]:User} = {}; 
+    collections: CollectionsType = {};
+    mode: 'local' | 'mongo' | string; 
+    useAuths: boolean = true; //check if the user querying has the correct permissions 
 
     constructor(
         options?:any,
         dboptions?:{
             users?:{[key:string]:User},
-            mode?:'local' | 'mongodb' | string,
+            mode?:'local' | 'mongo' | string,
             db?:any, //mongodb instance (mongoose)
             collections?:CollectionsType
         }
@@ -78,10 +78,9 @@ export class StructBackend extends Service {
 
     initDB(dboptions) {
         if(dboptions?.users) this.users = dboptions.users; //set the reference so this keeps concurrent with the user router
+        this.db = dboptions.db;
         if(!this.mode && dboptions?.db) this.mode = (this.db) ? ((dboptions.mode) ? dboptions.mode : 'local') : 'local'
-        this.db = dboptions.db;
         if(dboptions?.collections) this.collections = dboptions.collections;
-        this.db = dboptions.db;
         defaultCollections.forEach(k => {
             if (!this.collections[k])  {
                 this.collections[k] = (this.db) ? {instance: this.db.collection(k)} : {}
@@ -127,7 +126,7 @@ export class StructBackend extends Service {
             data = await this.getMongoUser(user,lookupId);
         } else {
             let struct = this.getLocalData('profile',{_id:lookupId});
-            if(!struct) data = {user:{}};
+            if(!struct) data = {user:undefined};
             else {
                 let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
@@ -156,9 +155,9 @@ export class StructBackend extends Service {
                 else if(this.useAuths) passed = await this.checkAuthorization(user,struct, 'WRITE');
                 if(passed) this.setLocalData(struct);
                 return true;
-            }
-            if(this.debug) console.log('setUser user:',user,'input:',struct,'output',data)
-            return data;
+        }
+        if(this.debug) console.log('setUser user:',user,'input:',struct,'output',data)
+        return data;
     }
 
     getUsersByIds = async (requestingUserId:string, userIds:string[]) => {
@@ -515,8 +514,9 @@ export class StructBackend extends Service {
                     let auths :any[] = [];
                     if(mode.includes('mongo')) {
                         let s = this.collections.authorization.instance.find({ $or:[{authorizedId: user._id as string},{authorizerId: user._id as string}] });
-                        if(await s.count() > 0) {
-                            await s.forEach(d => auths.push(d));
+                        let arr = s.toArray();
+                        if(arr.length > 0) {
+                            arr.forEach(d => auths.push(d));
                         }
                     } else {
                         auths = this.getLocalData('authorization',{authorizedId:user._id as string});
@@ -552,7 +552,7 @@ export class StructBackend extends Service {
             }
             // console.log(usersToNotify);
             for(const uid in usersToNotify) {
-                this.users[uid].send({route:'structNotification',args:true});
+                this.users[uid].sendAll({route:'structNotification',args:true}); //notify on all available connections for a user (e.g. phone + laptop)
             }
 
             return true;
@@ -578,10 +578,11 @@ export class StructBackend extends Service {
         else {
             let res = await this.db.collection(collection).find(queryObj).sort({ $natural: -1 }).skip(skip);
             let structs :any[] = [];
-            if(await res.count() > 0) {
+            let arr = res.toArray();
+            if(arr.length > 0) {
                 let passed = !this.useAuths;
                 let checkedAuth = '';
-                await res.forEach(async (s) => {
+                for(const s of arr){
                     
                     if(!s?.ownerId) {  //return anyway if not matching our struct format
                         passed = true;
@@ -592,7 +593,7 @@ export class StructBackend extends Service {
                     }
                     
                     if(passed) structs.push(s);
-                })
+                }
             }
             return structs;
         }
@@ -808,7 +809,8 @@ export class StructBackend extends Service {
             let ids = {};
             if(mode.includes('mongo')) {
                 let cursor = this.collections.profile.instance.find({ $or: allusers }); //encryption references
-                if( await cursor.count() > 0) {
+                let arr = cursor.toArray();
+                if(arr.length > 0) {
                     await cursor.forEach((user) => {
                         users[getStringId(user._id as string)] = user;
                         ids[getStringId(user._id as string)] = true;
@@ -876,7 +878,7 @@ export class StructBackend extends Service {
 
             let u = await this.collections.profile.instance.findOne({$or: query}); //encryption references
            
-            if(!u || u == null) resolve({});
+            if(!u || u == null) resolve(undefined);
             else {
                 u._id = getStringId(u._id)
 
@@ -891,12 +893,12 @@ export class StructBackend extends Service {
                     // console.log(u);
                     let authorizations :any[] = [];
                     let auths = this.collections.authorization.instance.find({ownerId:u._id});
-                    if((await auths.count() > 0)) {
+                    if(auths.toArray().length > 0) {
                         await auths.forEach(d => authorizations.push(d));
                     }
                     let gs = this.collections.group.instance.find({users:{$all:[u._id]}});
                     let groups :any[] = [];
-                    if((await gs.count() > 0)) {
+                    if((gs.toArray().length > 0)) {
                         await gs.forEach(d => groups.push(d));
                     }
                     resolve({user:u, authorizations, groups});
@@ -915,7 +917,7 @@ export class StructBackend extends Service {
         let found :any[] = [];
         if (usrs.length > 0){
             let users = this.collections.profile.instance.find({$or:usrs});
-            if(await users.count() > 0) {
+            if(users.toArray().length > 0) {
                 await users.forEach((u) => {
                     found.push(u);
                 });
@@ -931,7 +933,7 @@ export class StructBackend extends Service {
             userRoles:{$all: {[role]:true}}
         });
         let found :any[] = [];
-        if(await users.count() > 0) {
+        if(users.toArray().length > 0) {
             await users.forEach((u) => {
                 found.push(u);
             });
@@ -953,7 +955,7 @@ export class StructBackend extends Service {
                 await Promise.all(Object.keys(this.collections).map(async (name) => {
                     let cursor = await this.db.collection(name).find({$or:query});
                     
-                    if(await cursor.count() > 0) {
+                    if(cursor.toArray().length > 0) {
                         let passed = true;
                         let checkedAuth = '';
                         await cursor.forEach(async (s) => {
@@ -969,7 +971,7 @@ export class StructBackend extends Service {
             }
             else {
                 let cursor = await this.db.collection(collection).find({$or:query});
-                if(await cursor.count() > 0) {
+                if(cursor.toArray().length > 0) {
                     let passed = true;
                     let checkedAuth = '';
                     await cursor.forEach(async (s) => {
@@ -1001,7 +1003,7 @@ export class StructBackend extends Service {
         else if((!dict || Object.keys(dict).length === 0) && ownerId && collection) {
             let cursor = this.db.collection(collection).find({ownerId}).sort({ $natural: -1 }).skip(skip);
             if(limit > 0) cursor.limit(limit);
-            if(await cursor.count() > 0) {
+            if(cursor.toArray().length > 0) {
                 await cursor.forEach(async (s) => {
                     if(!s?.ownerId) passed = true;
                     else if((getStringId(user._id as string) !== s.ownerId || (getStringId(user._id as string) === s.ownerId && (user.userRoles as any)?.admincontrol)) && checkedAuth !== s.ownerId) {
@@ -1041,7 +1043,7 @@ export class StructBackend extends Service {
         await Promise.all(Object.keys(this.collections).map(async (name,j) => {
             if(passed && excluded.indexOf(name) < 0) {
                 let cursor = this.db.collection(name).find({ownerId:ownerId});
-                let count = await cursor.count();
+                let count = cursor.toArray().length;
                 for(let k = 0; k < count; k++) {
                     let struct = await cursor.next();
                     if(!ownerId) passed = true;
@@ -1142,7 +1144,7 @@ export class StructBackend extends Service {
                 if(struct) {
                     structs.push(struct);
                     let notifications = await this.collections.notifications.instance.find({parent:{structType:ref.structType,_id:getStringId(ref._id)}});
-                    let count = await notifications.count();
+                    let count = notifications.toArray().length;
                     for(let i = 0; i < count; i++) {
                         let note = await notifications.next();
                         if(note) structs.push(note); //remove any associated notifications with a piece of data
@@ -1166,11 +1168,11 @@ export class StructBackend extends Service {
                 //delete any associated notifications, too
                 if(struct.users) {
                     Object.keys(struct.users).forEach((uid)=> {
-                        if(uid !== getStringId(user._id as string) && uid !== struct.ownerId && this.users[uid]) this.users[uid].send({route:'structDeleted',args:getStringId(struct._id)})
+                        if(uid !== getStringId(user._id as string) && uid !== struct.ownerId && this.users[uid]) this.users[uid].sendAll({route:'structDeleted',args:getStringId(struct._id)})
                     });
                 }
                 if(struct.ownerId !== user._id as string && this.users[struct.ownerId]) {
-                    this.users[struct.ownerId].send({route:'structDeleted',args:getStringId(struct._id)})
+                    this.users[struct.ownerId].sendAll({route:'structDeleted',args:getStringId(struct._id)})
                 }
             }
         }));
@@ -1191,7 +1193,7 @@ export class StructBackend extends Service {
 
         await this.collections.profile.instance.deleteOne({ id: userId });
 
-        if(getStringId(user._id as string) !== userId && this.users[userId]) this.users[userId].send({route:'structDeleted',args:userId});
+        if(getStringId(user._id as string) !== userId && this.users[userId]) this.users[userId].sendAll({route:'structDeleted',args:userId});
 
         //now delete their authorizations and data too (optional?)
         return true; 
@@ -1207,7 +1209,7 @@ export class StructBackend extends Service {
                 if(!passed) return false;
             }
             if(s.users) {
-                Object.keys(s.users).forEach((u) => { this.users[s.authorizerId].send({route:'structDeleted',args:getStringId(s._id)}); });
+                Object.keys(s.users).forEach((u) => { this.users[s.authorizerId].sendAll({route:'structDeleted',args:getStringId(s._id)}); });
             }
             await this.collections.group.instance.deleteOne({ _id:toObjectID(groupId) });
             return true;
@@ -1227,8 +1229,8 @@ export class StructBackend extends Service {
             if(s.associatedAuthId) {
                 if(this.debug) console.log(s);
                 await this.collections.authorization.instance.deleteOne({ _id: toObjectID(s.associatedAuthId) }); //remove the other auth too 
-                if(s.authorizerId && s.authorizerId !== getStringId(user._id as string)) this.users[s.authorizerId].send({route:'structDeleted',args:getStringId(s._id)});
-                else if (s.authorizedId && s.authorizedId !== getStringId(user._id as string)) this.users[s.authorizerId].send({route:'structDeleted',args:getStringId(s._id)});
+                if(s.authorizerId && s.authorizerId !== getStringId(user._id as string)) this.users[s.authorizerId].sendAll({route:'structDeleted',args:getStringId(s._id)});
+                else if (s.authorizedId && s.authorizedId !== getStringId(user._id as string)) this.users[s.authorizerId].sendAll({route:'structDeleted',args:getStringId(s._id)});
             }
             await this.collections.authorization.instance.deleteOne({ _id: toObjectID(authId) });
             return true;
@@ -1295,7 +1297,7 @@ export class StructBackend extends Service {
             let s = this.collections.authorization.instance.find(
                 { $and: [ { authorizedId: authStruct.authorizedId }, { authorizerId: authStruct.authorizerId } ] }
             );
-            if ((await s.count()) > 0) {
+            if (s.toArray().length > 0) {
                 await s.forEach(d => auths.push(d));
             }
         } else {

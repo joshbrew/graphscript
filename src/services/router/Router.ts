@@ -18,14 +18,29 @@ Frontend 1   Frontend 2
 */
 
 
+//TODO:
+//Make this simpler
+
+
 export type User = { //users have macros to call grouped connections generically, based on what's available
     _id:string,
+
+    //work with available connections, you can set the preferred order (e.g. sse, websockets, http)
     send:(...args:any[])=>any,
     request:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
     post:(...args:any[])=>void,
     run:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
     subscribe:(...args:any[])=>Promise<number>|Promise<number>[]|undefined,
     unsubscribe:(...args:any[])=>Promise<boolean>|Promise<boolean>[]|undefined,
+
+    //work with all of the connections associated with a user
+    sendAll:(...args:any[])=>any,
+    requestAll:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
+    postAll:(...args:any[])=>void,
+    runAll:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
+    subscribeAll:(...args:any[])=>Promise<number>|Promise<number>[]|undefined,
+    unsubscribeAll:(...args:any[])=>Promise<boolean>|Promise<boolean>[]|undefined,
+
     terminate:(...args:any[]) => boolean,
     onclose?:(user:User)=>void,
     [key:string]:any
@@ -166,11 +181,16 @@ export class Router extends Service {
         }, //configure new connections after adding the relevant services?
         receiving?:boolean //is this the receiving router?
     ) => {
+
+        let user:User
         if(!info._id) {
             info._id = `user${Math.floor(Math.random()*1000000000000000)}`;
+        }  
+        if(this.users[info._id]) {
+            user = this.users[info._id]; //existing user
+        } else {
+            user = Object.assign({}, info) as any;//Profile(info._id,info) as User;
         }
-
-        let user:User = Object.assign({},info) as any;//Profile(info._id,info) as User;
         
         if(connections){
             for(const key in connections) {
@@ -205,6 +225,9 @@ export class Router extends Service {
                 connections[key] = this.addConnection(connections[key], user._id) as any;
             }
         }
+
+
+
         if(config) {
             for(const c in config) {
                 this.openConnection(
@@ -216,50 +239,106 @@ export class Router extends Service {
             }
         }
 
-        let send = (message:any, ...a:any[]) => {
-            let connection = this.getConnection(user._id, 'send');
-            if(connection?.send) return connection.send(message, ...a);
+
+        if(!this.users[info._id]) {
+            let send = (message:any, ...a:any[]) => {
+                let connection = this.getConnection(user._id, 'send');
+                if(connection?.send) return connection.send(message, ...a);
+            }
+
+            let sendAll = (message:any, ...a:any[]) => {
+                let connections = this.getConnections(user._id, 'send');
+                for(const key in connections)
+                    if(connections[key]?.send) return connections[key].send(message, ...a);
+            }
+
+            let request = (message:any, method?:any, ...a:any[]) => {
+                let connection = this.getConnection(user._id, 'request');
+                if(connection?.request) return connection.request(message, method, ...a);
+            }
+
+            let requestAll = (message:any, method?:any, ...a:any[]) => {
+                let connections = this.getConnections(user._id, 'request');
+                let results = [];
+                for(const key in connections)
+                    if(connections[key]?.request) results.push(connections[key].request(message, method, ...a));
+                return results;
+            }
+
+            let post = (route:any, args?:any, method?:string, ...a:any[]) => {
+                let connection = this.getConnection(user._id, 'post');
+                if(connection?.post) return connection.post(route, args, method, ...a);
+            }
+
+            let postAll = (route:any, args?:any, method?:string, ...a:any[]) => {
+                let connections = this.getConnections(user._id, 'post');
+                for(const key in connections)
+                    if(connections[key]?.post) connections[key].post(route, args, method, ...a);
+                return;
+            }
+
+            let run = (route:any, args?:any, method?:string, ...a:any[]) => {
+                let connection = this.getConnection(user._id, 'run');
+                if(connection?.run) return connection.run(route, args, method, ...a);
+            }
+
+            let runAll = (route:any, args?:any, method?:string, ...a:any[]) => {
+                let connections = this.getConnections(user._id, 'run');
+                let results = [];
+                for(const key in connections)
+                    if(connections[key]?.post) results.push(connections[key].run(route, args, method, ...a));
+                return results;
+            }
+
+            let subscribe = (route:any, callback?:((res:any)=>void)|string, ...a:any[]) => {
+                let connection = this.getConnection(user._id, 'subscribe');
+                if(connection?.subscribe) return connection.subscribe(route, callback, ...a);
+            }
+
+            let subscribeAll = (route:any, callback?:((res:any)=>void)|string, ...a:any[]) => {
+                let connections = this.getConnections(user._id, 'subscribe');
+                let results = [];
+                for(const key in connections)
+                    if(connections[key]?.post) results.push(connections[key].subscribe(route, callback, ...a));
+                return results;
+            }
+
+            let unsubscribe = (route:any, sub:number, ...a:any[]) => {
+                let connection = this.getConnection(user._id, 'unsubscribe');
+                if(connection?.unsubscribe) return connection.unsubscribe(route, sub, ...a);
+            }
+
+            let unsubscribeAll = (route:any, subs?:{[key:string]:number}, ...a:any[]) => {
+                let connections = this.getConnections(user._id, 'unsubscribe');
+                let results = [];
+                for(const key in connections)
+                    if(connections[key]?.post && subs[key]) results.push(connections[key].unsubscribe(route, subs[key], ...a));
+                return results;
+            }
+
+            let terminate = () => {
+                return this.removeUser(user)
+            }
+
+            user.send = send;
+            user.request = request;
+            user.post = post;
+            user.run = run;
+            user.subscribe = subscribe;
+            user.unsubscribe = unsubscribe;
+            user.terminate = terminate;
+
+            user.sendAll = sendAll;
+            user.requestAll = requestAll;
+            user.postAll = postAll;
+            user.runAll = runAll;
+            user.subscribeAll = subscribeAll;
+            user.unsubscribeAll = unsubscribeAll;
+            user.terminateAll = terminate;
+            //these are macros to get available connections
+
+            this.users[user._id] = user;
         }
-
-        let request = (message:any, method?:any, ...a:any[]) => {
-            let connection = this.getConnection(user._id, 'request');
-            if(connection?.request) return connection.request(message, method, ...a);
-        }
-
-        let post = (route:any, args?:any, method?:string, ...a:any[]) => {
-            let connection = this.getConnection(user._id, 'post');
-            if(connection?.post) return connection.post(route, args, method, ...a);
-        }
-
-        let run = (route:any, args?:any, method?:string, ...a:any[]) => {
-            let connection = this.getConnection(user._id, 'run');
-            if(connection?.run) return connection.run(route, args, method, ...a);
-        }
-
-        let subscribe = (route:any, callback?:((res:any)=>void)|string, ...a:any[]) => {
-            let connection = this.getConnection(user._id, 'subscribe');
-            if(connection?.subscribe) return connection.subscribe(route, callback, ...a);
-        }
-
-        let unsubscribe = (route:any, sub:number, ...a:any[]) => {
-            let connection = this.getConnection(user._id, 'unsubscribe');
-            if(connection?.unsubscribe) return connection.unsubscribe(route, sub, ...a);
-        }
-
-        let terminate = () => {
-            return this.removeUser(user)
-        }
-
-        user.send = send;
-        user.request = request;
-        user.post = post;
-        user.run = run;
-        user.subscribe = subscribe;
-        user.unsubscribe = unsubscribe;
-        user.terminate = terminate;
-        //these are macros to get available connections
-
-        this.users[user._id] = user;
 
         if(connections && !receiving) {
             let connectionIds = {}; 
@@ -774,50 +853,13 @@ export class Router extends Service {
             if(connection instanceof Promise) {
                 return connection.then(async (info) => {
                     if(!info._id) {
-                        await new Promise((res,rej) => {
-                            let start = performance.now();
-                            let checker = () => {
-                                if(!info._id) {
-                                    if(performance.now() - start > 3000) {
-                                        rej(false);
-                                    } else {
-                                        setTimeout(()=>{
-                                            checker();
-                                        },100); //check every 100ms
-                                    }
-                                } else {
-                                    res(true);
-                                }
-                            }
-        
-                            checker();
-        
-                        }).catch((er) => {console.error('Connections timed out:', er); });
+                        await connectionHasId(info);
                     }
                     if(info._id) this.addConnection({connection:info, service}, source);
                 })
             } else if(connection) {
                 if(!connection._id) {
-                    await new Promise((res,rej) => {
-    
-                        let start = performance.now();
-                        let checker = () => {
-                            if(!connection._id) {
-                                if(performance.now() - start > 3000) {
-                                    rej(false);
-                                } else {
-                                    setTimeout(()=>{
-                                        checker();
-                                    },100); //check every 100ms
-                                }
-                            } else {
-                                res(true);
-                            }
-                        }
-    
-                        checker();
-    
-                    }).catch((er) => {console.error('Connections timed out:', er); });
+                    await connectionHasId(connection);
                 }
                 if(connection._id) return this.addConnection({connection, service}, source);
             }
@@ -931,4 +973,27 @@ export class Router extends Service {
 
 
 
+}
+
+//e.g. check if a websocket etc has the id so its ready for sending commands
+export function connectionHasId(connection:{_id?:string, [key:string]:any}) {
+    return new Promise((res,rej) => {
+        let start = performance.now();
+        let checker = () => {
+            if(!connection._id) {
+                if(performance.now() - start > 3000) {
+                    rej(false);
+                } else {
+                    setTimeout(()=>{
+                        checker();
+                    },100); //check every 100ms
+                }
+            } else {
+                res(true);
+            }
+        }
+    
+        checker();
+      }).catch((er) => {console.error('Connection timed out:', er); }) as Promise<boolean>;
+      
 }

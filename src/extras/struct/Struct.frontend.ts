@@ -25,7 +25,8 @@ export class StructFrontend extends Service {
         super(options);
         this.load(this);
 
-        if (user instanceof Object && Object.keys(user).length > 0) this.setupUser(user) // Declares currentUser
+        if(user instanceof Object && Object.keys(user).length > 0) 
+            this.setupUser(user); // Declares currentUser
     }
 
     //TODO: make this able to be awaited to return the currentUser
@@ -52,11 +53,11 @@ export class StructFrontend extends Service {
         let u;
         let newu = false;
         
-        console.log('getUser result',user);
+        //console.log('getUser result',user);
+        
         if(!user || !user._id) { //no profile, create new one and push initial results
             // if(!userinfo._id) userinfo._id = userinfo._id;
-            console.log('creating new profile');
-            u = this.userStruct(userinfo,true);
+            u = this.userStruct(userinfo,false);
             newu = true;
             let wasSet = await this.setUser(u);
             let structs = this.getLocalData(undefined,{'ownerId': u._id});
@@ -137,11 +138,12 @@ export class StructFrontend extends Service {
             // u = new UserObj(u)
             // u = getUserCodes(u, true)
             this.setLocalData(u); //user is now set up in whatever case 
-            console.log('collections', this.tablet.collections);
+            //console.log('collections', this.tablet.collections);
         }
         //console.log('u::',u)
         if(u)  {
-            this.currentUser = u;  
+            if(this.currentUser) Object.assign(this.currentUser,u);
+            else this.currentUser = u;  
             callback(this.currentUser);
             //console.log('currentUser', u)
             return this.currentUser;
@@ -290,7 +292,7 @@ export class StructFrontend extends Service {
     //info can be email, id, username, or name. Returns their profile and authorizations
     getUser = async (info:string|number='',callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'getUser', args:[this.currentUser._id, info]}))?.[0];
+            let res = (await this.currentUser.request({route:'getUser', args:[this.currentUser._id, info]}));
             callback(res);
             return (res as {user:ProfileStruct, groups:[], authorizations:[]} | undefined);
         }
@@ -381,7 +383,7 @@ export class StructFrontend extends Service {
     //sets the user profile data on the server
     setUser = async (userStruct={},callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'setUser', args:[this.currentUser._id, this.stripStruct(userStruct)]}))?.[0]
+            let res = (await this.currentUser.request({route:'setUser', args:[this.currentUser._id, this.stripStruct(userStruct)]}))
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -478,7 +480,7 @@ export class StructFrontend extends Service {
                 }
             });
             //console.log('deleting',toDelete);
-            let res = (await this.currentUser.request({route:'deleteData', args:[this.currentUser._id, toDelete]}))?.[0]
+            let res = (await this.currentUser.request({route:'deleteData', args:[this.currentUser._id, toDelete]}))
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -489,7 +491,7 @@ export class StructFrontend extends Service {
         if(this.currentUser?.request) {
             if(!userId) return;
 
-            let res = (await this.currentUser.request({route:'deleteUser', args:[this.currentUser._id, userId]}))?.[0]
+            let res = (await this.currentUser.request({route:'deleteUser', args:[this.currentUser._id, userId]}))
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -498,7 +500,7 @@ export class StructFrontend extends Service {
     //set a group struct on the server
     setGroup = async (groupStruct={},callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'setGroup', args:[this.currentUser._id, this.stripStruct(groupStruct)]}))?.[0]
+            let res = (await this.currentUser.request({route:'setGroup', args:[this.currentUser._id, this.stripStruct(groupStruct)]}))
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -519,7 +521,7 @@ export class StructFrontend extends Service {
             if(!groupId) return;
             this.deleteLocalData(groupId);
 
-            let res = (await this.currentUser.request({route:'deleteGroup', args:[this.currentUser._id, groupId]}))?.[0]
+            let res = (await this.currentUser.request({route:'deleteGroup', args:[this.currentUser._id, groupId]}))
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -528,7 +530,7 @@ export class StructFrontend extends Service {
     //set an authorization struct on the server
     setAuthorization = async (authorizationStruct={},callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'setAuthorization', args:[this.currentUser._id, this.stripStruct(authorizationStruct)]}))?.[0]
+            let res = (await this.currentUser.request({route:'setAuthorization', args:[this.currentUser._id, this.stripStruct(authorizationStruct)]}))
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -550,7 +552,7 @@ export class StructFrontend extends Service {
             if(!authorizationId) return;
             this.deleteLocalData(authorizationId);
             
-            let res = (await this.currentUser.request({route:'deleteAuthorization', args:[authorizationId]}))?.[0]
+            let res = (await this.currentUser.request({route:'deleteAuthorization', args:[authorizationId]}))
             if(typeof callback === 'function') callback(res)
             return res
         }

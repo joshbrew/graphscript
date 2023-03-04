@@ -109,23 +109,34 @@ router.addUser({_id:'me'},{socketId:'socket12345678'})
 //which returns via promise:
 export type User = { //users have macros to call grouped connections generically, based on what's available
     _id:string,
+
+    //work with an available connection, you can set the preferred order (e.g. sse, websockets, http)
     send:(...args:any[])=>any,
     request:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
     post:(...args:any[])=>void,
     run:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
     subscribe:(...args:any[])=>Promise<number>|Promise<number>[]|undefined,
     unsubscribe:(...args:any[])=>Promise<boolean>|Promise<boolean>[]|undefined,
+
+    //work with all of the connections associated with a user
+    sendAll:(...args:any[])=>any,
+    requestAll:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
+    postAll:(...args:any[])=>void,
+    runAll:(...args:any[])=>Promise<any>|Promise<any>[]|undefined,
+    subscribeAll:(...args:any[])=>Promise<number>|Promise<number>[]|undefined,
+    unsubscribeAll:(...args:any[])=>Promise<boolean>|Promise<boolean>[]|undefined,
+
     terminate:(...args:any[]) => boolean,
     onclose?:(user:User)=>void,
     [key:string]:any
-} & Partial<ProfileStruct>
+} 
 
 ```
 
 The user's send/post/etc. handles will search available connections sourced to that user and use the best connection that has the available functionality based on matching methods. The services we have all follow the same straightforward, fully functional (including all of the source API features for each type of protocol still on-hand), and reproducible format for pooling and matching connections for easier high level integration and a fairly limited learning curve for the amount of features you can pack together in a few dozen lines. It's very performant, while you still have full control over your servers and services as you need deeper specifications.
 
 
-All together now with sessions and mixed SSE + Websocket connections and a configurable http/https server... See backend.ts in `examples/webrtcrouter`
+All together now with sessions and mixed SSE + Websocket connections and a configurable http/https server... See backend.ts in `examples/advanced/webrtcrouter`
 
 ```ts
 
