@@ -60,11 +60,11 @@ export const htmlloader = (
     }
     
     if(node.__props instanceof HTMLElement) {
-        let cpy = Object.assign({},properties);
+        let cpy = Object.assign({},node);
         let keys = Object.getOwnPropertyNames(cpy);
         for(const k of keys) { 
             if(!(k in cpy)) continue;
-            if(k === 'style' && typeof properties[k] === 'object') {Object.assign(node.__props.style,cpy[k]);}
+            if(k === 'style' && typeof node[k] === 'object') {Object.assign(node.__props.style,cpy[k]);}
             else node.__props[k] = cpy[k]; 
         }
 
