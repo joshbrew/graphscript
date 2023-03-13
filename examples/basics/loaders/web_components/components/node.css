@@ -1,0 +1,8 @@
+.node { /* component css tags should probably be sufficiently unique like other component libraries, or just use inline styles */
+    text-align:center; 
+    position: absolute; 
+    left: 50%; 
+    width:100%; 
+    top: 50%; 
+    transform: translate(-50%, -50%);
+}
