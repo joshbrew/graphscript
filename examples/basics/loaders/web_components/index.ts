@@ -1,4 +1,4 @@
-import {Graph, wchtmlloader} from '../graphscript/index'
+import {Graph, wchtmlloader} from '../../../../index'
 import { NodeHTML } from './components/node/node';
 
 new Graph({
