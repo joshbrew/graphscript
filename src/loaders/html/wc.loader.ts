@@ -48,7 +48,7 @@ export const wchtmlloader = (
         node.__template += `<style> ${node.__css} </style>`; delete node.__css;
     }
     
-    if (node.__template) {
+    if ('__template' in node) {
 
         if(typeof node.__renderonchanged === 'function') {
             let renderonchanged = node.__renderonchanged;
@@ -78,15 +78,16 @@ export const wchtmlloader = (
         let cpy = Object.assign({},node);
         let keys = Object.getOwnPropertyNames(cpy);
         for(const k of keys) { 
-            if(!(k in cpy)) continue;
             if(k === 'style' && typeof node[k] === 'object') {Object.assign(node.__props.style,cpy[k]);}
+            else if (k === 'className') node.__props.setAttribute('class', cpy[k]);
             else node.__props[k] = cpy[k]; 
         }
 
         if(node.__attributes) { 
             for(const k in node.__attributes) {
                 if(k === 'style' && typeof node.__attributes[k] === 'object') {Object.assign(node.__props.style,node.__attributes[k]);}
-                node.__props[k] = node.__attributes[k];
+                else if (k === 'className') node.__props.setAttribute('class', node.__attributes[k]);
+                else node.__props[k] = node.__attributes[k];
             }
         }
         node.__proxyObject(node.__props);
@@ -95,8 +96,8 @@ export const wchtmlloader = (
         let cpy = Object.assign({},node);
         let keys = Object.getOwnPropertyNames(cpy);
         for(const k of keys) { 
-            if(!(k in cpy)) continue;
             if(k === 'style' && typeof node[k] === 'object') {Object.assign(node.__props.style,cpy[k]);}
+            else if (k === 'className') node.__props.setAttribute('class', cpy[k]);
             else node.__props[k] = cpy[k]; 
         }
 
