@@ -62,7 +62,7 @@ export const wchtmlloader = (
             styles = node.__css;
             useShadow = node.useShadow;
             template = node.__template as any;
-            //oncreate = node.__onrender;
+            oncreate = node.__onrender;
             onresize = node.__onresize;
             ondelete = node.__onremove;
             renderonchanged = node.__renderonchanged as any;
@@ -133,7 +133,7 @@ export const wchtmlloader = (
             } else if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement)) document.body.appendChild(node.__props);
         
             //add slight delay for sizing etc to kick in correctly
-            if(node.__onrender && !node.__template) setTimeout(()=>{node.__onrender(node.__props)},0.01);
+            if(node.__onrender && !(node.__props instanceof DOMElement) && !node.__template) setTimeout(()=>{node.__onrender(node.__props)},0.01);
 
         });
 
