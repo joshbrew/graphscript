@@ -23,12 +23,6 @@ Check out the code in [examples](./examples) for very clear, compelling implemen
 
 Beyond these basic concepts, other GraphScript properties (distinguished with a *__*) can be selectively enabled using **loaders**.
 
-### Loaders
-Loaders are supportive of a DIY hierarchical programming architecture by allowing nodes to be modified and GraphScript properties to be enabled using simple functions.
-
-Our exiting collection of loaders includes: 
-- `html-loader`: Enables GraphScript properties to translate into HTML Elements
-
 ### Graphs and Graph Nodes
 See [Graphs and GraphNodes](./docs/Graph.md) for more information.
 
