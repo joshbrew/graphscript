@@ -45,7 +45,7 @@ export const wchtmlloader = (
         if(!(node.__props instanceof HTMLElement)) return; 
         
     } else if (typeof node.__css === 'string') {
-        node.__template = `<style> ${node.__css} </style>`; delete node.__css;
+        node.__template += `<style> ${node.__css} </style>`; delete node.__css;
     }
     
     if (node.__template) {
