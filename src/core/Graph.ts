@@ -1043,7 +1043,11 @@ export class Graph {
             const doSub = () => {
                 sub = (nd as GraphNode).__subscribe(onEvent, key, subInput, target as string, bound);
 
-                if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) 
+                if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) {
+                    if(typeof this.get(target as string).__listeners[bound] !== 'object') {
+                        this.get(target as string).__listeners[bound] = this.get(target as string).__node.state.getEvent(bound);
+                    }
+                }
                     this.get(target as string).__listeners[bound].sub = sub;
 
                 let ondelete = () => {
@@ -1078,6 +1082,9 @@ export class Graph {
                         sub = node.__subscribe((onEvent as GraphNode).__operator, key, subInput, target as string, bound); 
                         
                         if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) {
+                            if(typeof this.get(target as string).__listeners[bound] !== 'object') {
+                                this.get(target as string).__listeners[bound] = this.get(target as string).__node.state.getEvent(bound);
+                            }
                             this.get(target as string).__listeners[bound].sub = sub;
                         }
 
@@ -1102,8 +1109,12 @@ export class Graph {
                     const doSub = () => {
                         sub = node.__subscribe(onEvent, key, subInput, target as string, bound); 
 
-                        if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) 
+                        if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) {
+                            if(typeof this.get(target as string).__listeners[bound] !== 'object') {
+                                this.get(target as string).__listeners[bound] = this.get(target as string).__node.state.getEvent(bound);
+                            }
                             this.get(target as string).__listeners[bound].sub = sub;
+                        }
 
 
                         let ondelete = () => {
