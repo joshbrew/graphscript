@@ -2,6 +2,7 @@ import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import WebSocket, { WebSocketServer } from 'ws'; //third party lib. //createWebSocketStream <-- use this for cross-node instance communication
 import http from 'http'
 import https from 'https'
+import { GraphNodeProperties } from "../../core/Graph";
 //import { GraphNode } from "../Graph";
 
 export type SocketServerProps = {
@@ -17,8 +18,9 @@ export type SocketServerProps = {
     onupgrade?:(ws:WebSocket, serverinfo:SocketServerInfo, request:http.IncomingMessage, socket:any, head:Buffer)=>void, //after handleUpgrade is called
     keepState?:boolean,
     type?:'wss',
+    serverOptions?:WebSocket.ServerOptions,
     [key:string]:any
-}
+} & GraphNodeProperties
 
 export type SocketServerInfo = {
     wss:WebSocketServer,
@@ -49,7 +51,7 @@ export type SocketProps = {
     type?:'socket',
     _id?:string,
     keepState?:boolean
-}
+} & GraphNodeProperties
 
 export type SocketInfo = {
     socket:WebSocket,
@@ -112,7 +114,7 @@ export class WSSbackend extends Service {
             port
         };
 
-        if(typeof options.serverOptions) Object.assign(opts,options.serverOptions)
+        if(typeof options.serverOptions) Object.assign(opts,options.serverOptions);
 
         const wss = new WebSocketServer(opts);
 
@@ -402,6 +404,7 @@ export class WSSbackend extends Service {
             unsubscribe,
             terminate,
             graph:this,
+            __node:{tag:address},
             ...options
         }
 
@@ -453,10 +456,17 @@ export class WSSbackend extends Service {
 
     terminate = (ws:WebSocketServer|WebSocket|string) => {
         if(!ws) {
-            let served = this.servers[Object.keys(this.servers)[0]];
-            if(served) ws = served.wss; //select first websocket server to transmit to all clients
+            let served = Object.keys(this.servers);
+            for(const key in served) {
+                this.terminate(key);
+            }
+            let sockets = Object.keys(this.sockets);
+            for(const key in sockets) {
+                this.terminate(key)
+            }
         }
         else if(typeof ws === 'string') {
+
             for(const k in this.servers) {
                 if(k.includes(ws)) {
                     ws = this.servers[k].wss;
@@ -476,14 +486,18 @@ export class WSSbackend extends Service {
                     }
                 }
             }
+            
         }
 
         if(ws instanceof WebSocketServer) {
             ws.close((er) => {if(er) console.error(er);});
         }
-        else if(ws instanceof WebSocket)
+        else if(ws instanceof WebSocket) {
             if(ws.readyState === ws.OPEN) 
                 ws.close();
+
+            if(this.get(ws.url)) this.remove(ws.url);
+        }
     
         return true;
     }

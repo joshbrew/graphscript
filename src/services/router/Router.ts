@@ -541,7 +541,7 @@ export class Router extends Service {
             if(typeof options === 'string' && this.__node.nodes.get(options)) options = {connection:this.__node.nodes.get(options)};
         } 
         if(!options || typeof options === 'string') return undefined;
-
+        
         if(source) settings.source = source;
 
         if(options.connection instanceof GraphNode) {
@@ -694,6 +694,7 @@ export class Router extends Service {
             } 
             if(typeof c !== 'object') return undefined;
             settings._id = c._id;
+            settings.connection = options.connection as any;
             settings.send = c.send;
             settings.request = c.request;
             settings.run = c.run;

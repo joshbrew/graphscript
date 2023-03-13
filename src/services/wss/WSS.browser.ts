@@ -1,4 +1,5 @@
 
+import { GraphNodeProperties } from "../../core/Graph";
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 
 export type WebSocketProps = {
@@ -14,7 +15,7 @@ export type WebSocketProps = {
     type?:'socket',
     _id?:string,
     [key:string]:any
-}
+} & GraphNodeProperties
 
 export type WebSocketInfo = {
     socket:WebSocket,
@@ -201,10 +202,15 @@ export class WSSfrontend extends Service {
             unsubscribe,
             terminate,
             graph:this,
+            __node:{tag:address},
             ...options
         };
 
-        return this.sockets[address];
+        let node = this.add(this.sockets[address]);
+
+        node.__addOndisconnected(function() { terminate(); });
+
+        return node;
     }
 
     open = this.openWS;
@@ -225,8 +231,11 @@ export class WSSfrontend extends Service {
 
     terminate = (ws:WebSocket|string) => {
         if(!ws) {
-            let key = Object.keys(this.sockets)[0]
-            if(key) ws = this.sockets[key].socket;
+            //terminate all
+            let keys = Object.keys(this.sockets)
+            for(const key in keys) {
+                this.terminate(key);
+            }
         }
         else if(typeof ws === 'string') {
             for(const k in this.sockets) {
@@ -237,9 +246,12 @@ export class WSSfrontend extends Service {
             }
         }
 
-        if(ws instanceof WebSocket) 
+        if(ws instanceof WebSocket) {
             if(ws.readyState === ws.OPEN) 
                 ws.close();
+            
+            if(this.get(ws.url)) this.remove(ws.url);
+        }
 
         return true;
     }

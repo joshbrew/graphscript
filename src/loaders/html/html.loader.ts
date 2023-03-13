@@ -61,7 +61,6 @@ export const htmlloader = (
     
     if(node.__props instanceof HTMLElement) {
         let cpy = Object.assign({},properties);
-        node.__proxyObject(node.__props);
         let keys = Object.getOwnPropertyNames(cpy);
         for(const k of keys) { 
             if(!(k in cpy)) continue;
@@ -75,6 +74,7 @@ export const htmlloader = (
                 node.__props[k] = node.__attributes[k];
             }
         }
+        node.__proxyObject(node.__props);
 
         if(node.__onresize)
             window.addEventListener('resize', node.__onresize as EventListener);
