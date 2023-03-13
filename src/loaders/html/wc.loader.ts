@@ -1,5 +1,5 @@
 
-import {GraphNode, GraphNodeProperties,Graph} from '../../core/Graph'
+import {GraphNode, GraphNodeProperties,Graph, isNativeClass} from '../../core/Graph'
 import {DOMElement} from './DOMElement'
 export {HTMLNodeProperties} from './html.loader'
 
@@ -47,7 +47,36 @@ export const wchtmlloader = (
     } else if (typeof node.__css === 'string') {
         node.__template += `<style> ${node.__css} </style>`; delete node.__css;
     }
-    
+
+
+    const registerElement = (node, tagNameOverride?:string) => {
+        if (isNativeClass(node)) node = new node()
+
+        class CustomElement extends DOMElement {
+            props = node.props;
+            styles = node.__css;
+            useShadow = node.useShadow;
+            template = node.__template as any;
+            // oncreate = node.__onrender;
+            onresize = node.__onresize;
+            ondelete = node.__onremove;
+            renderonchanged = node.__renderonchanged as any;
+        }
+
+        if (tagNameOverride) node.tagName = tagNameOverride
+        else if(node.__element) node.tagName = node.__element;
+        
+        if(!node.tagName) node.tagName = `element${Math.floor(Math.random()*1000000000000000)}-`;
+
+        CustomElement.addElement(node.tagName);
+    }
+
+
+    if ('__components' in node) {
+        if (Array.isArray(node.__components)) node.__components.forEach(c => registerElement(c))
+        else Object.entries(node.__components).forEach(([k, c]) => registerElement(c, k))
+    }
+
     if ('__template' in node) {
 
         if(typeof node.__renderonchanged === 'function') {
@@ -57,22 +86,7 @@ export const wchtmlloader = (
             }
         }
 
-        class CustomElement extends DOMElement {
-            props = node.props;
-            styles = node.__css;
-            useShadow = node.useShadow;
-            template = node.__template as any;
-            oncreate = node.__onrender;
-            onresize = node.__onresize;
-            ondelete = node.__onremove;
-            renderonchanged = node.__renderonchanged as any;
-        }
-
-        if(node.__element) node.tagName = node.__element;
-        if(!node.tagName) node.tagName = `element${Math.floor(Math.random()*1000000000000000)}-`;
-
-        CustomElement.addElement(node.tagName);
-
+        registerElement(node);
         node.__props = document.createElement(node.tagName);
 
         let cpy = Object.assign({},node);
@@ -133,7 +147,7 @@ export const wchtmlloader = (
             } else if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement)) document.body.appendChild(node.__props);
         
             //add slight delay for sizing etc to kick in correctly
-            if(node.__onrender && !node.__template) setTimeout(()=>{node.__onrender(node.__props)},0.01);
+            if(node.__onrender && !(node.__props instanceof DOMElement) && !node.__template) setTimeout(()=>{node.__onrender(node.__props)},0.01);
 
         });
 
