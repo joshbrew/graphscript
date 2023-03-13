@@ -842,6 +842,8 @@ export class Graph {
                                 nn = this.get(tag);
                                 if(nn) {
                                     let prop = k.substring(k.lastIndexOf('.')+1)
+                                    if(typeof node.__listeners[k][kk] !== 'object') 
+                                        node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState:listeners[key][k][kk]?.inputState, target:key, bound:k };
                                     sub = this.subscribe(
                                         nn,  
                                         listeners[key][k][kk].__callback, 
@@ -851,11 +853,11 @@ export class Graph {
                                         key,
                                         k
                                     );
-                                    if(typeof node.__listeners[k][kk] !== 'object') 
-                                        node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState:listeners[key][k][kk]?.inputState, target:key, bound:k };
                                     node.__listeners[k][kk].sub = sub;
                                 }
                             } else {
+                                if(typeof node.__listeners[k][kk] !== 'object') 
+                                    node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState: listeners[key][k][kk]?.inputState, target:key, bound:k };
                                 sub = this.subscribe(
                                     nn, 
                                     listeners[key][k][kk].__callback, 
@@ -865,8 +867,6 @@ export class Graph {
                                     key, 
                                     k
                                 );
-                                if(typeof node.__listeners[k][kk] !== 'object') 
-                                    node.__listeners[k][kk] = { __callback: listeners[key][k][kk].__callback, inputState: listeners[key][k][kk]?.inputState, target:key, bound:k };
                                 node.__listeners[k][kk].sub = sub;
                             }
                         }
@@ -880,6 +880,8 @@ export class Graph {
                             let tag = k.substring(0,k.lastIndexOf('.'));
                             n = this.get(tag);
                             if(n) {
+                                if(typeof node.__listeners[k] !== 'object') 
+                                    node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState:listeners[key][k]?.inputState, target:key, bound:k };
                                 sub = this.subscribe(
                                     n,  
                                     listeners[key][k].__callback, 
@@ -889,11 +891,11 @@ export class Graph {
                                     key, 
                                     k
                                 );
-                                if(typeof node.__listeners[k] !== 'object') 
-                                    node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState:listeners[key][k]?.inputState, target:key, bound:k };
                                 node.__listeners[k].sub = sub;
                             }
                         } else {
+                            if(typeof node.__listeners[k] !== 'object') 
+                                node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState: listeners[key][k]?.inputState, target:key, bound:k };
                             sub = this.subscribe(
                                 n, 
                                 listeners[key][k].__callback, 
@@ -903,8 +905,6 @@ export class Graph {
                                 key, 
                                 k
                             );
-                            if(typeof node.__listeners[k] !== 'object') 
-                                node.__listeners[k] = { __callback: listeners[key][k].__callback, inputState: listeners[key][k]?.inputState, target:key, bound:k };
                             node.__listeners[k].sub = sub;
                         }
                         //console.log(sub);
@@ -1043,6 +1043,10 @@ export class Graph {
             const doSub = () => {
                 sub = (nd as GraphNode).__subscribe(onEvent, key, subInput, target as string, bound);
 
+<<<<<<< Updated upstream
+=======
+                //console.log('this.get(target as string)', this.get(target as string))
+>>>>>>> Stashed changes
                 if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) 
                     this.get(target as string).__listeners[bound].sub = sub;
 
@@ -1077,8 +1081,9 @@ export class Graph {
                     const doSub = () => {
                         sub = node.__subscribe((onEvent as GraphNode).__operator, key, subInput, target as string, bound); 
                         
-                        if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) 
+                        if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) {
                             this.get(target as string).__listeners[bound].sub = sub;
+                        }
 
 
                         let ondelete = () => {
