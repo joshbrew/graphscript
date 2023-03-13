@@ -1,7 +1,7 @@
 import {Graph} from '../../src/core/Graph'
 import { htmlloader } from '../../src/loaders/html/html.loader';
-import Editor from './Editor';
-const ui = document.getElementById('ui')
+import Editor from './editor/Editor';
+const ui = document.getElementById('ui') // NOTE: This is not becoming the parent node...
 
 let graph = new Graph({
     loaders:{
@@ -48,6 +48,9 @@ let graph = new Graph({
         },
 
         nodeD:{
+            parentNode: ui, // NOTE: This is not rendering...
+            __element:'div',
+            innerHTML:'operator output (from child): ',
             __operator:function divide(a,b) {
                 console.log('run nodeD', a, b);
                 console.log('output:',a/b);
@@ -59,13 +62,11 @@ let graph = new Graph({
             },
             __children:{
                 output: {
-                    __element:'div',
-                    innerHTML:'operator output',
-                    parentNode: ui,
+                    __element:'span',
                     __operator:function(outp) {
                         console.log('child node received: ', outp);
                         this.innerHTML = outp;
-                    }
+                    },
                 }
             },
             __listeners:{
@@ -79,11 +80,10 @@ let graph = new Graph({
     }
 });
 
-
-const list = document.querySelector('#editor');
-const editor = new Editor(graph);
+const list = document.querySelector('#list');
+const editDiv = document.querySelector('#editor');
+const editor = new Editor(graph, editDiv);
 if (list) editor.setUI(list)
-console.log('Editor', editor)
 
 // let nodeAInternalSub = graph.subscribe(
 //     'nodeA',

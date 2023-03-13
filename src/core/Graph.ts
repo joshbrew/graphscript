@@ -1043,6 +1043,7 @@ export class Graph {
             const doSub = () => {
                 sub = (nd as GraphNode).__subscribe(onEvent, key, subInput, target as string, bound);
 
+                console.log('this.get(target as string)', this.get(target as string))
                 if(target && this.get(target as string) && this.get(target as string).__listeners[bound]) 
                     this.get(target as string).__listeners[bound].sub = sub;
 

@@ -1,0 +1,52 @@
+:host {
+    border-radius: 10px;
+    box-shadow: 0 1px 5px 0 rgb(0 0 0 / 20%);
+    position: absolute;
+    display: none;
+    z-index: 10000;
+    padding: 5px;
+    color: black;
+    font-size: 80%;
+    min-width: 200px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(6px);
+}
+
+ul,
+li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-radius: 3px;
+    user-select: none;
+}
+
+li {
+    /* border-bottom:solid 1px #CCC; */
+    padding: 5px 10px;
+}
+
+li:last-child {
+    border: none;
+}
+
+li:hover {
+    background: #EEE;
+}
+
+hr {
+    margin: 5px;
+}
+
+@media (prefers-color-scheme: dark) {
+
+    :host {
+        background: rgba(100, 100, 100, 0.8);
+        color: white;
+    }
+
+    li:hover {
+        background: #AAA;
+    }
+
+}

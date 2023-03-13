@@ -1,0 +1,45 @@
+:host {
+    font-family: var(--escode-font-family, sans-serif);
+    position: absolute;
+    box-sizing: border-box;
+    top: 10px;
+    left: 10px;
+    user-select: none;
+    z-index: 1;
+}
+
+:host>div {
+    min-width: 50px;
+    background: rgb(60, 60, 60);
+}
+
+#header {
+    color: var(--escode-primary-font-color, white);
+    font-size: 8px;
+    background: var(--escode-primary-color, black);
+    padding: 5px;
+    padding-right: 25px;
+    font-weight: 800;
+}
+
+
+#ports {
+    min-height: 10px;
+    color: var(--escode-secondary-font-color, white);
+    background: var(--escode-secondary-color);
+}
+
+#ports>div:not(:last-child) {
+    border-bottom: 1px solid var(--escode-secondary-font-color, gray);
+}
+
+#ports escode-graph-port {
+    padding: 2px 0px;
+}
+
+@media (prefers-color-scheme: dark) {
+    #header {
+        color: var(--escode-primary-font-color-dark, var(--escode-primary-font-color, black));
+        background: var(--escode-primary-color-dark, var(--escode-primary-color, white));
+    }
+}

@@ -17,6 +17,13 @@ const roots:Roots = {
         //         }
         //     }
         // }
+        log: () => {
+            console.log('logged!')
+        },
+
+        __listeners: {
+            'ctr': 'log'
+        }
     } as GraphNodeProperties,
 
     listenerNode:{

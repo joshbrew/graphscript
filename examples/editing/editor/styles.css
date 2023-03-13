@@ -1,0 +1,54 @@
+
+:host * {
+    box-sizing: border-box;
+  }
+
+  :host {
+    --escode-dark-background-color: rgb(30, 30, 30);
+  }
+
+  #container {
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    background: rgb(245, 245, 245);
+  }
+
+  #grid {  
+      overflow: hidden;
+      height: 100%;
+      display: block;
+      --grid-size: 5000px;
+      --grid-color: rgb(210, 210, 210);
+      background: white;
+      
+      position: relative;
+      background-image:
+      repeating-linear-gradient(var(--grid-color) 0 1px, transparent 1px 100%),
+      repeating-linear-gradient(90deg, var(--grid-color) 0 1px, transparent 1px 100%);
+      background-size: 20px 20px;
+      width: var(--grid-size);
+      height: var(--grid-size);
+  }
+  
+  #grid:active:hover {
+    cursor: move;
+  }
+  
+  escode-node {
+    cursor: move;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    :host > * {
+      background-color: rgb(40, 40, 40);
+    }
+  
+    #grid {
+        --grid-color: rgb(80, 80, 80);
+        background: var(--escode-dark-background-color);
+    }
+  }

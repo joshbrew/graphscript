@@ -1,7 +1,7 @@
 {
-  "name": "tinybuildapp8114",
+  "name": "escode",
   "version": "0.0.0",
-  "description": "Barebones esbuild and test node server implementation. For building",
+  "description": "An IDE built in GraphScript",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -19,7 +19,7 @@
   "keywords": [
     "esbuild"
   ],
-  "author": "",
+  "author": "Garrett Flynn",
   "license": "AGPL-3.0-or-later",
   "dependencies": {},
   "devDependencies": {},

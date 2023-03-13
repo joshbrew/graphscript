@@ -463,7 +463,7 @@ export function addCustomElement(cls, tag, extend=null) {
         }
     }
     catch(err) {
-
+        
     }
 }
 
