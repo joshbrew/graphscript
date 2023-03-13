@@ -1,5 +1,5 @@
-import {Graph, wchtmlloader} from '../../../../index'
-import { NodeHTML } from './components/node';
+import {Graph, wchtmlloader} from '../graphscript/index'
+import { NodeHTML } from './components/node/node';
 
 new Graph({
     roots:{

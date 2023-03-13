@@ -1,0 +1,4 @@
+.nodeheader { /* component css tags should probably be sufficiently unique like other component libraries, or just use inline styles */
+    text-align:center; 
+    width: max-content; 
+}
