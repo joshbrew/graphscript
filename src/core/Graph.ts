@@ -100,6 +100,8 @@ export class GraphNode {
                     properties = graph.get(properties);
                 }
             }
+
+            if (!('__node' in properties)) properties.__node = {};
             if(!properties.__node.initial) properties.__node.initial = orig; //original object or function
     
         }
@@ -505,12 +507,19 @@ export class Graph {
         options?:GraphOptions
     ) {
         this.init(options);
+        this.add(this);
     }
 
     init = (options?:GraphOptions) => {
         if(options) {
+            if (options.properties) {
+                Object.assign(this, options.properties); //assign loaders etc
+                delete options.properties
+            }
+
             let cpy = Object.assign({},options);
             delete cpy.roots; //prevent overflow
+            
             recursivelyAssign(this.__node, cpy); //assign loaders etc
             if(options.roots) this.load(options.roots);
         }
@@ -555,19 +564,15 @@ export class Graph {
 
         //make the root a node 
         if(roots.__node) {
-            if(!roots.__node.tag) roots.__node._tag = `roots${Math.floor(Math.random()*1000000000000000)}`;
-            else if (!this.get(roots.__node.tag)) {
+            if(!roots.__node.tag) roots.__node.tag = `roots${Math.floor(Math.random()*1000000000000000)}`;
+            
+            if (!this.get(roots.__node.tag)) {
                 let node = new GraphNode(roots,this,this); //blank node essentially for creating listeners
                 this.set(node.__node.tag,node);
-                
-            this.runLoaders(node,this, roots, roots.__node.tag);
-            if(node.__listeners) {
-                    listeners[node.__node.tag] = node.__listeners;
-                } //now the roots can specify nodes
+                this.runLoaders(node,this, roots, roots.__node.tag);
+                if(node.__listeners) listeners[node.__node.tag] = node.__listeners; //now the roots can specify nodes
             }
-        } else if (roots.__listeners) {
-            this.setListeners(roots.__listeners)
-        }
+        } else if (roots.__listeners)this.setListeners(roots.__listeners)
 
         //now setup event listeners
         this.setListeners(listeners);
@@ -584,6 +589,7 @@ export class Graph {
     }
 
     runLoaders = (node, parent, properties, key) => {
+        if (parent === undefined && node.__node.tag !== this.__node.tag) parent = this.__node.nodes.get(this.__node.tag); // Default to the graph as a parent
         for(const l in this.__node.loaders) { 
             if(typeof this.__node.loaders[l] === 'object') { 
                 if(this.__node.loaders[l].init) this.__node.loaders[l](node, parent, this,this.__node.roots,properties, key);
@@ -622,6 +628,7 @@ export class Graph {
             let node;
             if(instanced) node = properties;
             else node = new GraphNode(properties, parent as GraphNode, this);
+
             this.set(node.__node.tag,node);
             this.runLoaders(node, parent, properties, node.__node.tag);
             this.__node.roots[node.__node.tag] = properties; //reference the original props by tag in the roots for children
@@ -955,8 +962,8 @@ export class Graph {
         }
     }
 
-    get = (tag:string) => { return this.__node.nodes.get(tag); };
-    set = (tag:string,node:GraphNode) => { return this.__node.nodes.set(tag,node); };
+    get = (tag:string) => this.__node.nodes.get(tag);
+    set = (tag:string,node:GraphNode) => this.__node.nodes.set(tag,node);
     delete = (tag:string) => { return this.__node.nodes.delete(tag); }
 
     getProps = (node:GraphNode|string, getInitial?:boolean) => {

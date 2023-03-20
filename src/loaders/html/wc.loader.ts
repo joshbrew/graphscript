@@ -87,7 +87,8 @@ export const wchtmlloader = (
         }
 
         registerElement(node);
-        node.__props = document.createElement(node.tagName);
+        const el = node.__props = document.createElement(node.tagName);
+        el.template = node.__template // set the template per-instance
 
         let cpy = Object.assign({},node);
         let keys = Object.getOwnPropertyNames(cpy);
@@ -138,7 +139,7 @@ export const wchtmlloader = (
                 if(typeof properties.parentNode === 'string' && document.getElementById(properties.parentNode))  
                     document.getElementById(properties.parentNode)?.appendChild(n.__props);
                 else if (properties.parentNode instanceof HTMLElement) properties.parentNode.appendChild(n.__props);
-            } else if(parent.__props instanceof HTMLElement) {
+            } else if(parent?.__props instanceof HTMLElement) {
                 parent.__props.appendChild(node.__props);
             } else if (typeof graph.parentNode === 'string' && document.getElementById(properties.parentNode)) {  
                 document.getElementById(properties.parentNode)?.appendChild(graph.__props);

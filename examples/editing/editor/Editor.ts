@@ -15,8 +15,7 @@ export default class Editor extends WebComponent {
     __onrender = (el) => {
 
         // ------------------------- Track Elements from the Template -------------------------
-        const grid = el.shadowRoot.querySelector('#grid')
-        console.error('HAS RENDERED', grid)
+        const grid = (el.shadowRoot ?? el).querySelector('#grid')
 
         this.elements = { grid }
 
@@ -99,6 +98,7 @@ export default class Editor extends WebComponent {
             __element: 'escode-editor',
             __template: html,
             __css: style,
+            useShadow: true,
             parentNode
         })
 
@@ -119,7 +119,7 @@ export default class Editor extends WebComponent {
          const contextGraph = new Graph()
          this.graphs = { context: contextGraph, active: contextGraph }
         // -------------- Set Context Graph --------------
-        this.set(graph ?? contextGraph)
+        this.setGraph(graph ?? contextGraph)
 
         this.createContextMenu()
     }
@@ -132,7 +132,7 @@ export default class Editor extends WebComponent {
             if (!context.parentNode) document.body.appendChild(context.__props)
 
             // Setting Context Menu Responses
-            context.set(`escode-graph-editor_nodes_${Math.random()}`, {
+            context.setResponse(`escode-graph-editor_nodes_${Math.random()}`, {
               condition: (path) => {
                   let returned: any = false
                   this.nodes.forEach(n => {
@@ -154,7 +154,7 @@ export default class Editor extends WebComponent {
             })
 
 
-            context.set(`escode-graph-editor_${Math.random()}`, {
+            context.setResponse(`escode-graph-editor_${Math.random()}`, {
               condition: (path) => path.includes(this.__props),
               contents: (ev) => {
                 return [
@@ -227,7 +227,7 @@ export default class Editor extends WebComponent {
 
 
     // Set Graph on the Editor and React to Listeners 
-    set = (graph: Editor['graphs']['context']) => {
+    setGraph = (graph: Editor['graphs']['context']) => {
         if (graph) {
             
             this.graphs.context = graph
@@ -311,7 +311,6 @@ export default class Editor extends WebComponent {
                 }
             });
 
-            console.log('Layouting...', this.nodes,notMoved)
             this.autolayout(notMoved)
             this.#transform() // Move to center
             this.#loaded = true
@@ -727,20 +726,19 @@ autolayout = (nodes: Map<string, Node> | Node[] = this.nodes) => {
         const row = Math.floor(i/nPerRow)
 
         const dimensions = [
-        {
-            value: col,
-            sizes: colSizes,
-            dimension: 'height'
-        },
-        {
-            value: row,
-            sizes: rowSizes,
-            dimension: 'width'
-        }
+            {
+                value: col,
+                sizes: colSizes,
+                dimension: 'height'
+            },
+            {
+                value: row,
+                sizes: rowSizes,
+                dimension: 'width'
+            }
         ]
 
-        console.warn('Get', n, n.__props)
-        const rect = n.__props.getBoundingClientRect()
+        const rect = n.node.__props.getBoundingClientRect()
         info.push({
             rect,
             col,
@@ -861,14 +859,12 @@ autolayout = (nodes: Map<string, Node> | Node[] = this.nodes) => {
         if (props.info?.__escode?.x) props.x = props.info.__escode.x
         if (props.info?.__escode?.y) props.y = props.info.__escode.y
 
-        console.log('This', this.elements, this.elements?.grid, this)
         // Only run autolayout after UI has rendered
         const gN = new Node(props, this.elements.grid)
 
         this.nodes.set(gN.tag, gN)
 
         if (this.onnodeadded instanceof Function) this.onnodeadded(gN)
-        console.log('done...', gN.tag)
         
         return gN
       }
@@ -885,12 +881,12 @@ autolayout = (nodes: Map<string, Node> | Node[] = this.nodes) => {
           const edge = new Listener({editor: this, ...info}, this.elements.grid)
           this.editing = edge.graph.__props
   
-          this.edges.set(tempId, edge) // Place temp into DOM to trigger edge.rendered
+          this.edges.setNode(tempId, edge) // Place temp into DOM to trigger edge.rendered
     
           edge.ready.then(res => {
             if (res){
               this.edges.delete(tempId)
-              this.edges.set(edge.id, edge)
+              this.edges.setNode(edge.id, edge)
               edge.resize()
             }
           }).catch(() => {})

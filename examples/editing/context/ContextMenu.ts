@@ -29,8 +29,8 @@ export class ContextMenu extends WebComponent {
         this.connect(this)
     }
 
-    __onrender = () => {
-        this.list = this.shadowRoot.querySelector('ul')
+    __onrender () {
+        this.list = (this.shadowRoot ?? this).querySelector('ul')
 
         /** close the right click context menu on click */
         window.addEventListener('click', this.onClick)
@@ -43,12 +43,12 @@ export class ContextMenu extends WebComponent {
     }
 
 
-    onClick = () => {
+    onClick() {
         this.style.display = 'none';
         if (this.style.display === 'block') document.body.style.overflow = ''
     }
 
-    set = (id, info: Response) => this.responses.set(id, info)
+    setResponse = (id, info: Response) => this.responses.set(id, info)
 
     delete = (id) => this.responses.delete(id)
 

@@ -47,9 +47,8 @@ export class Node extends WebComponent {
     }
 
 
-    __onrender = (el) => {
-        console.log('This is called', this.tag)
-        this.elements = { main: el.shadowRoot.querySelector('#ports') }
+    __onrender(el) {
+        this.elements = { main: (el.shadowRoot ?? el).shadowRoot.querySelector('#ports') }
         if (this.info) this.updatePorts()
 
         // if (!this.editor) this.editor = (this.parentNode.parentNode as any).host
@@ -75,6 +74,7 @@ export class Node extends WebComponent {
             __element: 'escode-node',
             __template: html,
             __css: style,
+            // useShadow: true,
             parentNode
         })
 
@@ -99,23 +99,23 @@ export class Node extends WebComponent {
 
         this.connect(
             this, 
-            // this.editor.graph
+            this.editor.graph
         )
 
     }
 
-    updatePosition = (x, y) => {
+    updatePosition (x, y) {
         if (x !== undefined) this.x = x
         if (y !== undefined) this.y = y
         this.__props.style.transform = `translate(${this.x}px, ${this.y}px)`
     }
     
-    set = (info) => {
+    setNode (info) {
         this.info = info
         this.updatePorts(info)
     }
   
-      updatePorts = async (info=this.info) => {
+      async updatePorts(info=this.info) {
   
         const notify = (tag, value, type) => {
           const got = this.portCategories[type].get(tag)
@@ -155,7 +155,7 @@ export class Node extends WebComponent {
   
       }
   
-      willUpdate = (updatedProps) => {
+      willUpdate (updatedProps) {
   
         if ((updatedProps.has('x') || updatedProps.has('y')) && this.info.__escode){
           this.info.__escode.x = this.x        // brainsatplay extension
@@ -166,13 +166,13 @@ export class Node extends WebComponent {
       }
   
   
-      setEdge = (edge) => this.edges.set(edge.id, edge)
+      setEdge (edge) { this.edges.set(edge.id, edge) }
   
-      deleteEdge = (id) => {
+      deleteEdge(id) {
         this.edges.delete(id)
       }
   
-      addPort = (info: PortProps) => {
+      addPort (info: PortProps) {
 
         const type = info.type ?? 'default'
 
@@ -198,7 +198,7 @@ export class Node extends WebComponent {
         return port
       }
   
-      deinit = (triggerInWorkspace = true) => {
+      deinit (triggerInWorkspace = true) {
         if (triggerInWorkspace) this.editor.removeNode(this)
         this.edges.forEach(e => e.deinit()) // Remove edges
         this.remove()

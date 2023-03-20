@@ -101,7 +101,7 @@ export const htmlloader = (
             } else if(!(node.__props instanceof HTMLBodyElement || node.__props instanceof HTMLHeadElement)) document.body.appendChild(node.__props);
         
             //add slight delay for sizing etc to kick in correctly
-            if(node.__onrender) setTimeout(()=>{node.__onrender(node.__props)},0.01);
+            if(node.__onrender) setTimeout(()=>{node.__onrender.call(node, node.__props)},0.01);
 
         });
 

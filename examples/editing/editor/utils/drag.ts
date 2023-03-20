@@ -16,7 +16,7 @@ const dragElement = (workspace:Editor, dragItem: Node, onMove, onDown,onUp) => {
     // container.addEventListener("touchend", dragEnd, false);
     // container.addEventListener("touchmove", drag, false);
 
-    dragItem.shadowRoot.addEventListener("mousedown", dragStart, false);
+    (dragItem.shadowRoot ?? dragItem).addEventListener("mousedown", dragStart, false);
     window.addEventListener("mouseup", dragEnd, false);
     window.addEventListener("mousemove", drag, false);
 

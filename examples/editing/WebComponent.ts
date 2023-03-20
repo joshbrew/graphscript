@@ -15,23 +15,24 @@ export class WebComponent {
         Object.assign(this, properties);
     }
 
-    connect = (properties: GraphNodeProperties, graph?: Graph) => {
+    connect (properties: GraphNodeProperties, graph?: Graph) {
 
         if (graph) {
-            this.node = new GraphNode(properties, graph)
-            this.__props = this.node.__props
+            const node = graph.add(properties)
+            if (node) {
+                this.node = node
+                this.__props = this.node.__props
+            } else console.error('Could not add node to graph', properties)
         } else {
-            const name =  properties.tag ?? properties.__node?.tag ?? 'escode-root'
             this.graph = new Graph({
-                roots: { [name]: properties },
+                properties,
                 loaders: { wchtmlloader }
-            })
-    
-    
-            const rootNode = this.graph.get(name)
-            this.__props = rootNode.__props
-    
+            })    
+
+            this.node = this.graph.get(this.graph.__node.tag)
         }
+
+        this.__props = this.node.__props
 
         return this.node
     }
