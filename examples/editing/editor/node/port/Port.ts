@@ -39,17 +39,16 @@ export class Port extends WebComponent {
         const tag = port.tag
 
         const html = `
-          <div>
-            <div id="input" class="port${isListenerPort(tag) ? ' hidden' : ''}"></div>
-            ${tag}
-            <div id="output" class="port"></div>
-          </div>
-          `
+          <div id="input" class="port${isListenerPort(tag) ? ' hidden' : ''}"></div>
+          ${tag}
+          <div id="output" class="port"></div>
+        `
         
         super({
             __element: 'escode-port',
             __template: html,
             __css: style,
+            // useShadow: false,
             parentNode
         })
 
@@ -60,7 +59,8 @@ export class Port extends WebComponent {
 
         this.connect(
           this, 
-          // this.node.editor.graph
+          this.node.editor.graph,
+          this.node.node
         )
     }
 

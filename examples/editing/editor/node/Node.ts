@@ -44,11 +44,12 @@ export class Node extends WebComponent {
 
     elements: {
         main: HTMLDivElement
+    } = {
+      main: document.createElement('div')
     }
 
 
     __onrender(el) {
-        this.elements = { main: (el.shadowRoot ?? el).shadowRoot.querySelector('#ports') }
         if (this.info) this.updatePorts()
 
         // if (!this.editor) this.editor = (this.parentNode.parentNode as any).host
@@ -66,7 +67,6 @@ export class Node extends WebComponent {
                 <div id="header">
                     ${node.tag}
                 </div>
-                <div id="ports"></div>
             </div>
         `
         
@@ -78,6 +78,9 @@ export class Node extends WebComponent {
             parentNode
         })
 
+        this.elements.main.id = 'ports'
+        this.elements.main.innerHTML = `<div id="defaultPorts"><slot></slot></div>`
+
         // if (node.__onrender) {
         //     const onrender = this.__onrender
         //     this.__onrender = (el) => {
@@ -88,20 +91,15 @@ export class Node extends WebComponent {
 
 
         this.editor = node.editor
-        this.info = node.info
-        if (!this.info.__escode) this.info.__escode = { x: 0, y:0 } // Save ESCode Properties
-
-        this.tag = this.info.__node.tag
-        this.id = this.info.__node.unique
-
-        this.info.__escode.x = this.x = node.x ?? this.info.__escode.x ?? 0
-        this.info.__escode.y = this.y = node.y ?? this.info.__escode.y ?? 0
 
         this.connect(
             this, 
             this.editor.graph
         )
 
+        const container = (this.node.shadowRoot).querySelector('div')
+        container.appendChild(this.elements.main)
+        this.setNode(node.info)
     }
 
     updatePosition (x, y) {
@@ -112,11 +110,17 @@ export class Node extends WebComponent {
     
     setNode (info) {
         this.info = info
+        if (!this.info.__escode) this.info.__escode = { x: 0, y:0 } // Save ESCode Properties
+
+        this.tag = this.info.__node.tag
+        this.id = this.info.__node.unique
+
+        this.info.__escode.x = this.x = this.info.__escode.x ?? 0
+        this.info.__escode.y = this.y = this.info.__escode.y ?? 0
         this.updatePorts(info)
     }
   
       async updatePorts(info=this.info) {
-  
         const notify = (tag, value, type) => {
           const got = this.portCategories[type].get(tag)
   
@@ -127,17 +131,23 @@ export class Node extends WebComponent {
         }
         
         const type = 'properties'
-        Object.keys(info).forEach(tag => {
+
+        let n = 0
+        Object.keys(info).forEach((tag, i) => {
           if (tag.slice(0,2) === '__') return // no __ special properties
           if (isPrivate(tag)) return // no underscore (pseudo-private) properties
   
           let thisType = type
           if (tag === 'default' || tag === '__operator') thisType = 'default'
-          if (this.portCategories[thisType].has(tag)) {
+          if (this.portCategories?.[thisType]?.has(tag)) {
             notify(tag, this.ports.get(tag), thisType)
             return
           }
-          this.addPort({ tag, node: this, type: thisType as 'properties' || 'default'})
+          console.log('Trying to add', tag, i)
+          if (n < 20) {
+            this.addPort({ tag, node: this, type: thisType as 'properties' || 'default'})
+            n++
+          }
         })
   
         // Add Port for Each Active ES Component instance (i.e. the internal graph)
@@ -145,10 +155,11 @@ export class Node extends WebComponent {
         if (components) {
             const type = 'children'
             Object.keys(components).forEach((tag) => {
-            if (this.portCategories[type].has(tag)) {
+            if (this.portCategories?.[type]?.has(tag)) {
               notify(tag, this.ports.get(tag), type)
               return
             }
+            console.log('Adding Port: ', tag, type, this)
             this.addPort({ tag, type, node: this })
           })
         }
@@ -171,28 +182,37 @@ export class Node extends WebComponent {
       deleteEdge(id) {
         this.edges.delete(id)
       }
-  
-      addPort (info: PortProps) {
 
-        const type = info.type ?? 'default'
-
+      #addPortCategory (type: string) {
+        
         let ports = this.elements[type]
   
         if (!ports) {
           this.elements[type] = ports = document.createElement('div')
-          ports.id = `${info.type}Ports`
+          ports.id = `${type}Ports`
   
-          const idx = this.portOrder.findIndex(str => str === info.type)
+          const idx = this.portOrder.findIndex(str => str === type)
           const beforeChild = this.elements.main.children[idx]
           if (beforeChild) this.elements.main.insertBefore(ports, beforeChild);
           else this.elements.main.appendChild(ports)
         }
 
+        return ports
+      }
+  
+      addPort (info: PortProps) {
+
+        const type = info.type ?? 'default'
+
+        const categoryDiv = this.#addPortCategory(type)
         const category = this.portCategories[type] ?? this.portCategories.default // Set in type-specific registry
 
-        const port = new Port({ ...info, node: this}, ports)
+        const port = new Port({ ...info, node: this})
         this.ports.set(port.tag, port)
         category.set(port.tag, port)
+
+        console.log('Appending', port)
+        categoryDiv.appendChild(port.__props) // Append to port category
   
           
         return port

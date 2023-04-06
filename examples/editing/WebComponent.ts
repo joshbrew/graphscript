@@ -15,10 +15,10 @@ export class WebComponent {
         Object.assign(this, properties);
     }
 
-    connect (properties: GraphNodeProperties, graph?: Graph) {
+    connect (properties: GraphNodeProperties, graph?: Graph, parent?: GraphNode) {
 
         if (graph) {
-            const node = graph.add(properties)
+            const node = graph.add(properties, parent)
             if (node) {
                 this.node = node
                 this.__props = this.node.__props

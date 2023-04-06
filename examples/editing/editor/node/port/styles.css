@@ -3,12 +3,7 @@
   }
 
   :host {
-      display: block;
-      pointer-events: none;
-      --grid-color: rgb(210, 210, 210);
-  }
-
-  :host > div {
+    pointer-events: none;
       width: 100%;
       display: flex; 
       align-items: center;
@@ -40,11 +35,3 @@
     border-radius: 10px;
     z-index: -1;
   }
-
-    @media (prefers-color-scheme: dark) { 
-
-      :host {
-          --grid-color: rgb(45, 45, 45);
-      }
-      
-    }
