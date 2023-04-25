@@ -1,5 +1,5 @@
-import { GraphNode, GraphNodeProperties } from "../../../../src/core/Graph";
-import WebComponent from "../../WebComponent";
+import { GraphNode, GraphNodeProperties } from "../../../../../src/core/Graph";
+import WebComponent from "../../../WebComponent";
 import Editor from "../Editor";
 import { Listener } from "../listener/Listener";
 import { PortProps, Port } from "./port/Port";

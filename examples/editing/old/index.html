@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                margin: 0;
+                padding: 0;
+                height: 100vh;
+                width: 100vw;
+                overflow: hidden;
+            }
+
+            #active select {
+                pointer-events: none;
+            }
+
+            .sideview {
+                position: absolute; 
+                height: 30vh; 
+                top: 0; 
+                right: 0; 
+                background: rgba(255,255,255, 0.6); 
+                padding: 10px; 
+                width: 500px;
+            }
+        </style>
+    </head>
+    <body>  
+        <div id="ui" style="padding: 25px;"></div>
+
+        <div id="editor" class="sideview"></div>
+
+        <div id="list" class="sideview" style="bottom: 0; top: auto; overflow-y: scroll; ">
+        </div>
+
+        <script src="dist/index.js">
+        </script>
+    </body>
+</html>
+        
