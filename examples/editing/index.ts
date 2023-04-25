@@ -86,67 +86,109 @@ const editor = new LGraph();
 new LGraphCanvas(canvas, editor);
 editor.start();
 
+console.log(graph)
 
-function CreateLiteGraphNodes(roots:{[key:string]:any}, x0=100, y0=100) {
+for (let key in graph.__node.state.triggers) {
 
-  let x = x0; let y = y0;
+  const triggers = graph.__node.state.triggers[key]
+  // Register source node
+  const [id, property] = key.split('.')
+  const node = Array.from(graph.__node.nodes.values()).find(node => node.__node.unique === id)
+  const name = registerNode(node, property)
+  const liteNode = LiteGraph.createNode(name);
+  editor.add(liteNode)
 
-  function recursiveCreate(node) {
-    if(node.__children) {
-      for(const key in node.__children) {
-        recursiveCreate(node.__children[key]);
-      }
-    }
-  }
-
-  for(const key in roots) {
-    recursiveCreate(roots[key]);
-  }
+  // // Register target node
+  // triggers.forEach(trigger => {
+    
+  // })
 
 }
 
+// function CreateLiteGraphNodes(nodes:Map<string, GraphNode>, x0=100, y0=100) {
+
+//   let x = x0; let y = y0;
+
+//   function recursiveCreate(key, node) {
+//     const tag = registerNode(node, graph)
+//     console.log('node', tag, node)
+
+//     if (tag) {
+//       const liteNode = LiteGraph.createNode(tag);
+//       // liteNode.pos = [x, y];
+//       editor.add(liteNode)
+
+//       if(node.__children) {
+//         for(const key in node.__children) {
+//           recursiveCreate(key, node.__children[key]);
+//         }
+//       }
+//     }
+//   }
+
+//   Array.from(nodes.entries()).forEach(([key, node]) => {
+//     const tag = registerNode(node, graph)
+//     console.log('node', tag, node)
+//     if (tag) {
+//       const liteNode = LiteGraph.createNode(tag);
+//       // liteNode.pos = [x, y];
+//       editor.add(liteNode)
+//     }
+//   })
+
+// }
+
+// CreateLiteGraphNodes(graph.__node.nodes)
+
 //
 function registerNode(
-  properties:GraphNode|GraphNodeProperties|Function|string, //register an existing node or new node
-  graph:Graph, //NOT LGRAPH
-  method?:string, //specific method on the node we want to make a node for? e.g. Button.innerHTML
-  tag?:string
+  node: GraphNode,
+  property: string,
+  // properties:GraphNode|GraphNodeProperties|Function|string, //register an existing node or new node
+  // graph:Graph, //NOT LGRAPH
+  // method?:string, //specific method on the node we want to make a node for? e.g. Button.innerHTML
+  // tag?:string
 ) {
 
-  let node:GraphNode = undefined as any;
-  let nodeMethod;
+  // let node:GraphNode = undefined as any;
+  // let nodeMethod;
 
-  if(typeof properties === 'function') {
-    node = graph.add(properties) as GraphNode;
-  } else if (typeof properties === 'object') {
-    if(!(properties instanceof GraphNode)) {
-      node = graph.add(properties) as GraphNode;
-    }
-  } else if (typeof properties === 'string') {
-    node = graph.get(properties);
-    if(!node && properties.includes('.')) {
-      let substr = properties.substring(0,properties.lastIndexOf('.'));
-      node = graph.get(substr);
-      if(node) 
-        method = properties.substring(properties.lastIndexOf('.')+1);
-    }
-  }
+  // if(typeof properties === 'function') {
+  //   node = graph.add(properties) as GraphNode;
+  // } else if (typeof properties === 'object') {
+  //   if(!(properties instanceof GraphNode)) {
+  //     node = graph.add(properties) as GraphNode;
+  //   }
+  // } else if (typeof properties === 'string') {
+  //   node = graph.get(properties);
+  //   if(!node && properties.includes('.')) {
+  //     let substr = properties.substring(0,properties.lastIndexOf('.'));
+  //     node = graph.get(substr);
+  //     if(node) 
+  //       method = properties.substring(properties.lastIndexOf('.')+1);
+  //   }
+  // }
 
 
-  if(!node) return false;
+  // if(!node) return false;
 
-  if(method) {
-    nodeMethod = node[method];
-  }
+  // if(method) {
+  //   nodeMethod = node[method];
+  // }
 
-  if(!tag) {
-    tag = node.__node.tag;
-    if(method) tag += '.' + method;
-  }
+  // if(!tag) {
+  //   tag = node.__node.tag;
+  //   if(method) tag += '.' + method;
+  // }
+
+  const tag = node.__node.tag;
+  const name = `${tag}/${property}`
 
   const NewNode = function() {
     let self = this as LGraphNode;
-    self.title = tag as string;
+    self.title = name;
+
+    // for (let key in self) this.addInput(key)
 
     let subscriptions = {};
 
@@ -196,7 +238,9 @@ function registerNode(
 
   } as any as (new () => LGraphNode);
 
-  LiteGraph.registerNodeType(tag, NewNode); //now registered in system
+  LiteGraph.registerNodeType(name, NewNode); //now registered in system
+
+  return name
 
 }
 
