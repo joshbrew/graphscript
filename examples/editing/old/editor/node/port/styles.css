@@ -1,0 +1,37 @@
+:host * {
+    box-sizing: border-box;
+  }
+
+  :host {
+    pointer-events: none;
+      width: 100%;
+      display: flex; 
+      align-items: center;
+      justify-content: space-between;
+      font-size:7px;
+  }
+
+  .input {
+    transform: translateX(-50%);
+    left: 0;
+  }
+
+  .output {
+    transform: translateX(50%);
+    right: 0;
+  }
+
+  .output.hidden {
+    pointer-events: none;
+    background: transparent;
+  }
+
+  .port {
+    pointer-events: all;
+    width: 10px;
+    height: 10px;
+    background: gray;
+    cursor: pointer;
+    border-radius: 10px;
+    z-index: -1;
+  }

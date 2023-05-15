@@ -1,0 +1,10 @@
+.point {
+    width: 1px;
+    height: 1px;
+    border: 10px solid transparent;
+    border-left-color: greenyellow;
+    position: relative;
+}
+.point:hover {
+    border-left-color: yellow;
+}

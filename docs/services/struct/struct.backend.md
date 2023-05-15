@@ -1,0 +1,3 @@
+The struct backend works either in nodejs or in-browser. We worked with mongodb for nodejs, so there are a lot of callbacks built in, but running the backend in local storage mode will avoid use of these callbacks and you can use it identically, minus some of the querying features but we have most of our systems hand-built for our own needs anyway.
+
+Need to test again after the latest overhauls...

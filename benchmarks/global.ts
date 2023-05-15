@@ -1,0 +1,1 @@
+export const nTimes = 1000

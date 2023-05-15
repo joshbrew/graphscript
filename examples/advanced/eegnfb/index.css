@@ -1,0 +1,64 @@
+body {
+    overflow-x:hidden;
+    overflow-y:scroll;
+    background-color: black;
+    color:white;
+    font-family: Consolas,monaco,monospace; 
+    font-size:10px; 
+}
+
+input {
+    font-family: Consolas,monaco,monospace; 
+    font-size:10px; 
+}
+
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.0);
+    border-radius: 5px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.25);
+    border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,1);
+}
+
+
+
+.chartcontrols {
+    background-color:rgba(0,0,0,0.7)
+}
+
+.chartcontrols table {
+    font-size:10px;
+}
+
+.chartcontrols input[type='text'] {
+    width:50px;
+}
+
+.chartcontrols input[type='number'] {
+    width:50px;
+}
+
+/* .chartcontrols tr {
+} */
+
+.chartcontrols td {
+    border-right: 1px solid white;
+    text-align: right;
+}
+.chartcontrols th {
+    border-right: 1px solid white;
+    text-align: center;
+} 
