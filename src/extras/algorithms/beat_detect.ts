@@ -153,7 +153,7 @@ export const beat_detect = {
                                                 this.valley_distances[this.valley_distances.length-1].peak0, 
                                     height1:this.peak_distances[this.peak_distances.length-1].peak1 - 
                                                 this.valley_distances[this.valley_distances.length-1].peak1
-                                }
+                                };
 
                                 this.beats.push(beat);
 
@@ -174,7 +174,8 @@ export const beat_detect = {
                                     bpm, 
                                     height0:this.peak_distances[this.peak_distances.length-2].peak0-this.valley_distances[this.valley_distances.length-2].peak0,
                                     height1:this.peak_distances[this.peak_distances.length-2].peak1-this.valley_distances[this.valley_distances.length-2].peak1
-                                }
+                                }; 
+                                if(Array.isArray(beat.timestamp)) beat.timestamp = beat.timestamp[0]; //some kind of bug 
 
                                 this.beats.push(beat);
 
@@ -203,19 +204,27 @@ export const beat_detect = {
             if(('ir' in data) && !Array.isArray(data.red)) return pass((data.red  as number)+(data.ir as number),data.timestamp);
             
             let result;
-            if(data.ir) result = (data.red as number[]).map((v,i) => { return pass(v+(data as any).ir[i],(data.timestamp as number[])[i]); });
-            else result = (data.red as number[]).map((v,i) => { return pass(v,(data.timestamp as number[])[i]); });
+            if(data.ir) result = (data.red as number[]).map((v,i) => { 
+                return pass(v+(data as any).ir[i],(data.timestamp as number[])[i]); 
+            }).filter(v => {if(v) return true;});
+            else result = (data.red as number[]).map((v,i) => { 
+                return pass(v,(data.timestamp as number[])[i]); 
+            }).filter(v => {if(v) return true;});
             
-            return result;
+            return result; //will return an array, defined results will be 
 
         } else if (data.raw) {
             if(!Array.isArray(data.raw)) return pass(data.raw,data.timestamp);
-            let result = data.raw.map((v,i) => { return pass(v,(data.timestamp as number[])[i]); });
-            return result;
+            let result = data.raw.map((v,i) => { 
+                return pass(v,(data.timestamp as number[])[i]); 
+            }).filter(v => {if(v) return true;});
+            return result; //will return an array
         } else if (Array.isArray(data.heg)) {
             if(!Array.isArray(data.heg)) return pass(data.heg,data.timestamp);
-            let result = data.heg.map((v,i) => { return pass(v,(data.timestamp as number[])[i]); });
-            return result;
+            let result = data.heg.map((v,i) => { 
+                return pass(v,(data.timestamp as number[])[i]); 
+            }).filter(v => {if(v) return true;});
+            return result; //will return an array
 
         }
         //returns a beat when one is detected with the latest data passed in, else returns undefined
