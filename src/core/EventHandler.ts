@@ -18,7 +18,10 @@ export class EventHandler {
         }
         if(this.triggers[statesubKey]) {
             let run = (fn) => { fn(updateObj); }
-            this.triggers[statesubKey].forEach((v) => {run(v.onchange);});
+            const l = this.triggers[statesubKey].length;
+            for (let i = l - 1; i >= 0; i--) {
+                run(this.triggers[statesubKey][i].onchange); //go in reverse in case a trigger pops
+            }
         }
         
         return this.data;
@@ -29,8 +32,11 @@ export class EventHandler {
     }
     triggerEvent = (key, value) => {
         if(this.triggers[key]) {
-            let fn = (obj) => obj.onchange(value);//, this.triggers[key]);
-            this.triggers[key].forEach(fn);
+            let fn = (obj) => { obj.onchange(value); };
+            const l = this.triggers[key].length;
+            for (let i = l - 1; i >= 0; i--) {
+                fn(this.triggers[key][i]); //go in reverse in case a trigger pops
+            }
         }
     }
     subscribeState = (onchange:(res:any)=>void) => { 
