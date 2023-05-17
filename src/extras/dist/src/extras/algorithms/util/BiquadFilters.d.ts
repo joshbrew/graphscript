@@ -1,4 +1,4 @@
-export type FilterSettings = {
+export declare type FilterSettings = {
     sps: number;
     useSMA4?: boolean;
     useNotch50?: boolean;

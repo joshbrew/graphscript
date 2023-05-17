@@ -1,7 +1,7 @@
-export type ArbitraryObject = {
+export declare type ArbitraryObject = {
     [x: string | number]: any;
 };
-export type Struct = {
+export declare type Struct = {
     _id: string;
     structType?: string | number;
     timestamp?: string | number;
@@ -12,15 +12,15 @@ export type Struct = {
     };
     [key: string]: any;
 };
-export type DataTypes = 'byTime' | 'notes' | 'events' | 'sleep' | 'food' | 'rx' | 'hr' | 'ppg' | 'hrv' | 'ecg' | 'emg' | 'eeg' | 'fnirs' | string | number | undefined;
-export type StructTypes = LooseStructTypes | DataTypes | 'data' | 'struct' | string | number | undefined;
-export type LooseStructTypes = 'coherence' | 'imu' | 'eyetracker' | 'profile' | 'authorization' | 'group' | 'event' | 'chatroom' | 'comment' | 'notification' | 'schedule' | 'date' | string | number | undefined;
-export type Data = {
+export declare type DataTypes = 'byTime' | 'notes' | 'events' | 'sleep' | 'food' | 'rx' | 'hr' | 'ppg' | 'hrv' | 'ecg' | 'emg' | 'eeg' | 'fnirs' | string | number | undefined;
+export declare type StructTypes = LooseStructTypes | DataTypes | 'data' | 'struct' | string | number | undefined;
+export declare type LooseStructTypes = 'coherence' | 'imu' | 'eyetracker' | 'profile' | 'authorization' | 'group' | 'event' | 'chatroom' | 'comment' | 'notification' | 'schedule' | 'date' | string | number | undefined;
+export declare type Data = {
     type: string;
     data: any;
     timestamp?: string | number;
 };
-export type DataStruct = {
+export declare type DataStruct = {
     title?: string;
     author?: string;
     expires: boolean | number | string;
@@ -28,7 +28,7 @@ export type DataStruct = {
     data: Data[];
     tag?: string | number;
 } & Struct;
-export type EventStruct = {
+export declare type EventStruct = {
     event: string;
     author: string;
     startTime: string;
@@ -39,7 +39,7 @@ export type EventStruct = {
     users: {};
     tag?: string | number;
 } & Struct;
-export type ChatroomStruct = {
+export declare type ChatroomStruct = {
     message: string;
     topic: string;
     author: string;
@@ -51,7 +51,7 @@ export type ChatroomStruct = {
     videoChatActive: boolean;
     tag?: string | number;
 } & Struct;
-export type CommentStruct = {
+export declare type CommentStruct = {
     author: string;
     replyTo: string;
     attachments: Data | string | number[];
@@ -59,26 +59,26 @@ export type CommentStruct = {
     users: {};
     tag?: string | number;
 } & Struct;
-export type NotificationStruct = {
+export declare type NotificationStruct = {
     note: string;
     parentUserId: string;
     tag?: string | number;
 } & Struct;
-export type ScheduleStruct = {
+export declare type ScheduleStruct = {
     title: string;
     author: string;
     attachments: Data | string | number[];
     dates: string[];
     tag?: string | number;
 } & Struct;
-export type DateStruct = {
+export declare type DateStruct = {
     timeSet: string | number;
     notes: string;
     recurs: number | string | boolean;
     attachments: Data | string | number[];
     tag?: string | number;
 } & Struct;
-export type ProfileStruct = {
+export declare type ProfileStruct = {
     username?: string;
     name?: string;
     firstName?: string;
@@ -98,7 +98,7 @@ export type ProfileStruct = {
     refreshToken?: string;
     tag?: string | number;
 } & Struct;
-export type AuthorizationStruct = {
+export declare type AuthorizationStruct = {
     authorizedId: string;
     authorizedName: string;
     authorizerId: string;
@@ -112,7 +112,7 @@ export type AuthorizationStruct = {
     associatedAuthId: string | number;
     tag?: string | number;
 } & Struct;
-export type GroupStruct = {
+export declare type GroupStruct = {
     name: string;
     details: string;
     admins: {};
@@ -121,9 +121,9 @@ export type GroupStruct = {
     users: {};
     tag?: string | number;
 } & Struct;
-type FreqBand = [number[], number[]];
-export type FrequencyBandNames = 'scp' | 'delta' | 'theta' | 'alpha1' | 'alpha2' | 'beta' | 'lowgamma' | 'highgamma';
-export type FrequencyBandsStruct = {
+declare type FreqBand = [number[], number[]];
+export declare type FrequencyBandNames = 'scp' | 'delta' | 'theta' | 'alpha1' | 'alpha2' | 'beta' | 'lowgamma' | 'highgamma';
+export declare type FrequencyBandsStruct = {
     scp: FreqBand | [];
     delta: FreqBand | [];
     theta: FreqBand | [];
@@ -133,7 +133,7 @@ export type FrequencyBandsStruct = {
     lowgamma: FreqBand | [];
     highgamma: FreqBand | [];
 };
-export type EEGStruct = {
+export declare type EEGStruct = {
     position: {
         x: number;
         y: number;
@@ -151,7 +151,7 @@ export type EEGStruct = {
     startTime: number | string;
     tag?: string | number;
 } & Struct;
-export type CoherenceStruct = {
+export declare type CoherenceStruct = {
     x0: number;
     y0: number;
     z0: number;
@@ -166,7 +166,7 @@ export type CoherenceStruct = {
     startTime: number | string;
     tag?: string | number;
 } & Struct;
-export type FNIRSStruct = {
+export declare type FNIRSStruct = {
     position: {
         x: number;
         y: number;
@@ -198,7 +198,7 @@ export type FNIRSStruct = {
     startTime: number | string;
     tag?: string | number;
 } & Struct;
-export type IMUStruct = {
+export declare type IMUStruct = {
     Ax: number[];
     Ay: number[];
     Az: number[];
@@ -208,7 +208,7 @@ export type IMUStruct = {
     startTime: number | string;
     tag?: string | number;
 } & Struct;
-export type EyeTrackerStruct = {
+export declare type EyeTrackerStruct = {
     count: number;
     times: number[];
     x: number[];
@@ -218,7 +218,7 @@ export type EyeTrackerStruct = {
     startTime: number | string;
     tag?: string | number;
 } & Struct;
-export type ECGStruct = {
+export declare type ECGStruct = {
     count: number;
     times: number[];
     raw: number[];
@@ -228,7 +228,7 @@ export type ECGStruct = {
     startTime: number | string;
     tag?: string | number;
 } & Struct;
-export type PPGStruct = FNIRSStruct;
-export type HRVStruct = ECGStruct;
-export type EMGStruct = EEGStruct;
+export declare type PPGStruct = FNIRSStruct;
+export declare type HRVStruct = ECGStruct;
+export declare type EMGStruct = EEGStruct;
 export {};

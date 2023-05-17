@@ -1,11 +1,11 @@
 import { GraphNode, GraphNodeProperties } from '../../core/Graph';
 import { Service, ServiceOptions } from '../Service';
-export type EntityProps = {
+export declare type EntityProps = {
     components: {
         [key: string]: any;
     };
 } & (GraphNodeProperties | GraphNode);
-export type SystemProps = (GraphNodeProperties & {
+export declare type SystemProps = (GraphNodeProperties & {
     __operator: (entities: {
         [key: string]: Entity;
     }) => any;
@@ -16,13 +16,13 @@ export type SystemProps = (GraphNodeProperties & {
     };
     setupEntity: (entity: Entity) => Entity;
 }) | GraphNode;
-export type Entity = {
+export declare type Entity = {
     components: {
         [key: string]: any;
     };
     [key: string]: any;
 } & GraphNode;
-export type System = {
+export declare type System = {
     __operator: (entities: {
         [key: string]: Entity;
     }) => any;
@@ -40,7 +40,7 @@ export type System = {
     };
     entityKeys: string[];
 } & GraphNode;
-export type ECSOptions = {
+export declare type ECSOptions = {
     entities: {
         [key: string]: EntityProps;
     };
