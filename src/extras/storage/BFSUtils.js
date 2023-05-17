@@ -271,7 +271,8 @@ export const listFiles = async (dir='data', onload=(directory)=>{}) => {
 
 
 
-export const getFileSize = async (path='data',onread=(size)=>{console.log(size);}) => {
+export const getFileSize = async (path='data',onread=(size)=>{}) => {
+
     if(!fsInited) await initFS([path.split('/')[0]]);
     else await dirExists(fs,path.split('/')[0]);
 
@@ -289,7 +290,7 @@ export const getFileSize = async (path='data',onread=(size)=>{console.log(size);
 }
 
 
-export const getCSVHeader = async (path='data', onopen=(header, filename)=>{console.log(header,filename);}) => {
+export const getCSVHeader = async (path='data', onopen=(header, filename)=>{}) => {
     
     if(!fsInited) await initFS([path.split('/')[0]]);
     else await dirExists(fs,path.split('/')[0]);
@@ -303,7 +304,7 @@ export const getCSVHeader = async (path='data', onopen=(header, filename)=>{cons
             fs.read(fd,65535,0,'utf-8',(er,output,bytesRead) => {  //could be a really long header for all we know
                 if (er) {
                     reject(er)
-                    return
+                    return;
                 }
                 if(bytesRead !== 0) {
                     let data = output.toString();
@@ -333,7 +334,6 @@ export const getCSVHeader = async (path='data', onopen=(header, filename)=>{cons
                     return
                 }
                 let filesize = stats.size;
-                console.log(filesize)
                 fs.open(path, 'r', (e, fd) => {
                     if (e) {
                         reject(e);
@@ -349,7 +349,7 @@ export const getCSVHeader = async (path='data', onopen=(header, filename)=>{cons
                                 reject(e);
                                 return
                             }
-                            if (bytesRead !== 0) CSV.saveCSV(output.toString(), path);
+                            if (bytesRead !== 0) CSV.saveCSV(output.toString(), path.split('/')[1]);
                             fs.close(fd);
                             resolve(true);
                         });
@@ -365,7 +365,7 @@ export const getCSVHeader = async (path='data', onopen=(header, filename)=>{cons
                                         return
                                     }
                                     if (bytesRead !== 0) {
-                                        CSV.saveCSV(output.toString(), path + "_" + chunk);
+                                        CSV.saveCSV(output.toString(), path.split('/')[1] + "_" + chunk);
                                         i += maxFileSize;
                                         chunk++;
                                         writeChunkToFile();
@@ -389,24 +389,32 @@ export const getCSVHeader = async (path='data', onopen=(header, filename)=>{cons
 
 //iterate asynchronously over a file (or a specific range of a file) and run a function on the data
 export async function processCSVChunksFromDB(path='data', onData=(csvdata,start,end,size)=>{}, maxChunkSize=10000, start=0, end='end', options={}) {
+
     let size = await getFileSize(path);
 
     let partition = start;
-    let processPartition = () => {
-        let endChunk = partition+maxChunkSize;
-        if(endChunk > size) {
-            endChunk = size;
+
+    return new Promise((res,rej) => {
+        let processPartition = () => {
+                let endChunk = partition+maxChunkSize;
+                if(endChunk > size) {
+                    endChunk = size;
+                }
+                readCSVChunkFromDB(path,partition,endChunk,options).then(async (result) => {
+                    await onData(result,partition,endChunk,size);
+                    console.log(partition,endChunk,size);
+                    partition = endChunk;
+                    if(partition !== size) {
+                        processPartition();
+                    } else {
+                        res(true);
+                    }
+                }).catch(rej);
+            
         }
-        if(endChunk > end)
-        readCSVChunkFromDB(path,partition,endChunk,options).then((res) => {
-            onData(res,partition,endChunk,size);
-            partition = endChunk;
-            if(end !== size) {
-                processPartition();
-            }
-        })
-    };
-   
+
+        processPartition();
+    });
 }
 
 //returns an object with the headers and correctly sized outputs (e.g. single values or arrays pushed in columns)
@@ -415,7 +423,6 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end', option
     else await dirExists(fs,path.split('/')[0]);
 
     const transpose = options.transpose || false;
-
 
     let head = await getCSVHeader(path);
 
@@ -441,16 +448,17 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end', option
         end = size;
     }
 
-    let data = (await readFileChunk(path,start,end)).split('\n').slice(1, -1) // exclude header and last pseudoline
+
+    let data = (await readFileChunk(path,start,end))?.split('\n').slice(1, -1) // exclude header and last pseudoline
 
     let preprocess = (value) => {
         if (options.json) {
             try { value = JSON.parse(value) } catch {}
         } 
-        return value
+        return value;
     }
     
-    data.forEach((r,i) => {
+    if(data) data.forEach((r,i) => {
         let row = r.split(',');
         if (transpose) {
             const entry = {}
@@ -467,7 +475,6 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end', option
 
 
     return results;
-
 }
 
 let directories = {};
@@ -480,11 +487,11 @@ export const dirExists = async (fs, directory) => {
             fs.exists(`/${directory}`, (exists) => {
                 if (exists) {
                     directories[directory] = 'exists'
-                    console.log(`/${directory} exists!`)
+                    //console.log(`/${directory} exists!`)
                     resolve();
                 }
                 else if (directories[directory] === 'creating'){
-                    console.log(directory + ' is still being created.')
+                    //console.log(directory + ' is still being created.')
                     resolve();
                 }
                 else {

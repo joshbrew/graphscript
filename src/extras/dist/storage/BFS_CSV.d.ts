@@ -4,6 +4,9 @@ export declare const appendCSV: (newData: {
     [key: string]: number | number[];
 }, filename: string, header?: string[], options?: {
     json?: boolean;
+    toFixed?: number;
+    bufferSize?: number;
+    xIncrement?: number;
 }) => Promise<boolean>;
 export declare const updateCSVHeader: (header: any[], filename: string) => void;
 export declare const createCSV: (filename: string, header: string[], toFixed?: number, bufferSize?: number, xIncrement?: number) => Promise<unknown>;
@@ -13,6 +16,9 @@ export declare const csvRoutes: {
         [key: string]: number | number[];
     }, filename: string, header?: string[], options?: {
         json?: boolean;
+        toFixed?: number;
+        bufferSize?: number;
+        xIncrement?: number;
     }) => Promise<boolean>;
     updateCSVHeader: (header: any[], filename: string) => void;
     createCSV: (filename: string, header: string[], toFixed?: number, bufferSize?: number, xIncrement?: number) => Promise<unknown>;

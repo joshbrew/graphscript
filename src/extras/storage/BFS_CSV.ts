@@ -40,7 +40,10 @@ export const appendCSV = async (
     filename:string,
     header?:string[],
     options?: {
-        json?:boolean 
+        json?:boolean,
+        toFixed?:number,
+        bufferSize?:number,
+        xIncrement?:number
     }
 ) => {
 
@@ -63,9 +66,9 @@ export const appendCSV = async (
             lastX:undefined as any,
             buffer:'',
             buffered:0, //buffer numbers to be appended?
-            bufferSize:0,
-            toFixed:0,
-            xIncrement:undefined
+            bufferSize:options?.bufferSize ? options.bufferSize : 0,
+            toFixed:options?.toFixed ? options.toFixed : 0,
+            xIncrement:options?.xIncrement ? options.xIncrement : 0
         };
         csv = CSV_REFERENCE[filename];
         
@@ -86,7 +89,6 @@ export const appendCSV = async (
         if(csv.header.indexOf(key) > -1 && value && Array.isArray(value) && value?.length > maxLen) maxLen = value?.length;
     }
     
-
     let x;
     
     if(csv.xIncrement) {
@@ -131,10 +133,10 @@ export const appendCSV = async (
         }
     } else if (maxLen > 1 && (x as any)?.length !== maxLen) {
         if(!Array.isArray(x) || x.length === 1) {
-            x = interpolerp(csv.lastX,x,maxLen); //we are gonna upsample x to the maximum size array that's been passed in
+            x = interpolerp(csv.lastX,x,maxLen,true); //we are gonna upsample x to the maximum size array that's been passed in
             x.shift();
         } else {
-            x = interpolerp(x[0],x[x.length-1],maxLen); //upsample using new timestamps 
+            x = interpolerp(x[0],x[x.length-1],maxLen,true); //upsample using new timestamps 
             x.shift();
         }
     }
@@ -220,6 +222,7 @@ export const appendCSV = async (
     csv.lastX = toAppend[toAppend.length-1][0]; //reference the last array written as the latest data for if we don't pass timestamps
 
     //okay we are ready to append arrays to the file
+
     if(csv.bufferSize) {
         csv.buffer += csvProcessed;
         if(csv.buffered > csv.bufferSize) {
@@ -295,32 +298,37 @@ export const createCSV = (
     xIncrement?:number //fixed time increment for newlines?
 ) => {
 
-    if(header?.indexOf('timestamp') > 1) {header.splice(header.indexOf('timestamp'),1); header.unshift('timestamp')}
-    if((header?.[0].toLowerCase().includes('time') || header?.[0].toLowerCase().includes('unix')) && header[1] !== 'localized') {
-        header.splice(1,0,'localized') //toISOLocal
+    if(!CSV_REFERENCE[filename]) {
+        if(header?.indexOf('timestamp') > 1) {header.splice(header.indexOf('timestamp'),1); header.unshift('timestamp')}
+        if((header?.[0].toLowerCase().includes('time') || header?.[0].toLowerCase().includes('unix')) && header[1] !== 'localized') {
+            header.splice(1,0,'localized') //toISOLocal
+        }
+    
+        CSV_REFERENCE[filename] = {
+            header,
+            lastX:header[1] === 'localized' ? Date.now() : 0,
+            bufferSize,
+            buffer:'',
+            buffered:0,
+            toFixed,
+            xIncrement
+        };
+    
+        //overwrite existing files
+       return new Promise((res,rej) => {
+            exists(filename).then((doesExist) => {
+                if(!doesExist) { //try not to overwrite
+                    writeFile(
+                        filename,
+                        CSV_REFERENCE[filename].header? CSV_REFERENCE[filename].header.join(',')+'\n' : '',
+                        (written:boolean) => {
+                            res(written);
+                        }
+                    ).catch(rej);
+                }
+            });
+        });
     }
-
-    CSV_REFERENCE[filename] = {
-        header,
-        lastX:header[1] === 'localized' ? Date.now() : 0,
-        bufferSize,
-        buffer:'',
-        buffered:0,
-        toFixed,
-        xIncrement
-    };
-
-    //overwrite existing files
-    return new Promise((res,rej) => {
-        writeFile(
-            filename,
-            CSV_REFERENCE[filename].header? CSV_REFERENCE[filename].header.join(',')+'\n' : '',
-            (written:boolean) => {
-                res(written);
-            }
-        ).catch(rej);
-    });
-
 }
 
 
