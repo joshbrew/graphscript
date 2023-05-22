@@ -1,7 +1,6 @@
 import {CSV} from './csv.js'
 
 export let fsInited = false;
-let initPromise;
 import * as BrowserFS from 'browserfs'
 export const fs = BrowserFS.BFSRequire('fs');
 const BFSBuffer = BrowserFS.BFSRequire('buffer').Buffer;
@@ -11,6 +10,7 @@ const BFSBuffer = BrowserFS.BFSRequire('buffer').Buffer;
 //Generic reimplementation of reading/writing buffered objects from/to CSVs and IndexedDB
 
 
+let initPromise;
 // ----------------------------- Generic Functions for BrowserFS -----------------------------
 export const initFS = async (
     dirs = ['data'],
@@ -21,7 +21,6 @@ export const initFS = async (
     if (fsInited) {
         if(initPromise) {
             await initPromise;
-            initPromise = undefined;
         }
         return true;
     }
@@ -487,7 +486,7 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end', option
 let directories = {};
 export const dirExists = async (fs, directory) => {
 
-    if(initPromise) await initPromise;
+    if(!fsInited) await initFS([directory]);
     return await new Promise((resolve, reject) => {
         if(!directory) reject(false);
         if (directories[directory] === 'exists' || directories[directory] === 'created'){
@@ -506,7 +505,7 @@ export const dirExists = async (fs, directory) => {
                     resolve();
                 }
                 else {
-                    console.log('creating ' + `/${directory}`, fs);
+                    //console.log('creating ' + `/${directory}`, fs);
                     directories[directory] = 'creating';
                     fs.mkdir(`/${directory}`, 1, (err) => {
                         if (err) {
