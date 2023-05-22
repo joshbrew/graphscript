@@ -279,7 +279,7 @@ export class HTTPbackend extends Service {
             if(options.pages) {
                 getPageOptions.call(this, url, received, options.pages, request, response, options.port);
             } else received.route = url;
-
+            
             this.receive(received); 
         } //default requestListener
 
@@ -959,6 +959,7 @@ function getPageOptions(url, received, pages, request, response, port) {
             if(pages[key]) { // e.g. /* or home/*
                 pageOptions = pages[key];
                 received.route = key;
+                request.url = key;
             } else { 
                 // e.g. /home with /* specified, or /home/* etc.
                 let spl = url2.split('/'); //split the modified string so the beginning is a blank string
@@ -967,10 +968,18 @@ function getPageOptions(url, received, pages, request, response, port) {
                 if(pages[key]) {
                     pageOptions = pages[key];
                     received.route = key;
+                    request.url = key;
                 } 
             }
-        } else received.route = url2;
-    } else received.route = url;
+        } else {
+            received.route = url2;
+            request.url = url2;
+            
+        }
+    } else {
+        received.route = url;
+        request.url = url;
+    }
     if(typeof pageOptions === 'object') {
         if((pageOptions as any).redirect) {
             url = (pageOptions as any).redirect;

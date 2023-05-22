@@ -1,6 +1,6 @@
 {
     "name": "graphscript-services.storage",
-    "version": "0.2.125",
+    "version": "0.2.126",
     "description": "Extra services for graphscript.",
     "main": "dist/index.storage.services.js",
     "module": "dist/index.storage.services.esm.js",

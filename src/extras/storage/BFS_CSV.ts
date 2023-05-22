@@ -255,10 +255,10 @@ export const appendCSV = async (
 
             return r;
         } 
-        else return Promise.resolve(true);
+        else return await Promise.resolve(true);
     }
     else {
-        return new Promise((res,rej) => {
+        return await new Promise((res,rej) => {
             exists(filename).then((fileExists) => {
                 if(!fileExists) {
                     writeFile(
@@ -278,7 +278,7 @@ export const appendCSV = async (
                     );
                 }
             });
-        }) as Promise<boolean>
+        }) as any as Promise<boolean>
 
     } //e.g. generalize this for other data types
 }

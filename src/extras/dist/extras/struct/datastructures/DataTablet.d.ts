@@ -44,6 +44,6 @@ export declare class DataTablet {
     getDataByTimeRange(begin: number, end: number, type: string, ownerId: string): ArbitraryObject;
     getDataByType(type: string, timestamp: number, ownerId: string): any;
     filterSleepResults(unfiltered?: ArbitraryObject): ArbitraryObject;
-    sortObjectByPropName(object: ArbitraryObject): {};
+    sortObjectByPropName(object: ArbitraryObject): ArbitraryObject;
     checkRollover(collection: string, limit?: number): boolean;
 }

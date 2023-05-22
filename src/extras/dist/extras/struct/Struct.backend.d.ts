@@ -4,10 +4,10 @@ import { Service } from "../../services/Service";
 import { User } from '../../services/router/Router';
 export declare const toObjectId: (str: any) => any;
 export declare const getStringId: (mongoid: string | ObjectId) => any;
-declare type CollectionsType = {
+type CollectionsType = {
     [x: string]: CollectionType;
 };
-declare type CollectionType = any | {
+type CollectionType = any | {
     instance?: any;
     reference: {
         [key: string]: any;
