@@ -1348,7 +1348,7 @@ export class StructBackend extends Service {
                     });
                 }
                 if(struct.ownerId !== user._id as string && this.users[struct.ownerId]) {
-                    this.users[struct.ownerId].sendAll({route:'structDeleted',args:getStringId(struct._id)})
+                    this.users[struct.ownerId]?.sendAll({route:'structDeleted',args:getStringId(struct._id)})
                 }
             }
         }));
@@ -1369,7 +1369,7 @@ export class StructBackend extends Service {
 
         await this.collections.profile.instance.deleteOne({ id: userId });
 
-        if(getStringId(user._id as string) !== userId && this.users[userId]) this.users[userId].sendAll({route:'structDeleted',args:userId});
+        if(getStringId(user._id as string) !== userId && this.users[userId]) this.users[userId]?.sendAll({route:'structDeleted',args:userId});
 
         //now delete their authorizations and data too (optional?)
         return true; 
@@ -1386,7 +1386,7 @@ export class StructBackend extends Service {
             }
             if(s.users) {
                 Object.keys(s.users).forEach((u) => { 
-                    this.users[s.authorizerId].sendAll({route:'structDeleted',args:getStringId(s._id)}); 
+                    this.users[s.authorizerId]?.sendAll({route:'structDeleted',args:getStringId(s._id)}); 
                 });
             }
             await this.collections.group.instance.deleteOne({ _id:toObjectId(groupId) });
@@ -1407,8 +1407,8 @@ export class StructBackend extends Service {
             if(s.associatedAuthId) {
                 if(this.debug) console.log(s);
                 await this.collections.authorization.instance.deleteOne({ _id: toObjectId(s.associatedAuthId) }); //remove the other auth too 
-                if(s.authorizerId && s.authorizerId !== getStringId(user._id as string)) this.users[s.authorizerId].sendAll({route:'structDeleted',args:getStringId(s._id)});
-                else if (s.authorizedId && s.authorizedId !== getStringId(user._id as string)) this.users[s.authorizerId].sendAll({route:'structDeleted',args:getStringId(s._id)});
+                if(s.authorizerId && s.authorizerId !== getStringId(user._id as string)) this.users[s.authorizerId]?.sendAll({route:'structDeleted',args:getStringId(s._id)});
+                else if (s.authorizedId && s.authorizedId !== getStringId(user._id as string)) this.users[s.authorizerId]?.sendAll({route:'structDeleted',args:getStringId(s._id)});
             }
             await this.collections.authorization.instance.deleteOne({ _id: toObjectId(authId) });
             return true;
