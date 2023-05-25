@@ -155,7 +155,7 @@ export const parseCSVData = (
     
     }
 ) => {
-    let lines = data.split('\r\n');
+    let lines = data.split('\n');
 
     if(!head) head = lines[0];
     lines.shift(); 
