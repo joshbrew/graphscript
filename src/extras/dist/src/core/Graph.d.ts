@@ -1,6 +1,6 @@
 import { EventHandler } from "./EventHandler";
 export declare const state: EventHandler;
-export declare type GraphNodeProperties = {
+export type GraphNodeProperties = {
     __props?: Function | {
         [key: string]: any;
     } | GraphNodeProperties | GraphNode;
@@ -27,11 +27,11 @@ export declare type GraphNodeProperties = {
     __args?: any[];
     [key: string]: any;
 };
-export declare type Loader = (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, properties: GraphNodeProperties, key: string) => void;
-export declare type Roots = {
+export type Loader = (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, properties: GraphNodeProperties, key: string) => void;
+export type Roots = {
     [key: string]: any;
 };
-export declare type GraphOptions = {
+export type GraphOptions = {
     roots?: Roots;
     loaders?: {
         [key: string]: Loader | {
@@ -44,13 +44,13 @@ export declare type GraphOptions = {
     mapGraphs?: false;
     [key: string]: any;
 };
-export declare type argObject = {
+export type argObject = {
     __input?: string | ((...args: any[]) => any);
     __callback: string | ((...args: any[]) => any);
     __args?: any[];
     __output?: string | argObject | ((...args: any[]) => any);
 };
-export declare type Listener = {
+export type Listener = {
     node: GraphNode;
     graph: Graph;
     source?: string;

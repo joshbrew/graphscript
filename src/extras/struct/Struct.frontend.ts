@@ -266,8 +266,8 @@ export class StructFrontend extends Service {
         this.checkForNotifications();
     }
 
-    structDeleted= (id) => {
-        this.deleteLocalData(id); //remove local instance
+    structDeleted = (struct:{_id:string,structType:string}) => {
+       this.deleteLocalData([struct]); //remove local instance
     }
 
     //just a customizable callback to preserve the default while adding your own
@@ -590,8 +590,7 @@ export class StructFrontend extends Service {
         if(this.currentUser?.request) {
             if(!authorizationId) return;
             this.deleteLocalData(authorizationId);
-            
-            let res = (await this.currentUser.request({route:'deleteAuthorization', args:[this.currentUser._id, authorizationId, this.currentUser.accessToken ? this.currentUser.accessToken : 0]}))
+            let res = (await this.currentUser.request({route:'deleteAuthorization', args:[this.currentUser._id, authorizationId, this.currentUser.accessToken ? this.currentUser.accessToken : 0]}));
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -903,7 +902,7 @@ export class StructFrontend extends Service {
     }
 
     deleteStruct(struct) {
-        if(typeof struct === 'string') struct = this.getLocalData(struct); //get the struct if an id was supplied
+        if(typeof struct === 'string') struct = this.getLocalData(undefined,{_id:struct}); //get the struct if an id was supplied
         if(!struct) throw new Error('Struct not supplied')
         if(!struct.structType || !struct._id) return false;
         this.tablet.collections.get(struct.structType).delete(struct._id);

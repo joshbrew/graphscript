@@ -10,6 +10,9 @@
 For happy code!
 </p>
 
+## This API is still under construction
+There's plenty of working tools available already. However, we are randomly breaking/finding old broken code and improving things constantly as we push out a model we feel can be competitive. 100% FOSS!
+
 **GraphScript** is a highly customizable, high performance library for creating complex full stack software and library architectures. It's based around graphs hierarchies, event systems, and microservices, with an intuitive composition and node/function indexing tree system for rapid development.
 
 Check out the code in [examples](./examples) for very clear, compelling implementatons that flex our rapidly evolving feature sets. Please join our small cabal of open source contributors and help us grow this library as an alternative full stack framework. 
@@ -75,12 +78,15 @@ This forms a microservices layer on top of the graph system. It makes it easier 
  - `graphscript-services.gpu`: Experimental `gpu.js` plugin. ~500kb, use it with workers for best results.
  - `graphscript-services.storage`: Some BrowserFS, CSV, and Google Drive utilities. Not very complete.
 
+### Contributing
+
+Want to see this API improve faster? Please contribute or create issues and offer perspective. This repo is mostly a labor of love by Josh, with Garrett swooping in to reality check the actual utility of it from time to time. We want this to API to give you open web super powers, so we can all move on to building much more interesting end products as a community, as well as get more students, engineers, and researchers working in a collaborative development environment. This is the future! Down with knowledge and tool hoarding!
 
 ### See also:
 - [`device-decoder`](https://github.com/brainsatplay/device-decoder) - Complex Browser USB and Browser or Native Mobile Bluetooth driver set that is by-default multithreaded using our web worker system. You can use the worker system to create fully-threaded pipelines from the device codec without touching the main thread.
 
 ## Acknowledgments
-This library is maintained by [Joshua Brewster](https://github.com/joshbrew) and [Garrett Flynn](https://github.com/garrettmflynn), who use contract work and community contributions to support themselves. You can contribute to our work through [Open Collective](https://opencollective.com/brainsatplay), along with whoever joins the team eventually.
+This library is maintained by [Joshua Brewster](https://github.com/joshbrew) and [Garrett Flynn](https://github.com/garrettmflynn), who use contract work and community contributions to support themselves to build free/libre software and hardware plans. You can contribute to our work through [Open Collective](https://opencollective.com/brainsatplay), or get in touch. 
 
 ### Backers
 [Support us with a monthly donation](https://opencollective.com/brainsatplay#backer) and help us continue our activities!

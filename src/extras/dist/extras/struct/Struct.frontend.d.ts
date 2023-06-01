@@ -14,7 +14,10 @@ export declare class StructFrontend extends Service {
     setupUser: (userinfo: Partial<User>, callback?: (currentUser: any) => void) => Promise<any>;
     baseServerCallback: (data: any) => void;
     structNotification: () => void;
-    structDeleted: (id: any) => void;
+    structDeleted: (struct: {
+        _id: string;
+        structType: string;
+    }) => void;
     onResult: (data: any) => void;
     randomId(tag?: string): string;
     /**
