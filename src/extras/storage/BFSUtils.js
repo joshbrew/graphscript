@@ -408,7 +408,7 @@ export async function processCSVChunksFromDB(path='data', onData=(csvdata,start,
                 }
                 readCSVChunkFromDB(path,partition,endChunk,options).then(async (result) => {
                     await onData(result,partition,endChunk,size);
-                    console.log(partition,endChunk,size);
+                    //console.log(partition,endChunk,size);
                     partition = endChunk;
                     if(partition !== size) {
                         processPartition();
