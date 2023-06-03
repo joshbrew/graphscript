@@ -251,11 +251,13 @@ export class WebRTCfrontend extends Service {
                     }
                     ev.channel.addEventListener('message', (mev) => {
                         //console.log('message on data channel', mev);
-                        if(this.rtc[options._id].ondata) this.rtc[options._id].ondata(mev, ev.channel, this.rtc[options._id]);
+                        if(this.rtc[options._id].ondata) 
+                            this.rtc[options._id].ondata(mev, ev.channel, this.rtc[options._id]);
                     });
                 }
                 else ev.channel.addEventListener('message', (mev) => { 
-                    if( this.rtc[options._id].ondata) this.rtc[options._id].ondata(mev.data, ev.channel, this.rtc[options._id]); 
+                    if( this.rtc[options._id].ondata) 
+                        this.rtc[options._id].ondata(mev, ev.channel, this.rtc[options._id]); 
                 });
             
                 if(this.rtc[options._id].ondatachannel) this.rtc[options._id].ondatachannel(ev);
