@@ -200,6 +200,27 @@ export class WebRTCfrontend extends Service {
                 ...options
             }
 
+            const setMessageChannelHandle = (channel:RTCDataChannel) => {
+                if(!this.rtc[options._id].ondata) {
+                    this.rtc[options._id].ondata = (mev) => {
+                        //console.log('message on data channel', mev);
+                        this.receive(mev.data, channel, this.rtc[options._id]);
+                        this.setState({[options._id]:mev.data});
+                    }
+                    channel.addEventListener('message', (mev) => {
+                        //console.log('message on data channel', mev);
+                        if(this.rtc[options._id].ondata) 
+                            this.rtc[options._id].ondata(mev, channel, this.rtc[options._id]);
+                    });
+                }
+                else {
+                    channel.addEventListener('message', (mev) => { 
+                        if(this.rtc[options._id].ondata) 
+                            this.rtc[options._id].ondata(mev, channel, this.rtc[options._id]); 
+                    });
+                }
+            }
+
             if(this.rtc[options._id].channels) {
                 for(const channel in this.rtc[options._id].channels) {
                     if(this.rtc[options._id].channels[channel] instanceof RTCDataChannel) {
@@ -211,11 +232,8 @@ export class WebRTCfrontend extends Service {
                         this.rtc[options._id].channels[channel] = this.addDataChannel(rtc,channel);
                     }
 
-                    (this.rtc[options._id].channels[channel] as RTCDataChannel).addEventListener('message', (mev) => {
-                        //console.log('message on data channel', mev);
-                        this.receive(mev.data, channel, this.rtc[options._id]);
-                        this.setState({[options._id]:mev.data});
-                    });
+                    setMessageChannelHandle(this.rtc[options._id].channels[channel] as RTCDataChannel);
+
                 }
             } 
         
@@ -243,24 +261,11 @@ export class WebRTCfrontend extends Service {
 
             rtc.ondatachannel = (ev) => { 
                 this.rtc[options._id].channels[ev.channel.label] = ev.channel;
-                if(!this.rtc[options._id].ondata) {
-                    this.rtc[options._id].ondata = (mev) => {
-                        //console.log('message on data channel', mev);
-                        this.receive(mev.data, ev.channel, this.rtc[options._id]);
-                        this.setState({[options._id]:mev.data});
-                    }
-                    ev.channel.addEventListener('message', (mev) => {
-                        //console.log('message on data channel', mev);
-                        if(this.rtc[options._id].ondata) 
-                            this.rtc[options._id].ondata(mev, ev.channel, this.rtc[options._id]);
-                    });
-                }
-                else ev.channel.addEventListener('message', (mev) => { 
-                    if( this.rtc[options._id].ondata) 
-                        this.rtc[options._id].ondata(mev, ev.channel, this.rtc[options._id]); 
-                });
+                
+                setMessageChannelHandle(ev.channel);
             
-                if(this.rtc[options._id].ondatachannel) this.rtc[options._id].ondatachannel(ev);
+                if(this.rtc[options._id].ondatachannel) 
+                    this.rtc[options._id].ondatachannel(ev);
             };
 
             rtc.onicecandidate = (ev) => { if(this.rtc[options._id].onicecandidate) this.rtc[options._id].onicecandidate(ev); };
