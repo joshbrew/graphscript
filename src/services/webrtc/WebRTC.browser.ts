@@ -34,8 +34,10 @@ export type WebRTCInfo = {
     receivers?:(RTCRtpReceiver|undefined)[],
     streams?:(MediaStream|undefined)[], //received mediastreams
     polite?:boolean, //peer will prevent race conditions for simultaneous negotiations
-    videoStream?:RTCRtpSender, //audio track channel
-    audioStream?:RTCRtpSender, //video track channel
+    videoSender?:RTCRtpSender, //audio track channel
+    audioSender?:RTCRtpSender, //video track channel
+    videoStream?:MediaStream, //audio track channel
+    audioStream?:MediaStream, //video track channel
     send:(message:any)=>void, //these callbacks work on the first available data channel to call to other webrtc services
     request:(message:any, method?:string)=>Promise<any>,
     post:(route:any, args?:any)=>void,
@@ -514,7 +516,10 @@ export class WebRTCfrontend extends Service {
             .then((stream) => {
                 let tracks = stream.getTracks()
                 tracks.forEach((track) => {
-                    RTCRtpSenders.push(rtc.addTrack(track,stream));
+                    let sender = rtc.addTrack(track,stream);
+                    if(track.kind === 'video' && info) {info.videoSender = sender; info.videoStream = stream; }
+                    if(track.kind === 'audio' && info) {info.audioSender = sender; info.audioStream = stream;  }
+                    RTCRtpSenders.push(sender);
                 });
                 str = stream;
             }
@@ -547,9 +552,7 @@ export class WebRTCfrontend extends Service {
     }
 
     enableAudio(call:WebRTCInfo) {
-
-        if(call.audioStream) this.disableVideo(call);
-        
+        if(call.audioStream) this.disableAudio(call);
         let stream = this.addUserMedia(
             call.rtc, 
             {
@@ -558,22 +561,34 @@ export class WebRTCfrontend extends Service {
             }, 
             call 
         );
-    
-        call.audioStream = stream;
+        return stream;
     }
     
-    enableVideo(call:WebRTCInfo, minWidth?:320|640|1024|1280|1920|2560|3840) { //the maximum available resolution will be selected if not specified
+    enableVideo(
+        call:WebRTCInfo, 
+        options:MediaTrackConstraints  = {
+            //deviceId: 'abc' //or below default setting:
+            optional:[
+                {minWidth: 320},
+                {minWidth: 640},
+                {minWidth: 1024},
+                {minWidth: 1280},
+                {minWidth: 1920},
+                {minWidth: 2560},
+                {minWidth: 3840},
+            ]
+        } as MediaTrackConstraints  & { optional:{minWidth: number}[] },
+        includeAudio:boolean = false
+    ) { //the maximum available resolution will be selected if not specified
         
         if(call.videoStream) this.disableVideo(call);
     
         let stream = this.addUserMedia(
             call.rtc, 
             {
-                audio:false, 
-                video:{
-                    optional: minWidth ? [{
-                        minWidth: minWidth
-                    }] : [
+                audio:includeAudio, 
+                video:options ? options : {
+                    optional: [
                         {minWidth: 320},
                         {minWidth: 640},
                         {minWidth: 1024},
@@ -586,22 +601,28 @@ export class WebRTCfrontend extends Service {
             }, 
             call 
         );
-    
-        call.videoStream = stream;
+
+        return stream;
     }
     
     disableAudio(call:WebRTCInfo) {
-        if(call.audioStream) {
-            call.rtc.removeTrack(call.audioStream);
+        if(call.audioSender) {
+            call.rtc.removeTrack(call.audioSender)
             call.audioStream = undefined;
         }
+        call.audioStream?.getTracks().forEach((track) => {
+            if(track.kind === 'audio') track.stop();
+        });
     }
     
     disableVideo(call:WebRTCInfo) {
-        if(call.videoStream) {
-            call.rtc.removeTrack(call.videoStream);
-            call.videoStream = undefined;
+        if(call.videoSender) {
+            call.rtc.removeTrack(call.videoSender)
+            call.videoSender = undefined;
         }
+        call.videoStream?.getTracks().forEach((track) => {
+            if(track.kind === 'video') track.stop();
+        });
     }
 
     //send data on a data channel
