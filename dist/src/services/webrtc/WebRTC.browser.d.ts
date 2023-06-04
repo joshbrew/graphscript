@@ -35,8 +35,8 @@ export type WebRTCInfo = {
     receivers?: (RTCRtpReceiver | undefined)[];
     streams?: (MediaStream | undefined)[];
     polite?: boolean;
-    audioSender?: RTCRtpSender;
-    videoSender?: RTCRtpSender;
+    videoStream?: RTCRtpSender;
+    audioStream?: RTCRtpSender;
     send: (message: any) => void;
     request: (message: any, method?: string) => Promise<any>;
     post: (route: any, args?: any) => void;
@@ -82,8 +82,8 @@ export declare class WebRTCfrontend extends Service {
             onunmute: (ev: any) => void;
         };
     }) => MediaStream;
-    addUserMedia: (rtc: RTCPeerConnection, options?: MediaStreamConstraints, info?: WebRTCInfo) => any[];
-    addTrack: (rtc: RTCPeerConnection, track: MediaStreamTrack, stream: MediaStream) => boolean;
+    addUserMedia: (rtc: RTCPeerConnection, options?: MediaStreamConstraints, info?: WebRTCInfo) => any;
+    addTrack: (rtc: RTCPeerConnection, track: MediaStreamTrack, stream: MediaStream) => RTCRtpSender;
     removeTrack: (rtc: RTCPeerConnection, sender: RTCRtpSender) => boolean;
     addDataChannel: (rtc: RTCPeerConnection, name: string, options?: RTCDataChannelInit) => RTCDataChannel;
     enableAudio(call: WebRTCInfo): void;
