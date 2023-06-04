@@ -508,29 +508,35 @@ export class WebRTCfrontend extends Service {
         },
         info?:WebRTCInfo
     ) => {
-        let RTCRtpSenders:any[] = [];
 
-        let str; 
+        return new Promise(async (res,rej) => {
 
-        navigator.mediaDevices.getUserMedia(options)
-            .then((stream) => {
-                let tracks = stream.getTracks()
-                tracks.forEach((track) => {
-                    let sender = rtc.addTrack(track,stream);
-                    if(track.kind === 'video' && info) {info.videoSender = sender; info.videoStream = stream; }
-                    if(track.kind === 'audio' && info) {info.audioSender = sender; info.audioStream = stream;  }
-                    RTCRtpSenders.push(sender);
-                });
-                str = stream;
-            }
-        )
+            let RTCRtpSenders:any[] = [];
 
-        if(info) info.senders =
-        info.senders ? 
-            [...info.senders, ...RTCRtpSenders] : 
-        RTCRtpSenders;
+            let str; 
+    
+            await navigator.mediaDevices.getUserMedia(options)
+                .then((stream) => {
 
-        return str;
+                    let tracks = stream.getTracks()
+                    tracks.forEach((track) => {
+                        let sender = rtc.addTrack(track,stream);
+                        if(track.kind === 'video' && info) {info.videoSender = sender; info.videoStream = stream; }
+                        if(track.kind === 'audio' && info) {info.audioSender = sender; info.audioStream = stream;  }
+                        RTCRtpSenders.push(sender);
+                    });
+                    str = stream;
+
+                    if(info) info.senders =
+                    info.senders ? 
+                        [...info.senders, ...RTCRtpSenders] : 
+                    RTCRtpSenders;
+
+                    res(str);
+                }
+            )
+    
+        });
     }
 
     //add media streams to the dat channel
@@ -551,12 +557,12 @@ export class WebRTCfrontend extends Service {
         return rtc.createDataChannel(name,options);
     }
 
-    enableAudio(call:WebRTCInfo) {
+    enableAudio = async (call:WebRTCInfo, audioOptions:boolean|MediaTrackConstraints=true) => {
         if(call.audioStream) this.disableAudio(call);
-        let stream = this.addUserMedia(
+        let stream = await this.addUserMedia(
             call.rtc, 
             {
-                audio:true,
+                audio:audioOptions,
                 video:false
             }, 
             call 
@@ -564,7 +570,7 @@ export class WebRTCfrontend extends Service {
         return stream;
     }
     
-    enableVideo(
+    enableVideo = async (
         call:WebRTCInfo, 
         options:MediaTrackConstraints  = {
             //deviceId: 'abc' //or below default setting:
@@ -579,11 +585,11 @@ export class WebRTCfrontend extends Service {
             ]
         } as MediaTrackConstraints  & { optional:{minWidth: number}[] },
         includeAudio:boolean = false
-    ) { //the maximum available resolution will be selected if not specified
+    ) => { //the maximum available resolution will be selected if not specified
         
         if(call.videoStream) this.disableVideo(call);
     
-        let stream = this.addUserMedia(
+        let stream = await this.addUserMedia(
             call.rtc, 
             {
                 audio:includeAudio, 
