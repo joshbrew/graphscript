@@ -88,8 +88,17 @@ export declare class WebRTCfrontend extends Service {
     addTrack: (rtc: RTCPeerConnection, track: MediaStreamTrack, stream: MediaStream) => RTCRtpSender;
     removeTrack: (rtc: RTCPeerConnection, sender: RTCRtpSender) => boolean;
     addDataChannel: (rtc: RTCPeerConnection, name: string, options?: RTCDataChannelInit) => RTCDataChannel;
-    enableAudio: (call: WebRTCInfo, audioOptions?: boolean | MediaTrackConstraints) => Promise<unknown>;
-    enableVideo: (call: WebRTCInfo, options?: MediaTrackConstraints, includeAudio?: boolean) => Promise<unknown>;
+    enableAudio: (call: WebRTCInfo, audioOptions?: boolean | (MediaTrackConstraints & {
+        deviceId?: string;
+    })) => Promise<unknown>;
+    enableVideo: (call: WebRTCInfo, videoOptions?: (MediaTrackConstraints & {
+        deviceId?: string;
+        optional?: {
+            minWidth: number;
+        }[];
+    }), includeAudio?: boolean | (MediaTrackConstraints & {
+        deviceId?: string;
+    })) => Promise<unknown>;
     disableAudio(call: WebRTCInfo): void;
     disableVideo(call: WebRTCInfo): void;
     transmit: (data: ServiceMessage | any, id?: string, channel?: string | RTCDataChannel) => boolean;

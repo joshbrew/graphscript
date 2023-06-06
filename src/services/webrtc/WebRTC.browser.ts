@@ -515,27 +515,25 @@ export class WebRTCfrontend extends Service {
 
             let str; 
     
-            await navigator.mediaDevices.getUserMedia(options)
-                .then((stream) => {
-
-                    let tracks = stream.getTracks()
-                    tracks.forEach((track) => {
-                        let sender = rtc.addTrack(track,stream);
-                        if(track.kind === 'video' && info) {info.videoSender = sender; info.videoStream = stream; }
-                        if(track.kind === 'audio' && info) {info.audioSender = sender; info.audioStream = stream;  }
-                        RTCRtpSenders.push(sender);
-                    });
-                    str = stream;
-
-                    if(info) info.senders =
-                    info.senders ? 
-                        [...info.senders, ...RTCRtpSenders] : 
-                    RTCRtpSenders;
-
-                    res(str);
-                }
-            )
+            let stream = await navigator.mediaDevices.getUserMedia(options)
+              
+            if(stream) {
+                let tracks = stream.getTracks()
+                tracks.forEach((track) => {
+                    let sender = rtc.addTrack(track,stream);
+                    if(track.kind === 'video' && info) {info.videoSender = sender; info.videoStream = stream; }
+                    if(track.kind === 'audio' && info) {info.audioSender = sender; info.audioStream = stream;  }
+                    RTCRtpSenders.push(sender);
+                });
+                str = stream;
     
+                if(info) info.senders =
+                info.senders ? 
+                    [...info.senders, ...RTCRtpSenders] : 
+                RTCRtpSenders;
+    
+                res(str);
+            }
         });
     }
 
@@ -557,7 +555,7 @@ export class WebRTCfrontend extends Service {
         return rtc.createDataChannel(name,options);
     }
 
-    enableAudio = async (call:WebRTCInfo, audioOptions:boolean|MediaTrackConstraints=true) => {
+    enableAudio = async (call:WebRTCInfo, audioOptions:boolean|(MediaTrackConstraints & {deviceId?:string})=true) => {
         if(call.audioStream) this.disableAudio(call);
         let stream = await this.addUserMedia(
             call.rtc, 
@@ -567,12 +565,15 @@ export class WebRTCfrontend extends Service {
             }, 
             call 
         );
+
+        if((audioOptions as any)?.deviceId) (call.audioSender as any).deviceId = (audioOptions as any).deviceId;
+
         return stream;
     }
     
     enableVideo = async (
         call:WebRTCInfo, 
-        options:MediaTrackConstraints  = {
+        videoOptions:(MediaTrackConstraints & {deviceId?:string, optional?:{minWidth: number}[] })  = {
             //deviceId: 'abc' //or below default setting:
             optional:[
                 {minWidth: 320},
@@ -583,8 +584,8 @@ export class WebRTCfrontend extends Service {
                 {minWidth: 2560},
                 {minWidth: 3840},
             ]
-        } as MediaTrackConstraints  & { optional:{minWidth: number}[] },
-        includeAudio:boolean = false
+        } as MediaTrackConstraints  & { deviceId?:string, optional?:{minWidth: number}[] },
+        includeAudio:boolean|(MediaTrackConstraints & {deviceId?:string}) = false
     ) => { //the maximum available resolution will be selected if not specified
         
         if(call.videoStream) this.disableVideo(call);
@@ -593,7 +594,7 @@ export class WebRTCfrontend extends Service {
             call.rtc, 
             {
                 audio:includeAudio, 
-                video:options ? options : {
+                video:videoOptions ? videoOptions : {
                     optional: [
                         {minWidth: 320},
                         {minWidth: 640},
@@ -608,27 +609,48 @@ export class WebRTCfrontend extends Service {
             call 
         );
 
+        if(videoOptions?.deviceId) (call.videoSender as any).deviceId = videoOptions.deviceId;
+        if(includeAudio) {
+            if((includeAudio as any)?.deviceId)
+                (call.audioSender as any).deviceId = (includeAudio as any).deviceId; 
+            else if(videoOptions?.deviceId) (call.audioSender as any).deviceId = (videoOptions as any).deviceId; 
+        }
+
         return stream;
     }
     
     disableAudio(call:WebRTCInfo) {
         if(call.audioSender) {
-            call.rtc.removeTrack(call.audioSender)
-            call.audioStream = undefined;
+            call.senders?.find((s,i) => {
+                if(call.audioStream?.getAudioTracks()[0].id === s.track.id) {
+                    call.senders.splice(i,1);
+                    return true;
+                }
+            });
+            call.rtc.removeTrack(call.audioSender);
+            call.audioSender = undefined;
         }
         call.audioStream?.getTracks().forEach((track) => {
             if(track.kind === 'audio') track.stop();
         });
+        call.audioStream = undefined;
     }
     
     disableVideo(call:WebRTCInfo) {
         if(call.videoSender) {
-            call.rtc.removeTrack(call.videoSender)
+            call.senders?.find((s,i) => {
+                if(call.videoStream?.getVideoTracks()[0].id === s.track.id) {
+                    call.senders.splice(i,1);
+                    return true;
+                }
+            });
+            call.rtc.removeTrack(call.videoSender);
             call.videoSender = undefined;
         }
         call.videoStream?.getTracks().forEach((track) => {
             if(track.kind === 'video') track.stop();
         });
+        call.videoStream = undefined;
     }
 
     //send data on a data channel
