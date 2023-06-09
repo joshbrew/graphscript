@@ -496,6 +496,9 @@ export class HTTPbackend extends Service {
                 if (requestURL == './' && served?.startpage) { //root should point to start page
                     requestURL = served.startpage; //point to the start page
                 }
+
+                //lets remove ? mark url extensions for now
+                if(requestURL.includes('?')) requestURL = requestURL.substring(0,requestURL.indexOf('?'));
                 
                 if((request.url !== '/' || served?.startpage) && fs.existsSync(path.join(process.cwd(),requestURL))) {
                 
@@ -849,13 +852,18 @@ export class HTTPbackend extends Service {
     buildPage = (pageStructure:{[key:string]:{}|null|any} | string[] | string | ((...args:any)=>any), baseTemplate:string) => { //construct a page from available components, child component templates will be inserted before the last '<' symbol or at end of the previous string depending
         let result = ``; if(baseTemplate) result += baseTemplate;
         let appendTemplate = (obj:{[key:string]:{}|null|any}|string[],r:string|any, res:string) => {
-            if(typeof obj[r] === 'object') {
+            if(!Array.isArray(obj[r]) && typeof obj[r] === 'object') {
                 for(const key in obj) {
-                    appendTemplate(obj,key,res); //recursive append
+                    appendTemplate(obj, key, res); //recursive append
                 }
             } else if(this.__node.nodes.get(r)?.get) {
                 let toAdd = this.__node.nodes.get(r)?.get;
-                if(typeof toAdd === 'function') toAdd = toAdd(obj[r]);
+                if(typeof toAdd === 'function') {
+                    if(Array.isArray(obj[r])) {
+                        toAdd = toAdd(...obj[r]);
+                    }
+                    else toAdd = toAdd(obj[r]);
+                }
                 if(typeof toAdd === 'string')  {
                     let lastDiv = res.lastIndexOf('<');
                     if(lastDiv > 0) {
@@ -882,24 +890,96 @@ export class HTTPbackend extends Service {
 
         if(Array.isArray(pageStructure)) {  
             pageStructure.forEach((r)=>{
-                result = appendTemplate(pageStructure,r,result);
+                result = appendTemplate(pageStructure, r, result);
             })
         } else if (typeof pageStructure === 'object') {
             for(const r in pageStructure) {
-                result = appendTemplate(pageStructure,r,result);
+                result = appendTemplate(pageStructure, r, result);
             }
         } else if (typeof pageStructure === 'string') result += pageStructure;
         else if (typeof pageStructure === 'function') result += pageStructure();
         return result;
     }
 
-    hotreload = (socketURL:string|URL=`http://localhost:8080/wss`) => { 
+    hotreload = (socketURL:string|URL=`http://localhost:8080/wss`, esbuild_cssFileName?:string) => { 
         if(socketURL instanceof URL) socketURL = socketURL.toString();
 
-        const HotReloadClient = (url=`http://localhost:8080/wss`) => {
+
+        const HotReloadClient = (socketUrl, esbuild_cssFileName) => {
             //hot reload code injected from backend
             //const socketUrl = `ws://${cfg.host}:${cfg.hotreload}`;
-            let socket = new WebSocket(url);
+            let socket = new WebSocket(socketUrl);
+        
+        
+            function reloadLink(file?) {
+        
+              let split = file.includes('/') ? file.split('/') : file.split('\\');
+              let fname = split[split.length-1];
+        
+              var links = document.getElementsByTagName("link") as any as HTMLLinkElement;
+              for (var cl in links)
+              {
+                  var link = links[cl];
+        
+                  if(!file || link.href?.includes(fname)) {
+                    let href = link.getAttribute('href')
+                                                    .split('?')[0];
+                              
+                    let newHref = href += "";
+        
+                    link.setAttribute('href', newHref);
+
+                  }
+              }
+            }
+        
+        
+            function reloadAsset(file, reloadscripts?, isJs?) { //reloads src tag elements
+              let split = file.includes('/') ? file.split('/') : file.split('\\');
+              let fname = split[split.length-1];
+              let elements = document.querySelectorAll('[src]') as any as HTMLScriptElement[];
+              let found = false;
+              for(const s of elements) {
+                if(s.src.includes(fname)) { //esbuild compiles entire file so just reload app
+                  if(s.tagName === 'SCRIPT' && !reloadscripts) {//&& s.tagName === 'SCRIPT'
+                    window.location.reload();
+                    return;
+                  } else {
+                    let placeholder = document.createElement('object');
+                    s.insertAdjacentElement('afterend', placeholder);
+                    s.remove();
+                    let elm = s.cloneNode(true) as HTMLElement;
+                    placeholder.insertAdjacentElement('beforebegin',elm);
+                    placeholder.remove();
+                    found = true;
+                  }
+                }
+              }
+              if(!found) window.location.reload();
+            }
+        
+            socket.addEventListener('message',(ev) => {
+              let message = ev.data;
+              if(typeof message === 'string' && message.startsWith('{')) {
+                message = JSON.parse(message);
+              }
+              if(message.file) {
+                let f = message.file;
+                let rs = message.reloadscripts
+                if(f.endsWith('css')) {
+                    if(!esbuild_cssFileName.endsWith('css')) esbuild_cssFileName += '.css';
+                    reloadLink(esbuild_cssFileName); //reload all css since esbuild typically bundles one file same name as the dist file
+                } else if (f.endsWith('js') || f.endsWith('ts') || f.endsWith('jsx') || f.endsWith('tsx')) {
+                    reloadAsset(f, rs);
+                } else {
+                    //could be an href or src
+                    reloadLink(f);
+                    reloadAsset(f,rs);
+                }
+              }
+            });
+        
+        
             socket.addEventListener('close',()=>{
               // Then the server has been turned off,
               // either due to file-change-triggered reboot,
@@ -918,7 +998,7 @@ export class HTTPbackend extends Service {
                   console.error("Could not reconnect to dev server.");
                   return;
                 }
-                socket = new WebSocket(url);
+                socket = new WebSocket(socketUrl);
                 socket.onerror = (er) => {
                   console.error(`Hot reload port disconnected, will reload on reconnected. Attempt ${attempts} of ${maxAttempts}`);
                 }
@@ -936,7 +1016,7 @@ export class HTTPbackend extends Service {
         return `
             <script>
                 console.log('Hot Reload port available at ${socketURL}');  
-                (`+HotReloadClient.toString()+`)('${socketURL}') 
+                (`+HotReloadClient.toString()+`)('${socketURL}',${esbuild_cssFileName ? `'${esbuild_cssFileName}'` : undefined}); 
             </script>
         `
     }

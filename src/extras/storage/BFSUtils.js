@@ -458,9 +458,7 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end', option
     let data = (await readFileChunk(path,start,end))?.split('\n').slice(1, -1) // exclude header and last pseudoline
 
     let preprocess = (value) => {
-        if (options.json) {
-            try { value = JSON.parse(value) } catch {}
-        } 
+        try { value = JSON.parse(value) } catch {}
         return value;
     }
     
@@ -468,13 +466,14 @@ export async function readCSVChunkFromDB(path='data', start=0, end='end', option
         let row = r.split(',');
         if (transpose) {
             const entry = {}
-            row.forEach((v, idx) => entry[resultNames[idx]] = preprocess(v))
+            if(options.json) row.forEach((v, idx) => {if(options.json) entry[resultNames[idx]] = preprocess(v); else entry[resultNames[idx]] = v;})
             results.push(entry)
         } else {
             row.forEach((v,i) => {
                 const header = resultNames[i]
                 if (!results[header]) results[header] = [];
-                results[header].push(preprocess(v))
+                if(options.json) results[header].push(preprocess(v))
+                else results[header].push(v);
             })
         }
     });

@@ -115,5 +115,5 @@ export declare class HTTPbackend extends Service {
     buildPage: (pageStructure: string | string[] | {
         [key: string]: any;
     } | ((...args: any) => any), baseTemplate: string) => string;
-    hotreload: (socketURL?: string | URL) => string;
+    hotreload: (socketURL?: string | URL, esbuild_cssFileName?: string) => string;
 }
