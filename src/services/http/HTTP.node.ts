@@ -958,28 +958,32 @@ export class HTTPbackend extends Service {
               if(!found) window.location.reload();
             }
         
+                
             socket.addEventListener('message',(ev) => {
-              let message = ev.data;
-              if(typeof message === 'string' && message.startsWith('{')) {
+                let message = ev.data;
+        
+                if(typeof message === 'string' && message.startsWith('{')) {
                 message = JSON.parse(message);
-              }
-              if(message.file) {
+                }
+                if(message.file) {
                 let f = message.file;
-                let rs = message.reloadscripts
-                if(f.endsWith('css')) {
+                let rs = message.reloadscripts;
+                if(f.endsWith('html') || f.endsWith('xml') || f.endsWith('wasm')) { //could add other formats
+                    window.location.reload();
+                } else if(f.endsWith('css')) {
                     if(!esbuild_cssFileName.endsWith('css')) esbuild_cssFileName += '.css';
                     reloadLink(esbuild_cssFileName); //reload all css since esbuild typically bundles one file same name as the dist file
-                } else if (f.endsWith('js') || f.endsWith('ts') || f.endsWith('jsx') || f.endsWith('tsx')) {
+                } else if (f.endsWith('js') || f.endsWith('ts') || f.endsWith('jsx') || f.endsWith('tsx') || f.endsWith('vue')) { //IDK what other third party formats would be nice to haves
                     reloadAsset(f, rs);
                 } else {
                     //could be an href or src
                     reloadLink(f);
-                    reloadAsset(f,rs);
+                    reloadAsset(f);
                 }
-              }
+                }
             });
-        
-        
+  
+  
             socket.addEventListener('close',()=>{
               // Then the server has been turned off,
               // either due to file-change-triggered reboot,
