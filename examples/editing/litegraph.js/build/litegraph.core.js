@@ -1487,8 +1487,11 @@
             for (var i = 0; i < node.inputs.length; i++) {
                 var slot = node.inputs[i];
                 if(node.inputs[i].extraLinks) { //MODDED
-                    for(const key in node.inputs[i].extraLinks)
-                    node.removeLink(node.inputs[i].extraLinks[key]);
+                    for(const key in node.inputs[i].extraLinks) {
+                        node.removeLink(node.inputs[i].extraLinks[key]);
+                        delete node.inputs[i].extraLinks[key];
+                    }
+                     
                 }
                 if (slot.link != null) {
                     node.disconnectInput(i);
@@ -4257,7 +4260,7 @@
         }
 
         //if there is something already plugged there, disconnect
-        if (target_slot !== 0 && target_node.inputs[target_slot] && target_node.inputs[target_slot].link != null) {
+        if (target_slot !== 0 && target_node.inputs[target_slot] && target_node.inputs[target_slot].link != null) { //MODDED target_slot !== 0
 			this.graph.beforeChange();
             target_node.disconnectInput(target_slot, {doProcessChange: false});
 			changed = true;
@@ -4303,14 +4306,8 @@
             //custom code to handle extra input links on slot zero, treated as an execution slot
             if(!target_node.inputs[target_slot].extraLinks) 
                 target_node.inputs[target_slot].extraLinks = {};
-            while(true) {
-                if(target_node.inputs[target_slot].extraLinks[i]) {
-                    i++;
-                } else {
-                    target_node.inputs[target_slot].extraLinks[i] = link_info.id;
-                    break;
-                }
-            }
+
+            target_node.inputs[target_slot].extraLinks[link_info.id] = link_info.id;
         }
 		else target_node.inputs[target_slot].link = link_info.id;
 		
@@ -4545,11 +4542,8 @@
             return false;
         }
 
-        var link_id = this.inputs[slot].link;
-		if(link_id != null)
-		{
-			this.inputs[slot].link = null;
-
+        const removeLinkId = (link_id) => {
+            
 			//remove other side
 			var link_info = this.graph.links[link_id];
 			if (link_info) {
@@ -4602,6 +4596,19 @@
 					this.graph.onNodeConnectionChange(LiteGraph.INPUT, this, slot);
 				}
 			}
+        }
+
+        var link_id = this.inputs[slot].link;
+		if(link_id != null)
+		{
+			this.inputs[slot].link = null;
+            removeLinkId(link_id);
+            if(this.inputs[slot].extraLinks) {
+                for(const key in this.inputs[slot].extraLinks) {
+                    removeLinkId(key);
+                }
+                delete this.inputs[slot].extraLinks;
+            }
 		} //link != null
 
         this.setDirtyCanvas(false, true);

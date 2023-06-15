@@ -98,6 +98,7 @@ const roots = {
           ]
         },
       },
+
       'console':{
         'NumberOutput.innerHTML': {
           __callback:'console.log',
@@ -181,34 +182,35 @@ document.body.appendChild(menuContainer);
 const triggers = graph.__node.state.triggers
 console.warn('Triggers', triggers)
 
-const stringifyTriggers = (triggers) => {
-  const entries = Object.entries(triggers).map(([key, arr]) => {
-    const [unique, property] = key.split('.');
-    //@ts-ignore
-    return [`${property}.${arr[0].source}`, arr.map(o => `${o.target}.${o.tkey}`)]
-  })
-  return JSON.stringify(entries.reduce((acc, [key, value]) => {
-    acc[key] = value
-    return acc
-  }, {}))
-}
+// const stringifyTriggers = (triggers) => {
+//   const entries = Object.entries(triggers).map(([key, arr]) => {
+//     const [unique, property] = key.split('.');
+//     //@ts-ignore
+//     return [`${property}.${arr[0].source}`, arr.map(o => `${o.target}.${o.tkey}`)]
+//   })
+//   return JSON.stringify(entries.reduce((acc, [key, value]) => {
+//     acc[key] = value
+//     return acc
+//   }, {}))
+// }
 
-const striggers = stringifyTriggers(triggers)
-console.warn('Stringified Triggers', striggers)
+// const striggers = stringifyTriggers(triggers)
+// console.warn('Stringified Triggers', striggers)
 
-const stringifyRoot = (root) => {
-  const entries = Object.entries(root).map(([key, node]) => {
-    const [unique, property] = key.split('.')
-    return [key, node]
-  })
+// const stringifyRoot = (root) => {
+//   const entries = Object.entries(root).map(([key, node]) => {
+//     const [unique, property] = key.split('.')
+//     return [key, node]
+//   })
   
-  return JSON.stringify(entries.reduce((acc, [key, value]) => {
-    //@ts-ignore
-    acc[key] = value
-    return acc
-  }, {}))
-}
+//   return JSON.stringify(entries.reduce((acc, [key, value]) => {
+//     console.log(acc);
+//     //@ts-ignore
+//     acc[key] = value
+//     return acc
+//   }, {}))
+// }
 
 
-const sroot = stringifyRoot(graph.__node.roots)
-console.warn('Stringified Roots', sroot)
+// const sroot = stringifyRoot(graph.__node.roots)
+// console.warn('Stringified Roots', sroot)

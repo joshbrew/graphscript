@@ -1,4 +1,5 @@
 import {Graph, GraphNode, GraphNodeProperties, Listener, getCallbackFromString, wchtmlloader} from '../../index'
+import { replaceListenerArg } from './listenerManip';
 
 import { LiteGraph, LGraph, LGraphCanvas, LGraphNode} from './litegraph.js'
 
@@ -12,7 +13,11 @@ export type LGraphNodeProps = {
   }
 } & GraphNodeProperties;
 
-export type LGraphNodeM = LGraphNode & {triggers:any, node:GraphNode, graph:Graph, editor:LGraph, tag:string, key?:string}
+export type LGraphNodeM = LGraphNode & {
+  triggers:any, 
+  __node:GraphNode, 
+  __graph:Graph, 
+  editor:LGraph, tag:string, key?:string}
 
 
 const execPin = '►'; //for modded litegraph
@@ -63,7 +68,7 @@ export function updateArgNodePosition (target, nodes) {
 
   nodes.forEach((n:LGraphNodeM) => {
     const [ _, y ] = n.pos
-    const [ __, height ] = target.size
+    const [ __, height ] = n.size
 
     //let bb = n.getBounding(); //include bounding box?
     
@@ -181,11 +186,11 @@ export function registerNode(
     let self = this as LGraphNodeM;
     self.title = name;
 
-    self.triggers = node.__listeners[node.__node.unique + (key ? ('.'+key) : '')];
-    self.node = node;
+    self.triggers = node.__listeners ? node.__listeners : {};
+    self.__node = node;
     self.tag = tag;
     self.key = key;
-    self.graph = node.__node.graph;
+    self.__graph = node.__node.graph;
     self.editor = editor as LGraph;
 
     let params;
@@ -305,8 +310,7 @@ export function registerNode(
       return args;
     }
 
-    //when an input is connected on this node
-
+    //when an input is connected on this node from an output on another node
     self.onConnectInput = function(inputIndex, outputType, outputSlot, outputNode, outputIndex) {
       let isExec = false;
       
@@ -326,8 +330,15 @@ export function registerNode(
         //and/oor modify the listener
       } else {
 
+
+        /**
+         * 
+         * On connecting to an arg input, 
+         * 
+         * 
+         */
         //these are args for subscriptions
-        
+        //replaceListenerArg(self.__graph, , , );
       }
 
       if(self.inputs[0].link) {
@@ -338,18 +349,14 @@ export function registerNode(
           let origin_id = editor?.links[link].origin_id;
           if(origin_id) {
             let litenode = editor?.getNodeById(origin_id as number) as LGraphNodeM;
-            let subscribeTo = litenode.node;
+            let subscribeTo = litenode.__node;
 
-            if(self.triggers) {
-              for(const key in self.triggers) {
-                self.graph.unsubscribe(tag, self.triggers[key].sub, key, self.triggers[key].subInput);
-              }
-            }
             let listener = {__callback:name, __args:getArgs([], outputNode as LGraphNodeM, inputIndex, self)}; //save this!
   
-            let callback = getCallbackFromString(listener.__callback, self.graph);
+            let callback = getCallbackFromString(listener.__callback, self.__graph);
   
-            subscribeTo.__subscribe(callback,litenode.key,undefined,tag,key, listener.__args);
+            subscribeTo.__subscribe(callback, litenode.key, undefined, tag, key, listener.__args);
+
           }
         } 
 
