@@ -162,7 +162,7 @@ export class WorkerService extends Service {
         }
     }
 
-    workerloader:any = {
+    workerloader:any = { //todo: clean this up and extrapolate to other services
         'workers':(node: WorkerRoute & GraphNode, parent:WorkerRoute & GraphNode, graph:Graph, roots:any) => {
             let rt = node as WorkerRoute;
             if(!node.parentRoute && (parent?.callback && parent?.worker)) node.parentRoute = parent?.callback;
@@ -401,6 +401,7 @@ export class WorkerService extends Service {
 
         worker.onmessage = options.onmessage;
         (worker as Worker).onerror = options.onerror;
+        
 
         this.workers[options._id] = {
             worker:(worker as any),
@@ -424,6 +425,9 @@ export class WorkerService extends Service {
 
     open = this.addWorker; //for the router
 
+    close = () => {
+        globalThis.close(); //workers can terminate themselves
+    }
 
     //new Worker(urlFromString)
     toObjectURL = (scriptTemplate:string) => {

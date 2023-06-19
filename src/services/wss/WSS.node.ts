@@ -161,8 +161,12 @@ export class WSSbackend extends Service {
             
             if((this.servers[address] as any).onconnectionclosed) 
                 ws.on('close',(code,reason)=>{
-                    if(this.servers[address].onconnectionclosed) (this.servers[address] as any).onconnectionclosed(code,reason,ws, this.servers[address], clientId);
+                    if(this.servers[address].onconnectionclosed) 
+                        (this.servers[address] as any).onconnectionclosed(code,reason,ws, this.servers[address], clientId);
+
+                    delete this.servers[address].clients[clientId]; //delete by default onclose (memory saving)
                 });
+
         });
 
         wss.on('error',(err) => {
@@ -194,6 +198,8 @@ export class WSSbackend extends Service {
             server.removeListener('upgrade',onUpgrade);
             if((this.servers[address] as any).onclose) (this.servers[address] as any).onclose(wss, this.servers[address]);
             else console.log(`wss closed: ${address}`);
+
+            delete this.servers[address];
         });
 
         let send = (message:any, socketId?:string) => {
@@ -335,10 +341,22 @@ export class WSSbackend extends Service {
             socket.on('message',socketonmessage); //add default callback if none specified
             options.onmessage = socketonmessage;
         }
-        socket.on('open',()=>{if(this.sockets[address].onopen) (this.sockets[address] as any).onopen(socket,this.sockets[address]);});
+
+        socket.on('open',()=>{
+            if(this.sockets[address].onopen) (this.sockets[address] as any).onopen(socket,this.sockets[address]);
+        });
+        
         socket.on('close',(code,reason)=>{
-            if(this.sockets[address].onclose) (this.sockets[address] as any).onclose(code,reason,socket,this.sockets[address]);});
-        socket.on('error',(er)=>{if(this.sockets[address].onerror) (this.sockets[address] as any).onerror(er,socket,this.sockets[address]);});
+            if(this.sockets[address].onclose) 
+                (this.sockets[address] as any).onclose(code,reason,socket,this.sockets[address]);
+            
+                delete this.sockets[address]; //delete by default onclose (memory saving)
+        });
+
+            
+        socket.on('error',(er)=>{
+            if(this.sockets[address].onerror) (this.sockets[address] as any).onerror(er,socket,this.sockets[address]);
+        });
 
         let send = (message:any) => {
             //console.log('sent', message)

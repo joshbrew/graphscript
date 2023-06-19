@@ -299,6 +299,8 @@ export class WebRTCfrontend extends Service {
                     if(this.rtc[options._id].onclose) {
                         this.rtc[options._id].onclose(this.rtc[options._id]);
                     }
+
+                    delete this.rtc[options._id];
                 } 
             });
 
@@ -697,9 +699,9 @@ export class WebRTCfrontend extends Service {
             tx = (rtc as WebRTCInfo).rtc;
         }
     
-        if(rtc instanceof RTCPeerConnection) {
+        if(rtc instanceof RTCPeerConnection && rtc.signalingState !== 'closed') {
             rtc.close();
-        } else if(tx) {
+        } else if(tx && tx.signalingState !== 'closed') {
             if(tx) tx.close();
         }
 

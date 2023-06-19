@@ -135,7 +135,7 @@ export class HTTPbackend extends Service {
     
     open = this.setupServer;
 
-    //insecure server
+    //insecure server, todo merge commands since they're basically copied
     setupHTTPserver = (
         options:ServerProps={
             host:'localhost' as string,
@@ -207,17 +207,24 @@ export class HTTPbackend extends Service {
         this.servers[address] = served;
         served._id = options._id ? options._id : address;
 
+
+
         //SITE AVAILABLE ON PORT:
         return new Promise((resolve,reject) => {
+            let resolved;
             server.on('error',(err)=>{
                 console.error('Server error:', err.toString());
-                reject(err);
+                if(!resolved) reject(err);
+            });
+            server.on('clientError',(err) =>{
+                console.error(err);
             });
             server.listen( 
                 port,host,
                 ()=>{
                     onStarted(); 
                     if(served.onopen) served.onopen(served);
+                    resolved = true;
                     resolve(served);
                 }
             );
@@ -303,18 +310,24 @@ export class HTTPbackend extends Service {
         this.servers[address] = served;
         served._id = options._id ? options._id : address;
 
+
         //SITE AVAILABLE ON PORT:
         return new Promise((resolve,reject) => {
+            let resolved;
             server.on('error',(err)=>{
                 console.error('Server error:', err.toString());
-                reject(err);
-            })
+                if(!resolved) reject(err);
+            });
+            server.on('clientError',(err) =>{
+                console.error(err);
+            });
             server.listen( 
                 port,host,
                 ()=>{
                     onStarted(); 
                     if(served.onopen) served.onopen(served);
-                    resolve(served); 
+                    resolved = true;
+                    resolve(served);
                 }
             );
         }) as Promise<ServerInfo>;

@@ -64,26 +64,36 @@ export class SSEfrontend extends Service {
         if(!('keepState' in options)) options.keepState = true; //default true
         if(!options.events) options.events = {};
 
+        let close;
         if(options.events.close) {
-            let close = options.events.close;
-            options.events.close = (ev) => { if(sse.onclose) sse.onclose(ev,sse); close(ev,sse); };
+            close = options.events.close;    
         }
+        options.events.close = (ev) => { 
+            if(sse.onclose) sse.onclose(ev,sse); 
+            if(close) close(ev,sse); 
+            delete this.eventsources[options.url];
+        };
+
+        let open;
         if(options.events.open) {
-            let open = options.events.open;
-            options.events.open = (ev) => { if(sse.onopen) sse.onopen(ev,sse); open(ev,sse); };
+            open = options.events.open;
         }
+        options.events.open = (ev) => { if(sse.onopen) sse.onopen(ev,sse); if(open) open(ev,sse); };
+
+        let error;
         if(options.events.error) {
-            let error = options.events.error;
-            options.events.error = (ev) => { if(sse.onerror) sse.onerror(ev,sse); error(ev,sse); };
+            error = options.events.error;
         }
+        options.events.error = (ev) => { if(sse.onerror) sse.onerror(ev,sse); if(error) error(ev,sse); };
+
+        let message;
         if(options.events.message) {
-            let message = options.events.message;
-            options.events.message = (ev) => { if(sse.onmessage) sse.onmessage(ev,sse); message(ev,sse); };
+            message = options.events.message;
         }
 
-        if(!options.events.message) {
-            options.events.message = (ev, sse) => {
-
+        if(!sse.onmessage) {
+            //default hook
+            sse.onmessage = (ev, sse) => {
                 let data = ev.data;
 
                 if(data) if(typeof data === 'string') {
@@ -93,7 +103,7 @@ export class SSEfrontend extends Service {
                         if(data[0] === '"') { data = data.substring(1,data.length-1)};
                         //console.log(message)
                         data = JSON.parse(data); //parse stringified objects
-
+    
                         if(data.route === 'setId' && sse) {
                             sse._id = data.args;
                             options.events.message = (e, sse) => { //clear extra logic after id is set
@@ -103,11 +113,18 @@ export class SSEfrontend extends Service {
                         }
                     }
                 } 
-
+    
                 const result = this.receive(ev.data,sse);
-                if(options.keepState) this.setState({[options.url]:data}); 
+                if(options.keepState) this.setState({[options.url]:data});
             }
         }
+
+        options.events.message = (ev) => { 
+            if(sse.onmessage) sse.onmessage(ev,sse); 
+            if(message) message(ev,sse); 
+        };
+
+     
         if(!options.events.error) options.events.error = (ev, sse) => {
             this.terminate(sse as any);
             delete this.eventsources[options.url];

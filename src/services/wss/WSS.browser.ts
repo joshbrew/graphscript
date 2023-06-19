@@ -116,9 +116,17 @@ export class WSSfrontend extends Service {
         }
 
         if((options as any).onmessage) {socket.addEventListener('message',(ev)=>{(this.sockets[address] as any).onmessage(ev.data, socket, this.sockets[address]);});}
-        socket.addEventListener('open',(ev)=>{if(this.sockets[address].onopen) (this.sockets[address] as any).onopen(ev, socket, this.sockets[address]);});
-        socket.addEventListener('close',(ev)=>{if(this.sockets[address].onclose) (this.sockets[address] as any).onclose(ev,socket, this.sockets[address]);});
-        socket.addEventListener('error',(ev)=>{if(this.sockets[address].onerror) (this.sockets[address] as any).onerror(ev,socket, this.sockets[address]);});
+        socket.addEventListener('open',(ev)=>{
+            if(this.sockets[address].onopen) (this.sockets[address] as any).onopen(ev, socket, this.sockets[address]);
+        });
+        socket.addEventListener('close',(ev)=>{
+            if(this.sockets[address].onclose) (this.sockets[address] as any).onclose(ev,socket, this.sockets[address]);
+
+            delete this.sockets[address]; //delete by default onclose (memory saving)
+        });
+        socket.addEventListener('error',(ev)=>{
+            if(this.sockets[address].onerror) (this.sockets[address] as any).onerror(ev,socket, this.sockets[address]);
+        });
 
         
         let send = (message:ServiceMessage|any) => {

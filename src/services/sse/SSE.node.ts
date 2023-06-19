@@ -98,9 +98,7 @@ export class SSEbackend extends Service {
 
         sse._id = options._id ? options._id : path;
 
-        if(!sse.onconnectionclose) sse.onconnectionclose = (session,sse,id,req,res) => {
-            delete sse.sessions[id];
-        }
+        
 
         const send = (
             message:any, //the data you want to send
@@ -206,12 +204,19 @@ export class SSEbackend extends Service {
                                 delete sse.sessions[_id];
                                 return true;
                             },
-                            onclose:()=>options.onconnectionclose,
+                            onclose:(session,sse,_id,req,res)=>{
+                                if(sse.onconnectionclose) sse.onconnectionclose(session,sse,_id,req,res);
+                            },
                             graph:this
                         } as SSEClientInfo;
     
                         session.push(JSON.stringify({route:'setId',args:_id})); //associate this user's connection with a server generated id 
-                        session.on('close',()=>{if(this.eventsources[_id].onclose) (this.eventsources[_id] as any).onclose(session,sse,_id,req,response)})
+                        session.on('close',()=>{
+                            if(this.eventsources[_id].onclose) 
+                                (this.eventsources[_id] as any).onclose(session,sse,_id,req,response);
+
+                            delete this.eventsources[_id];
+                        })
                         if(sse.onconnection) {sse.onconnection(session,sse,_id,req,response);}
                     
                     });
