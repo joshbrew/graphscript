@@ -123,6 +123,7 @@ export class WSSfrontend extends Service {
             if(this.sockets[address].onclose) (this.sockets[address] as any).onclose(ev,socket, this.sockets[address]);
 
             delete this.sockets[address]; //delete by default onclose (memory saving)
+            this.remove(address);
         });
         socket.addEventListener('error',(ev)=>{
             if(this.sockets[address].onerror) (this.sockets[address] as any).onerror(ev,socket, this.sockets[address]);

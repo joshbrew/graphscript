@@ -1,10 +1,9 @@
 {
-    "name": "graphscript-core",
-    "version": "0.2.134",
-    "description": "Comprehensive acyclic-graph based application architecture with microservices and networking.",
-    "main": "dist/index.core.js",
-    "module": "dist/index.core.esm.js",
-    "types": "dist/index.core.d.ts",
+    "name": "graphscript-node",
+    "version": "0.2.135",
+    "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
+    "main": "dist/index.node.js",
+    "types": "dist/index.node.d.ts",
     "scripts": {
         "start": "tinybuild path=tinybuild.node.config.js && tinybuild && tinybuild path=tinybuild.core.config.js",
         "build": "tinybuild build",
@@ -22,7 +21,13 @@
     ],
     "author": "Joshua Brewster",
     "license": "AGPL-3.0-or-later",
-    "dependencies": {},
+    "dependencies": {
+        "better-sse": "~0.8.0",
+        "brainsatplay-math": "~0.0.25",
+        "bson-objectid": "~2.0.3",
+        "web-worker": "~1.2.0",
+        "ws": "~8.11.0"
+    },
     "nodemonConfig": {
         "env": {
             "NODEMON": true
@@ -33,6 +38,7 @@
         ]
     },
     "devDependencies": {
-        "@types/node": "~18.7.15"
+        "@types/node": "~18.7.15",
+        "@types/ws": "^8.5.3"
     }
 }

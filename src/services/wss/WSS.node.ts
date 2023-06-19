@@ -162,7 +162,7 @@ export class WSSbackend extends Service {
             if((this.servers[address] as any).onconnectionclosed) 
                 ws.on('close',(code,reason)=>{
                     if(this.servers[address].onconnectionclosed) 
-                        (this.servers[address] as any).onconnectionclosed(code,reason,ws, this.servers[address], clientId);
+                        (this.servers[address] as any).onconnectionclosed(code, reason, ws, this.servers[address], clientId);
 
                     delete this.servers[address].clients[clientId]; //delete by default onclose (memory saving)
                 });
@@ -185,8 +185,9 @@ export class WSSbackend extends Service {
 
                 if(addr === address && this.servers[addr]) {
                     this.servers[addr].wss.handleUpgrade(request,socket,head, (ws) => {
-                        if((this.servers[address] as any).onupgrade) (this.servers[address] as any).onupgrade(ws, this.servers[address], request, socket, head);
-                        this.servers[addr].wss.emit('connection',ws,request);
+                        if((this.servers[address] as any).onupgrade) 
+                            (this.servers[address] as any).onupgrade(ws, this.servers[address], request, socket, head);
+                        this.servers[addr].wss.emit('connection', ws, request);
                     });
                 }
             }
@@ -301,7 +302,7 @@ export class WSSbackend extends Service {
         else if (options._id) {
             socket.on('message', (data:any)=> {
                 if(ArrayBuffer.isView(data)) data = data.toString();
-                this.receive(data,socket,this.sockets[address]); 
+                this.receive(data,socket, this.sockets[address]); 
                 //console.log('socket received',data,Array.from(this.__node.nodes.keys()));
                 if(options.keepState) {
                     this.setState({[address]:data});
@@ -350,7 +351,7 @@ export class WSSbackend extends Service {
             if(this.sockets[address].onclose) 
                 (this.sockets[address] as any).onclose(code,reason,socket,this.sockets[address]);
             
-                delete this.sockets[address]; //delete by default onclose (memory saving)
+            delete this.sockets[address]; //delete by default onclose (memory saving)
         });
 
             

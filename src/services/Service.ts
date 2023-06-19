@@ -54,7 +54,10 @@ export class Service extends Graph {
                     } else this.set(s+'.'+tag,n);
                 });
 
-                this.__node.nodes.forEach((n,k) => { if(!(services[s] as Service).__node.nodes.get(k)) (services[s] as Graph).__node.nodes.set(k,n) })
+                this.__node.nodes.forEach((n,k) => { 
+                    if(!(services[s] as Service).__node.nodes.get(k)) 
+                        (services[s] as Graph).__node.nodes.set(k,n) 
+                })
 
                 let set = this.set;
 

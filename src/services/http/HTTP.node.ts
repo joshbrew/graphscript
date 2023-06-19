@@ -278,7 +278,7 @@ export class HTTPbackend extends Service {
                 args:{request, response}, 
                 method:request.method, 
                 served
-            }
+            };
 
             let url = (request as any).url.slice(1);
             if(!url) url = '/';
@@ -460,239 +460,260 @@ export class HTTPbackend extends Service {
             redirect?:string //if we redirected the route according to page options
         }
     ) => {
-        const request = message.args.request; 
-        const response = message.args.response; 
-        const method = message.method; 
-        const served = message.served;
 
-        if(this.debug) console.log(request.method, request.url);
+        if(this.debug) console.log(message.args.request.method, message.args.request.url);
         //console.log(request); //debug
 
         let result = new Promise((resolve,reject) => {
-
-            response.on('error', (err) => {
-                if(!response.writableEnded || !response.destroyed ) {
-                    response.statusCode = 400;
-                    response.end(undefined,undefined as any,()=>{                
-                        reject(err);
-                    });
-                }
-            });
-
-            let getFailed = () => {
-                if(response.writableEnded || response.destroyed) reject(requestURL); 
-                if(requestURL == './' || requestURL == served?.startpage) {
-                    let template = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Brains@Play Server</h1></body></html>`; //start page dummy
-                    if(served?.pages?._all || served?.pages?.error) {
-                        template = this.injectPageCode(template,message.route,served) as any;
-                    }
-                    response.writeHead(200, { 'Content-Type': 'text/html' });
-                    response.end(template,'utf-8',() => {
-                        resolve(template);
-                    }); //write some boilerplate server page, we should make this an interactive debug page
-                    if(served?.keepState) this.setState({[served.address]:template});
-                    //return;
-                }
-                else if(this.debug) console.log(`File ${requestURL} does not exist on path!`);
-                response.writeHead(500); //set response headers
-                response.end(undefined,undefined as any,()=>{
-                    reject(requestURL);
-                });
-               
-                //return;
-            }
-            
-            if(method === 'GET' || method === 'get') {
-                //process the request, in this case simply reading a file based on the request url    
-                var requestURL = '.' + request.url;
-    
-                if (requestURL == './' && served?.startpage) { //root should point to start page
-                    requestURL = served.startpage; //point to the start page
-                }
-
-                //lets remove ? mark url extensions for now
-                if(requestURL.includes('?')) requestURL = requestURL.substring(0,requestURL.indexOf('?'));
-                
-                if((request.url !== '/' || served?.startpage) && fs.existsSync(path.join(process.cwd(),requestURL))) {
-                
-                    if(response.writableEnded || response.destroyed) reject(requestURL);
-                    //read the file on the server
-                    fs.readFile(path.join(process.cwd(),requestURL), (error, content) => {
-                        if (error) {
-                            if(error.code == 'ENOENT') { //page not found: 404
-                                if(served?.errpage) {
-                                    fs.readFile(served.errpage, (er, content) => {
-                                        response.writeHead(404, { 'Content-Type': 'text/html' }); //set response headers
-    
-                                        
-                                        //add hot reload if specified
-                                        // if(process.env.HOTRELOAD && requestURL.endsWith('.html') && cfg.hotreload) {
-                                        //     content = addHotReloadClient(content,`${cfg.socket_protocol}://${cfg.host}:${cfg.port}/hotreload`);
-                                        // }
-
-                                        if(served.pages?._all || served.pages?.error) {
-                                            content = this.injectPageCode(content.toString(),message.route,served) as any;
-                                        }
-    
-                                        response.end(content, 'utf-8'); //set response content
-                                        reject(content);
-                                        //console.log(content); //debug
-                                    });
-                                }
-                                else {
-                                    response.writeHead(404, { 'Content-Type': 'text/html' });
-                                    let content = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Error: ${error.code}</h1></body></html>`
-                                    if(served?.pages?._all || served?.pages?.[message.route]) {
-                                        content = this.injectPageCode(content.toString(),message.route,served as any) as any;
-                                    }
-                                    response.end(content,'utf-8', () => {
-                                        reject(error.code);
-                                    });
-                                    //return;
-                                }
-                            }
-                            else { //other error
-                                response.writeHead(500); //set response headers
-                                response.end('Something went wrong: '+error.code+' ..\n','utf-8', () => {
-                                    reject(error.code);
-                                }); //set response content
-                                //return;
-                            }
-                        }
-                        else { //file read successfully, serve the content back
-    
-                            //set content type based on file path extension for the browser to read it properly
-                            var extname = String(path.extname(requestURL)).toLowerCase();
-    
-                            var contentType = this.mimeTypes[extname] || 'application/octet-stream';
-
-                            if(contentType === 'text/html' && (served?.pages?._all || served?.pages?.[message.route])) {
-                                content = this.injectPageCode(content.toString(),message.route,served as any) as any;
-                            }
-
-                            response.writeHead(200, { 'Content-Type': contentType }); //set response headers
-                            response.end(content, 'utf-8', () => {
-                                //console.log(response,content,contentType);
-                                resolve(content);
-                            }); //set response content
-                            
-                            //console.log(content); //debug
-                            //return;
-                        }
-                    });
-                } else if (message.route) {
-                    let route;
-                    if(served) {
-                        let rt = `${served.port}/${message.route}`;
-                        if(this.__node.nodes.get(rt)) route = rt
-                    }
-                    if(!route && this.__node.nodes.get(message.route)) route = message.route;
-                    
-                    if(route) {
-                        let res:any;
-                        if(message.method) {
-                            res = this.handleMethod(route, message.method, undefined); //these methods are being passed request/response in the data here, post methods will parse the command objects instead while this can be used to get html templates or play with req/res custom callbakcs
-                        }
-                        else if (message.node) {
-                            res = this.handleGraphNodeCall(message.node, undefined);
-                        }
-                        else res = this.handleServiceMessage({route,args:undefined,method:message.method});
-    
-                        if(res instanceof Promise) res.then((r) => {
-                            if(served?.keepState) this.setState({[served.address]:res});
-                            this.withResult(response,r,message);
-                            resolve(res);
-                            
-                            //return;
-                        })
-                        else if(res) {
-                            if(served?.keepState) this.setState({[served.address]:res});
-                            this.withResult(response,res,message);
-                            resolve(res);
-                           // return;
-                        } //else we can move on to check the get post
-                    }
-                    else if (message.redirect) {
-                        response.writeHead(301, {'Location':message.redirect});
-                        response.end();
-                        resolve(true);
-                    } 
-                    else getFailed();
-                } else getFailed();
-            } else {
-                //get post/put/etc body if any
-                let body:any = [];
-                request.on('data',(chunk)=>{ //https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction/
-                    body.push(chunk);
-                }).on('end',() => {
-                    body = Buffer.concat(body).toString(); //now it's a string
-                            
-                    if(typeof body === 'string') {
-                        let substr = body.substring(0,8);
-                        if(substr.includes('{') || substr.includes('[')) {
-                            if(substr.includes('\\')) body = body.replace(/\\/g,""); 
-                            if(body[0] === '"') { body = body.substring(1,body.length-1)};
-                            body = JSON.parse(body); //parse stringified args, this is safer in a step
-                        }
-                    }
-                    
-                    let route,method,args;
-                    if(body?.route){ //if arguments were posted 
-                        route = body.route;
-                        method = body.method;
-                        args = body.args;
-                        if(!route) {
-                            if(typeof body.route === 'string') if(body.route.includes('/') && body.route.length > 1) body.route = body.route.split('/').pop();
-                            route = body.route;
-                        }
-                    }
-                    if(!route) { //body post did not provide argument so use the request route
-                        if (message?.route) {
-                            let route = message.route;
-                            method = message.method;
-                            args = message.args;
-                            if(!route) {
-                                if(typeof message.route === 'string') if(message.route.includes('/') && message.route.length > 1) message.route = message.route.split('/').pop() as string;
-                                route = message.route;
-                            }
-                        }
-                    }
-                    let res:any = body;
-                    if(route) {
-                        if(body.method) {
-                            res = this.handleMethod(route, method, args);
-                        }
-                        else if (body.node) {
-                            res = this.handleGraphNodeCall(body.node, body.args);
-                        }
-                        else res = this.handleServiceMessage({route, args:args, method:method});
-
-                        if(res instanceof Promise) {
-                            res.then((r) => {
-                                this.withResult(response,r,message);
-                                if(served?.keepState) this.setState({[served.address]:res});
-                                resolve(res);
-                            });
-                        } else {
-                            this.withResult(response,res,message);
-                            if(served?.keepState) this.setState({[served.address]:res});
-                            resolve(res);
-                        }
-                    }
-                    else if(!response.writableEnded || !response.destroyed) {
-                        response.statusCode = 200;
-                        response.end(undefined,undefined as any, () => {
-                            resolve(res);
-                        }); //posts etc. shouldn't return anything but a 200 usually
-                    } else resolve(res); //get requests resolve first and return otherwise this will resolve 
-                });
-
-            }
-
-    
+            this.responsePromiseHandler(resolve, reject, message, message.args.request, message.args.response, message.method, message.served);
         }).catch((er)=>{ console.error("Request Error:", er); });
 
         return result;
+    }
+
+    //internal
+    responseOnErrorPromiseHandler =  (response, reject, err) => {
+        if(!response.writableEnded || !response.destroyed ) {
+            response.statusCode = 400;
+            response.end(undefined,undefined as any,()=>{                
+                reject(err);
+            });
+        }
+    }
+
+    //internal
+    getFailedPromiseHandler = (resolve, reject, requestURL, message, response, served) => {
+        if(response.writableEnded || response.destroyed) reject(requestURL); 
+        if(requestURL == './' || requestURL == served?.startpage) {
+            let template = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Brains@Play Server</h1></body></html>`; //start page dummy
+            if(served?.pages?._all || served?.pages?.error) {
+                template = this.injectPageCode(template,message.route,served) as any;
+            }
+            response.writeHead(200, { 'Content-Type': 'text/html' });
+            response.end(template,'utf-8',() => {
+                resolve(template);
+            }); //write some boilerplate server page, we should make this an interactive debug page
+            if(served?.keepState) this.setState({[served.address]:template});
+            //return;
+        }
+        else if(this.debug) console.log(`File ${requestURL} does not exist on path!`);
+        response.writeHead(500); //set response headers
+        response.end(undefined,undefined as any,()=>{
+            reject(requestURL);
+        });
+       
+        //return;
+    }
+
+    //internal
+    handleBufferedPostBodyPromiseHandler = (resolve, body, message, response, served) => {
+        
+        body = Buffer.concat(body).toString(); //now it's a string
+                
+        if(typeof body === 'string') {
+            let substr = body.substring(0,8);
+            if(substr.includes('{') || substr.includes('[')) {
+                if(substr.includes('\\')) body = body.replace(/\\/g,""); 
+                if(body[0] === '"') { body = body.substring(1,body.length-1)};
+                body = JSON.parse(body); //parse stringified args, this is safer in a step
+            }
+        }
+        
+        let route,method,args;
+
+        if(body?.route){ //if arguments were posted 
+            route = body.route;
+            method = body.method;
+            args = body.args;
+            if(!route) {
+                if(typeof body.route === 'string') if(body.route.includes('/') && body.route.length > 1) body.route = body.route.split('/').pop();
+                route = body.route;
+            }
+        }
+        if(!route) { //body post did not provide argument so use the request route
+            if (message?.route) {
+                let route = message.route;
+                method = message.method;
+                args = message.args;
+                if(!route) {
+                    if(typeof message.route === 'string') if(message.route.includes('/') && message.route.length > 1) message.route = message.route.split('/').pop() as string;
+                    route = message.route;
+                }
+            }
+        }
+        let res:any = body;
+        if(route) {
+            if(body.method) {
+                res = this.handleMethod(route, method, args);
+            }
+            else if (body.node) {
+                res = this.handleGraphNodeCall(body.node, body.args);
+            }
+            else res = this.handleServiceMessage({route, args:args, method:method});
+
+            if(res instanceof Promise) {
+                res.then((r) => {
+                    this.withResult(response,r,message);
+                    if(served?.keepState) this.setState({[served.address]:res});
+                    resolve(res);
+                });
+            } else {
+                this.withResult(response,res,message);
+                if(served?.keepState) this.setState({[served.address]:res});
+                resolve(res);
+            }
+        }
+        else if(!response.writableEnded || !response.destroyed) {
+            response.statusCode = 200;
+            response.end(undefined,undefined as any, () => {
+                resolve(res);
+            }); //posts etc. shouldn't return anything but a 200 usually
+        } else resolve(res); //get requests resolve first and return otherwise this will resolve 
+    
+    }
+
+    //internal
+    onRequestFileReadPromiseHandler =  (error, content, resolve, reject, requestURL, response, message, served) => {
+        if (error) {
+            if(error.code == 'ENOENT') { //page not found: 404
+                if(served?.errpage) {
+                    fs.readFile(served.errpage, (er, content) => {
+                        response.writeHead(404, { 'Content-Type': 'text/html' }); //set response headers
+
+                        
+                        //add hot reload if specified
+                        // if(process.env.HOTRELOAD && requestURL.endsWith('.html') && cfg.hotreload) {
+                        //     content = addHotReloadClient(content,`${cfg.socket_protocol}://${cfg.host}:${cfg.port}/hotreload`);
+                        // }
+
+                        if(served.pages?._all || served.pages?.error) {
+                            content = this.injectPageCode(content.toString(),message.route,served) as any;
+                        }
+
+                        response.end(content, 'utf-8'); //set response content
+                        reject(content);
+                        //console.log(content); //debug
+                    });
+                }
+                else {
+                    response.writeHead(404, { 'Content-Type': 'text/html' });
+                    let content = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Error: ${error.code}</h1></body></html>`
+                    if(served?.pages?._all || served?.pages?.[message.route]) {
+                        content = this.injectPageCode(content.toString(),message.route,served as any) as any;
+                    }
+                    response.end(content,'utf-8', () => {
+                        reject(error.code);
+                    });
+                    //return;
+                }
+            }
+            else { //other error
+                response.writeHead(500); //set response headers
+                response.end('Something went wrong: '+error.code+' ..\n','utf-8', () => {
+                    reject(error.code);
+                }); //set response content
+                //return;
+            }
+        }
+        else { //file read successfully, serve the content back
+
+            //set content type based on file path extension for the browser to read it properly
+            var extname = String(path.extname(requestURL)).toLowerCase();
+
+            var contentType = this.mimeTypes[extname] || 'application/octet-stream';
+
+            if(contentType === 'text/html' && (served?.pages?._all || served?.pages?.[message.route])) {
+                content = this.injectPageCode(content.toString(),message.route,served as any) as any;
+            }
+
+            response.writeHead(200, { 'Content-Type': contentType }); //set response headers
+            response.end(content, 'utf-8', () => {
+                //console.log(response,content,contentType);
+                resolve(content);
+            }); //set response content
+            
+            //console.log(content); //debug
+            //return;
+        }
+    }
+
+    //internal
+    responsePromiseHandler = (resolve, reject, message, request, response, method, served) => {
+
+        response.on('error', (err) => {
+            this.responseOnErrorPromiseHandler(response, reject, err);
+        });
+
+        if(method === 'GET' || method === 'get') {
+            //process the request, in this case simply reading a file based on the request url    
+            var requestURL = '.' + request.url;
+
+            if (requestURL == './' && served?.startpage) { //root should point to start page
+                requestURL = served.startpage; //point to the start page
+            }
+
+            //lets remove ? mark url extensions for now
+            if(requestURL.includes('?')) requestURL = requestURL.substring(0,requestURL.indexOf('?'));
+            
+            if((request.url !== '/' || served?.startpage) && fs.existsSync(path.join(process.cwd(),requestURL))) {
+                if(response.writableEnded || response.destroyed) reject(requestURL);
+                else {
+                    //read the file on the server
+                    fs.readFile(path.join(process.cwd(),requestURL), (error, content) => {
+                        this.onRequestFileReadPromiseHandler(error, content, resolve, reject, requestURL, response, message, served);
+                    });
+                }
+            } else if (message.route) {
+                let route;
+                if(served) {
+                    let rt = `${served.port}/${message.route}`;
+                    if(this.__node.nodes.get(rt)) route = rt
+                }
+                if(!route && this.__node.nodes.get(message.route)) route = message.route;
+                
+                if(route) {
+                    let res:any;
+                    if(message.method) {
+                        res = this.handleMethod(route, message.method, undefined); //these methods are being passed request/response in the data here, post methods will parse the command objects instead while this can be used to get html templates or play with req/res custom callbakcs
+                    }
+                    else if (message.node) {
+                        res = this.handleGraphNodeCall(message.node, undefined);
+                    }
+                    else res = this.handleServiceMessage({route,args:undefined,method:message.method});
+
+                    if(res instanceof Promise) res.then((r) => {
+                        if(served?.keepState) this.setState({[served.address]:res});
+                        this.withResult(response,r,message);
+                        resolve(res);
+                        
+                        //return;
+                    })
+                    else if(res) {
+                        if(served?.keepState) this.setState({[served.address]:res});
+                        this.withResult(response,res,message);
+                        resolve(res);
+                       // return;
+                    } //else we can move on to check the get post
+                }
+                else if (message.redirect) {
+                    response.writeHead(301, {'Location':message.redirect});
+                    response.end();
+                    resolve(true);
+                } 
+                else this.getFailedPromiseHandler(resolve,reject,requestURL,message,response,served);
+            } else this.getFailedPromiseHandler(resolve,reject,requestURL,message,response,served);
+        } else {
+            //get post/put/etc body if any
+            let body:any = [];
+            request.on('data',(chunk)=>{ //https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction/
+                body.push(chunk);
+            }).on('end',() => {
+                this.handleBufferedPostBodyPromiseHandler(resolve,body,message,response,served);
+            });
+
+        }
+
+
     }
 
     request = ( 
@@ -1104,3 +1125,7 @@ function getPageOptions(url, received, pages, request, response, port) {
 
     return pageOptions;
 }
+
+
+
+
