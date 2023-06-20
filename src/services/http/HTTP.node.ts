@@ -27,7 +27,9 @@ export type ServerProps = {
     type?:'httpserver'|string,
     keepState?:boolean, //setState whenever a route is run? State will be available at the address (same key of the object storing it here)
     onopen?:(served:ServerInfo)=>void, //onopen callback
+    onerror?:(er:Error,served:ServerInfo)=>void,
     onclose?:(served:ServerInfo)=>void, //server close callback
+    onupgrade?:(request, socket, head, served:ServerInfo)=>void,
     _id?:string,
     [key:string]:any
 }
@@ -147,9 +149,9 @@ export class HTTPbackend extends Service {
         onStarted:()=>void = ()=>{this.onStarted('http',options.host,options.port)}
     ) => {
 
-        const host = options.host;
-        const port = options.port;
         options.protocol = 'http';
+        const host = options.host ? options.host : 'localhost';
+        const port = options.port ? options.port : 8000;
 
         if(!host || !port) return;
 
@@ -213,14 +215,23 @@ export class HTTPbackend extends Service {
         return new Promise((resolve,reject) => {
             let resolved;
             server.on('error',(err)=>{
-                console.error('Server error:', err.toString());
+                if(served.onerror) served.onerror(err, served);
+                else console.error('Server error:', err.toString());
                 if(!resolved) reject(err);
             });
             server.on('clientError',(err) =>{
-                console.error(err);
+                if(served.onerror) served.onerror(err, served);
+                else console.error('Server error:', err.toString());
+            });
+            server.on('tlsClientError',(err) =>{
+                if(served.onerror) served.onerror(err, served);
+                else console.error('Server error:', err.toString());
+            });
+            server.on('upgrade',(request, socket, head) => {
+                if(served.onupgrade) served.onupgrade(request,socket,head,served);
             });
             server.listen( 
-                port,host,
+                port, host,
                 ()=>{
                     onStarted(); 
                     if(served.onopen) served.onopen(served);
@@ -246,9 +257,9 @@ export class HTTPbackend extends Service {
         onStarted:()=>void = ()=>{this.onStarted('https',options.host,options.port)}
     ) => {
 
-        const host = options.host;
-        const port = options.port;
-        options.protocol = 'https';
+        options.protocol = 'http';
+        const host = options.host ? options.host : 'localhost';
+        const port = options.port ? options.port : 8000;
 
         if(!host || !port || !options.certpath || !options.keypath) return;
     
@@ -315,11 +326,20 @@ export class HTTPbackend extends Service {
         return new Promise((resolve,reject) => {
             let resolved;
             server.on('error',(err)=>{
-                console.error('Server error:', err.toString());
+                if(served.onerror) served.onerror(err, served);
+                else console.error('Server error:', err.toString());
                 if(!resolved) reject(err);
             });
             server.on('clientError',(err) =>{
-                console.error(err);
+                if(served.onerror) served.onerror(err, served);
+                else console.error('Server error:', err.toString());
+            });
+            server.on('tlsClientError',(err) =>{
+                if(served.onerror) served.onerror(err, served);
+                else console.error('Server error:', err.toString());
+            });
+            server.on('upgrade',(request, socket, head) => {
+                if(served.onupgrade) served.onupgrade(request,socket,head,served);
             });
             server.listen( 
                 port,host,

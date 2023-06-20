@@ -1,15 +1,17 @@
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
-import WebSocket, { WebSocketServer } from 'ws'; //third party lib. //createWebSocketStream <-- use this for cross-node instance communication
+import WebSocket, { PerMessageDeflateOptions, WebSocketServer } from 'ws'; //third party lib. //createWebSocketStream <-- use this for cross-node instance communication
 import http from 'http'
 import https from 'https'
 import { GraphNodeProperties } from "../../core/Graph";
 //import { GraphNode } from "../Graph";
 
 export type SocketServerProps = {
-    server:http.Server|https.Server,
-    host:'localhost'|'127.0.0.1'|string,
-    port:7000|number,
-    path:'wss'|'hotreload'|'python'|string,
+    server?:http.Server|https.Server,
+    port?:7000|number,
+    path?:'wss'|'hotreload'|'python'|string,
+    noServer?:boolean,
+    host?:'localhost'|'127.0.0.1'|string, //for matching upgrade urls
+    perMessageDeflate?:PerMessageDeflateOptions,
     onmessage?:(data:any, ws:WebSocket, serverinfo:SocketServerInfo)=>void,
     onclose?:(wss:WebSocketServer, serverinfo:SocketServerInfo)=>void,
     onconnection?:(ws:WebSocket,request:http.IncomingMessage, serverinfo:SocketServerInfo, clientId:string)=>void,
@@ -102,25 +104,35 @@ export class WSSbackend extends Service {
         options:SocketServerProps,
     ) => {
 
-        const host = options.host;
-        const port = options.port;
+        let port = options.port;
         let path = options.path;
         const server = options.server;
+        let host = options.host;
         delete (options as any).server
         if(!('keepState' in options)) options.keepState = true;
 
-        let opts = {
-            host,
-            port
-        };
+        let opts = {} as any;
+        if(options.noServer) opts.noServer = true;
+        else if(port) {
+            if(port) opts.port = port;
+        }
+        else if(server) opts.server = server;
+        if(options.perMessageDeflate) opts.perMessageDeflate = options.perMessageDeflate;
 
         if(typeof options.serverOptions) Object.assign(opts,options.serverOptions);
 
         const wss = new WebSocketServer(opts);
 
-        let address = `${host}:${port}/`;
+        let address = '';
+        if(!host && server) {
+            let addr = server.address() as any;
+            if(!port) port = addr.port;
+            address = addr.address;
+
+        } else if(host) address = host;
+        if(port) address += ':'+port;
         if(path) {
-            if(path.startsWith('/')) path = path.substring(1);
+            if(!path.startsWith('/')) path = '/'+path;
             address += path;
         }
 
@@ -149,7 +161,7 @@ export class WSSbackend extends Service {
 
             ws.send(JSON.stringify({ route:'setId', args:clientId }));
 
-            let info = this.openWS({
+            this.openWS({
                 socket:ws,
                 address:clientId,
                 _id:clientId
@@ -175,28 +187,38 @@ export class WSSbackend extends Service {
             else console.error(err);
         })
 
-        let onUpgrade = (request:http.IncomingMessage,socket:any,head:Buffer) => { //https://github.com/websockets/ws
+        let onUpgrade = (request:http.IncomingMessage, socket:any, head:Buffer) => { //https://github.com/websockets/ws
             
             if(request.headers && request.url) {
                 if(this.debug) console.log("Upgrade request at: ", request.url);
-                let addr = (request as any).headers.host.split(':')[0];
-                addr += ':'+port;
-                addr += request.url.split('?')[0];
-
-                if(addr === address && this.servers[addr]) {
-                    this.servers[addr].wss.handleUpgrade(request,socket,head, (ws) => {
+                let pass = false;
+                
+                if(path && request.url === path) pass = true;
+                else {
+                    let addr = (request as any).headers.host.split(':')[0];
+                    if(port) addr += ':'+port;
+                    if(addr === address) pass = true;
+                    else {
+                        addr += request.url.split('?')[0];
+                        if(addr === address) pass = true;
+                    }
+                }
+                
+                if(pass && this.servers[address]) {
+                    this.servers[address].wss.handleUpgrade(request,socket,head, (ws) => {
                         if((this.servers[address] as any).onupgrade) 
                             (this.servers[address] as any).onupgrade(ws, this.servers[address], request, socket, head);
-                        this.servers[addr].wss.emit('connection', ws, request);
+                        this.servers[address].wss.emit('connection', ws, request);
                     });
                 }
             }
         }
 
-        server.addListener('upgrade',onUpgrade);
+        if(server) 
+            server.addListener('upgrade', onUpgrade);
 
         wss.on('close',()=> {
-            server.removeListener('upgrade',onUpgrade);
+            if(server) server.removeListener('upgrade',onUpgrade);
             if((this.servers[address] as any).onclose) (this.servers[address] as any).onclose(wss, this.servers[address]);
             else console.log(`wss closed: ${address}`);
 

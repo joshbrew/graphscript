@@ -2,15 +2,17 @@
 /// <reference types="node" />
 /// <reference types="node" />
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
-import WebSocket, { WebSocketServer } from 'ws';
+import WebSocket, { PerMessageDeflateOptions, WebSocketServer } from 'ws';
 import http from 'http';
 import https from 'https';
 import { GraphNodeProperties } from "../../core/Graph";
 export type SocketServerProps = {
-    server: http.Server | https.Server;
-    host: 'localhost' | '127.0.0.1' | string;
-    port: 7000 | number;
-    path: 'wss' | 'hotreload' | 'python' | string;
+    server?: http.Server | https.Server;
+    port?: 7000 | number;
+    path?: 'wss' | 'hotreload' | 'python' | string;
+    noServer?: boolean;
+    host?: 'localhost' | '127.0.0.1' | string;
+    perMessageDeflate?: PerMessageDeflateOptions;
     onmessage?: (data: any, ws: WebSocket, serverinfo: SocketServerInfo) => void;
     onclose?: (wss: WebSocketServer, serverinfo: SocketServerInfo) => void;
     onconnection?: (ws: WebSocket, request: http.IncomingMessage, serverinfo: SocketServerInfo, clientId: string) => void;

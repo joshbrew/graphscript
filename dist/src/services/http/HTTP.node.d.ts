@@ -29,7 +29,9 @@ export type ServerProps = {
     type?: 'httpserver' | string;
     keepState?: boolean;
     onopen?: (served: ServerInfo) => void;
+    onerror?: (er: Error, served: ServerInfo) => void;
     onclose?: (served: ServerInfo) => void;
+    onupgrade?: (request: any, socket: any, head: any, served: ServerInfo) => void;
     _id?: string;
     [key: string]: any;
 };
