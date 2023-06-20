@@ -442,6 +442,8 @@ export class HTTPbackend extends Service {
 
             response.writeHead(200,{'Content-Type':mimeType});
             response.end(result,'utf-8');
+        } else {
+            try {response.end();} catch {}
         }
     }
 
@@ -498,11 +500,14 @@ export class HTTPbackend extends Service {
             response.end(undefined,undefined as any,()=>{                
                 reject(err);
             });
+        } else {
+            try {response.end();} catch {}
+            reject(err);
         }
     }
 
     //internal
-    getFailedPromiseHandler = (resolve, reject, requestURL, message, response, served) => {
+    getFailedPromiseHandler = (resolve, reject, requestURL, message, response:http.ServerResponse, served) => {
         if(response.writableEnded || response.destroyed) reject(requestURL); 
         if(requestURL == './' || requestURL == served?.startpage) {
             let template = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Brains@Play Server</h1></body></html>`; //start page dummy
@@ -526,7 +531,7 @@ export class HTTPbackend extends Service {
     }
 
     //internal
-    handleBufferedPostBodyPromiseHandler = (resolve, body, message, response, served) => {
+    handleBufferedPostBodyPromiseHandler = (resolve, body, message, response:http.ServerResponse, served) => {
         
         body = Buffer.concat(body).toString(); //now it's a string
                 
@@ -588,12 +593,15 @@ export class HTTPbackend extends Service {
             response.end(undefined,undefined as any, () => {
                 resolve(res);
             }); //posts etc. shouldn't return anything but a 200 usually
-        } else resolve(res); //get requests resolve first and return otherwise this will resolve 
+        } else {
+            try {response.end();} catch {}
+            resolve(res); //get requests resolve first and return otherwise this will resolve 
+        }
     
     }
 
     //internal
-    onRequestFileReadPromiseHandler =  (error, content, resolve, reject, requestURL, response, message, served) => {
+    onRequestFileReadPromiseHandler =  (error, content, resolve, reject, requestURL, response:http.ServerResponse, message, served) => {
         if (error) {
             if(error.code == 'ENOENT') { //page not found: 404
                 if(served?.errpage) {
@@ -633,6 +641,7 @@ export class HTTPbackend extends Service {
                     reject(error.code);
                 }); //set response content
                 //return;
+                
             }
         }
         else { //file read successfully, serve the content back
@@ -658,7 +667,7 @@ export class HTTPbackend extends Service {
     }
 
     //internal
-    responsePromiseHandler = (resolve, reject, message, request, response, method, served) => {
+    responsePromiseHandler = (resolve, reject, message, request, response:http.ServerResponse, method, served) => {
 
         response.on('error', (err) => {
             this.responseOnErrorPromiseHandler(response, reject, err);
