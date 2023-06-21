@@ -517,9 +517,8 @@ export class HTTPbackend extends Service {
     responseOnErrorPromiseHandler =  (response, reject, err) => {
         if(!response.writableEnded || !response.destroyed ) {
             response.statusCode = 400;
-            response.end(undefined,undefined as any,()=>{                
-                reject(err);
-            });
+            response.end(undefined,undefined as any);
+            reject(err);
         } else {
             try {response.end();} catch {}
             reject(err);
@@ -535,17 +534,16 @@ export class HTTPbackend extends Service {
                 template = this.injectPageCode(template,message.route,served) as any;
             }
             response.writeHead(200, { 'Content-Type': 'text/html' });
-            response.end(template,'utf-8',() => {
-                resolve(template);
-            }); //write some boilerplate server page, we should make this an interactive debug page
+            response.end(template,'utf-8'); //write some boilerplate server page, we should make this an interactive debug page
+            resolve(template);
             if(served?.keepState) this.setState({[served.address]:template});
-            //return;
+            return;
         }
         else if(this.debug) console.log(`File ${requestURL} does not exist on path!`);
+        
         response.writeHead(500); //set response headers
-        response.end(undefined,undefined as any,()=>{
-            reject(requestURL);
-        });
+        response.end(undefined,undefined as any);
+        reject(requestURL);
        
         //return;
     }
@@ -610,9 +608,8 @@ export class HTTPbackend extends Service {
         }
         else if(!response.writableEnded || !response.destroyed) {
             response.statusCode = 200;
-            response.end(undefined,undefined as any, () => {
-                resolve(res);
-            }); //posts etc. shouldn't return anything but a 200 usually
+            response.end(undefined,undefined as any); //posts etc. shouldn't return anything but a 200 usually
+            resolve(res);
         } else {
             try {response.end();} catch {}
             resolve(res); //get requests resolve first and return otherwise this will resolve 
@@ -649,17 +646,15 @@ export class HTTPbackend extends Service {
                     if(served?.pages?._all || served?.pages?.[message.route]) {
                         content = this.injectPageCode(content.toString(),message.route,served as any) as any;
                     }
-                    response.end(content,'utf-8', () => {
-                        reject(error.code);
-                    });
+                    response.end(content,'utf-8');
+                    reject(error.code);
                     //return;
                 }
             }
             else { //other error
                 response.writeHead(500); //set response headers
-                response.end('Something went wrong: '+error.code+' ..\n','utf-8', () => {
-                    reject(error.code);
-                }); //set response content
+                response.end('Something went wrong: '+error.code+' ..\n','utf-8'); //set response content
+                reject(error.code);
                 //return;
                 
             }
@@ -676,10 +671,8 @@ export class HTTPbackend extends Service {
             }
 
             response.writeHead(200, { 'Content-Type': contentType }); //set response headers
-            response.end(content, 'utf-8', () => {
-                //console.log(response,content,contentType);
-                resolve(content);
-            }); //set response content
+            response.end(content, 'utf-8'); //set response content
+            resolve(content);
             
             //console.log(content); //debug
             //return;
