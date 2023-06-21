@@ -588,7 +588,7 @@ export class HTTPbackend extends Service {
     }
 
     //internal
-    responsePromiseHandler = (resolve, reject, message, request, response:http.ServerResponse, method, served) => {
+    responsePromiseHandler = (resolve, reject, message, request:http.IncomingMessage, response:http.ServerResponse, method, served) => {
 
         response.on('error', (err) => {
             this.responseOnErrorPromiseHandler(response, reject, err);
