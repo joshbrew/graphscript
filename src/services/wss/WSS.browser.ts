@@ -6,6 +6,7 @@ export type WebSocketProps = {
     host:string,
     port:number,
     path?:string,
+    debug?:boolean,
     onmessage?:(data:string | ArrayBufferLike | Blob | ArrayBufferView,  ws:WebSocket, wsinfo:WebSocketInfo)=>void, //will use this.receive as default
     onopen?:(ev:any, ws:WebSocket, wsinfo:WebSocketInfo)=>void,
     onclose?:(ev:any,  ws:WebSocket, wsinfo:WebSocketInfo)=>void,
@@ -81,6 +82,9 @@ export class WSSfrontend extends Service {
             if(!options._id) {
                 options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { 
                     if(data) if(typeof data === 'string') {
+                        if(options.debug) {
+                            console.log("Message from ",(socket as WebSocket).url, ": ", data);
+                        }
                         let substr = data.substring(0,8);
                         if(substr.includes('{') || substr.includes('[')) {    
                             if(substr.includes('\\')) data = data.replace(/\\/g,"");

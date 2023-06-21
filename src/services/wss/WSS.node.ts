@@ -45,6 +45,7 @@ export type SocketProps = {
     path?:string,
     socket?:WebSocket,
     address?:string,
+    debug?:boolean,
     serverOptions?:WebSocket.ServerOptions
     onmessage?:(data:string | ArrayBufferLike | Blob | ArrayBufferView | Buffer[], ws:WebSocket,wsinfo:SocketProps)=>void,  //will use this.receive as default
     onopen?:(ws:WebSocket,wsinfo:SocketProps)=>void,
@@ -166,6 +167,7 @@ export class WSSbackend extends Service {
                 socket:ws,
                 address:clientId,
                 _id:clientId,
+                debug:options.debug,
                 onclose:(code,reason) => {
                     if(this.servers[address].onconnectionclosed) 
                         (this.servers[address] as any).onconnectionclosed(code, reason, ws, this.servers[address], clientId);
@@ -339,6 +341,9 @@ export class WSSbackend extends Service {
             let socketonmessage = (data:any)=>{ 
                 if(ArrayBuffer.isView(data)) data = data.toString();
                 if(data) {
+                    if(options.debug) {
+                        console.log("Message from ",(socket as WebSocket).url, ": ", data);
+                    }
                     if(typeof data === 'string') { //pulling this out of receive to check if setId was called
                         let substr = data.substring(0,8);
                         if(substr.includes('{') || substr.includes('[')) {    

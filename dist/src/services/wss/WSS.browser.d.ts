@@ -4,6 +4,7 @@ export type WebSocketProps = {
     host: string;
     port: number;
     path?: string;
+    debug?: boolean;
     onmessage?: (data: string | ArrayBufferLike | Blob | ArrayBufferView, ws: WebSocket, wsinfo: WebSocketInfo) => void;
     onopen?: (ev: any, ws: WebSocket, wsinfo: WebSocketInfo) => void;
     onclose?: (ev: any, ws: WebSocket, wsinfo: WebSocketInfo) => void;
@@ -51,6 +52,7 @@ export declare class WSSfrontend extends Service {
                 host: string;
                 port: number;
                 path?: string;
+                debug?: boolean;
                 onmessage?: (data: string | ArrayBufferView | ArrayBufferLike | Blob, ws: WebSocket, wsinfo: WebSocketInfo) => void;
                 onopen?: (ev: any, ws: WebSocket, wsinfo: WebSocketInfo) => void;
                 onclose?: (ev: any, ws: WebSocket, wsinfo: WebSocketInfo) => void;

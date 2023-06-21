@@ -46,6 +46,7 @@ export type SocketProps = {
     path?: string;
     socket?: WebSocket;
     address?: string;
+    debug?: boolean;
     serverOptions?: WebSocket.ServerOptions;
     onmessage?: (data: string | ArrayBufferLike | Blob | ArrayBufferView | Buffer[], ws: WebSocket, wsinfo: SocketProps) => void;
     onopen?: (ws: WebSocket, wsinfo: SocketProps) => void;

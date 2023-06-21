@@ -108,11 +108,11 @@ export declare class HTTPbackend extends Service {
         served?: ServerInfo;
         redirect?: string;
     }) => Promise<unknown>;
-    responseOnErrorPromiseHandler: (response: any, reject: any, err: any) => void;
+    responseOnErrorPromiseHandler: (response: http.ServerResponse, reject: any, err: any) => void;
     getFailedPromiseHandler: (resolve: any, reject: any, requestURL: any, message: any, response: http.ServerResponse, served: any) => void;
     handleBufferedPostBodyPromiseHandler: (resolve: any, body: any, message: any, response: http.ServerResponse, served: any) => void;
     onRequestFileReadPromiseHandler: (error: any, content: any, resolve: any, reject: any, requestURL: any, response: http.ServerResponse, message: any, served: any) => void;
-    responsePromiseHandler: (resolve: any, reject: any, message: any, request: any, response: http.ServerResponse, method: any, served: any) => void;
+    responsePromiseHandler: (resolve: any, reject: any, message: any, request: http.IncomingMessage, response: http.ServerResponse, method: any, served: any) => void;
     request: (options: ReqOptions | any, send?: any, ondata?: (chunk: any) => void, onend?: () => void) => http.ClientRequest;
     POST: (url: string | URL, data: any, headers?: {
         [key: string]: any;
