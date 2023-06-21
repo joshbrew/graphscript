@@ -30,6 +30,7 @@ export type ServerProps = {
     onerror?:(er:Error,served:ServerInfo)=>void,
     onclose?:(served:ServerInfo)=>void, //server close callback
     onupgrade?:(request, socket, head, served:ServerInfo)=>void,
+    timeout?:number, //request timeout, default is 1 second
     _id?:string,
     debug?:boolean,
     [key:string]:any
@@ -129,18 +130,19 @@ export class HTTPbackend extends Service {
             }
         }
 
-        if(options.protocol === 'https') {
-            return this.setupHTTPSserver(options as any, requestListener, onStarted);
-        }
-        else
-            return this.setupHTTPserver(options, requestListener, onStarted);
+        //create http or https server
+        this.setupHTTPserver(options, requestListener, onStarted);
     }
     
     open = this.setupServer;
 
-    //insecure server, todo merge commands since they're basically copied
+    //Define the server via http or https
     setupHTTPserver = (
-        options:ServerProps={
+        options:(ServerProps & {
+            certpath?:string, 
+            keypath?:string,
+            passphrase?:string
+        })={
             host:'localhost' as string,
             port:8080 as number,
             startpage:'index.html',
@@ -150,7 +152,6 @@ export class HTTPbackend extends Service {
         onStarted:()=>void = ()=>{this.onStarted('http',options.host,options.port)}
     ) => {
 
-        options.protocol = 'http';
         const host = options.host ? options.host : 'localhost';
         const port = options.port ? options.port : 8000;
 
@@ -169,6 +170,7 @@ export class HTTPbackend extends Service {
             ...options
         } as ServerInfo
 
+        //default requestListener propagates to graphscript
         if(!requestListener) 
             requestListener = (
                 request:http.IncomingMessage,
@@ -202,9 +204,33 @@ export class HTTPbackend extends Service {
         } //default requestListener
 
         //var http = require('http');
-        const server = http.createServer(
+        let server;
+        if(options.protocol === 'http')
+            server = http.createServer(
             requestListener
         );
+        else {
+            let opts;
+            if(options.keypath && options.certpath) {
+                opts = {
+                    key: fs.readFileSync(options.keypath),
+                    cert: fs.readFileSync(options.certpath),
+                    passphrase:options.passphrase
+                }
+                server = https.createServer(
+                    opts,
+                    requestListener
+                )
+            } else 
+                console.error('Error, key and/or cert .pem SSL files not provided. See OpenSSL certbot for more info on how to create free SSL certifications, or create your own self-signed one for local development.')
+              
+            
+        }
+
+        if(!server) {
+            console.error("Server not successfully created.");
+            return undefined;
+        }
 
         served.server = server;
         served.terminate = () => {
@@ -250,127 +276,6 @@ export class HTTPbackend extends Service {
                 }
             );
         }) as Promise<ServerInfo> ;
-    }
-
-    //secure server
-    setupHTTPSserver = (
-        options:ServerProps = {
-            host:'localhost' as string,
-            port:8080 as number,
-            startpage:'index.html',
-            certpath:'cert.pem' as string, 
-            keypath:'key.pem' as string,
-            passphrase:'encryption' as string,
-            errpage:undefined as undefined|string
-        },
-        requestListener?:http.RequestListener,
-        onStarted:()=>void = ()=>{this.onStarted('https',options.host,options.port)}
-    ) => {
-
-        options.protocol = 'http';
-        const host = options.host ? options.host : 'localhost';
-        const port = options.port ? options.port : 8000;
-
-        if(!host || !port || !options.certpath || !options.keypath) return;
-    
-        if(this.servers[`${host}:${port}`]) this.terminate(this.servers[`${host}:${port}`])
-
-        var opts = {
-            key: fs.readFileSync(options.keypath),
-            cert: fs.readFileSync(options.certpath),
-            passphrase:options.passphrase
-        };
-
-        if(!('keepState' in options)) 
-            options.keepState = true; //default true
-
-        const address = `${host}:${port}`;
-
-        const served = {
-            server:undefined as any,
-            type:'httpserver',
-            address,
-            ...options
-        } as ServerInfo;
-
-        //default requestListener
-        if(!requestListener) requestListener = (request:http.IncomingMessage,response:http.ServerResponse) => { 
-            
-            let received:any = {
-                args:{request, response}, 
-                method:request.method, 
-                served
-            };
-
-            let url = (request as any).url.slice(1);
-            if(!url) url = '/';
-          
-            if(options.debug) {
-                let time = getHoursAndMinutes(new Date());
-                console.log(
-                    time, ' | ',
-                    'From: ', request.socket?.remoteAddress, 
-                    'For: ', request.url, ' | ', request.method
-                );
-            }
-
-            if(options.pages) {
-                getPageOptions.call(this, url, received, options.pages, request, response, options.port);
-            } else received.route = url;
-            
-            this.receive(received); 
-        } //default requestListener
-
-
-        //var http = require('http');
-        const server = https.createServer(
-            opts,
-            requestListener 
-        );
-
-        served.server = server;
-        served.terminate = () => {
-            this.terminate(served);
-        }
-        served.service = this;
-        
-        // server.on('upgrade', (request, socket, head) => {
-        //     this.onUpgrade(request, socket, head);
-        // });
-
-        this.servers[address] = served;
-        served._id = options._id ? options._id : address;
-
-
-        //SITE AVAILABLE ON PORT:
-        return new Promise((resolve,reject) => {
-            let resolved;
-            server.on('error',(err)=>{
-                if(served.onerror) served.onerror(err, served);
-                else console.error('Server error:', err.toString());
-                if(!resolved) reject(err);
-            });
-            server.on('clientError',(err) =>{
-                if(served.onerror) served.onerror(err, served);
-                else console.error('Server error:', err.toString());
-            });
-            server.on('tlsClientError',(err) =>{
-                if(served.onerror) served.onerror(err, served);
-                else console.error('Server error:', err.toString());
-            });
-            server.on('upgrade',(request, socket, head) => {
-                if(served.onupgrade) served.onupgrade(request,socket,head,served);
-            });
-            server.listen( 
-                port,host,
-                ()=>{
-                    onStarted(); 
-                    if(served.onopen) served.onopen(served);
-                    resolved = true;
-                    resolve(served);
-                }
-            );
-        }) as Promise<ServerInfo>;
     }
 
     transmit = ( //generalized http request. The default will try to post back to the first server in the list
@@ -579,7 +484,10 @@ export class HTTPbackend extends Service {
                 method = message.method;
                 args = message.args;
                 if(!route) {
-                    if(typeof message.route === 'string') if(message.route.includes('/') && message.route.length > 1) message.route = message.route.split('/').pop() as string;
+                    if(typeof message.route === 'string') 
+                        if(message.route.includes('/') && message.route.length > 1) 
+                            message.route = message.route.split('/').pop() as string;
+
                     route = message.route;
                 }
             }
@@ -746,12 +654,31 @@ export class HTTPbackend extends Service {
             } else this.getFailedPromiseHandler(resolve,reject,requestURL,message,response,served);
         } else {
             //get post/put/etc body if any
-            let body:any = [];
+            let requestBody;
+            let timedOut = true;
+            let timeout;
+
             request.on('data',(chunk)=>{ //https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction/
-                body.push(chunk);
+                if(!requestBody) requestBody = [] as any[];
+                requestBody.push(chunk);
+                if(timedOut) {
+                    timedOut = false;
+                    if(timeout) clearTimeout(timeout);
+                }
             }).on('end',() => {
-                this.handleBufferedPostBodyPromiseHandler(resolve,body,message,response,served);
+                this.handleBufferedPostBodyPromiseHandler(resolve,requestBody,message,response,served);
             });
+
+            //timeout posts/puts/etc if no body
+            timeout = setTimeout(() => { 
+                if(timedOut) {
+                    request.destroy();
+                    if(served.debug) {
+                        console.error('Request timed out from |', request.socket?.remoteAddress, 'For: ', request.url, ' | ', request.method);
+                    }
+                    reject('Request timed out!');
+                }
+            }, served.timeout ? served.timeout : 1000); //most likely an unhandled method
 
         }
 

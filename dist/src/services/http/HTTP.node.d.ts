@@ -32,6 +32,7 @@ export type ServerProps = {
     onerror?: (er: Error, served: ServerInfo) => void;
     onclose?: (served: ServerInfo) => void;
     onupgrade?: (request: any, socket: any, head: any, served: ServerInfo) => void;
+    timeout?: number;
     _id?: string;
     debug?: boolean;
     [key: string]: any;
@@ -67,10 +68,13 @@ export declare class HTTPbackend extends Service {
     };
     constructor(options?: ServiceOptions, settings?: ServerProps);
     onStarted: (protocol: 'http' | 'https' | string, host: string, port: number) => void;
-    setupServer: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
-    open: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
-    setupHTTPserver: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
-    setupHTTPSserver: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
+    setupServer: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => void;
+    open: (options?: ServerProps, requestListener?: http.RequestListener, onStarted?: () => void) => void;
+    setupHTTPserver: (options?: (ServerProps & {
+        certpath?: string;
+        keypath?: string;
+        passphrase?: string;
+    }), requestListener?: http.RequestListener, onStarted?: () => void) => Promise<ServerInfo>;
     transmit: (message: any | ServiceMessage, options: string | {
         protocol: 'http' | 'https' | string;
         host: string;
