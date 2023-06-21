@@ -20,6 +20,7 @@ export type SocketServerProps = {
     onupgrade?:(ws:WebSocket, serverinfo:SocketServerInfo, request:http.IncomingMessage, socket:any, head:Buffer)=>void, //after handleUpgrade is called
     keepState?:boolean,
     type?:'wss',
+    debug?:boolean
     serverOptions?:WebSocket.ServerOptions,
     [key:string]:any
 } & GraphNodeProperties
@@ -153,7 +154,7 @@ export class WSSbackend extends Service {
 
         }
 
-        wss.on('connection',(ws,request) => {
+        wss.addListener('connection',(ws,request) => {
             if(this.debug) console.log(`New socket connection on ${address}`);
 
             let clientId = `socket${Math.floor(Math.random()*1000000000000)}`;
@@ -164,21 +165,24 @@ export class WSSbackend extends Service {
             this.openWS({
                 socket:ws,
                 address:clientId,
-                _id:clientId
-            }); //add send/receive etc functionality
-
-
-            if((this.servers[address] as any).onconnection) 
-                (this.servers[address] as any).onconnection(ws,request,this.servers[address], clientId);//can overwrite the default onmesssage response 
-            
-            if((this.servers[address] as any).onconnectionclosed) 
-                ws.on('close',(code,reason)=>{
+                _id:clientId,
+                onclose:(code,reason) => {
                     if(this.servers[address].onconnectionclosed) 
                         (this.servers[address] as any).onconnectionclosed(code, reason, ws, this.servers[address], clientId);
 
                     delete this.servers[address].clients[clientId]; //delete by default onclose (memory saving)
-                });
+                }
+            }); //add send/receive etc functionality
 
+
+            if(options.debug) {
+                let time = getHoursAndMinutes(new Date());
+                console.log(time, ' | ', clientId, ' | Number of live sockets: ', Object.keys(this.servers[address].clients).length);
+            }
+
+            if((this.servers[address] as any).onconnection) 
+                (this.servers[address] as any).onconnection(ws,request,this.servers[address], clientId);//can overwrite the default onmesssage response 
+          
         });
 
         wss.on('error',(err) => {
@@ -217,7 +221,7 @@ export class WSSbackend extends Service {
         if(server) 
             server.addListener('upgrade', onUpgrade);
 
-        wss.on('close',()=> {
+        wss.addListener('close',()=> {
             if(server) server.removeListener('upgrade',onUpgrade);
             if((this.servers[address] as any).onclose) (this.servers[address] as any).onclose(wss, this.servers[address]);
             else console.log(`wss closed: ${address}`);
@@ -322,7 +326,7 @@ export class WSSbackend extends Service {
 
         if(options.onmessage) socket.on('message',(data)=>{(this.sockets[address] as any).onmessage(data,socket,this.sockets[address]);}); 
         else if (options._id) {
-            socket.on('message', (data:any)=> {
+            socket.addListener('message', (data:any)=> {
                 if(ArrayBuffer.isView(data)) data = data.toString();
                 this.receive(data,socket, this.sockets[address]); 
                 //console.log('socket received',data,Array.from(this.__node.nodes.keys()));
@@ -361,15 +365,15 @@ export class WSSbackend extends Service {
                 this.receive(data,socket,this.sockets[address]); 
                 if(options.keepState) this.setState({[address]:data}); 
             }
-            socket.on('message',socketonmessage); //add default callback if none specified
+            socket.addListener('message',socketonmessage); //add default callback if none specified
             options.onmessage = socketonmessage;
         }
 
-        socket.on('open',()=>{
+        socket.addListener('open',()=>{
             if(this.sockets[address].onopen) (this.sockets[address] as any).onopen(socket,this.sockets[address]);
         });
         
-        socket.on('close',(code,reason)=>{
+        socket.addListener('close',(code,reason)=>{
             if(this.sockets[address].onclose) 
                 (this.sockets[address] as any).onclose(code,reason,socket,this.sockets[address]);
             
@@ -647,4 +651,22 @@ export class WSSbackend extends Service {
         }
     }
 
+}
+
+
+
+
+
+
+
+
+function getHoursAndMinutes(date) {
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+
+    // Convert the hours and minutes to two digits
+    hours = hours < 10 ? '0' + hours : hours;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+    return `${hours}:${minutes}`;
 }

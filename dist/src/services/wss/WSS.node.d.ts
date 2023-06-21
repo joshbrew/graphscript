@@ -21,6 +21,7 @@ export type SocketServerProps = {
     onupgrade?: (ws: WebSocket, serverinfo: SocketServerInfo, request: http.IncomingMessage, socket: any, head: Buffer) => void;
     keepState?: boolean;
     type?: 'wss';
+    debug?: boolean;
     serverOptions?: WebSocket.ServerOptions;
     [key: string]: any;
 } & GraphNodeProperties;

@@ -789,7 +789,7 @@ export class Router extends Service {
                     let oldonclose = c.onclose;
                     c.onclose = (...args:any[]) => { 
                         if(settings.onclose) settings.onclose(settings, ...args); 
-                        if(this.users[settings.source] && Object.keys(this.sources[settings.source]).length === 0) {
+                        if(settings.source && this.users[settings.source] && Object.keys(this.sources[settings.source]).length === 0) {
                             this.removeUser(settings.source, false); 
                         }  
                         if(oldonclose) oldonclose(...args); 
@@ -799,7 +799,7 @@ export class Router extends Service {
                 let oldonclose = c.onclose;
                 c.onclose = (...args:any[]) => { 
                     this.removeConnection(settings); 
-                    if(this.users[settings.source] && Object.keys(this.sources[settings.source]).length === 0) {
+                    if(settings.source && this.users[settings.source] && Object.keys(this.sources[settings.source]).length === 0) {
                         this.removeUser(settings.source, false); 
                     } 
                     if(oldonclose) oldonclose(...args); 

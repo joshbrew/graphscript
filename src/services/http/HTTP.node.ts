@@ -31,6 +31,7 @@ export type ServerProps = {
     onclose?:(served:ServerInfo)=>void, //server close callback
     onupgrade?:(request, socket, head, served:ServerInfo)=>void,
     _id?:string,
+    debug?:boolean,
     [key:string]:any
 }
 
@@ -184,6 +185,15 @@ export class HTTPbackend extends Service {
             if(!url) url = '/';
             //console.log(options)
             
+            if(options.debug) {
+                let time = getHoursAndMinutes(new Date());
+                console.log(
+                    time, ' | ',
+                    'From: ', request.socket?.remoteAddress, 
+                    'For: ', request.url, ' | ', request.method
+                );
+            }
+
             if(options.pages) {
                 getPageOptions.call(this, url, received, options.pages, request, response, options.port);
             } else received.route = url;
@@ -271,7 +281,8 @@ export class HTTPbackend extends Service {
             passphrase:options.passphrase
         };
 
-        if(!('keepState' in options)) options.keepState = true; //default true
+        if(!('keepState' in options)) 
+            options.keepState = true; //default true
 
         const address = `${host}:${port}`;
 
@@ -293,6 +304,15 @@ export class HTTPbackend extends Service {
 
             let url = (request as any).url.slice(1);
             if(!url) url = '/';
+          
+            if(options.debug) {
+                let time = getHoursAndMinutes(new Date());
+                console.log(
+                    time, ' | ',
+                    'From: ', request.socket?.remoteAddress, 
+                    'For: ', request.url, ' | ', request.method
+                );
+            }
 
             if(options.pages) {
                 getPageOptions.call(this, url, received, options.pages, request, response, options.port);
@@ -1158,3 +1178,13 @@ function getPageOptions(url, received, pages, request, response, port) {
 
 
 
+function getHoursAndMinutes(date) {
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+
+    // Convert the hours and minutes to two digits
+    hours = hours < 10 ? '0' + hours : hours;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+    return `${hours}:${minutes}`;
+}

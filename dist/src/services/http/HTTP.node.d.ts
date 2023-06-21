@@ -33,6 +33,7 @@ export type ServerProps = {
     onclose?: (served: ServerInfo) => void;
     onupgrade?: (request: any, socket: any, head: any, served: ServerInfo) => void;
     _id?: string;
+    debug?: boolean;
     [key: string]: any;
 };
 export type ServerInfo = {
