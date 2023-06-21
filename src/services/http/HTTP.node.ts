@@ -255,9 +255,10 @@ export class HTTPbackend extends Service {
                 else console.error('Server error:', err.toString());
                 if(!resolved) reject(err);
             });
-            server.on('clientError',(err) =>{
+            server.on('clientError',(err,socket:http.IncomingMessage["socket"]) =>{
                 if(served.onerror) served.onerror(err, served);
                 else console.error('Server error:', err.toString());
+                if(socket) socket.destroy();
             });
             server.on('tlsClientError',(err) =>{
                 if(served.onerror) served.onerror(err, served);
@@ -368,7 +369,7 @@ export class HTTPbackend extends Service {
             response.writeHead(200,{'Content-Type':mimeType});
             response.end(result,'utf-8');
         } else {
-            try {response.end();} catch {}
+            try {response.destroy();} catch {}
         }
     }
 
@@ -412,7 +413,7 @@ export class HTTPbackend extends Service {
         //console.log(request); //debug
 
         let result = new Promise((resolve,reject) => {
-            this.responsePromiseHandler(resolve, reject, message, message.args.request, message.args.response, message.method, message.served);
+            this.responsePromiseHandler(resolve, reject, message, message.args.request, message.args.response, message.method as string, message.served as ServerInfo);
         }).catch((er)=>{ console.error("Request Error:", er); });
 
         return result;
@@ -526,7 +527,7 @@ export class HTTPbackend extends Service {
     }
 
     //internal
-    onRequestFileReadPromiseHandler =  (error, content, resolve, reject, requestURL, response:http.ServerResponse, message, served) => {
+    onRequestFileReadPromiseHandler =  (error, content, resolve, reject, requestURL, response:http.ServerResponse, message, served:ServerInfo) => {
         if (error) {
             if(error.code == 'ENOENT') { //page not found: 404
                 if(served?.errpage) {
@@ -588,7 +589,7 @@ export class HTTPbackend extends Service {
     }
 
     //internal
-    responsePromiseHandler = (resolve, reject, message, request:http.IncomingMessage, response:http.ServerResponse, method, served) => {
+    responsePromiseHandler = (resolve, reject, message, request:http.IncomingMessage, response:http.ServerResponse, method:string, served:ServerInfo) => {
 
         response.on('error', (err) => {
             this.responseOnErrorPromiseHandler(response, reject, err);
@@ -672,11 +673,13 @@ export class HTTPbackend extends Service {
             //timeout posts/puts/etc if no body
             timeout = setTimeout(() => { 
                 if(timedOut) {
-                    request.destroy(new Error('Request timed out!'));
+                    let errMessage = new Error(`Request timed out from | ${request.socket?.remoteAddress} | For: ${request.url} | ${request.method}`);
+                    request.destroy(errMessage);
+                    served.server.emit('clientError', errMessage, request.socket);
                     if(served.debug) {
-                        console.error('Request timed out from |', request.socket?.remoteAddress, 'For: ', request.url, ' | ', request.method);
+                        console.error(errMessage);
                     }
-                    reject('Request timed out!');
+                    reject(errMessage);
                 }
             }, served.timeout ? served.timeout : 1000); //most likely an unhandled method
 
