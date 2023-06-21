@@ -56,17 +56,13 @@ export declare class WebRTCfrontend extends Service {
     unanswered: {
         [key: string]: WebRTCProps;
     };
-    iceServers: {
-        urls: string[];
-    }[];
+    iceServers: RTCIceServer[];
     connections: {
         rtc: {
             [key: string]: WebRTCInfo;
         };
     };
-    constructor(options?: ServiceOptions, iceServers?: {
-        urls: string[];
-    }[]);
+    constructor(options?: ServiceOptions, iceServers?: RTCIceServer[]);
     openRTC: (options?: WebRTCProps) => Promise<WebRTCInfo>;
     open: (options?: WebRTCProps) => Promise<WebRTCInfo>;
     addIceCandidate: (rtc: RTCPeerConnection | string, candidate: RTCIceCandidate) => Promise<void>;

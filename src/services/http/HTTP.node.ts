@@ -593,6 +593,8 @@ export class HTTPbackend extends Service {
 
         response.on('error', (err) => {
             this.responseOnErrorPromiseHandler(response, reject, err);
+            request.destroy();
+            request.socket?.destroy();
         });
 
         if(method === 'GET' || method === 'get') {
@@ -809,7 +811,9 @@ export class HTTPbackend extends Service {
             }).on('end',() => {
                 resolve(Buffer.concat(chunks));
             }).on('error',(er)=>{
-                reject(er);
+                let errMessage = new Error(`Request timed out from | ${req.socket?.remoteAddress} | For: ${req.url} | ${req.method}`);
+                req.destroy(errMessage);
+                reject(errMessage);
             })
         });
     }

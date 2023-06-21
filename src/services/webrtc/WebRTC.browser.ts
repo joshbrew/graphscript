@@ -62,7 +62,7 @@ export class WebRTCfrontend extends Service {
         [key:string]:WebRTCProps
     } = {}
 
-    iceServers:{urls:string[]}[] = [
+    iceServers:RTCIceServer[] = [
         { urls: ['stun:stun.l.google.com:19302'] },
         { urls: ['stun:stun1.l.google.com:19302'] },
         { urls: ['stun:stun2.l.google.com:19302'] },
@@ -76,7 +76,7 @@ export class WebRTCfrontend extends Service {
 
     constructor(
         options?:ServiceOptions, 
-        iceServers?:{urls:string[]}[] 
+        iceServers?:RTCIceServer[] 
     ) {
         super(options);
 
