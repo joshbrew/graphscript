@@ -419,13 +419,13 @@ export class HTTPbackend extends Service {
     }
 
     //internal
-    responseOnErrorPromiseHandler =  (response, reject, err) => {
+    responseOnErrorPromiseHandler =  (response:http.ServerResponse, reject, err) => {
         if(!response.writableEnded || !response.destroyed ) {
             response.statusCode = 400;
             response.end(undefined,undefined as any);
             reject(err);
         } else {
-            try {response.end();} catch {}
+            try {response.destroy();} catch {}
             reject(err);
         }
     }
@@ -519,7 +519,7 @@ export class HTTPbackend extends Service {
             response.end(undefined,undefined as any); //posts etc. shouldn't return anything but a 200 usually
             resolve(res);
         } else {
-            try {response.end();} catch {}
+            try {response.destroy();} catch {}
             resolve(res); //get requests resolve first and return otherwise this will resolve 
         }
     
@@ -672,7 +672,7 @@ export class HTTPbackend extends Service {
             //timeout posts/puts/etc if no body
             timeout = setTimeout(() => { 
                 if(timedOut) {
-                    request.destroy();
+                    request.destroy(new Error('Request timed out!'));
                     if(served.debug) {
                         console.error('Request timed out from |', request.socket?.remoteAddress, 'For: ', request.url, ' | ', request.method);
                     }
