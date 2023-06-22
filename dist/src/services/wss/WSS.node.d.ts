@@ -7,7 +7,7 @@ import http from 'http';
 import https from 'https';
 import { GraphNodeProperties } from "../../core/Graph";
 export type SocketServerProps = {
-    server?: http.Server | https.Server;
+    server?: http.Server | https.Server | true;
     port?: 7000 | number;
     path?: 'wss' | 'hotreload' | 'python' | string;
     noServer?: boolean;

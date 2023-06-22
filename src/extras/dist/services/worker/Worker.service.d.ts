@@ -80,6 +80,7 @@ export declare class WorkerService extends Service {
         onmessage?: (ev: any) => void;
         onerror?: (ev: any) => void;
     }) => WorkerInfo;
+    close: () => void;
     toObjectURL: (scriptTemplate: string) => string;
     getTransferable(message: any): any;
     transmit: (message: ServiceMessage | any, worker?: Worker | MessagePort | string, transfer?: StructuredSerializeOptions) => any;

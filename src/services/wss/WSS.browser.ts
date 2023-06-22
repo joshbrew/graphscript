@@ -83,7 +83,7 @@ export class WSSfrontend extends Service {
                 options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { 
                     if(data) if(typeof data === 'string') {
                         if(options.debug) {
-                            console.log("Message from ",(socket as WebSocket).url, ": ", data);
+                            console.log("Message from ",address, ": ", data);
                         }
                         let substr = data.substring(0,8);
                         if(substr.includes('{') || substr.includes('[')) {    
@@ -96,6 +96,9 @@ export class WSSfrontend extends Service {
                                 this.sockets[address]._id = data.args;
 
                                 options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo) => { //clear extra logic after id is set
+                                    if(options.debug) {
+                                        console.log("Message from ",address, ": ", data);
+                                    }
                                     this.receive(data); 
                                     if(options.keepState) {
                                         this.setState({[address as string]:data});
@@ -111,6 +114,9 @@ export class WSSfrontend extends Service {
             }
             else {
                 options.onmessage = (data:any, ws:WebSocket, wsinfo:WebSocketInfo)=> {
+                    if(options.debug) {
+                        console.log("Message from ",(socket as WebSocket).url, ": ", data);
+                    }
                     this.receive(data,socket,this.sockets[address]); 
                     if(options.keepState) {
                         this.setState({[address]:data});

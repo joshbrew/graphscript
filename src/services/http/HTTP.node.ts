@@ -20,7 +20,7 @@ export type ServerProps = {
             template?:string,
             onrequest?:GraphNode|string|((self:HTTPbackend, node:GraphNode, request:http.IncomingMessage, response:http.ServerResponse)=>void), //run a function or node? the template, request and response are passed as arguments, you can write custom node logic within this function to customize inputs etc.
             redirect?:string, // can redirect the url to call a different route instead, e.g. '/':{redirect:'home'} sets the route passed to the receiver as 'home'
-            inject?:{[key:string]:{}|null}|string[]|string| ((...args:any)=>any) //append html      
+            inject?:{[key:string]:any}|any[]|string| ((...args:any)=>any) //append html      
         } & GraphNodeProperties
     },
     protocol?:'http'|'https',
@@ -1032,7 +1032,119 @@ export class HTTPbackend extends Service {
                 console.log('Hot Reload port available at ${socketURL}');  
                 (`+HotReloadClient.toString()+`)('${socketURL}',${esbuild_cssFileName ? `'${esbuild_cssFileName}'` : undefined}); 
             </script>
-        `
+        `;
+    }
+
+    pwa(serviceWorkerUrl="service-worker.js") {
+
+        //check for serviceWorkerUrl, if none install the default template
+        if(!fs.existsSync(serviceWorkerUrl)) {
+            fs.writeFileSync(path.join(process.cwd(),serviceWorkerUrl), defaultServiceWorker);
+        }
+        if(!fs.existsSync('manifest.webmanifest')) {
+            fs.writeFileSync(path.join(process.cwd(),'/manifest.webmanifest'), defaultManifest);
+        }
+
+        function ServiceWorkerInstaller(serviceWorkerUrl) {
+            // Check that service workers are supported
+
+            if(!Array.from(document.head.querySelectorAll('link')).find((elm:HTMLLinkElement) => {
+                if(elm.href.includes('manifest')) return true;
+            })) {
+                document.head.insertAdjacentHTML('beforeend',`<link rel="manifest" href="./manifest.webmanifest">`)
+            }
+
+            const isLocalhost = Boolean(
+                window.location.hostname === 'localhost' ||
+                  // [::1] is the IPv6 localhost address.
+                  window.location.hostname === '[::1]' ||
+                  // 127.0.0.1/8 is considered localhost for IPv4.
+                  window.location.hostname.match(
+                    /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
+                  )
+            );
+
+            function registerSW() {
+                navigator.serviceWorker
+                .register(serviceWorkerUrl)
+                .then(registration => {
+                    registration.onupdatefound = () => {
+                      const installingWorker = registration.installing;
+                      if (installingWorker == null) {
+                        return;
+                      }
+                      installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed') {
+                          if (navigator.serviceWorker.controller) {
+                            // At this point, the updated pre-cached content has been fetched,
+                            // but the previous service worker will still serve the older
+                            // content until all client tabs are closed.
+                            console.log(
+                              'New content is available and will be used when all tabs for this page are closed.'
+                            );
+              
+                          } else {
+                            // At this point, everything has been pre-cached.
+                            // It's the perfect time to display a
+                            // "Content is cached for offline use." message.
+                            console.log('Content is cached for offline use.');
+              
+                          }
+                        }
+                      };
+                    };
+                })
+                .catch(error => {
+                    console.error('Error during service worker registration:', error);
+                });
+            }
+
+            if ("serviceWorker" in navigator) addEventListener('load', () => {
+                if(isLocalhost) {
+                    // Add some additional logging to localhost, pointing developers to the
+                    
+                    // Check if the service worker can be found. If it can't reload the page.
+                    fetch(serviceWorkerUrl)
+                    .then(response => {
+                        // Ensure service worker exists, and that we really are getting a JS file.
+                        const contentType = response.headers.get('content-type');
+                        if (
+                        response.status === 404 ||
+                        (contentType != null && contentType.indexOf('javascript') === -1)
+                        ) {
+                        // No service worker found. Probably a different app. Reload the page.
+                        navigator.serviceWorker.ready.then(registration => {
+                            registration.unregister().then(() => {
+                                window.location.reload();
+                            });
+                        });
+                        } else {
+                        // Service worker found. Proceed as normal.
+                            registerSW();
+                        }
+                    })
+                    .catch(() => {
+                        console.log(
+                        'No internet connection found. App is running in offline mode.'
+                        );
+                    });
+                    
+                    // service worker/PWA documentation.
+                    navigator.serviceWorker.ready.then(() => {
+                        console.log('This web app is being served cache-first by a service worker.');
+                    });
+                }
+                else {
+                    registerSW();
+                } 
+            });
+        }
+
+        return `
+            <script>
+                (`+ServiceWorkerInstaller.toString()+`)('${serviceWorkerUrl}'); 
+            </script>
+        `;
     }
 
 }
@@ -1115,3 +1227,54 @@ function getHoursAndMinutes(date) {
 
     return `${hours}:${minutes}`;
 }
+
+
+const defaultServiceWorker = `//https://github.com/ibrahima92/pwa-with-vanilla-js
+let cacheName = 'pwa-assets';
+const assets = [
+  "/",
+  "/index.html",
+  "/styles.css",
+  "/index.css",
+  "/index.js",
+  "/dist/index.css", //alt default paths
+  "/dist/index.js",
+  '/favicon.ico',
+  '/service-worker.js'
+];
+
+self.addEventListener("install", installEvent => {
+  installEvent.waitUntil(
+    caches.open(cacheName).then(cache => {
+      cache.addAll(assets);
+    })
+  );
+});
+
+self.addEventListener("fetch", fetchEvent => {
+  fetchEvent.respondWith(
+    caches.match(fetchEvent.request).then(res => {
+      return res || fetch(fetchEvent.request);
+    })
+  );
+});
+
+`;
+
+const defaultManifest = `{
+    "short_name": "PWA",
+    "name": "PWA",
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff",
+    "description": "PWA Test",
+    "lang": "en-US",
+    "permissions": [
+        "storage"
+    ],
+    "icons":[{
+        "src": "./favicon.ico",
+        "sizes": "16x16"
+    }]
+}`

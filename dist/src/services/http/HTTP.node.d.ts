@@ -21,8 +21,8 @@ export type ServerProps = {
             onrequest?: GraphNode | string | ((self: HTTPbackend, node: GraphNode, request: http.IncomingMessage, response: http.ServerResponse) => void);
             redirect?: string;
             inject?: {
-                [key: string]: {} | null;
-            } | string[] | string | ((...args: any) => any);
+                [key: string]: any;
+            } | any[] | string | ((...args: any) => any);
         } & GraphNodeProperties);
     };
     protocol?: 'http' | 'https';
@@ -128,4 +128,5 @@ export declare class HTTPbackend extends Service {
         [key: string]: any;
     } | ((...args: any) => any), baseTemplate: string) => string;
     hotreload: (socketURL?: string | URL, esbuild_cssFileName?: string) => string;
+    pwa(serviceWorkerUrl?: string): string;
 }

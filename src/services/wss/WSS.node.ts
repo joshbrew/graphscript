@@ -6,7 +6,7 @@ import { GraphNodeProperties } from "../../core/Graph";
 //import { GraphNode } from "../Graph";
 
 export type SocketServerProps = {
-    server?:http.Server|https.Server,
+    server?:http.Server|https.Server|true, //set to true to indicate you want a wss when using the open() command if not providing a server...
     port?:7000|number,
     path?:'wss'|'hotreload'|'python'|string,
     noServer?:boolean,
@@ -108,7 +108,7 @@ export class WSSbackend extends Service {
 
         let port = options.port;
         let path = options.path;
-        const server = options.server;
+        const server = typeof options.server === 'object' ? options.server : undefined;
         let host = options.host;
         delete (options as any).server
         if(!('keepState' in options)) options.keepState = true;
@@ -148,6 +148,10 @@ export class WSSbackend extends Service {
 
         if(!options.onmessage) options.onmessage = (data) => {  //default onmessage
             if(data instanceof Buffer) data = data.toString();
+
+            if(options.debug) {
+                console.log(data);
+            }
             //console.log(data);
             const result = this.receive(data, wss, this.servers[address]); 
             //console.log(result)
@@ -326,10 +330,27 @@ export class WSSbackend extends Service {
 
         if(!('keepState' in options)) options.keepState = true;
 
-        if(options.onmessage) socket.on('message',(data)=>{(this.sockets[address] as any).onmessage(data,socket,this.sockets[address]);}); 
+        if(options.onmessage) {
+            socket.on(
+                'message',
+                (data)=>{(
+                    this.sockets[address] as any).onmessage(
+                        data,
+                        socket,
+                        this.sockets[address]
+                    );
+                }
+            ); 
+        } 
+           
         else if (options._id) {
             socket.addListener('message', (data:any)=> {
                 if(ArrayBuffer.isView(data)) data = data.toString();
+                
+                if(options.debug) {
+                    console.log("Message from ",options._id, ": ", data);
+                }
+
                 this.receive(data,socket, this.sockets[address]); 
                 //console.log('socket received',data,Array.from(this.__node.nodes.keys()));
                 if(options.keepState) {
@@ -342,7 +363,7 @@ export class WSSbackend extends Service {
                 if(ArrayBuffer.isView(data)) data = data.toString();
                 if(data) {
                     if(options.debug) {
-                        console.log("Message from ",(socket as WebSocket).url, ": ", data);
+                        console.log("Message from ",address, ": ", data);
                     }
                     if(typeof data === 'string') { //pulling this out of receive to check if setId was called
                         let substr = data.substring(0,8);
@@ -354,9 +375,16 @@ export class WSSbackend extends Service {
 
                             if(data.route === 'setId') {
                                 this.sockets[address]._id = data.args;
-                                socket.removeEventListener('message',socketonmessage);
+                                socket.removeEventListener(
+                                    'message',
+                                    socketonmessage
+                                );
+
                                 socket.on('message', (data:any)=> {                
                                     if(ArrayBuffer.isView(data)) data = data.toString();
+                                    if(options.debug) {
+                                        console.log("Message from ",this.sockets[address]._id, ": ", data);
+                                    }
                                     this.receive(data,socket,this.sockets[address]); 
                                     if(options.keepState) {
                                         this.setState({[address]:data});

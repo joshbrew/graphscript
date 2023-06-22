@@ -2,15 +2,23 @@ import { DataTablet } from './datastructures/index';
 import { Data, ProfileStruct, AuthorizationStruct, GroupStruct, DataStruct, EventStruct, ChatroomStruct, CommentStruct, Struct } from './datastructures/types';
 import { Service } from '../../services/Service';
 import { User } from '../../services/router/Router';
+import { GraphNodeProperties } from '../../core/Graph';
 export declare const randomId: (prefix?: any) => string;
 export declare const pseudoObjectId: (m?: Math, d?: DateConstructor, h?: number, s?: (s: any) => string) => string;
+export type StructFrontendProps = {
+    useAccessTokens?: boolean;
+    useRefreshTokens?: boolean;
+} & GraphNodeProperties;
 export declare class StructFrontend extends Service {
     name: string;
     currentUser: User;
     tablet: DataTablet;
     collections: Map<string, any>;
     id: string;
+    useAccessTokens: boolean;
+    useRefreshTokens: boolean;
     constructor(options?: any, user?: Partial<User>);
+    getToken(user: Partial<ProfileStruct>): string;
     setupUser: (userinfo: Partial<User>, callback?: (currentUser: any) => void) => Promise<any>;
     baseServerCallback: (data: any) => void;
     structNotification: () => void;

@@ -57,8 +57,8 @@ export class StructBackend extends Service {
     mode: 'local' | 'mongo' | string = 'local'; 
 
     useAuths: boolean = true; //check if the user querying has the correct permissions 
-    useAccessTokens: boolean = true; //extra security
-    useRefreshTokens: boolean = true; //not implemented
+    useAccessTokens: boolean = false; //extra security
+    useRefreshTokens: boolean = false; //fallback
 
     accessTokens:Map<string,string> = new Map();
     refreshTokens:Map<string,string> = new Map();
@@ -71,7 +71,9 @@ export class StructBackend extends Service {
             db?:any, //mongodb instance (mongoose)
             collections?:CollectionsType,
             useAuths?:boolean,
-            debug?:boolean
+            debug?:boolean,
+            useAccessTokens?:boolean,
+            useRefreshTokens?:boolean
         }
     ) {
         super(options);
@@ -89,6 +91,8 @@ export class StructBackend extends Service {
         if(dboptions.mode) this.mode = dboptions.mode;
         if(dboptions?.collections) this.collections = dboptions.collections;
         if(dboptions.debug) this.debug = dboptions.debug;
+        if(dboptions.useAccessTokens) this.useAccessTokens = dboptions.useAccessTokens;
+        if(dboptions.useRefreshTokens) this.useRefreshTokens = dboptions.useRefreshTokens;
         if('useAuths' in dboptions) this.useAuths = dboptions.useAuths;
         
         defaultCollections.forEach(k => {
@@ -101,18 +105,18 @@ export class StructBackend extends Service {
 
     //------------------------------------
     //routes to be loaded
-    query = async (requestingUserId:string,collection?:any,queryObj?:any,findOne?:boolean,skip?:number, accessToken?:string) => {
+    query = async (requestingUserId:string,collection?:any,queryObj?:any,findOne?:boolean,skip?:number, token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         if(this.mode.indexOf('mongo') > -1) {
-            return await this.queryMongo(user,collection,queryObj,findOne,skip,accessToken)
+            return await this.queryMongo(user,collection,queryObj,findOne,skip,token)
         } else {
             let res = this.getLocalData(user,collection);
             if(res && !Array.isArray(res)) {
                 let passed = !this.useAuths;
                 if(!res?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,res,'READ',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,res,'READ',token);
                 if(passed) return res;
             }
             if(typeof skip === 'number' && Array.isArray(res)) if(res.length > skip) res.splice(0,skip);
@@ -121,27 +125,27 @@ export class StructBackend extends Service {
                 let struct = this.getLocalData(getStringId(s._id));
                 let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',token);
                 if(passed) data.push(struct);
             }));
             return data;
         }
     }
 
-    getUser = async (requestingUserId:string, lookupId:string, basicInfo?:boolean, accessToken?:string) => {
+    getUser = async (requestingUserId:string, lookupId:string, basicInfo?:boolean, token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data:any;
         if(this.mode.indexOf('mongo') > -1) {
-            data = await this.getMongoUser(user, lookupId, undefined, basicInfo, accessToken);
+            data = await this.getMongoUser(user, lookupId, undefined, basicInfo, token);
         } else {
             let struct = this.getLocalData('profile',{_id:lookupId});
             if(!struct) data = {user:undefined};
             else {
                 let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',token);
                 if(passed) {
                     let groups = this.getLocalData('group',{ownerId:lookupId});
                     let auths = this.getLocalData('authorization',{ownerId:lookupId});
@@ -153,14 +157,14 @@ export class StructBackend extends Service {
         return data;
     }
 
-    setUser = async (requestingUserId:string, struct:Partial<ProfileStruct>, accessToken:string) => {
+    setUser = async (requestingUserId:string, struct:Partial<ProfileStruct>, token:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data:any;
 
         if(struct.accessToken) {
-            this.accessTokens.set(requestingUserId, accessToken);
+            this.accessTokens.set(requestingUserId, token);
         }
         if(struct.refreshToken) {
             this.refreshTokens.set(requestingUserId, struct.refreshToken);
@@ -171,11 +175,11 @@ export class StructBackend extends Service {
         delete struct.refreshToken;
 
         if(this.mode.indexOf('mongo') > -1) {
-            data = await this.setMongoUser(user,struct,accessToken);
+            data = await this.setMongoUser(user,struct,token);
         } else {
             let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,struct, 'WRITE', accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct, 'WRITE', token);
                 if(passed) this.setLocalData(struct);
                 return true;
         }
@@ -231,20 +235,20 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteUser = async (requestingUserId:string, userId:string, accessToken?:string) => {
+    deleteUser = async (requestingUserId:string, userId:string, token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
-            data = await this.deleteMongoUser(user,userId,accessToken);
+            data = await this.deleteMongoUser(user,userId,token);
         } else {
             data = false;
             let struct = this.getLocalData(userId);
             if(struct) {
                 let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',token);
                 if(passed) data = this.deleteLocalData(struct);
             }
         }
@@ -252,14 +256,14 @@ export class StructBackend extends Service {
         return data;
     }
 
-    setData = async (requestingUserId:string, structs:any[], notify?:boolean, accessToken?:string) => {
+    setData = async (requestingUserId:string, structs:any[], notify?:boolean, token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
 
         if(this.mode.includes('mongo')) {
-            data = await this.setMongoData(user,structs,notify,accessToken); //input array of structs
+            data = await this.setMongoData(user,structs,notify,token); //input array of structs
         } else { 
             let non_notes:any[] = [];
             data = [];
@@ -267,7 +271,7 @@ export class StructBackend extends Service {
                 let struct = this.getLocalData(structId);
                 let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user, struct,'WRITE',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user, struct,'WRITE',token);
                 if(passed) {
                     if(!this.collections[struct.structType]) {
                         this.collections[struct.structType] = {}
@@ -286,13 +290,13 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getData = async (requestingUserId:string, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number, accessToken?:string) => {
+    getData = async (requestingUserId:string, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number, token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
-            data = await this.getMongoData(user, collection, ownerId, dict, limit, skip, accessToken);
+            data = await this.getMongoData(user, collection, ownerId, dict, limit, skip, token);
         } else {
             data = [];
             let structs;
@@ -303,7 +307,7 @@ export class StructBackend extends Service {
                 let struct = this.getLocalData(getStringId(s._id));
                 let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',token);
                 if(passed) data.push(struct);
             }));
         }
@@ -311,13 +315,13 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getDataByIds = async (requestingUserId:string, structIds:string[], ownerId?:string, collection?:string, accessToken?:string) => {
+    getDataByIds = async (requestingUserId:string, structIds:string[], ownerId?:string, collection?:string, token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
-            data = await this.getMongoDataByIds(user, structIds, ownerId, collection, accessToken);
+            data = await this.getMongoDataByIds(user, structIds, ownerId, collection, token);
         } else {
             data = [];
             let structs;
@@ -327,7 +331,7 @@ export class StructBackend extends Service {
                 let struct = this.getLocalData(getStringId(s._id));
                 let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',token);
                 if(passed) data.push(struct);
             }));
         }
@@ -335,13 +339,13 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAllData = async (requestingUserId:string, ownerId:string, excludedCollections?:string[], accessToken?:string) => {
+    getAllData = async (requestingUserId:string, ownerId:string, excludedCollections?:string[], token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
-            data = await this.getAllUserMongoData(user,ownerId,excludedCollections, accessToken);
+            data = await this.getAllUserMongoData(user,ownerId,excludedCollections, token);
         } else {
             let result = this.getLocalData(undefined,{ownerId:ownerId});
             data = [];
@@ -350,14 +354,14 @@ export class StructBackend extends Service {
                     if(excludedCollections.indexOf(struct.structType) < 0) {
                         let passed = !this.useAuths;
                         if(!struct?.ownerId) passed = true;
-                        else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',accessToken);
+                        else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',token);
                         if(passed) data.push(struct);
                     }
                 } else {
                     let passed = !this.useAuths;
                     
                     if(!struct?.ownerId) passed = true;
-                    else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',accessToken);
+                    else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',token);
                     if(passed) data.push(struct);
                 }
             }));
@@ -366,20 +370,20 @@ export class StructBackend extends Service {
         return data;
     }   
 
-    deleteData = async (requestingUserId:string, structIds:string[], accessToken?:string) => {
+    deleteData = async (requestingUserId:string, structIds:string[], token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
-            data = await this.deleteMongoData(user,structIds,accessToken);
+            data = await this.deleteMongoData(user,structIds,token);
         } else {
             data = false;
             await Promise.all(structIds.map(async (structId) => {
                 let struct = this.getLocalData(structId);
                 let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',token);
                 if(passed) this.deleteLocalData(struct);
                 data = true;
             }));
@@ -417,19 +421,19 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteGroup = async (requestingUserId:string, groupId:string, accessToken?:string) => {
+    deleteGroup = async (requestingUserId:string, groupId:string, token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
-            data = await this.deleteMongoGroup(user,groupId,accessToken);
+            data = await this.deleteMongoGroup(user,groupId,token);
         } else {
             let struct = this.getLocalData('group',groupId);
             let passed = !this.useAuths;
             if(struct) {
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',token);
             }
             if(passed) {
                 data = true;
@@ -439,13 +443,13 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAuthorizations = async (requestingUserId:string, ownerId?: string, authId?: string, accessToken?:string) => {
+    getAuthorizations = async (requestingUserId:string, ownerId?: string, authId?: string, token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
-            data = await this.getMongoAuthorizations(user,ownerId,authId, accessToken);
+            data = await this.getMongoAuthorizations(user,ownerId,authId, token);
         } else {
             if(authId) {
                 let result = this.getLocalData('authorization',{_id:authId});
@@ -458,21 +462,21 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteAuthorization = async (requestingUserId:string, authId:string, accessToken?:string) => {
+    deleteAuthorization = async (requestingUserId:string, authId:string, token?:string) => {
         
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
-            data = await this.deleteMongoAuthorization(user,authId,accessToken);
+            data = await this.deleteMongoAuthorization(user,authId,token);
         } else {
             data = true;
             let struct = this.getLocalData('authorization',{_id:authId});
             if(struct) {
                 let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',token);
                 if(passed) data = this.deleteLocalData(struct);
             }
         } 
@@ -582,7 +586,7 @@ export class StructBackend extends Service {
         //console.log('NEW NOTIFICATIONS', newNotifications)
         if(newNotifications.length > 0) {
             if(mode.includes('mongo')){
-                await this.setMongoData(user, newNotifications, true, this.accessTokens.get(user._id)); //set the DB, let the user get them 
+                await this.setMongoData(user, newNotifications, true, this.useAccessTokens ? this.accessTokens.get(user._id) : this.useRefreshTokens ? this.refreshTokens.get(user._id) : undefined); //set the DB, let the user get them 
             } else {
                 this.setLocalData(newNotifications);
             }
@@ -596,7 +600,7 @@ export class StructBackend extends Service {
     }
 
     //general mongodb query
-    queryMongo = async (user:Partial<ProfileStruct>,collection:string, queryObj:any={}, findOne:boolean=false, skip:number=0, accessToken?:string) => {
+    queryMongo = async (user:Partial<ProfileStruct>,collection:string, queryObj:any={}, findOne:boolean=false, skip:number=0, token?:string) => {
         if(!collection && !queryObj) return undefined;
         else if(findOne){
             let res = await this.db.collection(collection).findOne(queryObj);
@@ -606,7 +610,7 @@ export class StructBackend extends Service {
                 passed = true;
             }
             else if((getStringId(user._id as string) !== res.ownerId || (getStringId(user._id as string) === res.ownerId && (user.userRoles as any)?.admincontrol))) {
-                if(this.useAuths) passed = await this.checkAuthorization(user,res,'READ',accessToken);
+                if(this.useAuths) passed = await this.checkAuthorization(user,res,'READ',token);
             }
             if(passed) return res;
             else return undefined;
@@ -624,7 +628,7 @@ export class StructBackend extends Service {
                         passed = true;
                     }
                     else if((getStringId(user._id as string) !== s.ownerId || (getStringId(user._id as string) === s.ownerId && (user.userRoles as any)?.admincontrol)) && checkedAuth !== s.ownerId) {
-                        if(this.useAuths) passed = await this.checkAuthorization(user,s,'READ',accessToken);
+                        if(this.useAuths) passed = await this.checkAuthorization(user,s,'READ',token);
                         checkedAuth = s.ownerId;
                     }
                     
@@ -636,7 +640,7 @@ export class StructBackend extends Service {
     }
 
     //structs can be Struct objects or they can be an array with a secondary option e.g. [Struct,{$push:{x:[1,2,3]}}]
-    setMongoData = async (user:Partial<ProfileStruct>,structs:any[] = [], notify=true, accessToken?:string) => {
+    setMongoData = async (user:Partial<ProfileStruct>,structs:any[] = [], notify=true, token?:string) => {
         
         //console.log(structs,user);
         let firstwrite = false;
@@ -652,7 +656,7 @@ export class StructBackend extends Service {
                 }
                 if(!struct?.ownerId) passed = true; //if no owner, it's public
                 else if((getStringId(user._id as string) !== struct.ownerId || (getStringId(user._id as string) === struct.ownerId && (user.userRoles as any)?.admincontrol)) && checkedAuth !== struct.ownerId) {
-                    if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',accessToken);
+                    if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',token);
                     checkedAuth = struct.ownerId;
                 }
                 if(passed) {
@@ -791,7 +795,7 @@ export class StructBackend extends Service {
         else return false;
     }
 
-    setMongoUser = async (user:Partial<ProfileStruct>,struct:Partial<ProfileStruct>, accessToken?:string) =>  {
+    setMongoUser = async (user:Partial<ProfileStruct>,struct:Partial<ProfileStruct>, token?:string) =>  {
 
         if(struct._id) { //this has a second id that matches the token id
     
@@ -809,7 +813,7 @@ export class StructBackend extends Service {
                     if(!struct?.ownerId) 
                         passed = true;
                     else if(this.useAuths) 
-                        passed = await this.checkAuthorization(user,struct,'WRITE',accessToken);
+                        passed = await this.checkAuthorization(user,struct,'WRITE',token);
                     if(!passed) 
                         return false;
                 }
@@ -830,7 +834,7 @@ export class StructBackend extends Service {
         } else return false;
     }
 
-    setGroup = async (user:Partial<ProfileStruct>,struct:any, mode=this.mode, accessToken?:string) => {
+    setGroup = async (user:Partial<ProfileStruct>,struct:any, mode=this.mode, token?:string) => {
         if(struct?._id) {
 
             let uid = getStringId(user._id as string);
@@ -846,7 +850,7 @@ export class StructBackend extends Service {
             if(uid !== struct.ownerId) {
                 let passed = !this.useAuths;
                 if(!struct?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,struct,'WRITE',token);
                 if(!passed) return false;
             }
 
@@ -926,7 +930,7 @@ export class StructBackend extends Service {
         info='', 
         requireAuth=true, 
         basicInfo=false,
-        accessToken?:string
+        token?:string
     ):Promise<{}|{user:ProfileStruct,authorizations:AuthorizationStruct[], groups:GroupStruct[]|{user:ProfileStruct}}> => {
         return new Promise(async resolve => {
             const query:any[] = [{email: info},{id: info},{username:info}]
@@ -943,11 +947,13 @@ export class StructBackend extends Service {
 
                 if(basicInfo) {
                     
-                    if(this.useAccessTokens) {
-                        if((user as Partial<ProfileStruct>).accessToken) {
-                            if(this.accessTokens.get(user._id) !== accessToken) //not authorized without a current accessToken
-                                return false;
-                        }
+                    if(this.useAccessTokens) { //pass an access token for single client validation
+                        if(!this.accessTokens.get(user._id) || this.accessTokens.get(user._id) !== token) //not authorized without a current token
+                            resolve(undefined);
+                    } 
+                    else if (this.useRefreshTokens) { //pass a refresh token for multi client validation
+                        if(!this.refreshTokens.get(user._id) || this.refreshTokens.get(user._id) !== token) //not authorized without a current token
+                            resolve(undefined);
                     }
 
                     let stripped = {
@@ -965,7 +971,7 @@ export class StructBackend extends Service {
                 } else if (requireAuth){
                     if(getStringId(user._id as string) !== u._id || (getStringId(user._id as string) === u._id && (user.userRoles as any)?.admincontrol)) { // TODO: Ensure that passed users will always have the same ObjectId (not necessarily id...)
                         let passed = !this.useAuths;
-                        if(this.useAuths) passed = await this.checkAuthorization(user,u,'READ',accessToken);
+                        if(this.useAuths) passed = await this.checkAuthorization(user,u,'READ',token);
                         if(!passed) resolve(undefined as any);
                     }
                     // console.log(u);
@@ -983,11 +989,11 @@ export class StructBackend extends Service {
                     }
                     resolve({user:u, authorizations, groups});
                 } else {
-                    if(this.useAccessTokens) {
-                        if((user as Partial<ProfileStruct>).accessToken) {
-                            if(this.accessTokens.get(user._id) !== accessToken) //not authorized without a current accessToken
-                                return false;
-                        }
+                    if(this.useAccessTokens || this.useRefreshTokens) {
+                        if((user as Partial<ProfileStruct>).accessToken || (user as Partial<ProfileStruct>).refreshToken) {
+                            if(this.useAccessTokens ? this.accessTokens.get(user._id) : this.useRefreshTokens ? this.refreshTokens.get(user._id) : undefined !== token) //not authorized without a current token
+                            resolve( undefined as any);
+                        } else resolve( undefined as any);
                     }
                     resolve({user:u});
                 }
@@ -1002,7 +1008,7 @@ export class StructBackend extends Service {
         limit=0, 
         skip=0,
         requireAuth=false,
-        accessToken?:string
+        token?:string
     ):Promise<{}|{user:ProfileStruct,authorizations:AuthorizationStruct[], groups:GroupStruct[]|{user:ProfileStruct}}> => {
         return new Promise(async resolve => {
             let q = { $regex: `^${info}`, $options: 'i'};
@@ -1049,16 +1055,16 @@ export class StructBackend extends Service {
                     u._id = getStringId(u._id); //converts to string
                     if(strid !== u._id || (strid === u._id && (user.userRoles as any)?.admincontrol)) { 
                         let passed = !this.useAuths;
-                        if(this.useAuths) passed = await this.checkAuthorization(user,u,'READ',accessToken);
+                        if(this.useAuths) passed = await this.checkAuthorization(user,u,'READ',token);
                         if(passed) result.push(u);
                     }
                 }
                 arr = result;
-            } else if(this.useAccessTokens) {
-                if((user as Partial<ProfileStruct>).accessToken) {
-                    if(this.accessTokens.get(user._id) !== accessToken) //not authorized without a current accessToken
+            } else if(this.useAccessTokens || this.useRefreshTokens) {
+                if((user as Partial<ProfileStruct>).accessToken || (user as Partial<ProfileStruct>).refreshToken) {
+                    if(this.useAccessTokens ? this.accessTokens.get(user._id) : this.useRefreshTokens ? this.refreshTokens.get(user._id) : undefined !== token) //not authorized without a current token
                         return false;
-                }
+                } else return false;
             }
             
             resolve(arr);
@@ -1113,7 +1119,7 @@ export class StructBackend extends Service {
         return found as ProfileStruct[];
     }
 
-    getMongoDataByIds = async (user:Partial<ProfileStruct>, structIds:string[], ownerId:string|undefined, collection:string|undefined, accessToken?:string) => {
+    getMongoDataByIds = async (user:Partial<ProfileStruct>, structIds:string[], ownerId:string|undefined, collection:string|undefined, token?:string) => {
 
         let uid = getStringId(user._id as string);
         if(structIds.length > 0) {
@@ -1136,7 +1142,7 @@ export class StructBackend extends Service {
                             let s = arr[i];
                             if(!s?.ownerId) passed = true;
                             else if((uid !== s.ownerId || (uid === s.ownerId && (user.userRoles as any)?.admincontrol)) && checkedAuth !== s.ownerId) {
-                                if(this.useAuths) passed = await this.checkAuthorization(user,s,'READ',accessToken);
+                                if(this.useAuths) passed = await this.checkAuthorization(user,s,'READ',token);
                                 checkedAuth = s.ownerId;
                             }
                             if(passed) found.push(s);
@@ -1153,7 +1159,7 @@ export class StructBackend extends Service {
                     arr.forEach(async (s) => {
                         if(!s?.ownerId) passed = true;
                         else if((uid !== s.ownerId || (uid === s.ownerId && (user.userRoles as any)?.admincontrol)) && checkedAuth !== s.ownerId) {
-                            if(this.useAuths) passed = await this.checkAuthorization(user,s,'READ',accessToken);
+                            if(this.useAuths) passed = await this.checkAuthorization(user,s,'READ',token);
                             checkedAuth = s.ownerId;
                         }
                         if(passed) found.push(s);
@@ -1166,7 +1172,7 @@ export class StructBackend extends Service {
     }
 
     //get all data for an associated user, can add a search string
-    getMongoData = async (user:Partial<ProfileStruct>, collection:string|undefined, ownerId:string|undefined, dict:any|undefined={}, limit=0, skip=0, accessToken?:string) => {
+    getMongoData = async (user:Partial<ProfileStruct>, collection:string|undefined, ownerId:string|undefined, dict:any|undefined={}, limit=0, skip=0, token?:string) => {
         if (!ownerId) ownerId = dict?.ownerId // TODO: Ensure that replacing ownerId, key, value with dict was successful
         if(!dict) dict = {};
         if (dict._id) dict._id = toObjectId(dict._id)
@@ -1196,7 +1202,7 @@ export class StructBackend extends Service {
                     let s = arr[i];
                     if(!s?.ownerId) passed = true;
                     else if((uid !== s.ownerId || (uid === s.ownerId && (user.userRoles as any)?.admincontrol)) && checkedAuth !== s.ownerId) {
-                        if(this.useAuths) passed = await this.checkAuthorization(user,s,'READ',accessToken);
+                        if(this.useAuths) passed = await this.checkAuthorization(user,s,'READ',token);
                         checkedAuth = s.ownerId;
                     }
                     if(passed === true) structs.push(s);
@@ -1213,7 +1219,7 @@ export class StructBackend extends Service {
                             let s = arr[i];
                             if(!s?.ownerId) passed = true;
                             else if((uid !== s.ownerId || (uid === s.ownerId && (user.userRoles as any)?.admincontrol)) && checkedAuth !== s.ownerId) {
-                                if(this.useAuths) passed = await this.checkAuthorization(user,s,'READ',accessToken);
+                                if(this.useAuths) passed = await this.checkAuthorization(user,s,'READ',token);
                                 checkedAuth = s.ownerId;
                             }
                             if(passed === true) structs.push(s);
@@ -1228,7 +1234,7 @@ export class StructBackend extends Service {
         return structs;
     }
 
-    getAllUserMongoData = async (user:Partial<ProfileStruct>,ownerId,excluded:any[]=[], accessToken?:string) => {
+    getAllUserMongoData = async (user:Partial<ProfileStruct>,ownerId,excluded:any[]=[], token?:string) => {
         let structs :any[] = [];
 
         let passed = true;
@@ -1242,7 +1248,7 @@ export class StructBackend extends Service {
                     let struct = arr[k];
                     if(!ownerId) passed = true;
                     else if((getStringId(user._id as string) !== ownerId  || (getStringId(user._id as string) === ownerId && (user.userRoles as any)?.admincontrol)) && checkedId !== ownerId) {
-                        if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',accessToken);
+                        if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',token);
                         //console.log(passed)
                         checkedId = ownerId;
                     }
@@ -1260,7 +1266,7 @@ export class StructBackend extends Service {
     }
 
     //passing in structrefs to define the collection (structType) and id
-    getMongoDataByRefs = async (user:Partial<ProfileStruct>,structRefs:any[]=[], accessToken?:string) => {
+    getMongoDataByRefs = async (user:Partial<ProfileStruct>,structRefs:any[]=[], token?:string) => {
         let structs :any[] = [];
         //structRef = {structType, id}
         if(structs.length > 0) {
@@ -1272,7 +1278,7 @@ export class StructBackend extends Service {
                         let passed = true;
                         if(!struct?.ownerId) passed = true;
                         else if((getStringId(user._id as string) !== struct.ownerId || (getStringId(user._id as string) === struct.ownerId && (user.userRoles as any)?.admincontrol)) && checkedAuth !== struct.ownerId) {
-                            if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',accessToken);
+                            if(this.useAuths) passed = await this.checkAuthorization(user,struct,'READ',token);
                             checkedAuth = struct.ownerId;
                         }
                         if(passed === true) {
@@ -1285,7 +1291,7 @@ export class StructBackend extends Service {
         return structs;
     }
 
-    getMongoAuthorizations = async (user:Partial<ProfileStruct>,ownerId=getStringId(user._id as string), authId='', accessToken?:string) => {
+    getMongoAuthorizations = async (user:Partial<ProfileStruct>,ownerId=getStringId(user._id as string), authId='', token?:string) => {
         let auths :any[] = [];
         //console.log(user);
         if(authId.length === 0 ) {
@@ -1302,7 +1308,7 @@ export class StructBackend extends Service {
         if(!auths[0]?.ownerId) true;
         else if(getStringId(user._id as string) !== auths[0]?.ownerId) {
             let passed = !this.useAuths;
-            if(this.useAuths) passed = await this.checkAuthorization(user,auths[0],'READ',accessToken);
+            if(this.useAuths) passed = await this.checkAuthorization(user,auths[0],'READ',token);
             if(!passed) return undefined;
         }
         return auths as AuthorizationStruct[];
@@ -1328,7 +1334,7 @@ export class StructBackend extends Service {
     }
 
     //general delete function
-    deleteMongoData = async (user:Partial<ProfileStruct>,structRefs:any[]=[], accessToken?:string) => {
+    deleteMongoData = async (user:Partial<ProfileStruct>,structRefs:any[]=[], token?:string) => {
         // let ids :any[] = [];
         let structs :any[] = [];
 
@@ -1356,7 +1362,7 @@ export class StructBackend extends Service {
             if(!struct?.ownerId) passed = true;
             else if((struct.ownerId !== getStringId(user._id as string) || (getStringId(user._id as string) === struct.ownerId && (user.userRoles as any)?.admincontrol)) && struct.ownerId !== checkedOwner) {
                 checkedOwner = struct.ownerId;
-                if(this.useAuths) passed = await this.checkAuthorization(user, struct,'WRITE',accessToken);
+                if(this.useAuths) passed = await this.checkAuthorization(user, struct,'WRITE',token);
             }
             if(passed) {
                 //console.log(passed);
@@ -1378,13 +1384,13 @@ export class StructBackend extends Service {
     }
 
     //specific delete functions (the above works for everything)
-    deleteMongoUser = async (user:Partial<ProfileStruct>,userId, accessToken?:string) => {
+    deleteMongoUser = async (user:Partial<ProfileStruct>,userId, token?:string) => {
         
         if(getStringId(user._id as string) !== userId || (getStringId(user._id as string) === userId && (user.userRoles as any)?.admincontrol)) {
             let u = await this.collections.profile.instance.findOne({ id: userId });
             let passed = !this.useAuths;
             if(!u?.ownerId) passed = true;
-            else if(this.useAuths) passed = await this.checkAuthorization(user,u,'WRITE',accessToken);
+            else if(this.useAuths) passed = await this.checkAuthorization(user,u,'WRITE',token);
             if(!passed) return false;
         }
 
@@ -1396,13 +1402,13 @@ export class StructBackend extends Service {
         return true; 
     }
 
-    deleteMongoGroup = async (user:Partial<ProfileStruct>,groupId, accessToken?:string) => {
+    deleteMongoGroup = async (user:Partial<ProfileStruct>,groupId, token?:string) => {
         let s = await this.collections.group.instance.findOne({ _id: toObjectId(groupId) });
         if(s) {
             if(!s?.ownerId) true;
             else if(getStringId(user._id as string) !== s.ownerId || (getStringId(user._id as string) === s.ownerId && (user.userRoles as any)?.admincontrol) ) {
                 let passed = !this.useAuths;
-                if(this.useAuths) passed = await this.checkAuthorization(user,s,'WRITE',accessToken);
+                if(this.useAuths) passed = await this.checkAuthorization(user,s,'WRITE',token);
                 if(!passed) return false;
             }
             if(s.users) {
@@ -1416,14 +1422,14 @@ export class StructBackend extends Service {
     }
 
 
-    deleteMongoAuthorization = async (user:Partial<ProfileStruct>, authId, accessToken?:string) => {
+    deleteMongoAuthorization = async (user:Partial<ProfileStruct>, authId, token?:string) => {
         let s = await this.collections.authorization.instance.findOne({ _id: toObjectId(authId) });
         let uid = getStringId(user._id as string);
         if(s) {
             if(uid !== s.ownerId || (uid === s.ownerId && (user.userRoles as any)?.admincontrol)) {
                 let passed = !this.useAuths;
                 if(!s?.ownerId) passed = true;
-                else if(this.useAuths) passed = await this.checkAuthorization(user,s,'WRITE',accessToken);
+                else if(this.useAuths) passed = await this.checkAuthorization(user,s,'WRITE',token);
                 if(!passed) return false;
             }
             if(s.associatedAuthId) { //belonging to the other user
@@ -1443,7 +1449,7 @@ export class StructBackend extends Service {
         } else return false; 
     }
 
-    setAuthorization = async (user:Partial<ProfileStruct>, authStruct, accessToken?:string) => {
+    setAuthorization = async (user:Partial<ProfileStruct>, authStruct, token?:string) => {
         //check against authorization db to allow or deny client/professional requests.
         //i.e. we need to preauthorize people to use stuff and allow each other to view sensitive data to cover our asses
 
@@ -1498,7 +1504,7 @@ export class StructBackend extends Service {
         if(!authStruct?.ownerId) true;
         else if((getStringId(user._id as string) !== authStruct.ownerId || (getStringId(user._id as string) === authStruct.ownerId && (user.userRoles as any)?.admincontrol)) && (getStringId(user._id as string) !== authStruct.authorizedId && getStringId(user._id as string) !== authStruct.authorizerId)) {
             let passed = !this.useAuths;
-            if(this.useAuths) passed = await this.checkAuthorization(user,authStruct,'WRITE',accessToken);
+            if(this.useAuths) passed = await this.checkAuthorization(user,authStruct,'WRITE',token);
             if(!passed) return false;
         }
 
@@ -1593,7 +1599,7 @@ export class StructBackend extends Service {
         user:string|Partial<ProfileStruct>|{_id:string}, 
         struct, 
         request='READ', //'WRITE'
-        accessToken?:string
+        token?:string
     ) => {
         /*
             If user is not the owner of the struct, check that they have permissions
@@ -1617,11 +1623,13 @@ export class StructBackend extends Service {
             else user = {_id:user};
         }
 
-        if(this.useAccessTokens) {
-            if((user as Partial<ProfileStruct>).accessToken) {
-                if(this.accessTokens.get(user._id) !== accessToken) //not authorized without a current accessToken
-                    return false;
-            }
+        if(this.useAccessTokens) { //pass an access token for single client validation
+            if(!this.accessTokens.get(user._id) || this.accessTokens.get(user._id) !== token) //not authorized without a current token
+                return false;
+        } 
+        else if (this.useRefreshTokens) { //pass a refresh token for multi client validation
+            if(!this.refreshTokens.get(user._id) || this.refreshTokens.get(user._id) !== token) //not authorized without a current token
+                return false;
         }
 
         let auth1, auth2;
