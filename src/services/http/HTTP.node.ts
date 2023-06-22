@@ -204,7 +204,7 @@ export class HTTPbackend extends Service {
         } //default requestListener
 
         //var http = require('http');
-        let server;
+        let server:http.Server|https.Server = undefined as any;
         if(options.protocol === 'http')
             server = http.createServer(
             requestListener
@@ -255,14 +255,15 @@ export class HTTPbackend extends Service {
                 else console.error('Server error:', err.toString());
                 if(!resolved) reject(err);
             });
-            server.on('clientError',(err,socket:http.IncomingMessage["socket"]) =>{
+            server.on('clientError',(err, socket:http.IncomingMessage["socket"]) =>{
                 if(served.onerror) served.onerror(err, served);
-                else console.error('Server error:', err.toString());
+                else console.error('Server clientError:', err.toString());
                 if(socket) socket.destroy();
             });
-            server.on('tlsClientError',(err) =>{
+            server.on('tlsClientError',(err, socket:http.IncomingMessage["socket"]) =>{
                 if(served.onerror) served.onerror(err, served);
-                else console.error('Server error:', err.toString());
+                else console.error('Server tlsClientError:', err.toString());
+                if(socket) socket.destroy();
             });
             server.on('upgrade',(request, socket, head) => {
                 if(served.onupgrade) served.onupgrade(request,socket,head,served);
@@ -592,6 +593,10 @@ export class HTTPbackend extends Service {
     responsePromiseHandler = (resolve, reject, message, request:http.IncomingMessage, response:http.ServerResponse, method:string, served:ServerInfo) => {
 
         response.on('error', (err) => {
+            if(served.debug) {
+                let time = getHoursAndMinutes(new Date());
+                console.error(time,'| Response Error: ', err, ' From: ', request.socket?.remoteAddress, ' For: ', request.url, ' | ', request.method);
+            }
             this.responseOnErrorPromiseHandler(response, reject, err);
             request.destroy();
             request.socket?.destroy();
