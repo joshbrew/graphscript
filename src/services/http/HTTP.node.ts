@@ -1274,7 +1274,11 @@ const defaultManifest = `{
         "storage"
     ],
     "icons":[{
-        "src": "./favicon.ico",
-        "sizes": "16x16"
+        "src": "./assets/logo196.png",
+        "sizes": "196x196"
+    },
+    {
+        "src": "./assets/logo512.png",
+        "sizes": "512x512"
     }]
-}`
+}` //images are REQUIRED for PWA to work
