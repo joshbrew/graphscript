@@ -4,9 +4,6 @@ let cacheName = 'pwa-assets';
 const assets = [
   "/",
   "/index.html",
-  "/styles.css",
-  "/index.css",
-  "/index.js",
   "/dist/index.css", //alt default paths
   "/dist/index.js",
   '/favicon.ico',
