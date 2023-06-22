@@ -11,8 +11,8 @@
       "storage"
     ],
     "icons":[{
-      "src": "./assets/logo196.png",
-      "sizes": "196x196"
+        "src": "./assets/logo196.png",
+        "sizes": "196x196"
       },
       {
           "src": "./assets/logo512.png",
