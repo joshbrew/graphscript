@@ -31,7 +31,7 @@ self.addEventListener("install", installEvent => {
 });
 
 self.addEventListener("fetch", fetchEvent => { //https://gomakethings.com/how-to-set-an-expiration-date-for-items-in-a-service-worker-cache/
-  fetchEvent.respondWith(
+  fetchEvent.respondWith(()=>{
     caches.match(fetchEvent.request).then(function (response) {
 
 			// If there's a cached API and it's still valid, use it
@@ -39,23 +39,26 @@ self.addEventListener("fetch", fetchEvent => { //https://gomakethings.com/how-to
 				return response;
 			}
 
+      if(response) return response;
 			// Otherwise, make a fresh API call
-			return fetch(fetchEvent.request).then(function (response) {
+			else return fetch(fetchEvent.request).then(function (response) {
 
 				// Cache for offline access
-				var copy = response.clone();
-				fetchEvent.waitUntil(caches.open(cacheName).then(function (cache) {
-					var headers = new Headers(copy.headers);
-					headers.append('sw-fetched-on', new Date().getTime());
-					return copy.blob().then(function (body) {
-						return cache.put(fetchEvent.request, new Response(body, {
-							status: copy.status ? copy.status : 200,
-							statusText: copy.statusText,
-							headers: headers
-						}));
-					});
-				}));
-
+        if(assets.includes(fetchEvent.request.url)){
+          var copy = response.clone();
+          fetchEvent.waitUntil(caches.open(cacheName).then(function (cache) {
+            var headers = new Headers(copy.headers);
+            headers.append('sw-fetched-on', new Date().getTime());
+            return copy.blob().then(function (body) {
+              return cache.put(fetchEvent.request, new Response(body, {
+                status: copy.status ? copy.status : 200,
+                statusText: copy.statusText,
+                headers: headers
+              }));
+            });
+          }));
+        }
+        
 				// Return the requested file
 				return response;
 
@@ -65,7 +68,7 @@ self.addEventListener("fetch", fetchEvent => { //https://gomakethings.com/how-to
 			// 		return response || caches.match('/offline.json'); //todo: figure out what is supposed to go in offline.json (https://gomakethings.com/how-to-set-an-expiration-date-for-items-in-a-service-worker-cache/)
 			// 	});
 			// });  
-  }));
+  })});
 });
 
 

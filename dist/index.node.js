@@ -42,22 +42,26 @@ self.addEventListener("fetch", fetchEvent => { //https://gomakethings.com/how-to
         }
 
         // Otherwise, make a fresh API call
-        return fetch(fetchEvent.request).then(function (response) {
+        if(response) return response;
+        // Otherwise, make a fresh API call
+        else return fetch(fetchEvent.request).then(function (response) {
 
             // Cache for offline access
-            var copy = response.clone();
-            fetchEvent.waitUntil(caches.open(cacheName).then(function (cache) {
+            if(assets.includes(fetchEvent.request.url)){
+              var copy = response.clone();
+              fetchEvent.waitUntil(caches.open(cacheName).then(function (cache) {
                 var headers = new Headers(copy.headers);
                 headers.append('sw-fetched-on', new Date().getTime());
                 return copy.blob().then(function (body) {
-                    return cache.put(fetchEvent.request, new Response(body, {
-                        status: copy.status ? copy.status : 200,
-                        statusText: copy.statusText,
-                        headers: headers
-                    }));
+                  return cache.put(fetchEvent.request, new Response(body, {
+                    status: copy.status ? copy.status : 200,
+                    statusText: copy.statusText,
+                    headers: headers
+                  }));
                 });
-            }));
-
+              }));
+            }
+            
             // Return the requested file
             return response;
 
