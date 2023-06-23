@@ -49,7 +49,7 @@ self.addEventListener("fetch", fetchEvent => { //https://gomakethings.com/how-to
 					headers.append('sw-fetched-on', new Date().getTime());
 					return copy.blob().then(function (body) {
 						return cache.put(fetchEvent.request, new Response(body, {
-							status: copy.status,
+							status: copy.status ? copy.status : 200,
 							statusText: copy.statusText,
 							headers: headers
 						}));
