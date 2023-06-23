@@ -250,6 +250,10 @@ export class HTTPbackend extends Service {
         //SITE AVAILABLE ON PORT:
         return new Promise((resolve,reject) => {
             let resolved;
+            // server.on('connection',(socket) => {
+            //     //DDOS protection?
+            //     //Rate limiting?
+            // });
             server.on('error',(err)=>{
                 if(served.onerror) served.onerror(err, served);
                 else console.error('Server error:', err.toString());
@@ -257,12 +261,12 @@ export class HTTPbackend extends Service {
             });
             server.on('clientError',(err, socket:http.IncomingMessage["socket"]) =>{
                 if(served.onerror) served.onerror(err, served);
-                else console.error('Server clientError:', err.toString());
+                else console.error(getHoursAndMinutes(new Date()), ' | Server clientError:', err.toString(), ' | From: ', socket.remoteAddress);
                 if(socket) socket.destroy();
             });
             server.on('tlsClientError',(err, socket:http.IncomingMessage["socket"]) =>{
                 if(served.onerror) served.onerror(err, served);
-                else console.error('Server tlsClientError:', err.toString());
+                else console.error(getHoursAndMinutes(new Date()), ' | Server tlsClientError: ', err.toString(), ' | From: ', socket.remoteAddress);
                 if(socket) socket.destroy();
             });
             server.on('upgrade',(request, socket, head) => {
