@@ -4,6 +4,7 @@ import * as https from 'https'
 import * as fs from 'fs'
 import * as path from 'path'
 import { GraphNode, GraphNodeProperties } from "../../core/Graph";
+import { defaultManifest, defaultServiceWorker } from "./boilerplate/index";
 
 export * from './boilerplate/index'
 
@@ -1044,14 +1045,14 @@ export class HTTPbackend extends Service {
         `;
     }
 
-    pwa(serviceWorkerUrl="service-worker.js") {
+    pwa = (pwaName = "PWA", cacheExpirationDays=4/24, serviceWorkerUrl="service-worker.js") => {
 
         //check for serviceWorkerUrl, if none install the default template
         if(!fs.existsSync(serviceWorkerUrl)) {
-            fs.writeFileSync(path.join(process.cwd(),serviceWorkerUrl), defaultServiceWorker);
+            fs.writeFileSync(path.join(process.cwd(),serviceWorkerUrl), defaultServiceWorker(cacheExpirationDays));
         }
         if(!fs.existsSync('manifest.webmanifest')) {
-            fs.writeFileSync(path.join(process.cwd(),'/manifest.webmanifest'), defaultManifest);
+            fs.writeFileSync(path.join(process.cwd(),'/manifest.webmanifest'), defaultManifest(pwaName));
         }
 
         function ServiceWorkerInstaller(serviceWorkerUrl) {
@@ -1236,55 +1237,3 @@ function getHoursAndMinutes(date) {
 
     return `${hours}:${minutes}`;
 }
-
-
-const defaultServiceWorker = `//https://github.com/ibrahima92/pwa-with-vanilla-js
-let cacheName = 'pwa-assets';
-const assets = [
-  "/",
-  "/index.html",
-  "/dist/index.css", //alt default paths
-  "/dist/index.js",
-  '/favicon.ico',
-  '/service-worker.js'
-];
-
-self.addEventListener("install", installEvent => {
-  installEvent.waitUntil(
-    caches.open(cacheName).then(cache => {
-      cache.addAll(assets);
-    })
-  );
-});
-
-self.addEventListener("fetch", fetchEvent => {
-  fetchEvent.respondWith(
-    caches.match(fetchEvent.request).then(res => {
-      return res || fetch(fetchEvent.request);
-    })
-  );
-});
-
-`;
-
-const defaultManifest = `{
-    "short_name": "PWA",
-    "name": "PWA",
-    "start_url": "/",
-    "display": "standalone",
-    "theme_color": "#000000",
-    "background_color": "#ffffff",
-    "description": "PWA Test",
-    "lang": "en-US",
-    "permissions": [
-        "storage"
-    ],
-    "icons":[{
-        "src": "./assets/logo196.png",
-        "sizes": "196x196"
-    },
-    {
-        "src": "./assets/logo512.png",
-        "sizes": "512x512"
-    }]
-}` //images are REQUIRED for PWA to work

@@ -128,5 +128,5 @@ export declare class HTTPbackend extends Service {
         [key: string]: any;
     } | ((...args: any) => any), baseTemplate: string) => string;
     hotreload: (socketURL?: string | URL, esbuild_cssFileName?: string) => string;
-    pwa(serviceWorkerUrl?: string): string;
+    pwa: (pwaName?: string, cacheExpirationDays?: number, serviceWorkerUrl?: string) => string;
 }
