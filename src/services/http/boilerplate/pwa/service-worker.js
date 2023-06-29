@@ -39,7 +39,7 @@ self.addEventListener("fetch", fetchEvent => { //https://gomakethings.com/how-to
 				return response;
 			}
 
-      if(response) return response;
+      if(response && !assets.includes(fetchEvent.request.url)) return response;
 			// Otherwise, make a fresh API call
 			else return fetch(fetchEvent.request).then(function (response) {
 
