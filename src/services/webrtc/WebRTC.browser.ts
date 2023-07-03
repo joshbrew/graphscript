@@ -378,6 +378,12 @@ export class WebRTCfrontend extends Service {
         return this.openRTC(options);
     }
 
+    rejectCall = ( options:WebRTCProps|string ) => {
+        if(typeof options === 'string') options = this.unanswered[options];
+        delete this.unanswered[options._id];
+        return true;
+    }
+
     negotiateCall = async ( rtc:RTCPeerConnection|string, description:string|RTCSessionDescription, polite?:boolean) => {
         if(typeof rtc === 'string') {
             if(polite === undefined) 

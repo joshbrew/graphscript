@@ -55,6 +55,7 @@ export declare class StructBackend extends Service {
     deleteGroup: (requestingUserId: string, groupId: string, token?: string) => Promise<any>;
     getAuthorizations: (requestingUserId: string, ownerId?: string, authId?: string, token?: string) => Promise<any>;
     deleteAuthorization: (requestingUserId: string, authId: string, token?: string) => Promise<any>;
+    getToken: (user: Partial<ProfileStruct>) => string;
     notificationStruct: (parentStruct?: any) => {
         structType: string;
         timestamp: number;

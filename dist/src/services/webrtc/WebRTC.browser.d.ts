@@ -68,6 +68,7 @@ export declare class WebRTCfrontend extends Service {
     addIceCandidate: (rtc: RTCPeerConnection | string, candidate: RTCIceCandidate) => Promise<void>;
     receiveCallInformation: (options: WebRTCProps) => Promise<string>;
     answerCall: (options: WebRTCProps | string) => Promise<WebRTCInfo>;
+    rejectCall: (options: WebRTCProps | string) => boolean;
     negotiateCall: (rtc: RTCPeerConnection | string, description: string | RTCSessionDescription, polite?: boolean) => Promise<string>;
     createOffer(rtc: RTCPeerConnection | string, options: WebRTCProps | string): Promise<unknown>;
     createAnswer(rtc: RTCPeerConnection | string, options: WebRTCProps | string): Promise<unknown>;

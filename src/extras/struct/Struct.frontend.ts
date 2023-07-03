@@ -484,7 +484,6 @@ export class StructFrontend extends Service {
 
     /* strip circular references and update data on the server, default callback will process the returned structs back into  */
     setData = async (structs:Partial<Struct>|Partial<Struct>[]=[],notify=true,callback=this.baseServerCallback) => {
-        
         if(this.currentUser?.request) {
             const copies = new Array();
             if(!Array.isArray(structs) && typeof structs === 'object') structs = [structs];
@@ -881,11 +880,11 @@ export class StructFrontend extends Service {
 
     //get auths where you have granted somebody peer access
     getLocalUserPeerIds = (user=this.currentUser) => {
-        if(!user) return [] as any[];
-        let result:any[] = [];
+        if(!user) return {} as any;
+        let result:any = {};
         let authorizations = this.getLocalData('authorization',user._id);
         authorizations.forEach((a)=>{
-            if(a.authorizations['peer'] && a.authorizerId === user._id) result.push(a.authorizedId);
+            if(a.authorizations['peer'] && a.authorizerId === user._id) result[a.authorizedId] = true;
         });
         return result;
     }

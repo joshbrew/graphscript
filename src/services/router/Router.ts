@@ -340,6 +340,7 @@ export class Router extends Service {
             user.terminateAll = terminate;
             //these are macros to get available connections
 
+
             this.users[user._id] = user;
         }
 

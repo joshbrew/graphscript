@@ -77,7 +77,7 @@ export declare class StructFrontend extends Service {
     overwriteLocalData(structs: any): void;
     setLocalData(structs: any): void;
     getLocalData(collection: any, query?: any): any;
-    getLocalUserPeerIds: (user?: User) => any[];
+    getLocalUserPeerIds: (user?: User) => any;
     getLocalReplies(struct: any): any;
     hasLocalAuthorization(otherUserId: any, ownerId?: string): any;
     deleteLocalData(structs: any): boolean;
