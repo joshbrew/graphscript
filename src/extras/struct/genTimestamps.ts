@@ -18,6 +18,38 @@ type Plural<T extends string> = `${T}s`;
 
 export type TimeSpecifier = `now` | `last ${string} ${Plural<TimeUnit>}` | `last ${TimeUnit}`;
 
+export let defaultSpecifiers = [ 
+    'now',
+    'minute', 
+    '5 minutes',
+    '30 minutes',
+    'hour', 
+    '6 hours',
+    '12 hours',
+    'day', 
+    '3 days',
+    'week', 
+    '2 weeks',
+    'month', 
+    '6 months',
+    'year', 
+    '5 years',
+    'decade', 
+] as ('now'|TimeUnit)[];
+
+export function genTimeSpecifiers(
+    specifiers = defaultSpecifiers as ('now'|TimeUnit)[]
+) {
+    let result = ['now'];
+    specifiers.forEach((s) => {
+        if(s !== 'now')
+            result.push(`last ${s}`);
+        else result.push(s);
+    });
+
+    return result;
+}
+
 export function genTimestampFromString(specifier: TimeSpecifier): number {
     const now = new Date();
   
