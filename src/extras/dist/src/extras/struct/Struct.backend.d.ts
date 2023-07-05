@@ -1,5 +1,6 @@
 import { ObjectId } from "./datastructures/bson.cjs";
 import { AuthorizationStruct, GroupStruct, ProfileStruct } from "./datastructures/types";
+import { TimeSpecifier } from './genTimestamps';
 import { Service } from "../../services/Service";
 import { User } from '../../services/router/Router';
 export declare const toObjectId: (str: any) => any;
@@ -49,12 +50,13 @@ export declare class StructBackend extends Service {
     setData: (requestingUserId: string, structs: any[], notify?: boolean, token?: string) => Promise<any>;
     getData: (requestingUserId: string, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number, token?: string) => Promise<any>;
     getDataByIds: (requestingUserId: string, structIds: string[], ownerId?: string, collection?: string, token?: string) => Promise<any>;
-    getAllData: (requestingUserId: string, ownerId: string, excludedCollections?: string[], token?: string) => Promise<any>;
+    getAllData: (requestingUserId: string, ownerId: string, excludedCollections?: string[], timeRange?: [number | TimeSpecifier, number | TimeSpecifier], token?: string) => Promise<any>;
     deleteData: (requestingUserId: string, structIds: string[], token?: string) => Promise<any>;
     getUserGroups: (requestingUserId: string, userId?: string, groupId?: string) => Promise<any>;
     deleteGroup: (requestingUserId: string, groupId: string, token?: string) => Promise<any>;
     getAuthorizations: (requestingUserId: string, ownerId?: string, authId?: string, token?: string) => Promise<any>;
     deleteAuthorization: (requestingUserId: string, authId: string, token?: string) => Promise<any>;
+    getToken: (user: Partial<ProfileStruct>) => string;
     notificationStruct: (parentStruct?: any) => {
         structType: string;
         timestamp: number;
@@ -91,7 +93,7 @@ export declare class StructBackend extends Service {
     getMongoUsersByRole: (user: Partial<ProfileStruct>, role: string) => Promise<ProfileStruct[]>;
     getMongoDataByIds: (user: Partial<ProfileStruct>, structIds: string[], ownerId: string | undefined, collection: string | undefined, token?: string) => Promise<any[]>;
     getMongoData: (user: Partial<ProfileStruct>, collection: string | undefined, ownerId: string | undefined, dict?: any | undefined, limit?: number, skip?: number, token?: string) => Promise<any[]>;
-    getAllUserMongoData: (user: Partial<ProfileStruct>, ownerId: any, excluded?: any[], token?: string) => Promise<any[]>;
+    getAllUserMongoData: (user: Partial<ProfileStruct>, ownerId: any, excluded?: any[], timeRange?: [number | TimeSpecifier, number | TimeSpecifier], token?: string) => Promise<any[]>;
     getMongoDataByRefs: (user: Partial<ProfileStruct>, structRefs?: any[], token?: string) => Promise<any[]>;
     getMongoAuthorizations: (user: Partial<ProfileStruct>, ownerId?: any, authId?: string, token?: string) => Promise<AuthorizationStruct[]>;
     getMongoGroups: (user: Partial<ProfileStruct>, userId?: any, groupId?: string) => Promise<GroupStruct[]>;

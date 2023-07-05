@@ -1,5 +1,6 @@
 import { DataTablet, DS } from './datastructures/index'
 import { Data, ProfileStruct, AuthorizationStruct, GroupStruct, DataStruct, EventStruct, ChatroomStruct, CommentStruct, Struct } from './datastructures/types';
+import { genTimestampFromString, TimeSpecifier } from './genTimestamps'
 import { Service } from '../../services/Service';
 import { User } from '../../services/router/Router';
 import { GraphNodeProperties } from '../../core/Graph';
@@ -373,9 +374,11 @@ export class StructFrontend extends Service {
     }
 
     //pull all of the collections (except excluded collection names e.g. 'groups') for a user from the server
-    getAllUserData = async (ownerId:string|number, excluded:any[]=[], callback=this.baseServerCallback) => {
+    getAllUserData = async (ownerId:string|number, excluded:any[]=[], timeRange?:[number|TimeSpecifier,number|TimeSpecifier], callback=this.baseServerCallback) => {
+        if(typeof timeRange[0] === 'string') timeRange[0] = genTimestampFromString(timeRange[0]);
+        if(typeof timeRange[1] === 'string') timeRange[1] = genTimestampFromString(timeRange[1]);
         if(this.currentUser?.request) {
-            let res = (await this.currentUser.request({route:'getAllData', args:[this.currentUser._id, ownerId, excluded, this.getToken(this.currentUser)]} ));
+            let res = (await this.currentUser.request({route:'getAllData', args:[this.currentUser._id, ownerId, excluded, timeRange, this.getToken(this.currentUser)]} ));
             callback(res)
             return res
         }
@@ -384,14 +387,25 @@ export class StructFrontend extends Service {
     query = async (collection:string, mongoQuery={}, findOne=false, skip=0, callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
             if(!collection || !mongoQuery) return undefined;
-            let res = (await this.currentUser.request({route:'query',args:[this.currentUser._id, collection,mongoQuery,findOne,skip, this.getToken(this.currentUser)]} ));
+            let res = (await this.currentUser.request({route:'query',args:[this.currentUser._id, collection, mongoQuery, findOne, skip, this.getToken(this.currentUser)]} ));
             if(typeof callback === 'function') callback(res);
             return res;
         }
     }
 
+    //get data by a range of time via utcTimeStamps, default key is timestamp
+    getDataByTimeRange(collection, timeRange?:[number|TimeSpecifier,number|TimeSpecifier], ownerId?:string|number|undefined, limit:number=0, skip:number=0, key?:string) {
+        let query = {} as any;
+        if(typeof timeRange[0] === 'string') timeRange[0] = genTimestampFromString(timeRange[0]);
+        if(typeof timeRange[1] === 'string') timeRange[1] = genTimestampFromString(timeRange[1]);
+        let range = {$gt:timeRange[0],$lt:timeRange[1]}
+        if(key) query[key] = range;
+        else query.timestamp = range;
+        return this.getData(collection, ownerId, query, limit, skip);
+    }
+
     //get data by specified details from the server. You can provide only one of the first 3 elements. The searchDict is for mongoDB search keys
-    getData = async (collection:string,ownerId?:string|number|undefined,searchDict?,limit:number=0,skip:number=0,callback=this.baseServerCallback) => {
+    getData = async (collection:string, ownerId?:string|number|undefined, searchDict?, limit:number=0, skip:number=0, callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
             let res = (await this.currentUser.request({route:'getData', args:[this.currentUser._id, collection, ownerId, searchDict, limit, skip, this.getToken(this.currentUser)]}));//?.[0]
             //console.log('GET DATA RES', res, JSON.stringify(collection), JSON.stringify(ownerId));
@@ -814,7 +828,7 @@ export class StructFrontend extends Service {
             return new Promise(async resolve => {
                this.getUser(u, true, async (data)=> {
                     let res;
-                    if(!collection) res = await this.getAllUserData(u,['notification'],callback);
+                    if(!collection) res = await this.getAllUserData(u,['notification'],undefined,callback);
                     else res = await this.getData(collection,u,searchDict,limit,skip,callback);
 
                     resolve(res)
@@ -837,7 +851,7 @@ export class StructFrontend extends Service {
                     let user = await this.getUser(u, true, callback);
                     
                     if(user) results.push(user);
-                    if(!collection) data = await this.getAllUserData(u,['notification'],callback);
+                    if(!collection) data = await this.getAllUserData(u,['notification'],undefined,callback);
                     else data = await this.getData(collection,u,searchDict,limit,skip,callback);
                     if(data) results.push(data);
                 }
@@ -995,7 +1009,6 @@ export class StructFrontend extends Service {
         newAuthorization.expires = expires; 
         newAuthorization.status = 'PENDING';
         newAuthorization.associatedAuthId = '';
-        newAuthorization.ownerId = parentUser._id;
         //console.log('new authorization', newAuthorization)
         newAuthorization = await this.setAuthorization(newAuthorization);
        
@@ -1024,7 +1037,6 @@ export class StructFrontend extends Service {
         Object.assign(newGroup.users, newGroup.admins);
         Object.assign(newGroup.users, newGroup.peers);
         Object.assign(newGroup.users, newGroup.clients);
-        newGroup.ownerId = parentUser._id;
         
         //this.setLocalData(newGroup);
         
@@ -1065,7 +1077,6 @@ export class StructFrontend extends Service {
         newDataInstance.type = type;
         newDataInstance.data = data;
         newDataInstance.expires = expires;
-        newDataInstance.ownerId = parentUser._id;
         
         //this.setLocalData(newDataInstance);
         
@@ -1089,7 +1100,7 @@ export class StructFrontend extends Service {
         if(!parentUser) return undefined;
         if(Object.keys(users).length === 0) users = this.getLocalUserPeerIds(parentUser as any);
         
-        let newEvent = this.createStruct('event',undefined,parentUser as any);
+        let newEvent = this.createStruct('event', undefined, parentUser as any);
         newEvent.author = author;
         newEvent.event = event;
         newEvent.notes = notes;
@@ -1098,7 +1109,6 @@ export class StructFrontend extends Service {
         newEvent.grade = grade;
         newEvent.attachments = attachments;
         newEvent.users = users;
-        newEvent.ownerId = parentUser._id;
 
         //this.setLocalData(newEvent);
         if(updateServer) newEvent = await this.updateServerData([newEvent])[0];
@@ -1124,8 +1134,6 @@ export class StructFrontend extends Service {
         newChatroom.users = users;
         newChatroom.replies = [];
         newChatroom.comments = [];
-        newChatroom.ownerId = parentUser._id;
-
         let update = [newChatroom];
         if(updateServer) newChatroom = await this.updateServerData(update)[0];
 
@@ -1160,7 +1168,6 @@ export class StructFrontend extends Service {
             newComment.attachments = attachments;
             newComment.users = roomStruct?.users;
             newComment.replies = [];
-            newComment.ownerId = parentUser._id;
 
 
             if (!updateServer) replyTo?.replies.push(newComment._id); //keep a local reference
@@ -1186,3 +1193,4 @@ export class StructFrontend extends Service {
             return res as Array<any>;
     }
 }
+

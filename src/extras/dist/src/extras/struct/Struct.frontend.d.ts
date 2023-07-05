@@ -1,5 +1,6 @@
 import { DataTablet } from './datastructures/index';
 import { Data, ProfileStruct, AuthorizationStruct, GroupStruct, DataStruct, EventStruct, ChatroomStruct, CommentStruct, Struct } from './datastructures/types';
+import { TimeSpecifier } from './genTimestamps';
 import { Service } from '../../services/Service';
 import { User } from '../../services/router/Router';
 import { GraphNodeProperties } from '../../core/Graph';
@@ -50,8 +51,9 @@ export declare class StructFrontend extends Service {
     queryUsers: (info: string, skip?: number, limit?: number, callback?: (data: any) => void) => Promise<any>;
     getUsers: (ids?: (string | number)[], basicInfo?: boolean, callback?: (data: any) => void) => Promise<any>;
     getUsersByRole: (userRole: string, callback?: (data: any) => void) => Promise<any>;
-    getAllUserData: (ownerId: string | number, excluded?: any[], callback?: (data: any) => void) => Promise<any>;
+    getAllUserData: (ownerId: string | number, excluded?: any[], timeRange?: [number | TimeSpecifier, number | TimeSpecifier], callback?: (data: any) => void) => Promise<any>;
     query: (collection: string, mongoQuery?: {}, findOne?: boolean, skip?: number, callback?: (data: any) => void) => Promise<any>;
+    getDataByTimeRange(collection: any, timeRange?: [number | TimeSpecifier, number | TimeSpecifier], ownerId?: string | number | undefined, limit?: number, skip?: number, key?: string): Promise<any>;
     getData: (collection: string, ownerId?: string | number | undefined, searchDict?: any, limit?: number, skip?: number, callback?: (data: any) => void) => Promise<any>;
     getDataByIds: (structIds?: any[], ownerId?: string | number | undefined, collection?: string | undefined, callback?: (data: any) => void) => Promise<any>;
     getStructParentData: (struct: any, callback?: (data: any) => void) => Promise<any>;
@@ -77,7 +79,7 @@ export declare class StructFrontend extends Service {
     overwriteLocalData(structs: any): void;
     setLocalData(structs: any): void;
     getLocalData(collection: any, query?: any): any;
-    getLocalUserPeerIds: (user?: User) => any[];
+    getLocalUserPeerIds: (user?: User) => any;
     getLocalReplies(struct: any): any;
     hasLocalAuthorization(otherUserId: any, ownerId?: string): any;
     deleteLocalData(structs: any): boolean;

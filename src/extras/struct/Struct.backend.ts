@@ -1,5 +1,6 @@
 import { ObjectId } from "./datastructures/bson.cjs"
 import { AuthorizationStruct, CommentStruct, GroupStruct, ProfileStruct } from "./datastructures/types";
+import { genTimestampFromString, TimeSpecifier } from './genTimestamps'
 import { Service } from "../../services/Service";
 import { User } from '../../services/router/Router';
 import { DS } from "./datastructures/index.js";
@@ -350,13 +351,12 @@ export class StructBackend extends Service {
         return data;
     }
 
-    getAllData = async (requestingUserId:string, ownerId:string, excludedCollections?:string[], token?:string) => {
+    getAllData = async (requestingUserId:string, ownerId:string, excludedCollections?:string[], timeRange?:[number|TimeSpecifier,number|TimeSpecifier], token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
-
         let data;
         if(this.mode.includes('mongo')) {
-            data = await this.getAllUserMongoData(user,ownerId,excludedCollections, token);
+            data = await this.getAllUserMongoData(user,ownerId,excludedCollections, timeRange, token);
         } else {
             let result = this.getLocalData(undefined,{ownerId:ownerId});
             data = [];
@@ -1248,14 +1248,20 @@ export class StructBackend extends Service {
         return structs;
     }
 
-    getAllUserMongoData = async (user:Partial<ProfileStruct>,ownerId,excluded:any[]=[], token?:string) => {
+    getAllUserMongoData = async (user:Partial<ProfileStruct>, ownerId, excluded:any[]=[], timeRange?:[number|TimeSpecifier,number|TimeSpecifier], token?:string) => {
         let structs :any[] = [];
 
         let passed = true;
         let checkedId = '';
         await Promise.all(Object.keys(this.collections).map(async (name,j) => {
             if(passed && excluded.indexOf(name) < 0) {
-                let cursor = this.db.collection(name).find({ownerId:ownerId});
+                let query = {ownerId:ownerId} as any;
+                if(timeRange) {
+                    if(typeof timeRange[0] === 'string') timeRange[0] = genTimestampFromString(timeRange[0]);
+                    if(typeof timeRange[1] === 'string') timeRange[1] = genTimestampFromString(timeRange[1]);
+                    query.timestamp = {$gt:timeRange[0],$lt:timeRange[1]};
+                }
+                let cursor = this.db.collection(name).find(query);
                 let arr = await cursor.toArray();
                 let count = arr.length;
                 for(let k = 0; k < count; k++) {
@@ -1955,3 +1961,4 @@ for(const key in shallowqueryDummy) {
     else delete shallowqueryDummy[key];
 }
 //console.log(shallowqueryDummy);
+
