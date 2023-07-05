@@ -4,6 +4,7 @@
 
 export * from './struct/Struct.frontend'
 export * from './struct/Struct.backend'
+export * from './struct/genTimestamps'
 
 export * from './ecs/ECS.systems'
 

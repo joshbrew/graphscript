@@ -122,7 +122,7 @@ export class StructFrontend extends Service {
 
         if(newu) {this.setLocalData(u);}
         else {
-            let data = await this.getAllUserData(u._id,undefined); //todo: only query latest data
+            let data = await this.getAllUserData(u._id,undefined, [genTimestampFromString('last day'),Date.now()]); //todo: only query latest data
 
             //console.log("getServerData", data);
             if(!data || data.length === 0) { 
