@@ -80,27 +80,27 @@ export function genTimestampFromString(specifier: TimeSpecifier): number {
       const [, count, unit] = specifier.match(/last (\d+) (\w+)/) || [];
       if (count && unit) {
         const num = parseInt(count, 10);
-        if (unit === 'minute') {
+        if (unit.includes('minute')) {
             now.setMinutes(now.getMinutes() - num);
-        } else if (unit === 'hour') {
+        } else if (unit.includes('hour')) {
             now.setHours(now.getHours() - num);
-        } else if (unit === 'day') {
+        } else if (unit.includes('day')) {
             now.setDate(now.getDate() - num);
-        } else if (unit === 'week') {
+        } else if (unit.includes('week')) {
             now.setDate(now.getDate() - num * 7);
-        } else if (unit === 'month') {
+        } else if (unit.includes('month')) {
             now.setMonth(now.getMonth() - num);
-        } else if (unit === 'year') {
+        } else if (unit.includes('year')) {
             now.setFullYear(now.getFullYear() - num);
-        } else if (unit === 'decade') {
+        } else if (unit.includes('decade')) {
             now.setFullYear(now.getFullYear() - num * 10);
-        } else if (unit === 'century') {
+        } else if (unit.includes('century')) {
             now.setFullYear(now.getFullYear() - num * 100);
-        } else if (unit === 'millennium') {
+        } else if (unit.includes('millennium')) {
             now.setFullYear(now.getFullYear() - num * 1000);
-        } else if (unit === 'microsecond') {
+        } else if (unit.includes('microsecond')) {
             now.setMilliseconds(now.getMilliseconds() - num);
-        } else if (unit === 'nanosecond') {
+        } else if (unit.includes('nanosecond')) {
             now.setMilliseconds(now.getMilliseconds() - num * 0.001);
         }
       }

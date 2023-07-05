@@ -1,8 +1,9 @@
 {
-    "name": "graphscript-services-node",
-    "version": "0.2.159",
+    "name": "graphscript-services",
+    "version": "0.2.160",
     "description": "Extra services for graphscript.",
-    "main": "dist/index.services.node.js",
+    "main": "dist/index.services.js",
+    "module": "dist/index.services.esm.js",
     "types": "dist/src/extras/index.services.d.ts",
     "scripts": {
         "start": "tinybuild path=tinybuild.config.js && tinybuild path=tinybuild.gpu.config.js && tinybuild path=tinybuild.storage.config.js",
