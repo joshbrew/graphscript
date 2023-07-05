@@ -375,8 +375,10 @@ export class StructFrontend extends Service {
 
     //pull all of the collections (except excluded collection names e.g. 'groups') for a user from the server
     getAllUserData = async (ownerId:string|number, excluded:any[]=[], timeRange?:[number|TimeSpecifier,number|TimeSpecifier], callback=this.baseServerCallback) => {
-        if(typeof timeRange[0] === 'string') timeRange[0] = genTimestampFromString(timeRange[0]);
-        if(typeof timeRange[1] === 'string') timeRange[1] = genTimestampFromString(timeRange[1]);
+        if(timeRange) {
+            if(typeof timeRange[0] === 'string') timeRange[0] = genTimestampFromString(timeRange[0]);
+            if(typeof timeRange[1] === 'string') timeRange[1] = genTimestampFromString(timeRange[1]);
+        }
         if(this.currentUser?.request) {
             let res = (await this.currentUser.request({route:'getAllData', args:[this.currentUser._id, ownerId, excluded, timeRange, this.getToken(this.currentUser)]} ));
             callback(res)
@@ -396,8 +398,10 @@ export class StructFrontend extends Service {
     //get data by a range of time via utcTimeStamps, default key is timestamp
     getDataByTimeRange(collection, timeRange?:[number|TimeSpecifier,number|TimeSpecifier], ownerId?:string|number|undefined, limit:number=0, skip:number=0, key?:string) {
         let query = {} as any;
-        if(typeof timeRange[0] === 'string') timeRange[0] = genTimestampFromString(timeRange[0]);
-        if(typeof timeRange[1] === 'string') timeRange[1] = genTimestampFromString(timeRange[1]);
+        if(timeRange) {
+            if(typeof timeRange[0] === 'string') timeRange[0] = genTimestampFromString(timeRange[0]);
+            if(typeof timeRange[1] === 'string') timeRange[1] = genTimestampFromString(timeRange[1]);
+        }
         let range = {$gt:timeRange[0],$lt:timeRange[1]}
         if(key) query[key] = range;
         else query.timestamp = range;
