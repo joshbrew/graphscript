@@ -4,7 +4,7 @@ export class CSV { //data=["1|2","11|22"], or data=[[1,2,"xyz"],[2,3,"abc"],etc]
     constructor(onOpen=this.onOpen, saveButtonId=null, openButtonId=null) {
 
         this.onOpen = onOpen;
-        this.notes = [{idx:0,text:"comment"}]; //order comments by data index
+        this.notes = []; //order comments by data index {idx:0,text:"comment"}
 
         if(saveButtonId !== null) {
             document.getElementById(saveButtonId).addEventListener('click', this.saveCSV);
@@ -33,14 +33,15 @@ export class CSV { //data=["1|2","11|22"], or data=[[1,2,"xyz"],[2,3,"abc"],etc]
     }
 
     //Converts an array of strings (e.g. raw data stream text) or an array of arrays representing lines of data into CSVs
-    static saveCSV(csvDat="a,b,c\n1,2,3\n3,2,1\n",name=new Date().toISOString()){
+    static saveCSV(csvDat="a,b,c\n1,2,3\n3,2,1\n", name=new Date().toISOString()){
         var hiddenElement = document.createElement('a');
         hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvDat);
         hiddenElement.target = "_blank";
         if (name !== "") {
+            //if(!name.includes('.csv')) name +='.csv';
             hiddenElement.download = name;
         } else{
-            hiddenElement.download = Date().toISOString();
+            hiddenElement.download = new Date().toISOString() + '.csv';
         }
         
         hiddenElement.click();
@@ -217,27 +218,27 @@ export function toISOLocal(d) {
  */
 //spits out an array of CSV rows in string format with endlines added
 export const processDataForCSV = (options={}) => {
-    let header = '';
-    if(typeof options.data[0] === 'object' && !Array.isArray(options.data[0])){
-        if(options.data[0].x) header = 'x,';
-        else if (options.data[0].timestamp) header = 'timestamp,localtime,';
-    }
-
+    if(!options.data) return undefined;
+    if(!Array.isArray(options.data)) options.data = [options.data];
+    if(options.data && !options.header) options.header = Object.keys(options.data[0]);
+    let head = [...options.header];
+    if(head.indexOf('timestamp') > -1) {
+        head.splice(head.indexOf('timestamp') + 1, 0, 'localized');
+    } 
+    
+    let header = head.join(',');
 
     let headeridx = 0;
-    let lines = {}; //associative array (e.g. timestamp = row)
-    options.data.forEach((obj, i) => {
+    let lines = []; 
+    let foreach = (obj, i) => {
         if(Array.isArray(obj)) { //unstructured data just gets pushed into a column
             for(let j = 0; j < obj.length; j++) {
                 if(!lines[j]) lines[j] = '';
-                
                 if(Array.isArray(obj[j])) {
-                    if(j === 0) header[headeridx] += options.header[headeridx]+new Array(obj[j].length-1).fill('').join(','); //add empty spaces
                     lines[j] += obj[j].join(',') + ',';
                     headeridx+=obj[j].length;
                 }
                 else {
-                    if(j === 0) header[headeridx] += options.header[headeridx]+',';
                     lines[j] += obj[j] + ',';
                     headeridx++;
                 }
@@ -249,42 +250,34 @@ export const processDataForCSV = (options={}) => {
             } else if (obj.timestamp) {
                 x = obj.timestamp;
             }
+            let keys = options.header;
             for(let j = 0; j < x.length; j++) {
-                
-                if(!lines[x[j]]) lines[x[j]] = x[j] + ',';
+                if(!lines[j]) lines[j] = x[j] + ',';
                 if(obj.timestamp) {
-                    lines[x[j]] += toISOLocal(obj.timestamp[j]) + ','; //add local timezone data
-                } 
-
-                for(const prop in obj) {
-                    if(prop !== 'x') {
-                        if(!lines[x[j]]) lines[x[j]] = '';
-                
-                        if(Array.isArray(obj[prop][j])) {
-                            if(j === 0) header[headeridx] += options.header[headeridx]+Array(obj[prop][j].length-1).fill('').join(','); //add empty spaces
-                            lines[x[j]] += obj[prop][j].join(',') + ',';
-                            headeridx+=obj[prop][j].length;
-                        }
-                        else {
-                            if(j === 0) header[headeridx] += options.header[headeridx]+',';
-                            lines[x[j]] += obj[prop][j] + ',';
-                            headeridx++;
-                        }
+                    keys.splice(keys.indexOf('timestamp'), 1);
+                    lines[j] += toISOLocal(obj.timestamp[j]) + ','; //add local timezone data
+                } else if (obj.x) {
+                    keys.splice(keys.indexOf('x'));
+                }
+                let lastIndex = keys.length - 1;
+                for(let k = 0; k < keys.length; k++) {
+                    const key = keys[k];
+                    if(Array.isArray(obj[key][j])) {
+                        lines[j] += obj[key][j].join(',') + (k === lastIndex ? '' : ','); 
+                    }
+                    else {
+                        lines[j] += obj[key][j] + (k === lastIndex ? '' : ',');
                     }
                 }
             }  
         }
-    });
+    }
 
-    header.splice(header.length-1,1); //remove last comma
+    options.data.forEach(foreach);
+
     header += '\n';
 
-    let joined = '';
-
-    for(const prop in lines) {
-        lines[prop].splice(lines[prop].length-1,1); //splice off the trailing comma
-        joined +=  lines[prop] + '\n'; //add a newline
-    }
+    let joined = lines.join('\n');
 
     let result = {filename:options.filename,header:header,body:joined};
 

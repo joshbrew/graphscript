@@ -32,11 +32,14 @@ export type EventStruct = {
     event: string;
     author: string;
     startTime: string;
-    endTime: string;
-    grade: string | number;
-    notes: string;
-    attachments: Data | string | number[];
-    users: {};
+    endTime?: string;
+    grade?: string | number;
+    value?: any;
+    units?: string;
+    notes?: string;
+    location?: any;
+    attachments?: Data | string | number[];
+    users?: {};
     tag?: string | number;
 } & Struct;
 export type ChatroomStruct = {

@@ -5,10 +5,7 @@ export class CSV {
     static openCSVRaw(onOpen?: (csvDat: any, path: any) => any): Promise<any>;
     constructor(onOpen?: (csvDat?: any[], header?: any[]) => void, saveButtonId?: any, openButtonId?: any);
     onOpen(csvDat?: any[], header?: any[]): void;
-    notes: {
-        idx: number;
-        text: string;
-    }[];
+    notes: any[];
     processArraysForCSV(data?: string[], delimiter?: string, header?: string, saveNotes?: boolean): string;
 }
 export function parseCSVData(data: any, filename: any, head: any, hasend?: boolean, parser?: (lines: any, filename: any, head: any) => {

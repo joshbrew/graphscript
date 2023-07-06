@@ -56,17 +56,17 @@ export declare class StructFrontend extends Service {
     getDataByTimeRange(collection: any, timeRange?: [number | TimeSpecifier, number | TimeSpecifier], ownerId?: string | number | undefined, limit?: number, skip?: number, key?: string): Promise<any>;
     getData: (collection: string, ownerId?: string | number | undefined, searchDict?: any, limit?: number, skip?: number, callback?: (data: any) => void) => Promise<any>;
     getDataByIds: (structIds?: any[], ownerId?: string | number | undefined, collection?: string | undefined, callback?: (data: any) => void) => Promise<any>;
-    getStructParentData: (struct: any, callback?: (data: any) => void) => Promise<any>;
-    setUser: (userStruct?: {}, callback?: (data: any) => void) => Promise<any>;
+    getStructParentData: (struct: Struct, callback?: (data: any) => void) => Promise<any>;
+    setUser: (userStruct: ProfileStruct, callback?: (data: any) => void) => Promise<any>;
     checkUserToken: (usertoken: any, user?: User, callback?: (data: any) => void) => Promise<any>;
     setData: (structs?: Partial<Struct> | Partial<Struct>[], notify?: boolean, callback?: (data: any) => void) => Promise<any>;
     updateServerData: (structs?: Partial<Struct> | Partial<Struct>[], notify?: boolean, callback?: (data: any) => void) => Promise<any>;
     deleteData: (structs?: any[], callback?: (data: any) => void) => Promise<any>;
     deleteUser: (userId: any, callback?: (data: any) => void) => Promise<any>;
-    setGroup: (groupStruct?: {}, callback?: (data: any) => void) => Promise<any>;
+    setGroup: (groupStruct: GroupStruct, callback?: (data: any) => void) => Promise<any>;
     getUserGroups: (userId?: string, groupId?: string, callback?: (data: any) => void) => Promise<any>;
     deleteGroup: (groupId: any, callback?: (data: any) => void) => Promise<any>;
-    setAuthorization: (authorizationStruct?: {}, callback?: (data: any) => void) => Promise<any>;
+    setAuthorization: (authorizationStruct: AuthorizationStruct, callback?: (data: any) => void) => Promise<any>;
     getAuthorizations: (userId?: string, authorizationId?: string, callback?: (data: any) => void) => Promise<any>;
     deleteAuthorization: (authorizationId: any, callback?: (data: any) => void) => Promise<any>;
     checkForNotifications: (userId?: string) => Promise<any>;
@@ -82,10 +82,12 @@ export declare class StructFrontend extends Service {
     getLocalUserPeerIds: (user?: User) => any;
     getLocalReplies(struct: any): any;
     hasLocalAuthorization(otherUserId: any, ownerId?: string): any;
-    deleteLocalData(structs: any): boolean;
-    deleteStruct(struct: any): boolean;
-    stripStruct(struct?: {}): {};
-    createStruct(structType: any, props: any, parentUser?: User, parentStruct?: any): any;
+    deleteLocalData(structs: Struct[]): boolean;
+    deleteStruct(struct: Struct): boolean;
+    stripStruct(struct: Struct): Struct;
+    createStruct(structType: string, props: {
+        [key: string]: any;
+    }, parentUser?: User, parentStruct?: Struct): any;
     userStruct(props?: Partial<User>, currentUser?: boolean): ProfileStruct;
     authorizeUser: (parentUser: Partial<User>, authorizerUserId?: string, authorizerUserName?: string, authorizedUserId?: string, authorizedUserName?: string, authorizations?: {}, structs?: {}, excluded?: {}, groups?: {}, expires?: boolean) => Promise<AuthorizationStruct>;
     addGroup: (parentUser: Partial<User>, name?: string, details?: string, admins?: {}, peers?: {}, clients?: {}, updateServer?: boolean) => Promise<GroupStruct>;
@@ -95,7 +97,7 @@ export declare class StructFrontend extends Service {
         timestamp: string | number;
     };
     addData: (parentUser: Partial<User>, author?: string, title?: string, type?: string, data?: string | Data[], expires?: boolean, updateServer?: boolean) => Promise<DataStruct>;
-    addEvent: (parentUser: Partial<User>, author?: string, event?: string, notes?: string, startTime?: number, endTime?: number, grade?: number, attachments?: string | Data[], users?: {}, updateServer?: boolean) => Promise<EventStruct>;
+    addEvent: (parentUser: Partial<User>, author?: string, event?: string | number, notes?: string, startTime?: string | number, endTime?: string | number, grade?: string | number, value?: any, units?: string, location?: any, attachments?: string | Data[], users?: {}, updateServer?: boolean) => Promise<EventStruct>;
     addChatroom: (parentUser: Partial<User>, authorId?: string, message?: string, attachments?: string | Data[], users?: {}, updateServer?: boolean) => Promise<ChatroomStruct>;
     addComment: (parentUser: Partial<User>, roomStruct?: {
         _id: string;

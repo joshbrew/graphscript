@@ -34,11 +34,14 @@ export type EventStruct = {
     event:string, //event type e.g. relapse, hospitalization
     author:string,
     startTime:string,  //event began
-    endTime:string,    //event ended
-    grade:string|number,  //severity
-    notes:string, //additional details
-    attachments:Data|string|number[], //can be data or struct Ids
-    users:{}, //users to be informed (i.e. peers)
+    endTime?:string,    //event ended
+    grade?:string|number,  //severity
+    value?:any,     //e.g. heart rate, distance
+    units?:string, //e.g. bpm, millimeteres
+    notes?:string, //additional details
+    location?:any,
+    attachments?:Data|string|number[], //can be data or struct Ids
+    users?:{}, //users to be informed (i.e. peers)
     tag?:string|number
 } & Struct
 

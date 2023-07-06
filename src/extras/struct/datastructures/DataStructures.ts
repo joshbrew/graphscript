@@ -532,7 +532,10 @@ export function EventStruct(
         author:"", //
         startTime:"",  //event began
         endTime:"",    //event ended
-        grade:0,  //severity
+        grade:undefined,  //severity
+        value:undefined,
+        units:undefined,
+        location:undefined,
         notes:"", //additional details
         attachments:new Array(),
         users:{}, //users to be informed (i.e. peers)

@@ -159,7 +159,10 @@ export class WSSfrontend extends Service {
         let run = (route:any,args?:any,method?:string) => {
             return new Promise ((res,rej) => {
                 let callbackId = Math.random();
-                let req = {route:'runRequest', args:[{route, args}, this.sockets[address]._id, callbackId]} as any;
+                let req = {
+                    route:'runRequest', 
+                    args:[{route, args}, this.sockets[address]._id, callbackId]
+                } as any;
                 if(method) req.args[0].method = method;
                 let onmessage = (ev)=>{
                     let data = ev.data;

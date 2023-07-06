@@ -104,7 +104,7 @@ export class StructFrontend extends Service {
                 }
             }
 
-            if(Object.keys(toUpdate).length > 2) await this.setUser(toUpdate);
+            if(Object.keys(toUpdate).length > 2) await this.setUser(toUpdate as any);
             // u._id = user._id; //replace the unique mongo id for the secondary profile struct with the id for the userinfo for temp lookup purposes
 
             if(res?.authorizations){
@@ -240,7 +240,7 @@ export class StructFrontend extends Service {
                                     delete this.currentUser.userRoles[struct.name+'_client'];
                                     uset = true;
                                 }
-                                if(uset) this.setUser(this.currentUser); //update roles
+                                if(uset) this.setUser(this.currentUser as any); //update roles
                             }
                         }
                         this.setLocalData(struct);
@@ -428,8 +428,8 @@ export class StructFrontend extends Service {
     }
 
     //get struct based on the parentId 
-    getStructParentData = async (struct:any,callback=this.baseServerCallback) => {
-        if(!struct.parent) return;
+    getStructParentData = async (struct:Struct,callback=this.baseServerCallback) => {
+        if(!struct?.parent) return;
         if(this.currentUser?.request) {
             let args = [this.currentUser._id, struct.parent?.structType,'_id',struct.parent?._id, this.getToken(this.currentUser)];
 
@@ -455,8 +455,8 @@ export class StructFrontend extends Service {
 
     
     //sets the user profile data on the server
-    setUser = async (userStruct={},callback=this.baseServerCallback) => {
-        if(this.currentUser?.request) {
+    setUser = async (userStruct:ProfileStruct,callback=this.baseServerCallback) => {
+        if(userStruct && this.currentUser?.request) {
             let res = (await this.currentUser.request({route:'setUser', args:[this.currentUser._id, this.stripStruct(userStruct), this.getToken(this.currentUser)]}))
             if(typeof callback === 'function') callback(res)
             return res
@@ -496,7 +496,7 @@ export class StructFrontend extends Service {
                 user[prop] = usertoken[prop];  changed = true;
             }
         }
-        if(changed) return await this.setUser(user,callback);
+        if(changed) return await this.setUser(user as any,callback);
         return changed;
     }
 
@@ -571,8 +571,8 @@ export class StructFrontend extends Service {
     }
 
     //set a group struct on the server
-    setGroup = async (groupStruct={},callback=this.baseServerCallback) => {
-        if(this.currentUser?.request) {
+    setGroup = async (groupStruct:GroupStruct,callback=this.baseServerCallback) => {
+        if(groupStruct && this.currentUser?.request) {
             let res = (await this.currentUser.request({route:'setGroup', args:[this.currentUser._id, this.stripStruct(groupStruct), this.getToken(this.currentUser)]}))
             if(typeof callback === 'function') callback(res)
             return res
@@ -601,8 +601,8 @@ export class StructFrontend extends Service {
     }
 
     //set an authorization struct on the server
-    setAuthorization = async (authorizationStruct={},callback=this.baseServerCallback) => {
-        if(this.currentUser?.request) {
+    setAuthorization = async (authorizationStruct:AuthorizationStruct,callback=this.baseServerCallback) => {
+        if(authorizationStruct && this.currentUser?.request) {
             let res = (await this.currentUser.request({route:'setAuthorization', args:[this.currentUser._id, this.stripStruct(authorizationStruct), this.getToken(this.currentUser)]}))
             if(typeof callback === 'function') callback(res)
             return res
@@ -929,31 +929,33 @@ export class StructFrontend extends Service {
     }
 
     //pass a single struct or array of structs
-    deleteLocalData(structs) {
+    deleteLocalData(structs:Struct[]) {
         if(Array.isArray(structs)) structs.forEach(s => this.deleteStruct(s));
         else this.deleteStruct(structs); //single
         return true;
     }
 
-    deleteStruct(struct) {
+    deleteStruct(struct:Struct) {
         if(typeof struct === 'string') struct = this.getLocalData(undefined,{_id:struct}); //get the struct if an id was supplied
         if(!struct) throw new Error('Struct not supplied')
         if(!struct.structType || !struct._id) return false;
-        this.tablet.collections.get(struct.structType).delete(struct._id);
+        this.tablet.collections.get(struct.structType as string).delete(struct._id);
         return true;
     }
 
     //strips circular references from the struct used clientside, returns a soft copy with the changes
-    stripStruct(struct={}) {
+    stripStruct(struct:Struct) {
         const copy = Object.assign({ }, struct);
         for(const prop in copy) {
-            if(copy[prop] === undefined || copy[prop] === "" || copy[prop].constructor.name === 'Map' || typeof copy[prop] === 'function') delete copy[prop]; //delete undefined 
+            if(copy[prop] === undefined || copy[prop] === "" || copy[prop].constructor.name === 'Map' || copy[prop].constructor.name === 'Set' || typeof copy[prop] === 'function') delete copy[prop]; //delete undefined 
+            else if (Array.isArray(copy[prop]) && copy[prop].length === 0) delete copy[prop]; //get rid of empty arrays
+            else if(typeof copy[prop] === 'object' && Object.keys(copy[prop]).length === 0) delete copy[prop];  //get rid of empty objects
         }
         return copy;
     }
 
     //create a struct with the prepared props to be filled out
-    createStruct(structType,props,parentUser=this.currentUser,parentStruct?):any {
+    createStruct(structType:string,props:{[key:string]:any},parentUser=this.currentUser,parentStruct?:Struct):any {
         let struct = DS.Struct(structType,props,parentUser,parentStruct)
         return struct;
     }
@@ -993,7 +995,7 @@ export class StructFrontend extends Service {
         authorizerUserName='',
         authorizedUserId='',
         authorizedUserName='',
-        authorizations:{}={}, // TODO: really any[] or has type??
+        authorizations:{}={}, 
         structs:{}={},
         excluded:{}={},
         groups:{}={},
@@ -1091,18 +1093,21 @@ export class StructFrontend extends Service {
 
     addEvent = async (
         parentUser:Partial<User>,
-        author='', 
-        event='', 
-        notes='', 
-        startTime=0, 
-        endTime=0,
-        grade=0, 
-        attachments:string|Data[]=[], 
-        users:{}={}, 
+        author:string='', 
+        event:string|number='', 
+        notes:string='', 
+        startTime:string|number=undefined, 
+        endTime:string|number=undefined,
+        grade:string|number=undefined, 
+        value:any=undefined,
+        units:string=undefined,
+        location:any=undefined,
+        attachments:string|Data[]=undefined, 
+        users:{}=undefined, 
         updateServer=true
     ) => {
         if(!parentUser) return undefined;
-        if(Object.keys(users).length === 0) users = this.getLocalUserPeerIds(parentUser as any);
+        if(users && Object.keys(users).length === 0) users = this.getLocalUserPeerIds(parentUser as any);
         
         let newEvent = this.createStruct('event', undefined, parentUser as any);
         newEvent.author = author;
@@ -1112,7 +1117,10 @@ export class StructFrontend extends Service {
         newEvent.endTime = endTime;
         newEvent.grade = grade;
         newEvent.attachments = attachments;
+        newEvent.value = value;
+        newEvent.units = units;
         newEvent.users = users;
+        newEvent.location = location;
 
         //this.setLocalData(newEvent);
         if(updateServer) newEvent = await this.updateServerData([newEvent])[0];
@@ -1124,12 +1132,12 @@ export class StructFrontend extends Service {
         parentUser:Partial<User>,
         authorId='', 
         message='', 
-        attachments:string|Data[]=[], 
-        users:{}={}, 
+        attachments:string|Data[]=undefined, 
+        users:{}=undefined, 
         updateServer=true
     ) => {
         if(!parentUser) return undefined;
-        if(Object.keys(users).length === 0) users = this.getLocalUserPeerIds(parentUser as any); //adds the peer ids if none other provided
+        if(users && Object.keys(users).length === 0) users = this.getLocalUserPeerIds(parentUser as any); //adds the peer ids if none other provided
         
         let newChatroom = this.createStruct('chatroom',undefined,parentUser as any);
         newChatroom.message = message;
@@ -1158,7 +1166,7 @@ export class StructFrontend extends Service {
         }, 
         authorId='', 
         message='', 
-        attachments:string|Data[]=[],
+        attachments:string|Data[]=undefined,
         updateServer=true
         ) => {
             if(!roomStruct) return undefined;
