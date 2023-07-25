@@ -83,7 +83,7 @@ export class WebRTCfrontend extends Service {
         if(iceServers) this.iceServers = iceServers;
 
         this.load(this);
-        console.log(this)
+        //console.log(this)
     }
 
     openRTC = async (
@@ -292,8 +292,8 @@ export class WebRTCfrontend extends Service {
                 io.send({route:'negotiateCall', args: [options._id, rtc.localDescription]});
             }
             */
-            rtc.oniceconnectionstatechange =  (ev) => { if(options.oniceconnectionstatechange) options.oniceconnectionstatechange(ev); }; 
-            rtc.onconnectionstatechange =  (ev) => { if(options.onconnectionstatechange) options.onconnectionstatechange(ev); }; 
+            rtc.oniceconnectionstatechange =  (ev) => { if(this.rtc[options._id].oniceconnectionstatechange) this.rtc[options._id].oniceconnectionstatechange(ev); }; 
+            rtc.onconnectionstatechange =  (ev) => { if(this.rtc[options._id].onconnectionstatechange) this.rtc[options._id].onconnectionstatechange(ev); }; 
             rtc.addEventListener('connectionstatechange', (ev) => {
                 if(rtc.connectionState === 'closed' || rtc.connectionState === 'failed') {
                     if(this.rtc[options._id].onclose) {

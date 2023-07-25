@@ -212,10 +212,13 @@ export class SSEbackend extends Service {
     
                         session.push(JSON.stringify({route:'setId',args:_id})); //associate this user's connection with a server generated id 
                         session.on('close',()=>{
-                            if(this.eventsources[_id].onclose) 
-                                (this.eventsources[_id] as any).onclose(session,sse,_id,req,response);
+                            let obj = this.eventsources[_id];
+                            let onclose = obj.onclose;
 
                             delete this.eventsources[_id];
+                            
+                            if(onclose) 
+                                (obj as any).onclose(session,sse,_id,req,response);
                         })
                         if(sse.onconnection) {sse.onconnection(session,sse,_id,req,response);}
                     

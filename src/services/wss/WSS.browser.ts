@@ -125,16 +125,27 @@ export class WSSfrontend extends Service {
             }
         }
 
-        if((options as any).onmessage) {socket.addEventListener('message',(ev)=>{(this.sockets[address] as any).onmessage(ev.data, socket, this.sockets[address]);});}
+        if((options as any).onmessage) {
+            socket.addEventListener('message',(ev)=>{
+                (this.sockets[address] as any).onmessage(ev.data, socket, this.sockets[address]);
+            });
+        }
+        
         socket.addEventListener('open',(ev)=>{
             if(this.sockets[address].onopen) (this.sockets[address] as any).onopen(ev, socket, this.sockets[address]);
         });
+
         socket.addEventListener('close',(ev)=>{
-            if(this.sockets[address].onclose) (this.sockets[address] as any).onclose(ev,socket, this.sockets[address]);
+            let obj = this.sockets[address];
+            let onclose = obj.onclose;
 
             delete this.sockets[address]; //delete by default onclose (memory saving)
             this.remove(address);
+
+            if(onclose) onclose(ev,socket, obj);
+
         });
+
         socket.addEventListener('error',(ev)=>{
             if(this.sockets[address].onerror) (this.sockets[address] as any).onerror(ev,socket, this.sockets[address]);
         });
@@ -230,7 +241,9 @@ export class WSSfrontend extends Service {
 
         let node = this.add(socketsettings);
 
+
         this.sockets[address] = node as GraphNode & WebSocketInfo;
+        console.log(node,this.get(address),this.sockets[address]);
 
         node.__addOndisconnected(function() { terminate(); });
 

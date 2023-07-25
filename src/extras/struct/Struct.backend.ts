@@ -1419,7 +1419,7 @@ export class StructBackend extends Service {
         if(deleteData) {
             for(const key in this.collections) {
                 this.collections[key].instance.deleteMany({ ownerId: userId });
-                this.collections[key].instance.updateMany({users:{[userId]:true}},{$unset:`users.${userId}`});
+                this.collections[key].instance.updateMany({users:{[userId]:true}},{$unset:{[`users.${userId}`]:""}});
             }
         }
 

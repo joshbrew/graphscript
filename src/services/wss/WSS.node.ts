@@ -407,10 +407,12 @@ export class WSSbackend extends Service {
         });
         
         socket.addListener('close',(code,reason)=>{
-            if(this.sockets[address].onclose) 
-                (this.sockets[address] as any).onclose(code,reason,socket,this.sockets[address]);
+            let obj = this.sockets[address];
+            let onclose = obj.onclose;
             
             delete this.sockets[address]; //delete by default onclose (memory saving)
+
+            if(onclose) onclose(code,reason,socket,obj);
         });
 
             

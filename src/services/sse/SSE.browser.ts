@@ -69,7 +69,7 @@ export class SSEfrontend extends Service {
             close = options.events.close;    
         }
         options.events.close = (ev) => { 
-            if(sse.onclose) sse.onclose(ev,sse); 
+            if(sse.onclose) sse.onclose(ev, sse); 
             if(close) close(ev,sse); 
             delete this.eventsources[options.url];
         };
