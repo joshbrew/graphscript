@@ -243,7 +243,7 @@ export class WSSfrontend extends Service {
 
 
         this.sockets[address] = node as GraphNode & WebSocketInfo;
-        console.log(node,this.get(address),this.sockets[address]);
+        //console.log(node,this.get(address),this.sockets[address]);
 
         node.__addOndisconnected(function() { terminate(); });
 
