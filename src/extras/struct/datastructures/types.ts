@@ -41,7 +41,7 @@ export type EventStruct = {
     notes?:string, //additional details
     location?:any,
     attachments?:Data|string|number[], //can be data or struct Ids
-    users?:{}, //users to be informed (i.e. peers)
+    users?:{[key:string]:true}, //users to be informed (i.e. peers)
     tag?:string|number
 } & Struct
 
@@ -52,7 +52,7 @@ export type ChatroomStruct = {
     attachments: Data|string|number[],
     comments: string[], //all comment struct Ids
     replies: string[], //first level reply comment struct Ids
-    users: {}, //user Ids
+    users: {[key:string]:true}, //user Ids
     audioChatActive: boolean,
     videoChatActive: boolean,
     tag?:string|number
@@ -63,7 +63,7 @@ export type CommentStruct = {
     replyTo:string,
     attachments: Data|string|number[],
     replies: string[], //struct Ids
-    users: {}, //user Ids
+    users:{[key:string]:true}, //user Ids
     tag?:string|number
 } & Struct
 

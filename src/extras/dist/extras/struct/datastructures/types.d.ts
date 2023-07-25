@@ -39,7 +39,9 @@ export type EventStruct = {
     notes?: string;
     location?: any;
     attachments?: Data | string | number[];
-    users?: {};
+    users?: {
+        [key: string]: true;
+    };
     tag?: string | number;
 } & Struct;
 export type ChatroomStruct = {
@@ -49,7 +51,9 @@ export type ChatroomStruct = {
     attachments: Data | string | number[];
     comments: string[];
     replies: string[];
-    users: {};
+    users: {
+        [key: string]: true;
+    };
     audioChatActive: boolean;
     videoChatActive: boolean;
     tag?: string | number;
@@ -59,7 +63,9 @@ export type CommentStruct = {
     replyTo: string;
     attachments: Data | string | number[];
     replies: string[];
-    users: {};
+    users: {
+        [key: string]: true;
+    };
     tag?: string | number;
 } & Struct;
 export type NotificationStruct = {

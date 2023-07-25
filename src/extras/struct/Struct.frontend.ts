@@ -560,11 +560,11 @@ export class StructFrontend extends Service {
     }
 
     //delete user profile by ID on the server
-    deleteUser = async (userId, callback=this.baseServerCallback) => {
+    deleteUser = async (userId:string=this.currentUser._id, deleteData?:boolean, callback=this.baseServerCallback) => {
         if(this.currentUser?.request) {
             if(!userId) return;
 
-            let res = (await this.currentUser.request({route:'deleteUser', args:[this.currentUser._id, userId, this.getToken(this.currentUser)]}))
+            let res = (await this.currentUser.request({route:'deleteUser', args:[this.currentUser._id, userId, deleteData, this.getToken(this.currentUser)]}))
             if(typeof callback === 'function') callback(res)
             return res
         }
@@ -1103,7 +1103,7 @@ export class StructFrontend extends Service {
         units:string=undefined,
         location:any=undefined,
         attachments:string|Data[]=undefined, 
-        users:{}=undefined, 
+        users:{[key:string]:true}=undefined, 
         updateServer=true
     ) => {
         if(!parentUser) return undefined;
@@ -1133,7 +1133,7 @@ export class StructFrontend extends Service {
         authorId='', 
         message='', 
         attachments:string|Data[]=undefined, 
-        users:{}=undefined, 
+        users:{[key:string]:true}=undefined, 
         updateServer=true
     ) => {
         if(!parentUser) return undefined;

@@ -46,7 +46,7 @@ export declare class StructBackend extends Service {
     setUser: (requestingUserId: string, struct: Partial<ProfileStruct>, token: string) => Promise<any>;
     getUsersByIds: (requestingUserId: string, userIds: string[], basicInfo?: boolean) => Promise<any>;
     getUsersByRole: (requestingUserId: string, role: string) => Promise<any>;
-    deleteUser: (requestingUserId: string, userId: string, token?: string) => Promise<any>;
+    deleteUser: (requestingUserId: string, userId: string, deleteData?: boolean, token?: string) => Promise<any>;
     setData: (requestingUserId: string, structs: any[], notify?: boolean, token?: string) => Promise<any>;
     getData: (requestingUserId: string, collection?: string, ownerId?: string, dict?: any, limit?: number, skip?: number, token?: string) => Promise<any>;
     getDataByIds: (requestingUserId: string, structIds: string[], ownerId?: string, collection?: string, token?: string) => Promise<any>;
@@ -98,7 +98,7 @@ export declare class StructBackend extends Service {
     getMongoAuthorizations: (user: Partial<ProfileStruct>, ownerId?: any, authId?: string, token?: string) => Promise<AuthorizationStruct[]>;
     getMongoGroups: (user: Partial<ProfileStruct>, userId?: any, groupId?: string) => Promise<GroupStruct[]>;
     deleteMongoData: (user: Partial<ProfileStruct>, structRefs?: any[], token?: string) => Promise<boolean>;
-    deleteMongoUser: (user: Partial<ProfileStruct>, userId: any, token?: string) => Promise<boolean>;
+    deleteMongoUser: (user: Partial<ProfileStruct>, userId: any, deleteData?: boolean, token?: string) => Promise<boolean>;
     deleteMongoGroup: (user: Partial<ProfileStruct>, groupId: any, token?: string) => Promise<boolean>;
     deleteMongoAuthorization: (user: Partial<ProfileStruct>, authId: any, token?: string) => Promise<boolean>;
     setAuthorization: (user: Partial<ProfileStruct>, authStruct: any, token?: string) => Promise<false | AuthorizationStruct>;

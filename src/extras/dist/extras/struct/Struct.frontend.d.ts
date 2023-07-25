@@ -62,7 +62,7 @@ export declare class StructFrontend extends Service {
     setData: (structs?: Partial<Struct> | Partial<Struct>[], notify?: boolean, callback?: (data: any) => void) => Promise<any>;
     updateServerData: (structs?: Partial<Struct> | Partial<Struct>[], notify?: boolean, callback?: (data: any) => void) => Promise<any>;
     deleteData: (structs?: any[], callback?: (data: any) => void) => Promise<any>;
-    deleteUser: (userId: any, callback?: (data: any) => void) => Promise<any>;
+    deleteUser: (userId?: string, deleteData?: boolean, callback?: (data: any) => void) => Promise<any>;
     setGroup: (groupStruct: GroupStruct, callback?: (data: any) => void) => Promise<any>;
     getUserGroups: (userId?: string, groupId?: string, callback?: (data: any) => void) => Promise<any>;
     deleteGroup: (groupId: any, callback?: (data: any) => void) => Promise<any>;
@@ -97,8 +97,12 @@ export declare class StructFrontend extends Service {
         timestamp: string | number;
     };
     addData: (parentUser: Partial<User>, author?: string, title?: string, type?: string, data?: string | Data[], expires?: boolean, updateServer?: boolean) => Promise<DataStruct>;
-    addEvent: (parentUser: Partial<User>, author?: string, event?: string | number, notes?: string, startTime?: string | number, endTime?: string | number, grade?: string | number, value?: any, units?: string, location?: any, attachments?: string | Data[], users?: {}, updateServer?: boolean) => Promise<EventStruct>;
-    addChatroom: (parentUser: Partial<User>, authorId?: string, message?: string, attachments?: string | Data[], users?: {}, updateServer?: boolean) => Promise<ChatroomStruct>;
+    addEvent: (parentUser: Partial<User>, author?: string, event?: string | number, notes?: string, startTime?: string | number, endTime?: string | number, grade?: string | number, value?: any, units?: string, location?: any, attachments?: string | Data[], users?: {
+        [key: string]: true;
+    }, updateServer?: boolean) => Promise<EventStruct>;
+    addChatroom: (parentUser: Partial<User>, authorId?: string, message?: string, attachments?: string | Data[], users?: {
+        [key: string]: true;
+    }, updateServer?: boolean) => Promise<ChatroomStruct>;
     addComment: (parentUser: Partial<User>, roomStruct?: {
         _id: string;
         users: any[];

@@ -246,13 +246,13 @@ export class StructBackend extends Service {
         return data;
     }
 
-    deleteUser = async (requestingUserId:string, userId:string, token?:string) => {
+    deleteUser = async (requestingUserId:string, userId:string, deleteData?:boolean, token?:string) => {
         let user = this.users[requestingUserId];
         if(!user) return false;
 
         let data;
         if(this.mode.includes('mongo')) {
-            data = await this.deleteMongoUser(user,userId,token);
+            data = await this.deleteMongoUser(user,userId,deleteData,token);
         } else {
             data = false;
             let struct = this.getLocalData(userId);
@@ -1404,7 +1404,7 @@ export class StructBackend extends Service {
     }
 
     //specific delete functions (the above works for everything)
-    deleteMongoUser = async (user:Partial<ProfileStruct>,userId, token?:string) => {
+    deleteMongoUser = async (user:Partial<ProfileStruct>, userId, deleteData?:boolean, token?:string) => {
         
         if(getStringId(user._id as string) !== userId || (getStringId(user._id as string) === userId && (user.userRoles as any)?.admincontrol)) {
             let u = await this.collections.profile.instance.findOne({ id: userId });
@@ -1415,6 +1415,13 @@ export class StructBackend extends Service {
         }
 
         await this.collections.profile.instance.deleteOne({ id: userId });
+
+        if(deleteData) {
+            for(const key in this.collections) {
+                this.collections[key].instance.deleteMany({ ownerId: userId });
+                this.collections[key].instance.updateMany({users:{[userId]:true}},{$unset:`users.${userId}`});
+            }
+        }
 
         if(getStringId(user._id as string) !== userId && this.users[userId]) this.users[userId]?.sendAll({route:'structDeleted',args:{_id:userId,structType:'profile'}});
 
