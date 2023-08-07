@@ -656,6 +656,7 @@ export class WorkerService extends Service {
         subInput?:boolean,
         blocking?:boolean //requires a WorkerInfo object 
     ) => {
+        if(this.restrict?.[route]) return undefined;
 
         let callback:(res:any) => void;
 
@@ -732,7 +733,7 @@ export class WorkerService extends Service {
         args?:any[],
         key?:string,
         subInput?:boolean,
-        blocking?:boolean
+        blocking?:boolean //blocking subscriptions won't return if the subscribing thread hasn't finished with the result
     ) => {
 
         if(typeof workerId === 'string' && this.workers[workerId]) {

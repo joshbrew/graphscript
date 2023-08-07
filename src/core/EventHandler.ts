@@ -110,7 +110,8 @@ export class EventHandler {
 
         return sub;
     }
-    getEvent = (key,sub) => {
+    getEvent = (key,sub?) => {
+        if(!sub) return this.triggers[key];
         for(const s in this.triggers[key]) {
             if(this.triggers[key][s].sub === sub) return this.triggers[key][s];
         }

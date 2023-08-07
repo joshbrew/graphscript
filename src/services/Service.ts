@@ -23,12 +23,15 @@ export type ServiceMessage = {
 
 export type ServiceOptions = 
     GraphOptions & { 
-        services?:{[key:string]:Service|Function|{[key:string]:any}} 
+        services?:{[key:string]:Service|Function|{[key:string]:any}},
+        restrict?:{[key:string]:boolean} //only allow the receive() (and on some services the remote subscribe() calls) to run specific nodes
     }
 
 export class Service extends Graph {
     
     name = `service${Math.floor(Math.random()*1000000000000000)}`;
+
+    restrict?:{[key:string]:boolean};
 
     constructor(options?:ServiceOptions) {
         super({ //assign properties to the graph
@@ -38,6 +41,7 @@ export class Service extends Graph {
         });
 
         if(options?.services) this.addServices(options.services);
+        if(options.restrict) this.restrict = options.restrict;
 
         this.load(this);
     }
@@ -135,51 +139,59 @@ export class Service extends Graph {
         ...args:[ServiceMessage|any,...any[]]|any[]
     ) => {
         if(typeof args[0] === 'object') {
-            if(args[0].method) { //run a route method directly, results not linked to graph
-                return this.handleMethod(args[0].route, args[0].method, args[0].args);
-            } else if(args[0].route) {
-                return this.handleServiceMessage(args[0]);
-            } else if (args[0].node){
-                return this.handleGraphNodeCall(args[0].node, args[0].args);
+            const message = args[0];
+            if(message.method) { //run a route method directly, results not linked to graph
+                return this.handleMethod(message.route, message.method, message.args);
+            } else if(message.route) {
+                return this.handleServiceMessage(message);
+            } else if (message.node){
+                return this.handleGraphNodeCall(message.node, message.args);
             } else if(this.__node.keepState) {    
-                if(args[0].route)
-                    this.setState({[args[0].route]:args[0].args});
-                if(args[0].node)
-                    this.setState({[args[0].node]:args[0].args});
+                if(message.route)
+                    this.setState({[message.route]:message.args});
+                if(message.node)
+                    this.setState({[message.node]:message.args});
             }
-            return args;
-        } else return args;
+            return undefined;
+        } else return undefined;
     } 
 
     //process http requests, socket messages, webrtc, osc, etc. with this customizable callback. This default still works in some scenarios
     receive:(...args)=>any|void = (
         ...args:[ServiceMessage|any,...any[]]|any[] //generalized args for customizing, it looks weird I know
     ) => {
-        if(args[0]) if(typeof args[0] === 'string') {
-            let substr = args[0].substring(0,8);
-            if(substr.includes('{') || substr.includes('[')) {    
-                if(substr.includes('\\')) args[0] = args[0].replace(/\\/g,""); //double jsonified string
-                if(args[0][0] === '"') { args[0] = args[0].substring(1,args[0].length-1)};
-                //console.log(args[0])
-                args[0] = JSON.parse(args[0]); //parse stringified args
+        if(args[0]) {
+            let message = args[0];
+            if(typeof message === 'string') {
+                let substr = message.substring(0,8);
+                if(substr.includes('{') || substr.includes('[')) {    
+                    if(substr.includes('\\')) message = message.replace(/\\/g,""); //double jsonified string
+                    if(message[0] === '"') { message = message.substring(1,message.length-1)};
+                    //console.log(message)
+                    message = JSON.parse(message); //parse stringified args
+                }
             }
-        }
 
-        if(typeof args[0] === 'object') {
-            if(args[0].method) { //run a route method directly, results not linked to graph
-                return this.handleMethod(args[0].route, args[0].method, args[0].args);
-            } else if(args[0].route) {
-                return this.handleServiceMessage(args[0]);
-            } else if (args[0].node){
-                return this.handleGraphNodeCall(args[0].node, args[0].args);
-            } else if(this.__node.keepState) {    
-                if(args[0].route)
-                    this.setState({[args[0].route]:args[0].args});
-                if(args[0].node)
-                    this.setState({[args[0].node]:args[0].args});
+            if(typeof message === 'object') {
+                if(message.method) { //run a route method directly, results not linked to graph
+                    if(this.restrict?.[message.route]) return undefined;
+                    return this.handleMethod(message.route, message.method, message.args);
+                } else if(message.route) {
+                    if(this.restrict?.[message.route]) return undefined;
+                    return this.handleServiceMessage(message);
+                } else if (message.node){
+                    if(typeof message.node === 'string' && this.restrict?.[message.node]) return undefined;
+                    return this.handleGraphNodeCall(message.node, message.args);
+                } else if(this.__node.keepState) {    
+                    if(message.route)
+                        this.setState({[message.route]:message.args});
+                    if(message.node)
+                        this.setState({[message.node]:message.args});
+                } 
+                return undefined;
             } 
-            return args;
-        } else return args;
+        } 
+        return undefined;
     }//these are fairly identical on the base template plus json parsing on the receive end
 
     //we may want to auto pipe outputs from a node through our frontend<-->backend service protocol

@@ -227,6 +227,7 @@ export class CMDService extends Service {
     }
 
     subscribeProcess(route:string, childprocess:ChildProcess|string, args?:any[], key?:string, subInput?:boolean) {
+        if(this.restrict?.[route]) return undefined;
         if(typeof childprocess === 'string' && this.processes[childprocess]) {
             childprocess = this.processes[childprocess].process;
         }

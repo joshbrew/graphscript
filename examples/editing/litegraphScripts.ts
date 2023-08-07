@@ -17,7 +17,20 @@ export type LGraphNodeM = LGraphNode & {
   triggers:any, 
   __node:GraphNode, 
   __graph:Graph, 
-  editor:LGraph, tag:string, key?:string}
+  __unique:string,//GraphNode unique Id for event lookup
+  editor:LGraph, tag:string, key?:string,
+  subs:{[key:string]:{ sub:number, listener:Listener }}
+  __settings?:{
+    mode?:'nodeMethod' //default, a node just runs a function method or a getter for a variable 
+      | 'nodeInstance' //alternatively, we can break out several variables on node
+      | 'subGraph', //or this is a node on a subgraph for a node, so implicitly all variable are "this", i.e. for internal listeners to states for containing logic (ala blueprints)
+     
+    nodeOutputs?:string[],
+    [key:string]:any
+  },
+
+  firstConnect:boolean //internal
+}
 
 
 const execPin = '►'; //for modded litegraph
@@ -61,6 +74,7 @@ export const updateNodePosition = (current, sourceNode) => {
   current.pos = [x + width + 50, y + height + 50]; // Update position at the end
 }
 
+//fix!!!
 export function updateArgNodePosition (target, nodes) {
 
   const [ targetX ] = target.pos
@@ -93,77 +107,232 @@ export function renderLGraphFromExistingEvents(
   LGraph:LGraph
 ) {
 
-    let minY = 0;
-    for(const key in graph.__node.state.triggers) {
-        let tarr = graph.__node.state.triggers[key] as any as Listener[];
-        for(const trigger of tarr) {
-            //create each node in the arg stack if exists, connect by arg position, exec pins only at listener level
-            const name = trigger.tkey ? trigger.target+'.'+trigger.tkey : trigger.target as string;
-            let node = createNode(name,LGraph,true);
-            let srcname = trigger.key ? trigger.source+'.'+trigger.key : trigger.source as string;
-          
-            let hasNode = created.get(srcname);
-            let srcnode = createNode(srcname, LGraph, false);
+  let minY = 0;
+  for(const key in graph.__node.state.triggers) {
+    let tarr = graph.__node.state.triggers[key] as any as Listener[];
+    let nodes = [] as any[];
+    for(const trigger of tarr) {
+      //create each node in the arg stack if exists, connect by arg position, exec pins only at listener level
+      const name = trigger.tkey ? trigger.target+'.'+trigger.tkey : trigger.target as string;
+      let node = createNode(name,LGraph,true);
+      let srcname = trigger.key ? trigger.source+'.'+trigger.key : trigger.source as string;
+    
+      let hasNode = created.get(srcname);
+      let srcnode = createNode(srcname, LGraph, false);
 
 
-            updateNodePosition(node, srcnode);
+      updateNodePosition(node, srcnode);
 
-            if(!hasNode) {
-              srcnode.pos[1] = minY + 25;
-            }
-          
-            node.pos[0] = srcnode.pos[0] + 50;
-            if(minY > node.pos[1]) node.pos[1] = minY + 50;
-            else node.pos[1] = srcnode.pos[1] + 50;
-            minY = node.pos[1];
+      if(!hasNode) {
+        srcnode.pos[1] = minY + 25;
+      }
+    
+      node.pos[0] = srcnode.pos[0] + 50;
+      if(minY > node.pos[1]) node.pos[1] = minY + 50;
+      else node.pos[1] = srcnode.pos[1] + 50;
+      minY = node.pos[1];
 
-            //set x and y offset
-            
-            if(trigger.arguments) {
+      //set x and y offset
+      
+      if(trigger.__args) {
 
-              const iterateArg = (arg, node, i) => {
-                if(typeof arg === 'object') {
-                  let cb = arg.__callback ? arg.__callback : arg.__input;
-                  if(cb) {
-                    let argnode = createNode(cb as string,LGraph, true);
-                    argnode.connect(1, node, i); //todo: several argument slots?
-                    if(arg.__args) {
-                      let argnodes = [] as any[];
-                      arg.__args.forEach((a,j) => {
-                        argnodes.push(iterateArg(a,argnode,j+1));
-                      });
-                      if(argnodes.length > 0) {
-                        updateArgNodePosition(argnode, argnodes);
-                        argnodes.forEach((n) => {
-                          if(minY > n.pos[1]) minY = n.pos[1];
-                        });
-                      }  
-                    }
-                    return argnode;
-                  }
-                } else if (typeof arg === 'string') {
-                  let argnode = createNode(arg, LGraph, true);
-                  argnode.connect(1, node, i); //todo: several argument slots?
-                  return argnode;
-                } 
+        const iterateArg = (arg, node, i) => {
+          if(typeof arg === 'object') {
+            let cb = arg.__callback ? arg.__callback : arg.__input;
+            if(cb) {
+              let argnode = createNode(cb as string,LGraph, true);
+              argnode.connect(1, node, i); //todo: several argument slots?
+              if(arg.__args) {
+                let argnodes = [] as any[];
+                arg.__args.forEach((a,j) => {
+                  argnodes.push(iterateArg(a,argnode,j+1));
+                });
+                if(argnodes.length > 0) {
+                  updateArgNodePosition(argnode, argnodes);
+                  argnodes.forEach((n) => {
+                    if(minY > n.pos[1]) minY = n.pos[1];
+                  });
+                }  
               }
+              return argnode;
+            }
+          } else if (typeof arg === 'string') {
+            let argnode = createNode(arg, LGraph, true);
+            argnode.connect(1, node, i); //todo: several argument slots?
+            return argnode;
+          } 
+        }
 
-              let argnodes = [] as any[];
-              trigger.arguments.forEach((arg,i) => {
-                argnodes.push(iterateArg(arg,node,i+1)); 
-              });
+        let argnodes = [] as any[];
+        trigger.__args.forEach((arg,i) => {
+          argnodes.push(iterateArg(arg,node,i+1)); 
+        });
 
-              if(argnodes.length > 0) {
-                updateArgNodePosition(node, argnodes);
-                argnodes.forEach((n) => {
-                  if(minY > n.pos[1]) minY = n.pos[1];
+        if(argnodes.length > 0) {
+          updateArgNodePosition(node, argnodes);
+          argnodes.forEach((n) => {
+            if(minY > n.pos[1]) minY = n.pos[1];
+          });
+        }
+      }
+
+      srcnode.connect(0,node,0);
+      node.subs[Object.keys(node.subs).length] = { sub:trigger.sub, listener:trigger };
+      nodes.push(node);
+    }
+    for(const node of nodes) {
+      node.firstConnect = false; //future connections will trigger the subscription swapping
+    }
+  }
+}
+
+  //creates a new nested arg array from visual connections
+const getArgsFromNode = (editor:LGraph,
+  currentOutputNode:LGraphNodeM, args=[] as any[], previousNode?:LGraphNodeM, curDepth = 0, wasAdded = {}  //prevent circular infinite looping
+) => {
+  currentOutputNode.inputs.forEach((inp,i) => {
+    if(i>0) { //don't use first slot, which we labeled as an exec pin
+      if(inp.link) { //all arg inputs only have one link (not the case for exec links which may have .extraLinks)
+        if(editor) {
+          let link = editor.links[inp.link];
+          let inputNodei = editor.getNodeById(link.origin_id);
+          let origin = link.origin_slot;
+          if(inputNodei) {
+            if(inputNodei.outputs[origin].name === 'Get') {
+              args[i - 1] = inputNodei.title; //the title is the node or method key
+              //stop it here
+            } else {
+              args[i - 1] = { __callback:inputNodei.title };
+              curDepth++;
+              if(wasAdded[link.origin_id]) { //prevent infinite recursion
+                args[i - 1].__args[i-1] = wasAdded[link.origin_id];
+              } else { //go get em otherwise
+                inputNodei.inputs.forEach((inpj, j) => {
+                  if(j > 0) {
+                    if(inpj.link) {
+                      if(!args[i-1].__args) {
+                        args[i-1].__args = [];
+                        wasAdded[link.origin_id] = args[i - 1].__args;
+                      }
+                      let linkj = editor.links[inpj.link];
+                      let inputNodej = editor.getNodeById(linkj.origin_id);
+                      let originj = linkj.origin_slot;
+                      if(inputNodej) {
+                        args[i - 1].__args = getArgsFromNode(
+                          editor,
+                          inputNodej as LGraphNodeM, 
+                          args[i - 1].__args, 
+                          inputNodei as LGraphNodeM, 
+                          curDepth, 
+                          wasAdded
+                        );
+                      }
+                    }
+                  }
                 });
               }
             }
-
-            srcnode.connect(0,node,0);
+          }
         }
+      } else args[i-1] = undefined;
     }
+  });
+
+  return args;
+}
+
+
+const checkNodeForSubscriptionUpdate = (
+  self:LGraphNodeM, editor:LGraph, inputIndex, outputType, outputSlot, outputNode, outputIndex
+) => {
+      
+  let execChanged = false; //do we need to update subscriptions?
+  
+  if(
+    (self.inputs[inputIndex].name === execPin && outputSlot.name !== execPin) 
+      ||
+    (self.inputs[inputIndex].name !== execPin && outputSlot.name === execPin) 
+  ) {
+    return false; //reject a non-event connection
+  } else {
+    //these are both exec inputs
+    execChanged = true; 
+  }
+
+  //a link is updated so check if we have an exec on this node
+  if(!execChanged && !(Object.keys(self.inputs).find((v) => { if(self.inputs[v].name === execPin && self.inputs[v].link) return true; }) || (self.inputs[0] as any).extraLinks))
+    execChanged = true;
+
+  if(execChanged) {
+    //these are subscriptions
+    //graph.subscribe()
+    //and/oor modify the listener
+  } else {
+
+    /*
+     *
+     * 
+     * On connecting to an arg input, 
+     * 
+     * 
+     */
+
+    let args = getArgsFromNode(editor, self as LGraphNodeM);
+
+    const subNode = (i, sourceNode) => {
+      if(self.subs[i]) {
+        let listener = self.subs[i].listener;
+        let sub = self.subs[i].sub;
+        self.__graph.unsubscribe(listener.target as string, sub, listener.tkey, listener.subInput);
+      } else {
+
+      }
+      let sub = self.__graph.subscribe(
+        sourceNode.tag, self.tag, args
+      );
+      self.subs[i] = {
+        sub,
+        listener:self.__graph.__node.state.getEvent(
+          sourceNode.__unique + sourceNode.key ? '.'+sourceNode.key : '', 
+          sub
+        ) as any as Listener
+      };
+    }
+    
+    if((self.inputs[0] as any).link) {
+      let sourceNode = editor.getNodeById((self.inputs[0] as any).link.origin_id) as LGraphNodeM;
+      if(sourceNode) subNode(0,sourceNode);
+    }
+    if((self.inputs[0] as any).extraLinks) {
+      let i = 0;
+      for(const key in (self.inputs[0] as any).extraLinks) { 
+        i++;
+        let sourceNode = editor.getNodeById(editor.links[key].origin_id) as LGraphNodeM;
+        if(sourceNode) subNode(i,sourceNode);
+      }
+    }
+
+    //now propagate upstream if any outputs on the outputNode continue on
+    if(self.outputs) {
+      let checked = {} as any;
+      self.outputs.forEach((output) => {
+        //rebuild/swap args in active listeners
+        if(editor && output.links) {
+          output.links.forEach((link) => {
+            let outputNode = editor.getNodeById(editor.links[link].target_id);
+            if(!checked[editor.links[link].target_id]) {
+              checked[editor.links[link].target_id] = true;
+              //update subs
+              if(outputNode) 
+                checkNodeForSubscriptionUpdate(outputNode as LGraphNodeM,editor,editor.links[link].target_slot,undefined,self.outputs[editor.links[link].origin_slot],undefined,undefined);
+            }
+          });
+          
+        }
+      });
+    }
+
+  }
 }
 
 
@@ -190,8 +359,11 @@ export function registerNode(
     self.__node = node;
     self.tag = tag;
     self.key = key;
+    self.__unique = node.__node.unique;
     self.__graph = node.__node.graph;
     self.editor = editor as LGraph;
+    self.subs = {};
+    self.firstConnect = true;
 
     let params;
 
@@ -251,8 +423,6 @@ export function registerNode(
 
     // for (let key in self) this.addInput(key)
 
-    let subscriptions = {};
-
     self.onExecute = function() {
       //this can trigger the node operator here or the method of a node to cause downstream effects
     }
@@ -265,110 +435,11 @@ export function registerNode(
       //graph.unsubscribe
     }
 
-
-    let wasAdded:any; //prevent circular infinite looping
-    const getArgs = (args=[] as any[], currentOutputNode:LGraphNodeM, inputIndex=1, previousNode:LGraphNodeM, curDepth = 0) => {
-      if(curDepth === 0) wasAdded = {};
-      currentOutputNode.inputs.forEach((inp,i) => {
-        if(i>0) { //don't use first slot
-          if(inp.link) { //all arg inputs only have one link (not the case for exec links which may have .extraLinks)
-            if(editor) {
-              let link = editor.links[inp.link];
-              let editornode = editor.getNodeById(link.origin_id);
-              let origin = link.origin_slot;
-              if(editornode) {
-                if(editornode.outputs[origin].name === 'Get') {
-                  args[inputIndex] = editornode.title; //the title is the node or method key
-                  //stop it here
-                } else {
-                  args[inputIndex] = { __callback:editornode.title, __args:[]};
-                  curDepth++;
-                  if(wasAdded[link.origin_id]) { //prevent infinite recursion
-                    args[inputIndex].__args[inputIndex] = wasAdded[link.origin_id];
-                  } else { //go get em otherwise
-                    editornode.inputs.forEach((inpj, j) => {
-                      if(j > 0) {
-                        if(inpj.link) {
-                          let linkj = editor.links[inpj.link];
-                          let editornodej = editor.getNodeById(linkj.origin_id);
-                          let originj = linkj.origin_slot;
-                          if(editornodej) {
-                            getArgs(args[inputIndex].__args, editornodej as LGraphNodeM, originj, editornode as LGraphNodeM, curDepth);
-                          }
-                        }
-                      }
-                    });
-                    wasAdded[link.origin_id] = args[inputIndex].__args;
-                  }
-                }
-              }
-            }
-          }
-        }
-      });
-
-      return args;
-    }
-
-    //when an input is connected on this node from an output on another node
+    //when an input (left side) is connected on this node from an output (right side) on another node
     self.onConnectInput = function(inputIndex, outputType, outputSlot, outputNode, outputIndex) {
-      let isExec = false;
       
-      if((self.inputs[inputIndex].name === execPin && outputSlot.name !== execPin) 
-        ||
-      (self.inputs[inputIndex].name !== execPin && outputSlot.name === execPin)
-      ) {
-        return false; //reject a non-event connection
-      } else {
-        //these are both exec inputs
-        isExec = true; 
-      }
-
-      if(isExec) {
-        //these are subscriptions
-        //graph.subscribe()
-        //and/oor modify the listener
-      } else {
-
-
-        /**
-         * 
-         * On connecting to an arg input, 
-         * 
-         * 
-         */
-        //these are args for subscriptions
-        //replaceListenerArg(self.__graph, , , );
-      }
-
-      if(self.inputs[0].link) {
-
-        //do for extraLinks as well
-        let setSub = (link:number) => {
-          //this link is connected, let's update subscriptions
-          let origin_id = editor?.links[link].origin_id;
-          if(origin_id) {
-            let litenode = editor?.getNodeById(origin_id as number) as LGraphNodeM;
-            let subscribeTo = litenode.__node;
-
-            let listener = {__callback:name, __args:getArgs([], outputNode as LGraphNodeM, inputIndex, self)}; //save this!
-  
-            let callback = getCallbackFromString(listener.__callback, self.__graph);
-  
-            subscribeTo.__subscribe(callback, litenode.key, undefined, tag, key, listener.__args);
-
-          }
-        } 
-
-        setSub(self.inputs[0].link);
-
-        //TODO: need to make sure extraLinks are deleted correctly as this is custom logic from us in litegraph
-        if((self.inputs[0] as any).extraLinks) {
-          for(const key in (self.inputs[0] as any).extraLinks) { 
-            setSub((self.inputs[0] as any).extraLinks[key])
-          }
-        }  
-      }
+      if(!self.firstConnect)
+        checkNodeForSubscriptionUpdate(self, editor as LGraph, inputIndex, outputType, outputSlot, outputNode, outputIndex);
 
       console.log('onConnectInput',{inputIndex, outputType, outputSlot, outputNode, outputIndex});
       

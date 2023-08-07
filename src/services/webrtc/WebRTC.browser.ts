@@ -768,6 +768,7 @@ export class WebRTCfrontend extends Service {
         subInput?:boolean,
         channel?:string|RTCDataChannel
     ) => {
+        if(this.restrict?.[route]) return undefined;
         if(typeof channel === 'string' && this.rtc[rtcId]) {
             channel = this.rtc[rtcId].channels[channel] as RTCDataChannel;
         } else if (!channel) { channel = this.rtc[rtcId].channels[Object.keys(this.rtc[rtcId].channels)[0]] as RTCDataChannel }

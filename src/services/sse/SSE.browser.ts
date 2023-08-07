@@ -292,6 +292,7 @@ export class SSEfrontend extends Service {
         key?:string,
         subInput?:boolean
     ) => {
+        if(this.restrict?.[route]) return undefined;
         return this.subscribe(route,(res) => {
             this.POST(res,url,'json');
         },args,key,subInput)

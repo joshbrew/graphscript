@@ -458,6 +458,7 @@ export class SSEbackend extends Service {
         sessionId?:string,
         eventName?:string
     ) => {
+        if(this.restrict?.[route]) return undefined;
         if(this.servers[path]) {
             return this.subscribe(route, (res) => {
                 this.servers[path].send({args:res, callbackId:route}, eventName, sessionId);

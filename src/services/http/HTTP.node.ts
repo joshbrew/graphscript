@@ -414,7 +414,6 @@ export class HTTPbackend extends Service {
             redirect?:string //if we redirected the route according to page options
         }
     ) => {
-
         if(this.debug) console.log(message.args.request.method, message.args.request.url);
         //console.log(request); //debug
 
@@ -501,24 +500,30 @@ export class HTTPbackend extends Service {
         }
         let res:any = body;
         if(route) {
-            if(body.method) {
-                res = this.handleMethod(route, method, args);
-            }
-            else if (body.node) {
-                res = this.handleGraphNodeCall(body.node, body.args);
-            }
-            else res = this.handleServiceMessage({route, args:args, method:method});
-
-            if(res instanceof Promise) {
-                res.then((r) => {
-                    this.withResult(response,r,message);
+            
+            if(this.restrict?.[route]) {
+                try {response.destroy();} catch {}
+                resolve(res);
+            } else {
+                if(body.method) {
+                    res = this.handleMethod(route, method, args);
+                }
+                else if (body.node) {
+                    res = this.handleGraphNodeCall(body.node, body.args);
+                }
+                else res = this.handleServiceMessage({route, args:args, method:method});
+    
+                if(res instanceof Promise) {
+                    res.then((r) => {
+                        this.withResult(response,r,message);
+                        if(served?.keepState) this.setState({[served.address]:res});
+                        resolve(res);
+                    });
+                } else {
+                    this.withResult(response,res,message);
                     if(served?.keepState) this.setState({[served.address]:res});
                     resolve(res);
-                });
-            } else {
-                this.withResult(response,res,message);
-                if(served?.keepState) this.setState({[served.address]:res});
-                resolve(res);
+                }
             }
         }
         else if(!response.writableEnded || !response.destroyed) {
@@ -610,6 +615,7 @@ export class HTTPbackend extends Service {
         if(method === 'GET' || method === 'get') {
             //process the request, in this case simply reading a file based on the request url    
             var requestURL = '.' + request.url;
+            if(request.url && this.restrict?.[request.url]) reject(request.url);
 
             if (requestURL == './' && served?.startpage) { //root should point to start page
                 requestURL = served.startpage; //point to the start page

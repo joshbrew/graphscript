@@ -646,6 +646,7 @@ export class WSSbackend extends Service {
     }
 
     subscribeSocket = (route:string, socket:WebSocket|string, args?:any[], key?:string, subInput?:boolean) => {
+        if(this.restrict?.[route]) return undefined;
         if(typeof socket === 'string') {
             if(this.sockets[socket]) socket = this.sockets[socket].socket;
             else {
@@ -656,7 +657,7 @@ export class WSSbackend extends Service {
             }
         }
     
-        if(typeof socket === 'object')
+        if(typeof socket === 'object') {
             return this.subscribe(route, (res:any) => {
                 //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
                 if((socket as WebSocket).readyState === (socket as WebSocket).OPEN) {
@@ -669,6 +670,7 @@ export class WSSbackend extends Service {
                     }
                 } 
             },args,key,subInput);
+        }
     } 
 
     subscribeToSocket = (route:string, socketId:string, callback?:string|((res:any)=>void), args?:any[], key?:string, subInput?:boolean) => {

@@ -349,11 +349,12 @@ export class WSSfrontend extends Service {
     }
 
     subscribeSocket = (route:string, socket:WebSocket|string, args?:any[], key?:string, subInput?:boolean) => {
+        if(this.restrict?.[route]) return undefined;
         if(typeof socket === 'string' && this.sockets[socket]) {
             socket = this.sockets[socket].socket;
         }
 
-        if(typeof socket === 'object')
+        if(typeof socket === 'object') {
             return this.subscribe(route, (res:any) => {
                 //console.log('running request', message, 'for worker', worker, 'callback', callbackId)
                 if((socket as WebSocket).readyState === (socket as WebSocket).OPEN) {
@@ -366,6 +367,7 @@ export class WSSfrontend extends Service {
                     }
                 }
             },args,key,subInput);
+        }
     } 
 
     subscribeToSocket = (route:string, socketId:string, callback?:((res:any)=>void)|string,  args?:any[], key?:string,subInput?:boolean) => {

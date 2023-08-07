@@ -26,7 +26,7 @@
         "browserfs": "~1.4.3",
         "gpujsutils": "~1.0.12",
         "web-worker": "~1.2.0",
-        "webgl-plot-utils": "~0.3.20"
+        "webgl-plot-utils": "~0.4.1"
     },
     "nodemonConfig": {
         "env": {
