@@ -41,7 +41,7 @@ export class Service extends Graph {
         });
 
         if(options?.services) this.addServices(options.services);
-        if(options.restrict) this.restrict = options.restrict;
+        if(options?.restrict) this.restrict = options.restrict;
 
         this.load(this);
     }

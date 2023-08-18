@@ -70,8 +70,9 @@ export function registerLGraphNodesFromGraph(graph:Graph, editor:LGraph) {
   });
 }
 
-export const updateNodePosition = (current, sourceNode) => {
-  const previous =  sourceNode;
+//the positioning stuff is bugged
+export const updateNodePosition = (current, sourceNode, lastNode) => {
+  const previous = lastNode ? lastNode : sourceNode;
   const [ x, y ] = previous.pos;
   const [ width, height ] = previous.size;
 
@@ -79,10 +80,10 @@ export const updateNodePosition = (current, sourceNode) => {
 }
 
 //fix!!!
-export function updateArgNodePosition (target, nodes) {
+export function updateArgNodePosition (target, nodes, lastNode) {
 
-  const [ targetX ] = target.pos
-  const [ targetWidth ] = target.size
+  const [ targetX ] = lastNode ? lastNode.pos : target.pos
+  const [ targetWidth ] = lastNode ? lastNode.size : target.size
 
   nodes.forEach((n:LGraphNodeM) => {
     const [ _, y ] = n.pos
@@ -112,6 +113,7 @@ export function renderLGraphFromExistingEvents(
 ) {
 
   let minY = 0;
+  let lastNode;
   for(const key in graph.__node.state.triggers) {
     let tarr = graph.__node.state.triggers[key] as any as Listener[];
     let nodes = [] as any[];
@@ -127,9 +129,11 @@ export function renderLGraphFromExistingEvents(
       let hasNode = created.get(srcname);
       let srcnode = createNode(srcname, LGraph, false);
 
+
       //console.log(name,node,srcname,srcnode);
 
-      updateNodePosition(node, srcnode);
+      updateNodePosition(node, srcnode, lastNode);
+      lastNode = hasNode;
 
       if(!hasNode) {
         srcnode.pos[1] = minY + 25;
@@ -156,7 +160,7 @@ export function renderLGraphFromExistingEvents(
                   argnodes.push(iterateArg(a,argnode,j+1));
                 });
                 if(argnodes.length > 0) {
-                  updateArgNodePosition(argnode, argnodes);
+                  updateArgNodePosition(argnode, argnodes, lastNode);
                   argnodes.forEach((n) => {
                     if(minY > n.pos[1]) minY = n.pos[1];
                   });
@@ -177,7 +181,7 @@ export function renderLGraphFromExistingEvents(
         });
 
         if(argnodes.length > 0) {
-          updateArgNodePosition(node, argnodes);
+          updateArgNodePosition(node, argnodes, lastNode);
           argnodes.forEach((n) => {
             if(minY > n.pos[1]) minY = n.pos[1];
           });

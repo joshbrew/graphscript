@@ -1,4 +1,4 @@
-import {Graph, GraphNode, GraphNodeProperties, getAllProperties, isNativeClass, parseFunctionFromText, wchtmlloader} from '../../index'
+import {Graph, WorkerService, GraphNode, GraphNodeProperties, getAllProperties, isNativeClass, parseFunctionFromText, wchtmlloader} from '../../index'
 
 import { LiteGraph, LGraph, LGraphCanvas, LGraphNode} from './litegraph.js'
 import { registerLGraphNodesFromGraph, renderLGraphFromExistingEvents } from './litegraphScripts';
@@ -108,7 +108,14 @@ const roots = {
 }; 
 
 // Instantiate GraphScript Graph
-const graph = new Graph({
+// const graph = new Graph({
+//   roots,
+//   loaders:{
+//     wchtmlloader
+//   }
+// });
+
+const graph = new WorkerService({
   roots,
   loaders:{
     wchtmlloader
