@@ -599,37 +599,50 @@ export class Graph {
     load = (roots:{[key:string]:any}) => {
         function recursivelyAssignChildren (target, obj, inChildren=true, top=true) {
             if(top) {
-                if(target) Object.assign(target,obj);
-                else target = Object.assign({},obj);
+                if(!target) target = {};
+                for(const key in obj) {
+                    if(!key.startsWith('__') && obj[key] && typeof obj[key] === 'object') {
+                        //test for node keys
+                        //if(obj[key].__operator || obj[key].__node || obj[key].__props || obj[key].__children || obj[key].__parent) {
+                            target[key] = obj[key];
+                            if(obj[key]?.__children) {
+                                recursivelyAssignChildren({},obj[key].__children,false,false);
+                            }
+                        //}
+                    } else if(typeof obj[key] === 'function') target[key] = obj[key]; //only copy functions for now
+                }
                 recursivelyAssignChildren(target,obj,true,false);
+            } else {
+                if(obj?.__children && !inChildren) {
+                    if(obj.__children?.constructor.name === 'Object') {
+                        if(target.__children?.constructor.name === 'Object') 
+                            target.__children = recursivelyAssignChildren(target.__children, obj.__children, true,false);
+                        else target.__children = recursivelyAssignChildren({},obj.__children, true,false); 
+                    } else {
+                        target.__children = obj.__children;
+                        //if(typeof target[key] === 'function') target[key] = target[key].bind(this);
+                    }
+                } else if (inChildren) {
+                    for(const key in obj) {
+                        if(!key.startsWith('__') && obj[key] && typeof obj[key] === 'object') {
+                            //test for node keys
+                            //if(obj[key].__operator || obj[key].__node || obj[key].__props || obj[key].__children || obj[key].__parent) {
+                                target[key] = Object.assign({}, obj[key]);
+                                if(obj[key]?.__children) {
+                                    target[key].__children = recursivelyAssignChildren({},obj[key].__children,false,false);
+                                }
+                            //}
+                        } else if(typeof obj[key] === 'function') target[key] = obj[key]; //only copy functions for now
+                    }
+                }
             }
 
-            if(obj?.__children && !inChildren) {
-                if(obj.__children?.constructor.name === 'Object') {
-                    if(target.__children?.constructor.name === 'Object') 
-                        recursivelyAssignChildren(target.__children, obj.__children, true,false);
-                    else target.__children = recursivelyAssignChildren({},obj.__children, true,false); 
-                } else {
-                    target.__children = obj.__children;
-                    //if(typeof target[key] === 'function') target[key] = target[key].bind(this);
-                }
-            } else if (inChildren) {
-                for(const key in obj) {
-                    if(typeof obj[key] === 'object') {
-                        target[key] = Object.assign({}, obj[key]);
-                        if(obj[key]?.__children) {
-                            recursivelyAssignChildren({},obj[key].__children,false,false);
-                        }
-                    } else target[key] = obj[key];
-                }
-            }
-        
             return target;
         }
         
         this.__node.roots = recursivelyAssignChildren(this.__node.roots ? this.__node.roots : {}, roots);
         
-        console.log(this.__node.roots);
+        //console.log('ROOTS',this.__node.roots);
 
         let cpy = Object.assign({}, roots);
         if(cpy.__node) delete cpy.__node; //we can specify __node behaviors on the roots too to specify listeners
