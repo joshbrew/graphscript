@@ -1,4 +1,4 @@
-import {Graph, WorkerService, GraphNode, GraphNodeProperties, getAllProperties, isNativeClass, parseFunctionFromText, wchtmlloader} from '../../index'
+import {Graph, WorkerService, GraphNode, GraphNodeProperties, getAllProperties, isNativeClass, parseFunctionFromText, wchtmlloader, Router, remoteGraphRoutes} from '../../index'
 
 import { LiteGraph, LGraph, LGraphCanvas, LGraphNode} from './litegraph.js'
 import { registerLGraphNodesFromGraph, renderLGraphFromExistingEvents } from './litegraphScripts';
@@ -117,88 +117,104 @@ const roots = {
 //   }
 // });
 
-const graph = new WorkerService({
+const graph = new Router({
+  services:{
+    WorkerService
+  },
   roots,
   loaders:{
     wchtmlloader
   }
 });
 
-const worker = graph.addWorker({url:worker1});
+const initApp = () => {
+  
+  //  Create Canvas
+  const canvas = document.createElement('canvas');
+  setTimeout(() => {
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+  }, 
+  1);
 
-worker?.run('makeRootTransferrable').then((root) => {
-    console.log('worker root',root);
-    worker.run('getListenerJSON').then((listeners) => {
-      console.log('worker listeners',listeners);
-    })
-});
 
-//  Create Canvas
-const canvas = document.createElement('canvas');
-setTimeout(() => {
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+
+  // Start LiteGraph
+  const editor = new LGraph();
+  new LGraphCanvas(canvas, editor);
+  editor.start();
+
+  registerLGraphNodesFromGraph(graph, editor);
+  renderLGraphFromExistingEvents(graph.__node.state.triggers, editor);
+
   document.body.appendChild(canvas);
-}, 
-1);
 
+  let menuContainer = document.createElement('div');
+  let mode = document.createElement('select');
+  mode.insertAdjacentHTML('beforeend', `<option value="0" selected>Class Proxy</option>`);
+  mode.insertAdjacentHTML('beforeend', `<option value="1">Node Creator</option>`);
+  mode.insertAdjacentHTML('beforeend', `<option value="2">Node Editor</option>`);
+  let c1 = makeProxyMenu(proxyable,graph,editor);
+  let c2 = makeNodePropsCreator(graph,editor);
+  c2.style.display = 'none';
+  menuContainer.appendChild(mode);
+  menuContainer.appendChild(c1);
+  menuContainer.appendChild(c2);
 
+  let c3:HTMLElement|undefined;
 
-// Start LiteGraph
-const editor = new LGraph();
-new LGraphCanvas(canvas, editor);
-editor.start();
-
-registerLGraphNodesFromGraph(graph, editor);
-renderLGraphFromExistingEvents(graph.__node.state.triggers, editor);
-
-document.body.appendChild(canvas);
-
-let menuContainer = document.createElement('div');
-let mode = document.createElement('select');
-mode.insertAdjacentHTML('beforeend', `<option value="0" selected>Class Proxy</option>`);
-mode.insertAdjacentHTML('beforeend', `<option value="1">Node Creator</option>`);
-mode.insertAdjacentHTML('beforeend', `<option value="2">Node Editor</option>`);
-let c1 = makeProxyMenu(proxyable,graph,editor);
-let c2 = makeNodePropsCreator(graph,editor);
-c2.style.display = 'none';
-menuContainer.appendChild(mode);
-menuContainer.appendChild(c1);
-menuContainer.appendChild(c2);
-
-let c3:HTMLElement|undefined;
-
-mode.onchange = () => {
-  if(mode.value === "0") {
-    if(c3) {
-      c3.remove();
-      c3 = undefined
-    }
-    c2.style.display = "none";
-    c1.style.display = "";
-  } else if (mode.value === "1") {
-    if(c3) {
-      c3.remove();
-      c3 = undefined
-    }
-    c1.style.display = "none";
-    c2.style.display = "";
-  } else if (mode.value === "2") {
-    c1.style.display = "none";
-    c2.style.display = "none";
-    if(!c3) {
-      c3 = makeNodeEditorMenu(graph,editor);
-      menuContainer.appendChild(c3);
+  mode.onchange = () => {
+    if(mode.value === "0") {
+      if(c3) {
+        c3.remove();
+        c3 = undefined
+      }
+      c2.style.display = "none";
+      c1.style.display = "";
+    } else if (mode.value === "1") {
+      if(c3) {
+        c3.remove();
+        c3 = undefined
+      }
+      c1.style.display = "none";
+      c2.style.display = "";
+    } else if (mode.value === "2") {
+      c1.style.display = "none";
+      c2.style.display = "none";
+      if(!c3) {
+        c3 = makeNodeEditorMenu(graph,editor);
+        menuContainer.appendChild(c3);
+      }
     }
   }
+
+  document.body.appendChild(menuContainer);
+
+  const triggers = graph.__node.state.triggers
+  console.warn('Triggers', triggers)
 }
 
-document.body.appendChild(menuContainer);
+const worker = graph.run('addWorker',{url:worker1});
+console.log(worker);
+worker?.run('makeRootTransferrable').then((root) => {
+    console.log('worker root',root);
+    worker.run('getListenerJSON').then(async (listeners) => {
+      console.log('worker listeners',listeners);
+      for(const key in root) {
+        let proxy = await remoteGraphRoutes.proxyRemoteNode(key, worker) as any;
+        console.log(key,proxy);
+        //graph.add({__props:proxy, __node:{tag:`${worker._id}.${key}`}})
+        //console.log(`${worker._id}.${key}`);//graph.add({...proxy, __node:{tag:`${worker._id}.${key}`}})
+      }
+   
+      initApp();
+   
+    });
+});
 
-const triggers = graph.__node.state.triggers
-console.warn('Triggers', triggers)
 
 // const stringifyTriggers = (triggers) => {
 //   const entries = Object.entries(triggers).map(([key, arr]) => {

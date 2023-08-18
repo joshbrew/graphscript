@@ -280,7 +280,7 @@ export const substitute__operator = (node:GraphNode & GraphNodeProperties, paren
     } else if (!node.__operator && typeof node.get == 'function') {
         node.__setOperator(node.get);
     } if(!node.get && node.__operator) {
-        node.get = node.__operator;
+        //node.get = node.__operator;
     } if(node.aliases) {
         node.aliases.forEach((a) => {
             graph.set(a,node);

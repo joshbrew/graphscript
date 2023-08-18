@@ -237,7 +237,7 @@ export let makeNodeEditorMenu = (graph:Graph, editor?:LGraph) => {
   let keydropdown = document.createElement('select');
   let constructorInput = document.createElement('input');
   let constructButton = document.createElement('button');
-  constructButton.innerHTML = "Construct";
+  constructButton.innerHTML = "Set";
 
   let nodeEditorContainer = document.createElement('div');
   let propertydropdown = document.createElement('select');
@@ -245,8 +245,8 @@ export let makeNodeEditorMenu = (graph:Graph, editor?:LGraph) => {
   let setProp = document.createElement('button');
   setProp.innerHTML = "Eval"
   let propertyInputType = document.createElement('select');
-  let createProxy = document.createElement('button');
-  createProxy.innerHTML = "Create Node";
+  //let createProxy = document.createElement('button');
+  //createProxy.innerHTML = "Create Node";
 
 
   Object.keys(inpTypes).forEach((t,i) => { 
@@ -255,8 +255,8 @@ export let makeNodeEditorMenu = (graph:Graph, editor?:LGraph) => {
 
   container.insertAdjacentHTML('beforeend',`</br>Select existing node: `);
   container.appendChild(keydropdown);
-  nodeEditorContainer.insertAdjacentHTML('beforeend',`</br>Name Node: `);
-  nodeEditorContainer.appendChild(nameInput);
+  //nodeEditorContainer.insertAdjacentHTML('beforeend',`</br>Name Node: `);
+  //nodeEditorContainer.appendChild(nameInput);
   nodeEditorContainer.insertAdjacentHTML('beforeend',`</br>Class Property: `);
   nodeEditorContainer.appendChild(propertydropdown);
   nodeEditorContainer.insertAdjacentHTML('beforeend',`</br>Property Type: `);
@@ -279,8 +279,8 @@ export let makeNodeEditorMenu = (graph:Graph, editor?:LGraph) => {
 
   keydropdown.onchange = (ev) => {
     let value = keydropdown.value;
-    nodeEditorContainer.style.display = "none";
-    constructButton.onclick = () => {
+    //nodeEditorContainer.style.display = "none";
+    //constructButton.onclick = () => {
       let args = constructorInput.value as any;
       let split = args.split(',');
       split.forEach((s,i) => {
@@ -298,7 +298,6 @@ export let makeNodeEditorMenu = (graph:Graph, editor?:LGraph) => {
       let pkeys = Object.keys(proxy);
 
 
-      nameInput.value = `${value}${Math.floor(Math.random()*1000000000000000)}`;
   
       propertydropdown.innerHTML = "";
       pkeys.forEach((k) => {
@@ -329,9 +328,9 @@ export let makeNodeEditorMenu = (graph:Graph, editor?:LGraph) => {
       //     addNodeToLGraph(node, graph, editor);
       //     nameInput.value = `${value}${Math.floor(Math.random()*1000000000000000)}`;
       // }
+    //}
 
-      nodeEditorContainer.style.display = "";
-    }
+    nodeEditorContainer.style.display = "";
 
   }
 

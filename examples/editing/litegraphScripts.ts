@@ -1,4 +1,4 @@
-import {EventHandler, Graph, GraphNode, 
+import {ConnectionInfo, EventHandler, Graph, GraphNode, 
   GraphNodeProperties, Listener, WorkerInfo, getCallbackFromString, 
   wchtmlloader
 } from '../../index'
@@ -57,7 +57,7 @@ export function addNodeToLGraph(node, graph, editor:LGraph) {
   if (!hasNode) {
       registerNode(node, roots[node.__node.tag],undefined,editor);
       for(const key in node) {
-        if(!key.startsWith('__'))
+        if(key !== 'get' && !key.startsWith('__'))
           registerNode(node, roots[node.__node.tag], key, editor);
       }
       
@@ -351,22 +351,6 @@ const checkNodeForSubscriptionUpdate = (
 
 
 
-export function getListenersFromWorker(worker:WorkerInfo) {
-  return worker.run('getListenerJSON');
-} //build the graph from this result
-
-export function setSubscriptionOnWorker(worker:WorkerInfo, nodeEvent:string, onEvent:any, args?:any[], key?:string, subInput?:boolean, blocking?:boolean) {
-  return worker.subscribe(nodeEvent, onEvent, args, key, subInput, blocking);
-}
-
-export function subscribeNodeToWorker(worker:WorkerInfo, node:LGraphNodeM) {
-  
-}
-
-//todo: create a worker node
-
-
-
 
 export function registerNode(
   node: GraphNode,
@@ -375,6 +359,7 @@ export function registerNode(
   editor?:LGraph
 ) {
     
+
   const tag = node.__node.tag;
   const name = key ? `${tag}.${key}` : tag;
 
@@ -492,13 +477,13 @@ export function registerNode(
       }
     }
 
-    if(node?.__listeners) for(const key in node.__listeners) {
-      //add outputs
-    }
+    // if(node?.__listeners) for(const key in node.__listeners) {
+    //   //add outputs
+    // }
 
-    if(node?.__args) for(const key in node.__args) {
-      //adds inputs
-    }
+    // if(node?.__args) for(const key in node.__args) {
+    //   //adds inputs
+    // }
 
     //self.addWidget('slider',...); //todo
 
@@ -507,6 +492,172 @@ export function registerNode(
       //  position X and Y of the canvas element (relative to the pageX and pageY), 
       // then set the HTML over the top of it and account for the size in the canvas elmeent using the html bounding box
     }
+
+  } as any as (new () => LGraphNodeM);
+
+  LiteGraph.registerNodeType(name, NewNode); //now registered in system
+
+  registered.set(name, NewNode);
+
+  return name;
+
+}
+
+
+
+
+
+export function getListenersFromWorker(worker:WorkerInfo) {
+  return worker.run('getListenerJSON');
+} //build the graph from this result
+
+export function setSubscriptionOnWorker(worker:WorkerInfo, nodeEvent:string, onEvent:any, args?:any[], key?:string, subInput?:boolean, blocking?:boolean) {
+  return worker.subscribe(nodeEvent, onEvent, args, key, subInput, blocking);
+}
+
+export function subscribeNodeToWorker(worker:WorkerInfo, node:LGraphNodeM) {
+  
+}
+
+//todo: create a worker node
+
+
+
+export function registerRemoteNode(
+  root:Function|GraphNodeProperties|string, 
+  tag:string,
+  endpoint:ConnectionInfo,
+  key?: string,
+  editor?:LGraph
+) {
+    
+  const name = key ? `${tag}.${key}` : tag;
+
+  let hasNode = registered.get(name) as LGraphNodeM;
+  if (hasNode) return name;
+
+
+  const NewNode = function() {
+    let self = this as LGraphNodeM;
+    self.title = name;
+
+    self.tag = tag;
+    self.key = key;
+    self.editor = editor as LGraph;
+    self.subs = {};
+    self.firstConnect = true;
+
+    let params;
+
+    let setOutputNameFromFunction = (fn) => {
+        let str = typeof fn === 'string' ? fn : fn.toString() as string;
+        let isNative = str.indexOf('[native code]') > -1;
+        if(isNative) {
+          self.addInput('', 0 as any); 
+          self.addOutput('', 0 as any);
+          return;
+        }
+        let idx = str.lastIndexOf('return');
+        if(idx !== str.indexOf('return')) { //multiple return statements so we can't determine which one, just use a blank output
+          self.addOutput('', 0 as any);
+          return;
+        }
+        if(idx > -1) {//if exits 
+            idx+=5;
+            //get output name
+            let lastIndex = str.lastIndexOf(';');
+            if(lastIndex === -1 && lastIndex > idx) {
+                lastIndex = str.lastIndexOf('}');
+            }
+            let substr;
+            if(lastIndex > -1 && lastIndex > idx) substr = str.substring(idx+1,lastIndex);
+            if(substr) self.addOutput(substr, 0 as any); //todo: can we type this at all? else do it dynamically
+            else self.addOutput('', 0 as any);
+        }
+    }
+
+    self.addInput(execPin,-1); //fix to be able to add/remove contextually
+    self.addOutput(execPin,-1); //fix to be able to add/remove contextually
+
+    if(key && root?.[key]) {
+        if(typeof root[key] === 'function') {
+            setOutputNameFromFunction(root[key])
+            params = getFnParamNames(root[key]);
+        } else {
+            let typ = typeof root[key] as string;
+            if(typ === 'undefined') typ = 0 as any;
+            self.addInput('Set', typ); 
+            self.addOutput('Get', typ);
+        }
+    }
+    if(typeof root === 'function') {
+        setOutputNameFromFunction(root);
+        params = getFnParamNames(root);
+    } else if(typeof root === 'object' && (root?.__operator || root?.default)) {
+        setOutputNameFromFunction(root.__operator ? root.__operator : root.default);
+        params = getFnParamNames(root.__operator ? root.__operator : root.default);
+    } 
+    if(params) {
+        params.forEach((p,i) => {
+          if(p || params.length > 1) self.addInput(p,0 as any);
+        });
+    }
+
+    // for (let key in self) this.addInput(key)
+
+    self.onExecute = function() {
+      //this can trigger the node operator here or the method of a node to cause downstream effects
+    }
+
+    self.onAdded = function(graph:LGraph) {
+      //
+    }
+
+    self.onRemoved = function() {
+      //graph.unsubscribe
+    }
+
+    //when an input (left side) is connected on this node from an output (right side) on another node
+    self.onConnectInput = function(inputIndex, outputType, outputSlot, outputNode, outputIndex) {
+      
+      if(!self.firstConnect)
+        checkNodeForSubscriptionUpdate(self, editor as LGraph, inputIndex, outputType, outputSlot, outputNode, outputIndex);
+
+      console.log('onConnectInput',{inputIndex, outputType, outputSlot, outputNode, outputIndex});
+      
+      return true;
+    }
+
+    //when an output is connected on this node, can just use onConnectInput 
+    self.onConnectOutput = function(outputIndex, inputType, inputSlot, inputNode, inputIndex) {
+      //graph.subscribe();
+      //console.log('onConnectOutput',{outputIndex, inputType, inputSlot, inputNode, inputIndex});
+      
+      return true;
+    }
+
+    self.onConnectionsChange = function(type, slotIndex, isConnected, link, ioSlot) {
+      //console.log('onConnectionsChange',{type, slotIndex, isConnected, link, ioSlot});
+      if(!isConnected) {
+        //graph.unsubscribe();
+      }
+    }
+
+    // if(node?.__listeners) for(const key in node.__listeners) {
+    //   //add outputs
+    // }
+
+    // if(node?.__args) for(const key in node.__args) {
+    //   //adds inputs
+    // }
+
+    //self.addWidget('slider',...); //todo
+
+    // if(node?.__element && node?.__renderHTML) {
+    //   //we should be able to render the element over the node. The editor is in a canvas so we need to use the 
+    //   //  position X and Y of the canvas element (relative to the pageX and pageY), 
+    //   // then set the HTML over the top of it and account for the size in the canvas elmeent using the html bounding box
+    // }
 
   } as any as (new () => LGraphNodeM);
 

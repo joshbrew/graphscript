@@ -13,6 +13,24 @@ export let recursivelyStringifyFunctions = (obj:{[key:string]:any}) => {
     return cpy;
 }
 
+export function getFnParamNames(fn){
+    if(typeof fn !== 'string') fn = fn.toString();
+    const arrowMatch = fn.match(/\(?[^]*?\)?\s*=>/) 
+    if (arrowMatch) return arrowMatch[0].replace(/[()\s]/gi,'').replace('=>','').split(',')
+    const match = fn.match(/\([^]*?\)/) 
+    return match ? match[0].replace(/[()\s]/gi,'').split(',') : []
+}
+
+export let getFunctionHead = (methodString) => {
+    let startindex = methodString.indexOf('=>')+1;
+    if(startindex <= 0) {
+        startindex = methodString.indexOf('){');
+    }
+    if(startindex <= 0) {
+        startindex = methodString.indexOf(') {');
+    }
+    return methodString.slice(0, methodString.indexOf('{',startindex) + 1);
+}
 
 export function parseFunctionFromText(method='') {
     //Get the text inside of a function (regular or arrow);
@@ -20,24 +38,12 @@ export function parseFunctionFromText(method='') {
         return methodString.replace(/^\W*(function[^{]+\{([\s\S]*)\}|[^=]+=>[^{]*\{([\s\S]*)\}|[^=]+=>(.+))/i, '$2$3$4');
     }
 
-    let getFunctionHead = (methodString) => {
-        let startindex = methodString.indexOf('=>')+1;
-        if(startindex <= 0) {
-            startindex = methodString.indexOf('){');
-        }
-        if(startindex <= 0) {
-            startindex = methodString.indexOf(') {');
-        }
-        return methodString.slice(0, methodString.indexOf('{',startindex) + 1);
-    }
-
     let newFuncHead = getFunctionHead(method);
     let newFuncBody = getFunctionBody(method);
 
-
     let newFunc;
     if (newFuncHead.includes('function')) {
-        let varName = newFuncHead.split('(')[1].split(')')[0]
+        let varName = newFuncHead.split('(')[1].split(')')[0];
         newFunc = new Function(varName, newFuncBody);
     } else {
         if (newFuncHead.substring(0, 6) === newFuncBody.substring(0, 6)) {

@@ -274,7 +274,6 @@ export class GraphNode {
             trigger.node = this;
             trigger.graph = this.__node.graph;
 
-            console.log(trigger);
             return sub;
         }
 
@@ -1099,24 +1098,6 @@ export class Graph {
             if(key) { k += '.'+key }
             return this.__node.state.getEvent(k,sub) as any as Listener;
         }
-    }
-    getListenerJSON = () => { //reproducible json prototype, apply as __listeners in graph.load({__listeners:{...}})
-        const triggers = this.__node.state.triggers;
-        let result = {} as any;
-        for(const key in triggers) {
-            triggers[key].forEach((trigger) => {
-                let t = trigger as any as Listener;
-                if(!result[t.target]) result[t.target] = {};
-                let l = t.source + (t.key ? '.' + t.key : '');
-                result[t.target][l] = {
-                    __callback:t.__callback
-                }
-                if(t.__args) result[t.target][l].__args = t.__args;
-                if(t.subInput) result[t.target][l].subInput = t.subInput;
-                
-            })
-        }
-        return result;
     }
 
     getProps = (node:GraphNode|string, getInitial?:boolean) => {

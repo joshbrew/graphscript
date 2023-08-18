@@ -1,5 +1,5 @@
-import { parseFunctionFromText, recursivelyStringifyFunctions, stringifyWithCircularRefs, stringifyWithFunctionsAndCircularRefs } from "../utils"
-import { Graph, GraphNodeProperties } from "../../core/Graph"
+import { getFnParamNames, getFunctionHead, parseFunctionFromText, recursivelyStringifyFunctions, stringifyWithCircularRefs, stringifyWithFunctionsAndCircularRefs } from "../utils"
+import { Graph, GraphNodeProperties, Listener } from "../../core/Graph"
 import { methodstrings } from "../../loaders/methodstrings";
 import { recursivelyAssign } from "../Service";
 
@@ -75,60 +75,6 @@ export const remoteGraphRoutes = {
         } else return false;
     },
 
-    proxyRemoteNode:function (
-        name:string,
-        connection:any, //put any info connection template in with a .run function, does not work with base workers/sockets etc as it relies on our promise system
-    ) {
-        return new Promise((res,rej) => {
-            connection.run('getNodeProperties',name).then((props:any)=>{
-                let proxy = {};
-                if(typeof props === 'object') {
-                    for(const key in props) {
-                        if(props[key] === 'function') {
-                           proxy[key] = (...args:any) => {
-                                return new Promise((r) => {
-                                    connection.run(
-                                        name,
-                                        args,
-                                        key
-                                    ).then(r);
-                                });
-                           }
-                        } else {
-                            Object.defineProperty(
-                                proxy,
-                                key,
-                                {
-                                    get:()=>{
-                                        return new Promise((r)=>{
-                                            connection.run(
-                                                name,
-                                                undefined,
-                                                key
-                                            ).then((r))
-                                        });
-                                    },
-                                    set:(value) => {
-                                        connection.post(
-                                            name,
-                                            value,
-                                            key
-                                        )
-                                    },
-                                    configurable:true,
-                                    enumerable:true
-                                }
-                            )
-                        }
-                    }
-                }
-
-                res(proxy);
-
-            });
-        });
-    },
-
     makeNodeTransferrable:function (
         properties:GraphNodeProperties,
         name?:string
@@ -146,6 +92,26 @@ export const remoteGraphRoutes = {
         const str = recursivelyStringifyFunctions(properties);
 
         return str;
+    },
+
+    
+    getListenerJSON: function () { //reproducible json prototype, apply as __listeners in graph.load({__listeners:{...}})
+        const triggers = this.__node.state.triggers;
+        let result = {} as any;
+        for(const key in triggers) {
+            triggers[key].forEach((trigger) => {
+                let t = trigger as any as Listener;
+                if(!result[t.target]) result[t.target] = {};
+                let l = t.source + (t.key ? '.' + t.key : '');
+                result[t.target][l] = {
+                    __callback:t.__callback
+                }
+                if(t.__args) result[t.target][l].__args = t.__args;
+                if(t.subInput) result[t.target][l].subInput = t.subInput;
+                
+            })
+        }
+        return result;
     },
 
     makeRootTransferrable: function () {
@@ -256,11 +222,100 @@ export const remoteGraphRoutes = {
         if(node) {
             let properties = Object.getOwnPropertyNames(node);
             let result = {};
-            for(const key in properties) {
-                result[key] = typeof node[key];
+            for(const key of properties) {
+                if(typeof node[key] === 'function') {
+                    let str = node[key].toString() as string;
+                    let isNative = str.indexOf('[native code]') > -1;
+                    result[key] = { type:'function', args:getFnParamNames(node[key]), native:isNative}
+                }
+                else result[key] = typeof node[key];
             }
             return result;
         } return undefined;
+    },
+
+    proxyRemoteNode : function (
+        name:string,
+        connection:any, //put any info connection template in with a .run function, does not work with base workers/sockets etc as it relies on our promise system
+    ):Promise<any> {
+
+        return new Promise((res,rej) => {
+            connection.run('getNodeProperties',name).then((props:any)=>{
+                let proxy = {};
+                if(typeof props === 'object') {
+                    for(const key in props) {
+                        if(props[key]?.type === 'function') {
+                            if(props[key].native || props[key].args) {
+                                proxy[key] = (...args:any[]) => {
+                                    return new Promise((r) => {
+                                        connection.run(
+                                            name,
+                                            args,
+                                            key
+                                        ).then(r);
+                                    });
+                                }
+                            }
+                            //else if(props[key].args) { //not easy to set arguments from remote, anonymous bound functions are unparseable
+                            // let scope = {
+                            //     connection
+                            // } as any;
+                            // proxy[key] = new Function(
+                            //     ...props[key].args,//...args:any[]) => { //no way to transfer args to this function?
+                            //     `return new Promise((r) => {
+                            //         this.connection.run(
+                            //             ${name},
+                            //             [${props[key].args.join(',')}],
+                            //             ${key}
+                            //         ).then(r);
+                            //     });`
+                            // ).bind(scope); //will show up as "bound anonymous" but the arguments are parseable
+                            // //console.log(getFunctionHead(proxy[key].toString()).split('(')[1].split(')')[0]);
+                            //} 
+                            else {
+                                proxy[key] = () => {
+                                    return new Promise((r) => {
+                                        connection.run(
+                                            name,
+                                            undefined,
+                                            key
+                                        ).then(r);
+                                    });
+                                }
+                            }
+                        } else {
+                            Object.defineProperty(
+                                proxy,
+                                key,
+                                {
+                                    get:()=>{
+                                        return new Promise((r)=>{
+                                            connection.run(
+                                                name,
+                                                undefined,
+                                                key
+                                            ).then((r))
+                                        });
+                                    },
+                                    set:(value) => {
+                                        connection.post(
+                                            name,
+                                            value,
+                                            key
+                                        )
+                                    },
+                                    configurable:true,
+                                    enumerable:true
+                                }
+                            )
+                        }
+                    }
+                }
+
+                res(proxy);
+
+            });
+        });
     },
 
     transferClass:(
