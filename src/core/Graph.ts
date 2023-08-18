@@ -993,7 +993,8 @@ export class Graph {
                                         listeners[key][k][kk].__callback, 
                                         listeners[key][k][kk].__args, 
                                         prop, 
-                                        listeners[key][k][kk].subInput
+                                        listeners[key][k][kk].subInput,
+                                        key //if the key as the target is a node tag, this lets you specify callbacks as keys of that node so e.g. {console:{'Button.onclick':'log'}}
                                     );
                                 }
                             } else {
@@ -1002,7 +1003,8 @@ export class Graph {
                                     listeners[key][k][kk].__callback, 
                                     listeners[key][k][kk].__args, 
                                     undefined, 
-                                    listeners[key][k][kk].subInput
+                                    listeners[key][k][kk].subInput,
+                                    key
                                 );
                                 
                             }
@@ -1022,7 +1024,8 @@ export class Graph {
                                     listeners[key][k].__callback, 
                                     listeners[key][k].__args, 
                                     k.substring(k.lastIndexOf('.')+1), 
-                                    listeners[key][k].subInput
+                                    listeners[key][k].subInput,
+                                    key
                                 );
                                 
                             }
@@ -1032,7 +1035,8 @@ export class Graph {
                                 listeners[key][k].__callback, 
                                 listeners[key][k].__args,  
                                 undefined, 
-                                listeners[key][k].subInput
+                                listeners[key][k].subInput,
+                                key
                             );
                             
                         }
@@ -1103,7 +1107,7 @@ export class Graph {
             triggers[key].forEach((trigger) => {
                 let t = trigger as any as Listener;
                 if(!result[t.target]) result[t.target] = {};
-                let l = t.source + t.key ? '.'+t.key : '';
+                let l = t.source + (t.key ? '.' + t.key : '');
                 result[t.target][l] = {
                     __callback:t.__callback
                 }
@@ -1181,7 +1185,7 @@ export class Graph {
                 if(typeof node?.[onEvent] === 'function') {
                     tkey = onEvent;
                     onEvent = function(...inp) { return node[key](...inp)};
-                } else if(node[key]) {
+                } else if(node?.[key]) {
                     tkey = key;
                     if(node[key] instanceof GraphNode) onEvent = node[key];
                     else onEvent = function(inp) { node[key] = inp; return node[key]; } //setter

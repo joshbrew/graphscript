@@ -126,7 +126,12 @@ const graph = new WorkerService({
 
 const worker = graph.addWorker({url:worker1});
 
-worker?.run('makeRootTransferrable').then(console.log);
+worker?.run('makeRootTransferrable').then((root) => {
+    console.log('worker root',root);
+    worker.run('getListenerJSON').then((listeners) => {
+      console.log('worker listeners',listeners);
+    })
+});
 
 //  Create Canvas
 const canvas = document.createElement('canvas');
