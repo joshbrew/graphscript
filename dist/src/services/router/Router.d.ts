@@ -112,9 +112,7 @@ export declare class Router extends Service {
         [key: string]: any;
     }, terminate?: boolean): boolean;
     getConnection: (sourceId: string, hasMethod?: string, connectionId?: string) => User | ConnectionInfo | undefined;
-    getConnections: (sourceId: string, hasMethod?: string, props?: {}) => {
-        [key: string]: ConnectionInfo;
-    };
+    getConnections: (sourceId: string, hasMethod?: string, props?: {}) => {};
     runConnection: (userId: string, method: 'run' | 'post' | 'subscribe' | 'unsubscribe' | 'terminate' | 'send' | 'request' | 'runAll' | 'postAll' | 'subscribeAll' | 'unsubscribeAll' | 'sendAll' | 'requestAll', args: any[], connectionId?: string) => Promise<any>;
     subscribeThroughConnection: (route: string, remoteRelay: string | ConnectionInfo, remoteEndpoint: string, callback: string | ((res: any) => void), ...args: any[]) => Promise<unknown>;
     addConnection: (options: ConnectionProps | ConnectionInfo | string, source?: string) => ConnectionInfo;

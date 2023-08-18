@@ -1,4 +1,7 @@
-import {Graph, GraphNode, GraphNodeProperties, Listener, getCallbackFromString, wchtmlloader} from '../../index'
+import {Graph, GraphNode, 
+  GraphNodeProperties, Listener, WorkerInfo, getCallbackFromString, 
+  wchtmlloader
+} from '../../index'
 import { replaceListenerArg } from './listenerManip';
 
 import { LiteGraph, LGraph, LGraphCanvas, LGraphNode} from './litegraph.js'
@@ -48,7 +51,7 @@ export function getFnParamNames(fn){
 export let registered = new Map<string, any>();
 export let created = new Map<string, LGraphNodeM>();
 
-export function addNodeToLGraph(node,graph, editor:LGraph) {
+export function addNodeToLGraph(node, graph, editor:LGraph) {
   let roots = graph.__node.roots;
   let hasNode = registered.get(node.__node.tag) as LGraphNodeM;
   if (!hasNode) {
@@ -57,6 +60,7 @@ export function addNodeToLGraph(node,graph, editor:LGraph) {
         if(!key.startsWith('__'))
           registerNode(node, roots[node.__node.tag], key, editor);
       }
+      
   }
 }
 
@@ -91,11 +95,11 @@ export function updateArgNodePosition (target, nodes) {
 }
 
 export function createNode(name:string, LGraph:LGraph, duplicate = false) {
-  const got = created.get(name)
+  const got = created.get(name);
   if (!duplicate && got) return got as LGraphNodeM;
   const node = LiteGraph.createNode(name);
   created.set(name, node as LGraphNodeM)
-  LGraph.add(node)
+  LGraph.add(node);
   return node as LGraphNodeM;
 }
 
@@ -112,7 +116,10 @@ export function renderLGraphFromExistingEvents(
     let tarr = graph.__node.state.triggers[key] as any as Listener[];
     let nodes = [] as any[];
     for(const trigger of tarr) {
+      console.log(trigger);
+      if(!trigger.tkey) continue;
       //create each node in the arg stack if exists, connect by arg position, exec pins only at listener level
+
       const name = trigger.tkey ? trigger.target+'.'+trigger.tkey : trigger.target as string;
       let node = createNode(name,LGraph,true);
       let srcname = trigger.key ? trigger.source+'.'+trigger.key : trigger.source as string;
@@ -120,6 +127,7 @@ export function renderLGraphFromExistingEvents(
       let hasNode = created.get(srcname);
       let srcnode = createNode(srcname, LGraph, false);
 
+      //console.log(name,node,srcname,srcnode);
 
       updateNodePosition(node, srcnode);
 
@@ -334,6 +342,23 @@ const checkNodeForSubscriptionUpdate = (
 
   }
 }
+
+
+
+export function getListenersFromWorker(worker:WorkerInfo) {
+  return worker.run('getListenerJSON');
+} //build the graph from this result
+
+export function setSubscriptionOnWorker(worker:WorkerInfo, nodeEvent:string, onEvent:any, args?:any[], key?:string, subInput?:boolean, blocking?:boolean) {
+  return worker.subscribe(nodeEvent, onEvent, args, key, subInput, blocking);
+}
+
+export function subscribeNodeToWorker(worker:WorkerInfo, node:LGraphNodeM) {
+  
+}
+
+//todo: create a worker node
+
 
 
 

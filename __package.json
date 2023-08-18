@@ -1,6 +1,6 @@
 {
     "name": "graphscript-node",
-    "version": "0.2.177",
+    "version": "0.2.178",
     "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
     "main": "dist/index.node.js",
     "types": "dist/index.node.d.ts",
@@ -23,7 +23,7 @@
     "license": "AGPL-3.0-or-later",
     "dependencies": {
         "better-sse": "~0.8.0",
-        "brainsatplay-math": "~0.0.25",
+        "brainsatplay-math": "~0.0.33",
         "bson-objectid": "~2.0.3",
         "web-worker": "~1.2.0",
         "ws": "~8.11.0"

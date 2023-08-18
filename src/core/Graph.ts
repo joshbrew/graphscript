@@ -257,6 +257,7 @@ export class GraphNode {
             let trigger = this.__node.state.getEvent(k,sub) as any as Listener;
             if(!this.__listeners) this.__listeners = {};
             this.__listeners[k] = this.__node.state.triggers[k];
+
     
             if(!trigger) return sub;
             trigger.source = this.__node.tag; //source being subscribed too
@@ -273,6 +274,7 @@ export class GraphNode {
             trigger.node = this;
             trigger.graph = this.__node.graph;
 
+            console.log(trigger);
             return sub;
         }
 
@@ -947,7 +949,10 @@ export class Graph {
                         for(const kk in listeners[key][k]) {
                             if(typeof listeners[key][k][kk] !== 'object') {
                                 listeners[key][k][kk] = {__callback: listeners[key][k][kk]}
-                                if(node.__operator && (listeners[key][k][kk].__callback === true || typeof listeners[key][k][kk].__callback === 'undefined')) 
+                                if(node.__operator && 
+                                    (listeners[key][k][kk].__callback === true || 
+                                        typeof listeners[key][k][kk].__callback === 'undefined')
+                                ) 
                                     listeners[key][k][kk].__callback = node.__operator;
                             }
                             let nn = this.get(kk);
@@ -969,9 +974,9 @@ export class Graph {
                                 sub = this.subscribe(
                                     nn, 
                                     listeners[key][k][kk].__callback, 
-                                    listeners[key][k].__args, 
+                                    listeners[key][k][kk].__args, 
                                     undefined, 
-                                    listeners[key][k].subInput
+                                    listeners[key][k][kk].subInput
                                 );
                                 
                             }

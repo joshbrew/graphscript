@@ -525,7 +525,7 @@ export class StructBackend extends Service {
     }    
 
     //when passing structs to be set, check them for if notifications need to be created
-    //TODO: need to make this more flexible in the cases you DON'T want an update
+    //TODO: need to make this more flexible in the cases you DON'T want an update. I.e. a notification filter struct.
     checkToNotify = async (user:Partial<ProfileStruct>,structs:any[]=[], mode=this.mode) => {
         //console.log('CHECK TO NOTIFY', structs)
         if(structs.length === 0) return false;
@@ -1651,7 +1651,7 @@ export class StructBackend extends Service {
         return authStruct as AuthorizationStruct; //pass back the (potentially modified) authStruct
     }
 
-    
+    //TODO: fine grained struct filtering
     checkAuthorization = async (
         user:string|Partial<ProfileStruct>|{_id:string}, 
         struct, 

@@ -27,11 +27,15 @@ export declare class EventHandler {
     }, refKey?: string) => number;
     unsubscribeEvent: (key: string, sub?: number) => boolean;
     subscribeEventOnce: (key: string, onchange: (res: any) => void) => any;
-    getEvent: (key: any, sub: any) => {
+    getEvent: (key: any, sub?: any) => {
         [key: string]: any;
         sub: number;
         onchange: Function;
-    };
+    } | {
+        [key: string]: any;
+        sub: number;
+        onchange: Function;
+    }[];
     getSnapshot: () => void;
     onRemoved: (trigger: {
         sub: number;

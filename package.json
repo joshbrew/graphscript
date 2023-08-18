@@ -1,6 +1,6 @@
 {
     "name": "graphscript",
-    "version": "0.2.137",
+    "version": "0.2.138",
     "description": "Comprehensive acyclic-graph based application architecture with microservices and networking",
     "main": "dist/index.js",
     "module": "dist/index.esm.js",
@@ -24,7 +24,7 @@
     "license": "AGPL-3.0-or-later",
     "dependencies": {
         "better-sse": "^0.8.0",
-        "brainsatplay-math": "~0.0.25",
+        "brainsatplay-math": "~0.0.33",
         "web-worker": "~1.2.0",
         "ws": "~8.11.0"
     },

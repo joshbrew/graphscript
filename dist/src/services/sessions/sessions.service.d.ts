@@ -112,9 +112,7 @@ export declare class SessionsService extends Service {
     constructor(options?: ServiceOptions, users?: {
         [key: string]: SessionUser;
     });
-    getSessionInfo: (sessionId?: string, userId?: string) => {
-        [key: string]: SharedSessionProps;
-    };
+    getSessionInfo: (sessionId?: string, userId?: string) => {};
     openPrivateSession: (options?: PrivateSessionProps, userId?: string) => any;
     openSharedSession: (options: SharedSessionProps, userId?: string) => any;
     open: (options: any, userId?: string) => void;
