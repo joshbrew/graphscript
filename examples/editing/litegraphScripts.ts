@@ -1,4 +1,4 @@
-import {Graph, GraphNode, 
+import {EventHandler, Graph, GraphNode, 
   GraphNodeProperties, Listener, WorkerInfo, getCallbackFromString, 
   wchtmlloader
 } from '../../index'
@@ -70,7 +70,7 @@ export function registerLGraphNodesFromGraph(graph:Graph, editor:LGraph) {
   });
 }
 
-//the positioning stuff is bugged
+//the positioning stuff is incorrect (I broke it then forgot what it did)
 export const updateNodePosition = (current, sourceNode, lastNode) => {
   const previous = lastNode ? lastNode : sourceNode;
   const [ x, y ] = previous.pos;
@@ -108,17 +108,17 @@ export function createNode(name:string, LGraph:LGraph, duplicate = false) {
 
 
 export function renderLGraphFromExistingEvents(
-  graph:Graph, 
+  listeners:EventHandler['triggers'], 
   LGraph:LGraph
 ) {
 
   let minY = 0;
   let lastNode;
-  for(const key in graph.__node.state.triggers) {
-    let tarr = graph.__node.state.triggers[key] as any as Listener[];
+  for(const key in listeners) {
+    let tarr = listeners[key] as any as Listener[];
     let nodes = [] as any[];
     for(const trigger of tarr) {
-      console.log(trigger);
+      //console.log(trigger);
       if(!trigger.tkey) continue;
       //create each node in the arg stack if exists, connect by arg position, exec pins only at listener level
 
@@ -147,7 +147,7 @@ export function renderLGraphFromExistingEvents(
       //set x and y offset
       
       if(trigger.__args) {
-
+        let lastargnode;
         const iterateArg = (arg, node, i) => {
           if(typeof arg === 'object') {
             let cb = arg.__callback ? arg.__callback : arg.__input;
@@ -160,17 +160,19 @@ export function renderLGraphFromExistingEvents(
                   argnodes.push(iterateArg(a,argnode,j+1));
                 });
                 if(argnodes.length > 0) {
-                  updateArgNodePosition(argnode, argnodes, lastNode);
+                  updateArgNodePosition(argnode, argnodes, lastargnode);
                   argnodes.forEach((n) => {
                     if(minY > n.pos[1]) minY = n.pos[1];
                   });
                 }  
               }
+              lastargnode = argnode;
               return argnode;
             }
           } else if (typeof arg === 'string') {
             let argnode = createNode(arg, LGraph, true);
             argnode.connect(1, node, i); //todo: several argument slots?
+            lastargnode = argnode;
             return argnode;
           } 
         }
@@ -181,7 +183,7 @@ export function renderLGraphFromExistingEvents(
         });
 
         if(argnodes.length > 0) {
-          updateArgNodePosition(node, argnodes, lastNode);
+          updateArgNodePosition(node, argnodes, lastargnode);
           argnodes.forEach((n) => {
             if(minY > n.pos[1]) minY = n.pos[1];
           });
@@ -397,7 +399,7 @@ export function registerNode(
     let params;
 
     let setOutputNameFromFunction = (fn) => {
-        let str = fn.toString() as string;
+        let str = typeof fn === 'string' ? fn : fn.toString() as string;
         let isNative = str.indexOf('[native code]') > -1;
         if(isNative) {
           self.addInput('', 0 as any); 
@@ -478,13 +480,13 @@ export function registerNode(
     //when an output is connected on this node, can just use onConnectInput 
     self.onConnectOutput = function(outputIndex, inputType, inputSlot, inputNode, inputIndex) {
       //graph.subscribe();
-      console.log('onConnectOutput',{outputIndex, inputType, inputSlot, inputNode, inputIndex});
+      //console.log('onConnectOutput',{outputIndex, inputType, inputSlot, inputNode, inputIndex});
       
       return true;
     }
 
     self.onConnectionsChange = function(type, slotIndex, isConnected, link, ioSlot) {
-      console.log({type, slotIndex, isConnected, link, ioSlot});
+      //console.log('onConnectionsChange',{type, slotIndex, isConnected, link, ioSlot});
       if(!isConnected) {
         //graph.unsubscribe();
       }

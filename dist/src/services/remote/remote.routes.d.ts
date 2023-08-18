@@ -13,6 +13,7 @@ export declare const remoteGraphRoutes: {
     }), name?: string) => any;
     proxyRemoteNode: (name: string, connection: any) => Promise<unknown>;
     makeNodeTransferrable: (properties: GraphNodeProperties, name?: string) => {};
+    makeRootTransferrable: () => {};
     setTemplate: (properties: string | (() => any) | (GraphNodeProperties & {
         __methods?: {
             [key: string]: string | Function;

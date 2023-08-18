@@ -6,6 +6,8 @@ import { makeNodeEditorMenu, makeNodePropsCreator, makeProxyMenu } from './proxy
 
 import './styles.css'
 
+import worker1 from './worker'
+
 
 (Math as any).multiply = (a,b) => { return a*b; };
 
@@ -122,6 +124,10 @@ const graph = new WorkerService({
   }
 });
 
+const worker = graph.addWorker({url:worker1});
+
+worker?.run('makeRootTransferrable').then(console.log);
+
 //  Create Canvas
 const canvas = document.createElement('canvas');
 setTimeout(() => {
@@ -141,7 +147,7 @@ new LGraphCanvas(canvas, editor);
 editor.start();
 
 registerLGraphNodesFromGraph(graph, editor);
-renderLGraphFromExistingEvents(graph,editor);
+renderLGraphFromExistingEvents(graph.__node.state.triggers, editor);
 
 document.body.appendChild(canvas);
 

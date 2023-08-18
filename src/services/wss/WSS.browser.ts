@@ -241,7 +241,6 @@ export class WSSfrontend extends Service {
 
         let node = this.add(socketsettings);
 
-
         this.sockets[address] = node as GraphNode & WebSocketInfo;
         //console.log(node,this.get(address),this.sockets[address]);
 

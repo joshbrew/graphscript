@@ -121,7 +121,7 @@ export declare class Graph {
     }, replace?: boolean) => any;
     runLoaders: (node: any, parent: any, properties: any, key: any) => void;
     add: (properties: any, parent?: GraphNode | string) => GraphNode;
-    recursiveSet: (t: any, parent: any, listeners: any, origin: any) => any;
+    recursiveSet: (originCpy: any, parent: any, listeners: any, origin: any) => any;
     remove: (node: GraphNode | string, clearListeners?: boolean) => string | GraphNode;
     run: (node: string | GraphNode, ...args: any[]) => any;
     /**

@@ -1,4 +1,4 @@
-import { parseFunctionFromText, recursivelyStringifyFunctions } from "../utils"
+import { parseFunctionFromText, recursivelyStringifyFunctions, stringifyWithCircularRefs, stringifyWithFunctionsAndCircularRefs } from "../utils"
 import { Graph, GraphNodeProperties } from "../../core/Graph"
 import { methodstrings } from "../../loaders/methodstrings";
 import { recursivelyAssign } from "../Service";
@@ -148,6 +148,33 @@ export const remoteGraphRoutes = {
         return str;
     },
 
+    makeRootTransferrable: function () {
+        let roots = {};
+        for(const r in this.__node.graph.__node.roots) {
+            let properties = this.__node.graph.__node.roots[r];
+            if(typeof properties === 'function') {
+                roots[r] = properties.toString();
+            } else if (typeof properties !== 'object') {
+                roots[r] = properties;
+            } else {
+                roots[r] = {};
+                let keys = Object.getOwnPropertyNames(properties).filter((v) => !objProps.includes(v));
+                //console.log([...keys]);
+                let nonArrowFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf(properties)).filter((v) => !objProps.includes(v));
+                keys.push(...nonArrowFunctions); //this is weird but it works
+                for(const key of keys) {
+                    if(typeof properties[key] === 'function') {
+                        roots[r][key] = properties[key].toString();
+                    } else if(typeof properties[key] === 'object') 
+                        roots[r][key] = stringifyWithFunctionsAndCircularRefs(properties[key]);
+                    else roots[r][key] = properties[key];
+                }
+            }
+        }
+
+        return roots;
+    },
+
     setTemplate:function(        
         properties:string|((...args:[])=>any)|(GraphNodeProperties & { __methods?:{[key:string]:Function|string} }), 
         name?:string
@@ -284,10 +311,10 @@ export const remoteGraphRoutes = {
             return (connection as any).run('setNode',[str,fnName]);
         else if ((connection as Worker).postMessage) {
             (connection as Worker).postMessage({route:'setNode', args:[str,fnName]},undefined);
-            return new Promise ((r) => r(name));
+            return new Promise ((r) => r(fnName));
         } else if ((connection as WebSocket).send) {
             (connection as WebSocket).send(JSON.stringify({route:'setNode', args:[str,fnName]}));
-            return new Promise ((r) => r(name));
+            return new Promise ((r) => r(fnName));
         }
         return message;
     },
@@ -339,3 +366,7 @@ export const remoteGraphRoutes = {
     }
 
 }
+
+let objProps = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
+
+//console.log(objProps);

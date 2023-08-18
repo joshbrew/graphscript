@@ -403,8 +403,9 @@ export class WorkerService extends Service {
         (worker as Worker).onerror = options.onerror;
         
 
-        this.workers[options._id] = {
+        let workersettings = {
             worker:(worker as any),
+            __node:{tag:options._id},
             send,
             post,
             run,
@@ -419,6 +420,12 @@ export class WorkerService extends Service {
             graph:this,
             ...options
         } as WorkerInfo;
+
+        let node = this.add(workersettings);
+
+        this.workers[options._id] = node as GraphNode & WorkerInfo;
+
+        node.__addOndisconnected(function() { terminate(); });
 
         return this.workers[options._id];
     }
@@ -532,7 +539,10 @@ export class WorkerService extends Service {
 
     terminate = (worker:Worker|MessagePort|string|WorkerInfo) => {
         let onclose;
+        
+        let str;
         if(typeof worker === 'string') {
+            str = worker;
             let obj = this.workers[worker];
             if(obj) {
                 delete this.workers[worker];
@@ -548,11 +558,13 @@ export class WorkerService extends Service {
         if(worker instanceof Worker) {
             worker.terminate();
             if(onclose) onclose(worker);
+            if(str && this.get(str)) this.remove(str);
             return true;
         }
         if(worker instanceof MessagePort) {
             worker.close();
             if(onclose) onclose(worker);
+            if(str && this.get(str)) this.remove(str);
             return true;
         }
         return false;

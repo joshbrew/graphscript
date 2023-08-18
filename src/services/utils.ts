@@ -122,11 +122,11 @@ export const stringifyWithCircularRefs = (function() {
         if (key) { updateParents(key, value); }
 
         let other = refs.get(value);
-        if (other) {
-            return '[Circular Reference]' + other;
-        } else {
-            refs.set(value, path.join('.'));
-        }
+            if (other) {
+                return '[Circular Reference]' + other;
+            } else {
+                refs.set(value, path.join('.'));
+            }
         }
     }
     return value;
@@ -147,6 +147,75 @@ if((JSON as any).stringifyWithCircularRefs === undefined) {
     (JSON as any).stringifyWithCircularRefs = stringifyWithCircularRefs;
 }
 
+
+export const stringifyWithFunctionsAndCircularRefs = (function() {
+    const refs = new Map();
+    const parents:any[] = [];
+    const path = ["this"];
+
+    function clear() {
+        refs.clear();
+        parents.length = 0;
+        path.length = 1;
+    }
+
+    function updateParents(key, value) {
+        var idx = parents.length - 1;
+        var prev = parents[idx];
+        if(typeof prev === 'object') {
+            if (prev[key] === value || idx === 0) {
+                path.push(key);
+                parents.push(value.pushed);
+            } else {
+                while (idx-- >= 0) {
+                    prev = parents[idx];
+                    if(typeof prev === 'object') {
+                        if (prev[key] === value) {
+                            idx += 2;
+                            parents.length = idx;
+                            path.length = idx;
+                            --idx;
+                            parents[idx] = value;
+                            path[idx] = key;
+                            break;
+                        }
+                    }
+                    idx--;
+                }
+            }
+        }
+    }
+
+    function checkCircular(key, value) {
+    if (value != null) {
+        if (typeof value === "object") {
+        if (key) { updateParents(key, value); }
+
+        let other = refs.get(value);
+            if (other) {
+                return '[Circular Reference]' + other;
+            } else {
+                refs.set( typeof value === 'function' ? value.toString() : value, path.join('.'));
+            }
+        }
+    }
+        return typeof value === 'function' ? value.toString() : value;
+    }
+
+    return function stringifyWithFunctionsAndCircularRefs(obj, space?) {
+    try {
+        parents.push(obj);
+        return JSON.stringify(obj, checkCircular, space);
+    } finally {
+        clear();
+    }
+    }
+})();
+
+if((JSON as any).stringifyWithFunctionsAndCircularRefs === undefined) {
+    //Workaround for objects containing DOM nodes, which can't be stringified with JSON. From: https://stackoverflow.com/questions/4816099/chrome-sendrequest-error-typeerror-converting-circular-structure-to-json
+    (JSON as any).stringifyWithFunctionsAndCircularRefs = stringifyWithFunctionsAndCircularRefs;
+}
 //partial stringification for objects and removing circular references. This allows MUCH faster object equivalency comparison with three-tier depth checking
 export const stringifyFast = (function() {
     const refs = new Map();

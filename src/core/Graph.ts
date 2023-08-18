@@ -615,10 +615,12 @@ export class Graph {
                 }
             } else if (inChildren) {
                 for(const key in obj) {
-                    target[key] = Object.assign({}, obj[key]);
-                    if(obj[key]?.__children) {
-                        recursivelyAssignChildren({},obj[key].__children,false,false);
-                    }
+                    if(typeof obj[key] === 'object') {
+                        target[key] = Object.assign({}, obj[key]);
+                        if(obj[key]?.__children) {
+                            recursivelyAssignChildren({},obj[key].__children,false,false);
+                        }
+                    } else target[key] = obj[key];
                 }
             }
         
@@ -627,6 +629,8 @@ export class Graph {
         
         this.__node.roots = recursivelyAssignChildren(this.__node.roots ? this.__node.roots : {}, roots);
         
+        console.log(this.__node.roots);
+
         let cpy = Object.assign({}, roots);
         if(cpy.__node) delete cpy.__node; //we can specify __node behaviors on the roots too to specify listeners
 
@@ -746,8 +750,8 @@ export class Graph {
         } else if(properties.__node.tag) return this.get(properties.__node.tag);
     }
 
-    recursiveSet = (t,parent,listeners:any={},origin) =>  {
-        let keys = Object.getOwnPropertyNames(origin);
+    recursiveSet = (originCpy,parent,listeners:any={},origin) =>  {
+        let keys = Object.getOwnPropertyNames(origin).filter((v) => !objProps.includes(v));
         let nonArrowFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf(origin)).filter((v) => !objProps.includes(v));
         keys.push(...nonArrowFunctions); //this is weird but it works 
 
@@ -767,13 +771,12 @@ export class Graph {
             } else if (typeof p === 'boolean') {
                 if(this.__node.nodes.get(key)) p = this.__node.nodes.get(key);
                 else p = this.__node.roots[key];
-            }
+            } 
 
             if(p instanceof Object) {
-                
                 if(!instanced && !(p instanceof GraphNode)) {
-                    let ks = Object.getOwnPropertyNames(p); //lets us copy e.g. Math
-                    let nonArrowFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf(p));
+                    let ks = Object.getOwnPropertyNames(p).filter((v) => !objProps.includes(v)); //lets us copy e.g. Math
+                    let nonArrowFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf(p)).filter((v) => !objProps.includes(v));
                     nonArrowFunctions.splice(nonArrowFunctions.indexOf('constructor'),1);
                     ks.push(...nonArrowFunctions);
                     let cpy = {};
@@ -782,8 +785,18 @@ export class Graph {
                 }
                 if(!p.__node) p.__node = {};
                 if(!p.__node.tag) p.__node.tag = key;
-                if(!p.__node.initial) p.__node.initial = t[key];
-                if(((this.get(p.__node.tag) && !(!(parent instanceof Graph) && parent?.__node)) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag)))) continue; //don't duplicate a node we already have in the graph by tag
+                if(!p.__node.initial) p.__node.initial = originCpy[key];
+                if((
+                    (
+                        this.get(p.__node.tag) && 
+                        !(!(parent instanceof Graph) && 
+                        parent?.__node)
+                    ) || 
+                    (
+                        parent?.__node && 
+                        this.get(parent.__node.tag + '.' + p.__node.tag)
+                    )
+                )) continue; //don't duplicate a node we already have in the graph by tag, todo: maybe rethink this a little bit
     
                 let node: GraphNode;
                 let newnode = false;
@@ -801,8 +814,8 @@ export class Graph {
                 } else if(node) { //fresh node, run loaders etc.
                     //console.log(node, instanced, newnode);
                     this.set(node.__node.tag,node);
-                    this.runLoaders(node, parent, t[key], key); //run any passes on the nodes to set things up further
-                    t[key] = node; //replace child with a graphnode
+                    this.runLoaders(node, parent, originCpy[key], key); //run any passes on the nodes to set things up further
+                    originCpy[key] = node; //replace child with a graphnode
                     this.__node.roots[node.__node.tag] = root; //reference the original node props by tag in the root
                     
                     if(node.__children) {
@@ -1059,7 +1072,7 @@ export class Graph {
 
     get = (tag:string) => { return this.__node.nodes.get(tag); };
     getByUnique = (unique:string) => { return Array.from(this.__node.nodes.values()).find((node) => { if(node.__node.unique === unique) return true; })} //just in case we want to source a node by state keys
-    set = (tag:string,node:GraphNode) => { return this.__node.nodes.set(tag,node); };
+    set = (tag:string,node:GraphNode) => { return this.__node.nodes.set(tag, node); };
     delete = (tag:string) => { return this.__node.nodes.delete(tag); }
     list = () => { return Array.from(this.__node.nodes.keys()); } //list loaded nodes
     getListener = (nodeTag:string,key?:string,sub?:number) => {
