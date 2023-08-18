@@ -604,10 +604,10 @@ export class Graph {
                     if(!key.startsWith('__') && obj[key] && typeof obj[key] === 'object') {
                         //test for node keys
                         //if(obj[key].__operator || obj[key].__node || obj[key].__props || obj[key].__children || obj[key].__parent) {
-                            target[key] = obj[key];
-                            if(obj[key]?.__children) {
-                                recursivelyAssignChildren({},obj[key].__children,false,false);
-                            }
+                        target[key] = obj[key];
+                        if(obj[key]?.__children) {
+                            recursivelyAssignChildren({},obj[key].__children,false,false);
+                        }
                         //}
                     } else if(typeof obj[key] === 'function') target[key] = obj[key]; //only copy functions for now
                 }
@@ -616,8 +616,8 @@ export class Graph {
                 if(obj?.__children && !inChildren) {
                     if(obj.__children?.constructor.name === 'Object') {
                         if(target.__children?.constructor.name === 'Object') 
-                            target.__children = recursivelyAssignChildren(target.__children, obj.__children, true,false);
-                        else target.__children = recursivelyAssignChildren({},obj.__children, true,false); 
+                            target.__children = recursivelyAssignChildren(target.__children, obj.__children, true, false);
+                        else target.__children = recursivelyAssignChildren({},obj.__children, true, false); 
                     } else {
                         target.__children = obj.__children;
                         //if(typeof target[key] === 'function') target[key] = target[key].bind(this);
@@ -626,11 +626,11 @@ export class Graph {
                     for(const key in obj) {
                         if(!key.startsWith('__') && obj[key] && typeof obj[key] === 'object') {
                             //test for node keys
-                            //if(obj[key].__operator || obj[key].__node || obj[key].__props || obj[key].__children || obj[key].__parent) {
-                                target[key] = Object.assign({}, obj[key]);
-                                if(obj[key]?.__children) {
-                                    target[key].__children = recursivelyAssignChildren({},obj[key].__children,false,false);
-                                }
+                            //if(obj[key].__operator || obj[key].__node || obj[key].__props || obj[key].__children || obj[key].__parent) {                            
+                            target[key] = Object.assign({}, obj[key]);
+                            if(obj[key]?.__children) {
+                                target[key].__children = recursivelyAssignChildren({},obj[key].__children,false,false);
+                            }
                             //}
                         } else if(typeof obj[key] === 'function') target[key] = obj[key]; //only copy functions for now
                     }
