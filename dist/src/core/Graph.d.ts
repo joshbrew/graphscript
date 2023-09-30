@@ -113,15 +113,15 @@ export declare class Graph {
     init: (options?: GraphOptions) => void;
     load: (roots: {
         [key: string]: any;
-    }) => {
+    }, overwrite?: boolean) => {
         [key: string]: any;
     };
     setLoaders: (loaders: {
         [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, props: any, key: string) => void;
     }, replace?: boolean) => any;
     runLoaders: (node: any, parent: any, properties: any, key: any) => void;
-    add: (properties: any, parent?: GraphNode | string) => GraphNode;
-    recursiveSet: (originCpy: any, parent: any, listeners: any, origin: any) => any;
+    add: (properties: any, parent?: GraphNode | string, overwrite?: boolean) => GraphNode;
+    recursiveSet: (originCpy: any, parent: any, listeners: any, origin: any, overwrite?: boolean) => any;
     remove: (node: GraphNode | string, clearListeners?: boolean) => string | GraphNode;
     run: (node: string | GraphNode, ...args: any[]) => any;
     /**
@@ -147,7 +147,6 @@ export declare class Graph {
     delete: (tag: string) => boolean;
     list: () => string[];
     getListener: (nodeTag: string, key?: string, sub?: number) => Listener;
-    getListenerJSON: () => any;
     getProps: (node: GraphNode | string, getInitial?: boolean) => void;
     subscribe: (nodeEvent: GraphNode | string, onEvent: string | GraphNode | ((...res: any) => void), args?: any[], key?: string | undefined, subInput?: boolean, target?: string | GraphNode, tkey?: string) => number;
     unsubscribe: (node: GraphNode | string, sub?: number, key?: string, subInput?: boolean) => any;

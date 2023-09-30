@@ -11,8 +11,8 @@ export declare const remoteGraphRoutes: {
             [key: string]: string | Function;
         };
     }), name?: string) => any;
-    proxyRemoteNode: (name: string, connection: any) => Promise<unknown>;
     makeNodeTransferrable: (properties: GraphNodeProperties, name?: string) => {};
+    getListenerJSON: () => any;
     makeRootTransferrable: () => {};
     setTemplate: (properties: string | (() => any) | (GraphNodeProperties & {
         __methods?: {
@@ -27,6 +27,7 @@ export declare const remoteGraphRoutes: {
         [key: string]: any;
     }) => void;
     getNodeProperties: (nodeTag: string) => {};
+    proxyRemoteNode: (name: string, connection: any) => Promise<any>;
     transferClass: (classObj: any, connection: any | Worker | WebSocket, className?: string) => any;
     receiveClass: (stringified: string, className?: string) => boolean;
     transferFunction: (fn: Function, connection: any | Worker | WebSocket, fnName?: string) => any;

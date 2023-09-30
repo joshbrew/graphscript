@@ -43,11 +43,11 @@ export function parseFunctionFromText(method='') {
 
     let newFunc;
     if (newFuncHead.includes('function')) {
-        let varName = newFuncHead.split('(')[1].split(')')[0];
+        let varName = newFuncHead.substring(newFuncHead.indexOf('(')+1,newFuncHead.lastIndexOf(')'));
         newFunc = new Function(varName, newFuncBody);
     } else {
         if (newFuncHead.substring(0, 6) === newFuncBody.substring(0, 6)) {
-            let varName = newFuncHead.split('(')[1].split(')')[0]
+            let varName = newFuncHead.substring(newFuncHead.indexOf('(')+1,newFuncHead.lastIndexOf(')'));
             newFunc = new Function(varName, newFuncBody.substring(newFuncBody.indexOf('{') + 1, newFuncBody.length - 1));
         } else {
             try { newFunc = (0, eval)(method); } catch { } // Just evaluate the method

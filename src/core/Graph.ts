@@ -595,7 +595,7 @@ export class Graph {
         }
     }
 
-    load = (roots:{[key:string]:any}) => {
+    load = (roots:{[key:string]:any}, overwrite = false) => {
         function recursivelyAssignChildren (target, obj, inChildren=true, top=true) {
             if(top) {
                 if(!target) target = {};
@@ -646,7 +646,7 @@ export class Graph {
         let cpy = Object.assign({}, roots);
         if(cpy.__node) delete cpy.__node; //we can specify __node behaviors on the roots too to specify listeners
 
-        let listeners = this.recursiveSet(cpy,this,undefined,roots);
+        let listeners = this.recursiveSet(cpy,this,undefined,roots,overwrite);
 
         //make the root a node 
         if(roots.__node) {
@@ -687,7 +687,7 @@ export class Graph {
         } else if (typeof this.__node.loaders[l] === 'function') this.__node.loaders[l](node, parent, this, this.__node.roots, properties, key); } //run any passes on the nodes to set things up further 
     }
 
-    add = (properties:any, parent?:GraphNode|string):GraphNode => {
+    add = (properties:any, parent?:GraphNode|string, overwrite=true):GraphNode => {
 
         let listeners = {}; //collect listener props declared
         if(typeof parent === 'string') parent = this.get(parent);
@@ -713,56 +713,57 @@ export class Graph {
             for(const key of keys) { cpy[key] = properties[key]; } //make sure we don't mutate the original object
             properties = cpy;
         }
+
         if(!properties.__node) properties.__node = {};
         properties.__node.initial = properties; 
     
-        if(typeof properties === 'object' && 
-            (!this.get(properties.__node.tag))
-        ) {
-            let node;
-            let root = recursivelyAssign({},properties,2);
-            if(instanced) node = properties;
-            else node = new GraphNode(properties, parent as GraphNode, this);
-            this.set(node.__node.tag,node);
-            this.runLoaders(node, parent, properties, node.__node.tag);
-            this.__node.roots[node.__node.tag] = root; //reference the original props by tag in the roots for children
-            //console.log('old:',properties.__node,'new:',node.__node);
+        if(typeof properties === 'object' && this.get(properties.__node.tag)) {
+            if(overwrite) this.remove(properties.__node.tag, true); //clear the previous node and the subscriptions
+            else return;
+        } else if(properties.__node.tag && this.get(properties.__node.tag)) return this.get(properties.__node.tag);
+        
+        let node;
+        let root = recursivelyAssign({},properties,2);
+        if(instanced) node = properties;
+        else node = new GraphNode(properties, parent as GraphNode, this);
+        this.set(node.__node.tag,node);
+        this.runLoaders(node, parent, properties, node.__node.tag);
+        this.__node.roots[node.__node.tag] = root; //reference the original props by tag in the roots for children
+        //console.log('old:',properties.__node,'new:',node.__node);
 
-            if(node.__children) {
-                node.__children = Object.assign({},node.__children);
-                this.recursiveSet(node.__children, node, listeners,node.__children);
-            }
-                        
-            if(node.__listeners) {
-                listeners[node.__node.tag] = Object.assign({},node.__listeners);
-                for(const key in node.__listeners) {
-                    let listener = node.__listeners[key];
-                    if(node[key]) { //subscribe to a key on the node
-                        delete listeners[node.__node.tag][key];
-                        listeners[node.__node.tag][node.__node.tag+'.'+key] = listener;
-                    } 
-                    if (typeof listener === 'string') {
-                        if(node.__children?.[listener]) {
-                            listeners[node.__node.tag][key] = node.__node.tag+'.'+listener;
-                        } else if (parent instanceof GraphNode && (parent.__node.tag === listener || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === listener))) {
-                            listeners[node.__node.tag][key] = parent.__node.tag;
-                        }
-                    }
+        if(node.__children) {
+            node.__children = Object.assign({},node.__children);
+            this.recursiveSet(node.__children, node, listeners,node.__children);
+        }
                     
+        if(node.__listeners) {
+            listeners[node.__node.tag] = Object.assign({},node.__listeners);
+            for(const key in node.__listeners) {
+                let listener = node.__listeners[key];
+                if(node[key]) { //subscribe to a key on the node
+                    delete listeners[node.__node.tag][key];
+                    listeners[node.__node.tag][node.__node.tag+'.'+key] = listener;
+                } 
+                if (typeof listener === 'string') {
+                    if(node.__children?.[listener]) {
+                        listeners[node.__node.tag][key] = node.__node.tag+'.'+listener;
+                    } else if (parent instanceof GraphNode && (parent.__node.tag === listener || (parent.__node.tag.includes('.') && parent.__node.tag.split('.').pop() === listener))) {
+                        listeners[node.__node.tag][key] = parent.__node.tag;
+                    }
                 }
+                
             }
-    
-            //now setup event listeners
-            this.setListeners(listeners);
-    
-            node.__callConnected();
+        }
 
-            return node;
+        //now setup event listeners
+        this.setListeners(listeners);
 
-        } else if(properties.__node.tag) return this.get(properties.__node.tag);
+        node.__callConnected();
+        return node;
+
     }
 
-    recursiveSet = (originCpy,parent,listeners:any={},origin) =>  {
+    recursiveSet = (originCpy, parent, listeners:any={}, origin, overwrite=false) =>  {
         let keys = Object.getOwnPropertyNames(origin).filter((v) => !objProps.includes(v));
         let nonArrowFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf(origin)).filter((v) => !objProps.includes(v));
         keys.push(...nonArrowFunctions); //this is weird but it works 
@@ -785,7 +786,7 @@ export class Graph {
                 else p = this.__node.roots[key];
             } 
 
-            if(p instanceof Object) {
+            if(p && typeof p === 'object') {
                 if(!instanced && !(p instanceof GraphNode)) {
                     let ks = Object.getOwnPropertyNames(p).filter((v) => !objProps.includes(v)); //lets us copy e.g. Math
                     let nonArrowFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf(p)).filter((v) => !objProps.includes(v));
@@ -798,7 +799,10 @@ export class Graph {
                 if(!p.__node) p.__node = {};
                 if(!p.__node.tag) p.__node.tag = key;
                 if(!p.__node.initial) p.__node.initial = originCpy[key];
-                if((
+                if(overwrite && this.get(p.__node.tag)) {
+                    this.remove(p.__node.tag, true); //clear the previous node
+                }
+                else if((
                     (
                         this.get(p.__node.tag) && 
                         !(!(parent instanceof Graph) && 
