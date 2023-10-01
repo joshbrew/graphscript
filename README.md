@@ -18,7 +18,7 @@ Also, we are going to turn this spec into something that supports a visual edito
 **GraphScript** is a highly customizable, high performance library for creating complex full stack software and library architectures. It's based around graphs hierarchies, event systems, and microservices, with an intuitive composition and node/function indexing tree system for rapid development.
 <br/><br/>
 
-Check out the code in [examples](./examples) for very clear, compelling implementatons that flex our rapidly evolving feature sets. Please join our small cabal of open source contributors and help us grow this library as an alternative full stack framework. 
+Check out the code in [examples](./examples) for very clear, compelling implementatons that flex our rapidly evolving feature sets. Get in touch at brewster.joshua1@gmail.com if you'd like to contribute and see this evolve.
 
 ## Core Concepts
 **graphscript** is organized by the basic principles of graph theory:
