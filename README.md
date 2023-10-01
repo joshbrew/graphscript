@@ -13,6 +13,8 @@ For happy code!
 ## This API is still under construction
 There's plenty of working tools available already. However, we are randomly breaking/finding old broken code and improving things constantly as we push out a model we feel can be competitive. 100% FOSS!
 
+Also, we are going to turn this spec into something that supports a visual editor for games and applications built right into VSCode: [Notes](https://docs.google.com/document/d/18EZ1UgztDTi5w7B8xdgAWzMF2TDoZubMnkuVbW-y4cU/edit?usp=sharing )
+
 **GraphScript** is a highly customizable, high performance library for creating complex full stack software and library architectures. It's based around graphs hierarchies, event systems, and microservices, with an intuitive composition and node/function indexing tree system for rapid development.
 
 Check out the code in [examples](./examples) for very clear, compelling implementatons that flex our rapidly evolving feature sets. Please join our small cabal of open source contributors and help us grow this library as an alternative full stack framework. 
