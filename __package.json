@@ -22,11 +22,11 @@
     "author": "Joshua Brewster",
     "license": "AGPL-3.0-or-later",
     "dependencies": {
-        "better-sse": "~0.8.0",
-        "brainsatplay-math": "~0.0.33",
+        "better-sse": "~0.10.0",
+        "brainsatplay-math": "~0.0.37",
         "bson-objectid": "~2.0.3",
         "web-worker": "~1.2.0",
-        "ws": "~8.11.0"
+        "ws": "~8.14.2"
     },
     "nodemonConfig": {
         "env": {
