@@ -26,7 +26,7 @@
     "web-worker": "^1.2.0",
     "ws": "^8.7.0"},
   "author": "",
-  "license": "AGPL-3.0-or-later",
+  "license": "LGPL-3.0-or-later",
   "nodemonConfig": {
     "env": {
       "NODEMON": true

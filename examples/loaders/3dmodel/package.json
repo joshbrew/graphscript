@@ -20,7 +20,7 @@
     "esbuild"
   ],
   "author": "",
-  "license": "AGPL-3.0-or-later",
+  "license": "LGPL-3.0-or-later",
   "dependencies": {
     "babylonjs": "^5.34.0",
     "web-worker": "^1.2.0"

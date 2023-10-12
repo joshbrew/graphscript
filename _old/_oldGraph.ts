@@ -43,7 +43,7 @@ export function parseFunctionFromText(method='') {
 // go-here-do-that utilities. Create an object node tree and make it do... things 
 // same setup as sequencer but object/array/tag only (no functions), and can add arbitrary properties to mutate on objects
 // or propagate to children/parents with utility calls that get added to the objects
-//Joshua Brewster and Garrett Flynn AGPLv3.0
+//Joshua Brewster and Garrett Flynn LGPLv3.0
 
 export type OperatorType = ( //can be async
     ...args:any //input arguments, e.g. output from another node

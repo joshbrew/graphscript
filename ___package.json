@@ -21,7 +21,7 @@
         "esbuild"
     ],
     "author": "Joshua Brewster",
-    "license": "AGPL-3.0-or-later",
+    "license": "LGPL-3.0-or-later",
     "dependencies": {},
     "nodemonConfig": {
         "env": {

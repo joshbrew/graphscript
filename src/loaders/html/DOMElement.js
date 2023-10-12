@@ -28,7 +28,7 @@ function html(strings, ...args) {
 
   let dummy = html``;
   
-//from 'fragelement' on npm by Joshua Brewster (AGPL v3.0)
+//from 'fragelement' on npm by Joshua Brewster (LGPL v3.0)
 export class DOMElement extends HTMLElement { 
 
     template = function(self=this, props){ //return a string or html node
