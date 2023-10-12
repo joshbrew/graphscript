@@ -25,7 +25,7 @@
     "dependencies": {
         "brainsatplay-math": "~0.1.0",
         "browserfs": "~1.4.3",
-        "gpujsutils": "~1.0.13",
+        "gpujsutils": "~1.0.15",
         "web-worker": "~1.2.0",
         "webgl-plot-utils": "~0.4.1"
     },

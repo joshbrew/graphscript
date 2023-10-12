@@ -25,7 +25,8 @@
     "dependencies": {
         "brainsatplay-math": "~0.1.0",
         "browserfs": "^1.4.3",
-        "webgl-plot-utils":"~0.4.2"
+        "webgl-plot-utils":"~0.4.2",
+        "gpujsutils":"~1.0.15"
     },
     "nodemonConfig": {
         "env": {
