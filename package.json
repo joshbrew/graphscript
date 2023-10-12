@@ -24,7 +24,7 @@
     "license": "LGPL-3.0-or-later",
     "dependencies": {
         "better-sse": "~0.10.0",
-        "brainsatplay-math": "~0.0.37",
+        "brainsatplay-math": "~0.1.0",
         "web-worker": "~1.2.0",
         "ws": "~8.14.2"
     },

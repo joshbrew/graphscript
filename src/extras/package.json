@@ -23,7 +23,7 @@
     "author": "Joshua Brewster",
     "license": "LGPL-3.0-or-later",
     "dependencies": {
-        "brainsatplay-math": "~0.0.33",
+        "brainsatplay-math": "~0.1.0",
         "browserfs": "~1.4.3",
         "gpujsutils": "~1.0.13",
         "web-worker": "~1.2.0",
