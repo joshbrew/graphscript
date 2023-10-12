@@ -1,6 +1,6 @@
 {
     "name": "graphscript-services-node",
-    "version": "0.2.167",
+    "version": "0.3.0",
     "description": "Extra services for graphscript.",
     "main": "dist/index.services.node.js",
     "types": "dist/src/extras/index.services.d.ts",
