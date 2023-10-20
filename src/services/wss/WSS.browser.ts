@@ -255,12 +255,18 @@ export class WSSfrontend extends Service {
         data:string | ArrayBufferLike | Blob | ArrayBufferView | ServiceMessage, 
         ws:WebSocket
     ) => {
-        if(typeof data === 'object') data = JSON.stringify(data);
+        if(
+            (typeof data === 'object' && 
+            (((data as ServiceMessage)?.route || ((data as ServiceMessage)?.node)) || (
+                typeof (data as Blob).arrayBuffer !== 'function' && 
+                typeof (data as ArrayBufferLike).byteLength !== 'number'
+            ))) || typeof data === 'number'
+        ) data = JSON.stringify(data);
         if(!ws) {
             let s = this.sockets[Object.keys(this.sockets)[0]];
             if(s) ws = s.socket;
         }
-        if(ws instanceof WebSocket && ws?.readyState === 1) ws.send(data);
+        if(ws instanceof WebSocket && ws?.readyState === 1) ws.send(data as any);
 
         return true;
     }

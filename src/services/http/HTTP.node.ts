@@ -304,7 +304,7 @@ export class HTTPbackend extends Service {
 
     ) => {
         let input = message;
-        if(typeof input === 'object') input = JSON.stringify(input);
+        if(typeof input === 'object' && !input.byteLength) input = JSON.stringify(input);
 
         if(typeof options === 'string' && message) return this.POST(options,message);
         else if(typeof options === 'string') return this.GET(options);

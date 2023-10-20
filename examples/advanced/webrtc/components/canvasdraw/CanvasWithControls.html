@@ -1,0 +1,20 @@
+<div id="component-container" class="container">
+    <div id="controls-container" class="controls">
+    <label for="color-picker">Color:</label>
+        <input type="color" id="color-picker">
+        <button id="toggle-mode-button">Line Mode</button>
+        <div class="input-group">
+            <label id="line-label" for="line-width">Line Width:</label>
+            <input type="number" id="line-width" min="1" value="5">
+        </div>
+        <button id="clear-button">Clear Canvas</button>
+        <button id="recenter-button">Recenter</button>
+        <div class="input-group">
+            <label for="zoom-range">Zoom:</label>
+            <input type="range" id="zoom-range" min="1" max="5" step="0.1" value="1">
+        </div>
+    </div>
+    <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+</div>

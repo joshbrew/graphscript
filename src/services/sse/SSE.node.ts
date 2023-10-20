@@ -1,5 +1,5 @@
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
-import {createSession, createChannel, Session, SessionState, Channel} from 'better-sse'; //third party lib. SSEs really just push notifications to an http endpoint but it's minimal overhead
+import {createSession, createChannel, Session, Channel} from 'better-sse'; //third party lib. SSEs really just push notifications to an http endpoint but it's minimal overhead
 import http from 'http'
 import https from 'https'
 import { Readable } from "node:stream";
@@ -21,7 +21,7 @@ export type SSEProps = {
 export type SSEChannelInfo = {
     channel: Channel<Record<string, unknown>>,
     sessions:{
-        [key:string]:Session<SessionState>
+        [key:string]:Session<any>
     },
     requests:{[key:string]:Function}, //outstanding request promises
     send:(message:any, eventName?:string, sessionId?:string)=>any,
@@ -37,7 +37,7 @@ export type SSEChannelInfo = {
 
 export type SSEClientInfo = {
     _id:string, 
-    session:Session<SessionState>, 
+    session:Session<any>, 
     served:SSEChannelInfo,
     send:(message:any, eventName?:string)=>any,
     request:(message:any, method?:string,  eventName?:string)=>Promise<any>,
@@ -347,8 +347,8 @@ export class SSEbackend extends Service {
         eventName?:string, //event name? default is 'message'
         sessionId?:string //particular client?
     ) => {
-        if(!path && typeof data === 'object') {
-            if(data.route) {
+        if(!path && ((typeof data === 'object' && !data.byteLength) || typeof data === 'number')) {
+            if(data?.route) {
                 let keys = Object.keys(this.servers)
                 if(keys.length > 0) 
                     {

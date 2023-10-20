@@ -87,7 +87,7 @@ export class HTTPfrontend extends Service {
         type:XMLHttpRequestResponseType='', 
         mimeType?:string|undefined
     ) => {
-        if(typeof message === 'object' && (type === 'json' || type === 'text' || !type)) {
+        if(typeof message === 'object' && !message.byteLength && (type === 'json' || type === 'text' || !type)) {
             message = JSON.stringify(message);
         }
 
@@ -118,7 +118,7 @@ export class HTTPfrontend extends Service {
         url:string|URL
     ) => {
         let obj = message;
-        if(typeof obj === 'object') {
+        if(typeof obj === 'object' && !obj.byteLength) {
             message = JSON.stringify(obj);
         }
         if(obj?.method?.toLowerCase() == 'get' || message?.toLowerCase() === 'get') return this.GET(url);

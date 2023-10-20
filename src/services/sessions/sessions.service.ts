@@ -15,7 +15,7 @@ export type PrivateSessionProps = {
         password?:string,
         ownerId?:string,
         onopen?:(session:PrivateSessionProps)=>void,
-        onmessage?:(session:PrivateSessionProps)=>void,
+        onmessage?:(session:PrivateSessionProps, updated:any)=>void,
         onclose?:(session:PrivateSessionProps)=>void,
         [key:string]:any //arbitrary props e.g. settings, passwords
     },
@@ -29,8 +29,14 @@ export type PrivateSessionProps = {
 export type SessionUser = {
     _id:string, //unique identifier for user, used as key in users object and in general
     sessions:{[key:string]:any},
+    sessionSubs:{[key:string]:{
+        onopenSub?:number,
+        onmessage?:(session:SharedSessionProps|PrivateSessionProps, update:any, user:SessionUser)=>void, 
+        onopen?:(session:SharedSessionProps|PrivateSessionProps, user:SessionUser)=>void,
+        onclose?:(session:SharedSessionProps|PrivateSessionProps, user:SessionUser)=>void
+    }}
     [key:string]:any
-} & Partial<User>
+} & Partial<User> //extend base users on the router or just wrapping a connection from another service
 
 //sessions for shared user data and game/app logic for synchronous and asynchronous sessions to stream selected properties on user objects as they are updated
 export type SharedSessionProps = {
@@ -39,8 +45,9 @@ export type SharedSessionProps = {
         name:string,
         propnames:{[key:string]:boolean},
         users?:{[key:string]:boolean},
-        host?:string, //if there is a host, all users only receive from the host's prop updates
+        host?:string, //if there is a host, all users only receive from the host's prop updates and vise versa
         hostprops?:{[key:string]:boolean},
+        passOnHostData?:boolean, //new hosts adopt old host data? Default true
         admins?:{[key:string]:boolean},
         moderators?:{[key:string]:boolean},
         spectators?:{[key:string]:boolean},
@@ -48,7 +55,7 @@ export type SharedSessionProps = {
         password?:string,
         ownerId?:string,
         onopen?:(session:SharedSessionProps)=>void,
-        onmessage?:(session:SharedSessionProps)=>void,
+        onmessage?:(session:SharedSessionProps, updated:any)=>void,
         onclose?:(session:SharedSessionProps)=>void,
         [key:string]:any //arbitrary props e.g. settings, passwords
     },
@@ -81,6 +88,7 @@ export type StreamInfo = {
     }
 }
 
+//Todo: streamline, we don't *really* need 3 types of streaming data structures but on the other hand everything is sort of optimized so just keep it
 export class SessionsService extends Service {
 
     name='sessions';
@@ -95,6 +103,7 @@ export class SessionsService extends Service {
         private:{},
         shared:{}
     }
+
 
     constructor(options?:ServiceOptions, users?:{[key:string]:SessionUser}) {
         super(options);
@@ -142,13 +151,24 @@ export class SessionsService extends Service {
         }   
         if(options._id && userId && this.users[userId]) {
             if(userId){
-                if(!options.settings) options.settings = { listener:userId, source:userId, propnames:{latency:true}, admins:{[userId]:true}, ownerId:userId };
-                if(!options.settings.listener) options.settings.listener = userId;
-                if(!options.settings.source) options.settings.source = userId;
-                if(!this.users[userId].sessions) this.users[userId].sessions = {};
+                if(!options.settings) 
+                    options.settings = { 
+                        listener:userId, 
+                        source:userId, 
+                        propnames:{latency:true}, 
+                        admins:{[userId]:true}, 
+                        ownerId:userId 
+                    };
+                if(!options.settings.listener) 
+                    options.settings.listener = userId;
+                if(!options.settings.source) 
+                    options.settings.source = userId;
+                if(!this.users[userId].sessions) 
+                    this.users[userId].sessions = {};
                 this.users[userId].sessions[options._id] = options;
             }
             if(!options.data) options.data = {};
+            if(options.onopen) options.onopen(options);
             if(this.sessions.private[options._id]) {
                 return this.updateSession(options,userId);
             }
@@ -171,16 +191,36 @@ export class SessionsService extends Service {
         } 
         if(options._id && userId && this.users[userId]){  
             if(typeof userId === 'string') {
-                if(!options.settings) options.settings = { name:'shared', propnames:{latency:true}, users:{[userId]:true}, admins:{[userId]:true}, ownerId:userId };
+                if(!options.settings) 
+                    options.settings = { 
+                        name:'shared', 
+                        propnames:{latency:true}, 
+                        users:{[userId]:true}, 
+                        admins:{[userId]:true}, 
+                        ownerId:userId 
+                    };
                 
-                if(!options.settings.users) options.settings.users = {[userId]:true};
-                if(!options.settings.admins) options.settings.admins = {[userId]:true};
-                if(!options.settings.ownerId) options.settings.ownerId = userId;
-                if(!this.users[userId].sessions) this.users[userId].sessions = {};
+                if(!options.settings.users) 
+                    options.settings.users = {[userId]:true};
+                if(!options.settings.admins) 
+                    options.settings.admins = {[userId]:true};
+                if(!options.settings.ownerId) 
+                    options.settings.ownerId = userId;
+                if(!this.users[userId].sessions) 
+                    this.users[userId].sessions = {};
                 this.users[userId].sessions[options._id] = options;
-            } else if (!options.settings) options.settings = {name:'shared', propnames:{latency:true}, users:{}};
-            if(!options.data) options.data = { private:{}, shared:{} };
-            if(!options.settings.name) options.name = options.id;
+            } 
+            else if (!options.settings) 
+                options.settings = {
+                    name:'shared', 
+                    propnames:{latency:true}, 
+                    users:{}
+                };
+            if(!options.data) 
+                options.data = { private:{}, shared:{} };
+            if(!options.settings.name) 
+                options.name = options.id;
+            if(options.onopen) options.onopen(options);
             if(this.sessions.shared[options._id]) {
                 return this.updateSession(options,userId);
             }
@@ -203,11 +243,16 @@ export class SessionsService extends Service {
         let session:any;
         if(options._id){ 
             session = this.sessions.private[options._id];
-            if(!session) session = this.sessions.shared[options._id];
-            if(this.sessions.private[options._id] && userId) {
-                let sesh = this.sessions.shared[options._id];
-                if(sesh.settings && (sesh?.settings.source === userId || sesh.settings.admins?.[userId] || sesh.settings.moderators?.[userId] || sesh.settings.ownerId === userId)) {
-                    return Object.assign(this.sessions.shared[options._id],options);
+            if(!session) 
+                session = this.sessions.shared[options._id];
+            if(session && userId) {
+                if(session.settings && (
+                    session?.settings.source === userId || 
+                    session.settings.admins?.[userId] || 
+                    session.settings.moderators?.[userId] || 
+                    session.settings.ownerId === userId
+                )) {
+                    return this.recursivelyAssign(session, options);
                 }
             } else if(options.settings?.source) {
                 return this.openPrivateSession(options as PrivateSessionProps,userId);
@@ -216,15 +261,18 @@ export class SessionsService extends Service {
         return false;
     }
 
-    //add a user id to a session, supply options e.g. to make them a moderator or update properties to be streamed dynamically
+    //add a user id to a session, Run this at the session host location and clientside if separate. remoteUser will take care of this on either endpoint for you
+    //supply options e.g. to make them a moderator or update properties to be streamed dynamically
     joinSession = (   
         sessionId:string, 
         userId:string,
-        options?:SharedSessionProps|PrivateSessionProps
+        options?:SharedSessionProps|PrivateSessionProps,
+        remoteUser:boolean=false
     ) => {
         if(!userId && !this.users[userId]) return false;
         if(!this.users[userId].sessions) this.users[userId].sessions = {};
-        let sesh = this.sessions.shared[sessionId];
+        let sesh = this.sessions.shared[sessionId] as SharedSessionProps|PrivateSessionProps;
+        if(!sesh) sesh = this.sessions.private[sessionId];
         //console.log(sessionId,userId,sesh,this.sessions);
         if(sesh?.settings) {
             if(sesh.settings?.banned) {
@@ -235,45 +283,89 @@ export class SessionsService extends Service {
                 if(options.settings.password !== sesh.settings.password) return false
             }
             (sesh.settings.users as any)[userId] = true;
+            sesh.settings.newUser = true;
             this.users[userId].sessions[sessionId] = sesh;
             if(options) { return this.updateSession(options,userId); };
             //console.log(sesh)
+            if(remoteUser) {
+                if(this.users[userId]?.send) {
+                    this.users[userId].send({route:'joinSession',args:[sessionId,userId,sesh]});
+                }
+            }
             return sesh;
-        } else if (options?.source || options?.listener) return this.openPrivateSession(options as PrivateSessionProps,userId);
-        else if (options) return this.openSharedSession(options as SharedSessionProps,userId);
+        } 
+        else if (options?.source || options?.listener) {
+            sesh = this.openPrivateSession(options as PrivateSessionProps,userId);
+            if(remoteUser) {
+                if(this.users[userId]?.send) {
+                    this.users[userId].send({route:'joinSession',args:[sessionId,userId,sesh]});
+                }
+            }
+            return sesh;
+        }
+        else if (options) {
+            sesh = this.openSharedSession(options as SharedSessionProps,userId);
+            if(remoteUser) {
+                if(this.users[userId]?.send) {
+                    this.users[userId].send({route:'joinSession',args:[sessionId,userId,sesh]});
+                }
+            }
+            return sesh;
+        }
         return false;
     }
 
+    //Remove a user from a session. Private sessions will be closed
+    //Run this at the session host location
     leaveSession = (
-        sessionId:string, 
+        session:PrivateSessionProps|SharedSessionProps|string,  
         userId:string, 
-        clear:boolean=true //clear all data related to this user incl permissions
+        clear:boolean=true, //clear all data related to this user incl permissions
+        remoteUser:boolean=true //send user an all-clear to unsubscribe on their end
     ) => {
-        let session:any = this.sessions.private[sessionId];
-        if(!session) session = this.sessions.shared[sessionId];
+        let sessionId:string|undefined;
+        if(typeof session === 'string') {
+            sessionId = session;
+            session = this.sessions.private[sessionId];
+            if(!session) session = this.sessions.shared[sessionId];
+        } else sessionId = session._id;
         if(session) {
             if(this.sessions.private[sessionId]) {
-                if(userId === session.settings.source || userId === session.settings.listener || session.settings.admins?.[userId] || session.settings.moderators?.[userId]) {
+                if( userId === session.settings.source || 
+                    userId === session.settings.listener || 
+                    session.settings.admins?.[userId] || 
+                    session.settings.moderators?.[userId]
+                ) {
                     delete this.sessions.private[sessionId];
-                    delete this.users[userId].sessions[sessionId];
+                    delete this.users[userId]?.sessions[sessionId];
+                    delete this.users[userId]?.sessionSubs?.[sessionId];
                     if(clear) {
                         if(session.settings.admins?.[userId])     delete (this.sessions.shared[sessionId].settings?.admins as any)[userId];
                         if(session.settings.moderators?.[userId]) delete (this.sessions.shared[sessionId].settings?.moderators as any)[userId];
                     }
+                    if(remoteUser && this.users[userId]?.send) {
+                        this.users[userId].send({route:'unsubscribeFromSession',args:[session._id, userId, clear]});
+                    } else {
+                        this.unsubsribeFromSession(session, userId, clear);
+                    }
                 } 
             } else if (this.sessions.shared[sessionId]) {
                 delete this.sessions.shared.settings.users[userId];
-                delete this.users[userId].sessions[sessionId];
+                delete this.users[userId]?.sessions[sessionId];
+                delete this.users[userId]?.sessionSubs?.[sessionId];
                 if(clear) {
                     if(session.settings.admins?.[userId])     delete (this.sessions.shared[sessionId].settings?.admins as any)[userId];
                     if(session.settings.moderators?.[userId]) delete (this.sessions.shared[sessionId].settings?.moderators as any)[userId];
                     if(session.data.shared[userId]) delete this.sessions.shared[sessionId].data?.shared[userId];
                     if(session.settings.host === userId) {
-                        delete session.settings.host;
-                        delete session.data.shared;
-                        session.data.shared = {};
-                        this.swapHost(session);
+                        this.swapHost(session, undefined, true);
+                        delete session.data.shared[userId];
                     }
+                }
+                if(remoteUser && this.users[userId]?.send) {
+                    this.users[userId].send({route:'unsubscribeFromSession',args:[session._id, userId, clear]});
+                } else {
+                    this.unsubsribeFromSession(session, userId, clear);
                 }
             }
             return true;
@@ -281,24 +373,47 @@ export class SessionsService extends Service {
         return false;
     }
 
+    //Delete a session. Run this at the session host location
+    deleteSession = (sessionId:string, userId:string, remoteUser=true) => {
+        let session:any = this.sessions.private[sessionId];
+        if(!session) session = this.sessions.shared[sessionId];
+        if(session) {
+            if(session.source === userId || session.listener === userId || session.admins?.[userId] || session.ownerId === userId) {
+                for(const user in session.settings.users) {
+                    if(this.users[user]?.sessions) delete this.users[user].sessions[sessionId];
+                    if(this.users[user]?.sessionSubs) delete this.users[user].sessionSubs[sessionId];
+                    if(remoteUser && this.users[user]?.send) {
+                        this.users[user].send({route:'unsubscribeFromSession',args:[session._id, user]});
+                    } else {
+                        this.unsubsribeFromSession(session, user);
+                    }
+                }
+                if(this.sessions.private[sessionId]) delete this.sessions.private[sessionId];
+                else if(this.sessions.shared[sessionId]) delete this.sessions.private[sessionId];
+                if(session.onclose) session.onclose(session);
+            }
+        }
+        return true;
+    }
+
     getFirstMatch(obj1:{[key:string]:any},obj2:{[key:string]:any}) {
         for(const i in obj1) {
-            for(const j in obj2) {
-                if(i === j) return i;
-            }
+            if(i in obj2) return i;
         }
         return false;
     }
 
     swapHost = (
         session:PrivateSessionProps|SharedSessionProps|string, 
-        newHostId?:string
+        newHostId?:string,
+        adoptData:boolean=true //copy original session hosts data?
     ) => {
         if(typeof session === 'string') {
             if(this.sessions.private[session]) session = this.sessions.private[session];
             else if(this.sessions.shared[session]) session = this.sessions.shared[session];
         }
         if(typeof session === 'object' && session.settings) {
+            let oldHost = session.settings.host;
             delete session.settings.host;
             if(newHostId) {
                 if(session.settings.users[newHostId]) session.settings.host = newHostId;
@@ -315,32 +430,60 @@ export class SessionsService extends Service {
                 if(match) session.settings.host = match;
             }//sendAll leadership when host swapping
             if(!session.settings.host) session.settings.host = Object.keys(session.settings.users)[0]; //replace host 
+            if(adoptData && oldHost && session.settings.passOnHostData !== false) {
+                if(session.data?.shared[oldHost]) { //private data will stay the same
+                    if(session.data?.shared[oldHost]) {
+                        session.data.shared[session.settings.host] = Object.assign(session.data.shared[session.settings.host] ? session.data.shared[session.settings.host] : {}, session.data.shared[oldHost]);
+                    }
+                }
+            }
             return true;
         }
         return false;
     }
 
-    deleteSession = (sessionId:string, userId:string) => {
-        let session:any = this.sessions.private[sessionId];
-        if(!session) session = this.sessions.shared[sessionId];
-        if(session) {
-            if(session.source === userId || session.listener === userId || session.admins?.[userId] || session.ownerId === userId) {
-                for(const user in session.settings.users) {
-                    if(this.users[user].sessions) delete this.users[user].sessions[sessionId];
-                }
-                if(this.sessions.private[sessionId]) delete this.sessions.private[sessionId]
-                else if(this.sessions.shared[sessionId]) delete this.sessions.private[sessionId]
-            }
-        }
-        return true;
-    }
-
+    //run these on the clientside user
     subscribeToSession = (
         session:SharedSessionProps|PrivateSessionProps|string, 
         userId:string, 
-        onmessage?:(session:SharedSessionProps|PrivateSessionProps, userId:string)=>void, 
-        onopen?:(session:SharedSessionProps|PrivateSessionProps, userId:string)=>void,
-        onclose?:(session:SharedSessionProps|PrivateSessionProps, userId:string)=>void
+        onmessage?:(session:SharedSessionProps|PrivateSessionProps, update:any, user:SessionUser)=>void, 
+        onopen?:(session:SharedSessionProps|PrivateSessionProps, user:SessionUser)=>void,
+        onclose?:(session:SharedSessionProps|PrivateSessionProps, user:SessionUser)=>void
+    ) => {
+        if(typeof session === 'string') {
+            let s = this.sessions.private[session];
+            if(!s) s = this.sessions.shared[session] as any;
+            if(!s) return undefined;
+            session = s;
+        }
+        
+        let user = this.users[userId];
+        if(!user) return undefined;
+        if(!user.sessionSubs) user.sessionSubs = {};
+        if(!user.sessionSubs[session._id]) user.sessionSubs[session._id] = {};
+
+        if(typeof onopen === 'function') {
+            let sub = this.subscribe('joinSession',(res) => {
+                if(res._id === (session as any)._id) onopen(session as any, user);
+                this.unsubscribe('joinSession', sub as number);
+            });
+            user.sessionSubs[session._id].onopenSub = sub;
+        }
+
+        if(typeof session === 'object') { //we need to fire onmessage events when the session updates (setState for sessionId) and when the user updates
+            if(onmessage) user.sessionSubs[session._id].onmessage = onmessage;
+            //if(onopen) this.sessionSubs[userId][session._id].onopen = onopen;
+            if(onclose) user.sessionSubs[session._id].onclose = onclose;
+
+        }
+        return session;
+    }
+
+    //run these on the clientside user
+    unsubsribeFromSession = (
+        session:SharedSessionProps|PrivateSessionProps|string, 
+        userId?:string,
+        clear=true //clear session data (default true)
     ) => {
         if(typeof session === 'string') {
             let s = this.sessions.private[session];
@@ -349,26 +492,30 @@ export class SessionsService extends Service {
             session = s;
         } 
 
-        if(typeof session.onopen === 'function') {
-            let sub = this.subscribe('joinSession',(res) => {
-                if(res._id === (session as any)._id) (session as any).onopen(session, userId);
-                this.unsubscribe('joinSession', sub as number);
-            })
+        const clearSessionSubs = (Id:string, s:SharedSessionProps|PrivateSessionProps) => {
+            let u = this.users[Id];
+            if(!u) return undefined;
+            if(u.sessionSubs?.[s._id]) {
+                if(u.sessionSubs[s._id].onopenSub) {
+                    this.unsubscribe('joinSession', u.sessionSubs[s._id].onopenSub as number);
+                }
+            }
+            if(u.sessionSubs[s._id].onclose) u.sessionSubs[s._id].onclose(s, u);
+            delete u.sessionSubs[s._id];
         }
 
-        if(typeof session === 'object') { //we need to fire onmessage events when the session updates (setState for sessionId) and when the user updates
-
-            if(onmessage) session.onmessage = onmessage;
-            if(onopen) session.onclose = onopen;
-            if(onclose) session.onclose = onclose;
-
-           
-            // if(typeof session.onmessage === 'function') 
-            //     this.subscribe(session._id,(session)=>{ session.onmessage(session,userId); });
-            
-            // this.setState({[session._id]:session});
+        if(userId) {
+            clearSessionSubs(userId, session);
+        } else {
+            for(const key in this.users) {
+                clearSessionSubs(key, session);
+            }
         }
-        return session;
+
+        if(clear) {
+            if(this.sessions.private[session._id]) delete this.sessions.private[session._id];
+            else if(this.sessions.shared[session._id]) delete this.sessions.shared[session._id];
+        }
     }
 
     //iterate all subscriptions, e.g. run on backend
@@ -389,22 +536,23 @@ export class SessionsService extends Service {
                 data:{}
             } as any; //pull user's updated props and send to listener
             if(!this.users[sesh.source]) {
-                delete this.sessions.private[session]
+                delete this.sessions.private[session];
                 break;
-            }
+            } 
             if(sesh.settings && sesh.data) {
                 for(const prop in sesh.settings.propnames) {
-                    if( this.users[sesh.source][prop]) {
+                    if(prop in this.users[sesh.source]) {
                         if(this.sessions.private[session].data) { 
                             if(typeof sesh.data[prop] === 'object') {
                                 if(this.users[sesh.source][prop] && (stringifyFast(sesh.data[prop]) !== stringifyFast(this.users[sesh.source][prop]) || !(prop in sesh.data))) 
                                     updateObj.data[prop] = this.users[sesh.source][prop];
                             }
-                            else if(this.users[sesh.source][prop] && (sesh.data[prop] !== this.users[sesh.source][prop] || !(prop in sesh.data))) 
+                            else if(prop in this.users[sesh.source] && (sesh.data[prop] !== this.users[sesh.source][prop] || !(prop in sesh.data))) 
                                 updateObj.data[prop] = this.users[sesh.source][prop];
                         }
                         else updateObj.data[prop] = this.users[sesh.source][prop];
-                    } else if(this.sessions.private[session]?.data?.[prop]) delete (this.sessions.private[session].data as any)[prop];
+                    } else if(this.sessions.private[session]?.data && prop in this.sessions.private[session]?.data) 
+                        delete (this.sessions.private[session].data as any)[prop];
                 }
             }
             if(Object.keys(updateObj.data).length > 0) {
@@ -427,45 +575,55 @@ export class SessionsService extends Service {
                 const privateData = {}; //host receives all users' props
                 const sharedData = {}; //users receive host props       
                 for(const user in sesh.settings.users) {
-                    if(!this.users[user]) {
+                    if(!this.users[user]) { //if no user found assume they're to be kicked from session
                         delete sesh.settings.users[user]; //dont need to delete admins, mods, etc as they might want to come back <_<
-                        if( sesh.data?.shared[user]) delete sesh.data.shared[user];
-                        if( sesh.data?.private?.[user]) delete sesh.data.shared[user];
-                        if(sesh.settings.host === user) this.swapHost(sesh);
+                        if( sesh.settings.host === user ) 
+                            this.swapHost(sesh, undefined, true);
+                        if( sesh.data?.shared[user] ) 
+                            delete sesh.data.shared[user];
+                        if( sesh.data?.private?.[user] ) 
+                            delete sesh.data.shared[user];
                         updateObj.settings.users = sesh.settings.users;
                         updateObj.settings.host = sesh.settings.host;
                         continue;
+                    } else if (sesh.settings.newUser) { //propagate who joined the room too
+                        updateObj.settings.users = sesh.settings.users;
+                        updateObj.settings.host = sesh.settings.host;
+                        sesh.settings.newUser = false;
                     }
-                    if(user !== sesh.settings.host) {
+                    if(user !== sesh.settings.host) { //the host will receive the private data
                         privateData[user] = {};
                         for(const prop in sesh.settings.propnames) {
-                            if(this.users[user][prop]) {
+                            if(prop in this.users[user]) {
                                 if(sesh.data?.private && !(user in sesh.data.private)) {
-                                    if(typeof this.users[user][prop] === 'object') privateData[user][prop] = this.recursivelyAssign({},this.users[user][prop]);
+                                    if(typeof this.users[user][prop] === 'object') 
+                                        privateData[user][prop] = this.recursivelyAssign({},this.users[user][prop]);
                                     else privateData[user][prop] = this.users[user][prop];
                                 } else if(typeof privateData[user][prop] === 'object' && sesh.data) {
-                                    if(this.users[user][prop] && (stringifyFast(sesh.data?.shared[user][prop]) !== stringifyFast(this.users[user][prop]) || !(prop in sesh.data))) 
+                                    if(prop in this.users[user][prop] && (stringifyFast(sesh.data?.shared[user][prop]) !== stringifyFast(this.users[user][prop]) || !(prop in sesh.data))) 
                                         privateData[user][prop] =  this.users[user][prop];
                                 }
                                 else if(this.users[user][prop] && sesh.data?.private?.[prop] !== this.users[user][prop]) 
                                     privateData[user][prop] = this.users[user][prop];
-                            } else if (sesh.data?.private?.[user]?.[prop]) delete sesh.data.private[user][prop]; //if user deleted the prop, session can delete it
+                            } else if (sesh.data?.private?.[user] && prop in sesh.data?.private?.[user]) delete sesh.data.private[user][prop]; //if user deleted the prop, session can delete it
                         }
                         if(Object.keys(privateData[user]).length === 0) delete privateData[user];
-                    } else {
+                    } else {                        //the rest of the users will receive the shared data
                         sharedData[user] = {};
                         for(const prop in sesh.settings.hostprops) {
-                            if(this.users[user][prop]) {
+                            if(prop in this.users[user]) {
                                 if(sesh.data && !(user in sesh.data.shared)) {
-                                    if(typeof this.users[user][prop] === 'object') sharedData[user][prop] = this.recursivelyAssign({},this.users[user][prop]);
+                                    if(typeof this.users[user][prop] === 'object') 
+                                        sharedData[user][prop] = this.recursivelyAssign({},this.users[user][prop]);
                                     else sharedData[user][prop] = this.users[user][prop];
                                 } else if(typeof sharedData[user][prop] === 'object' && sesh.data) {
-                                    if(this.users[user][prop] && (stringifyFast(sesh.data?.shared[user][prop]) !== stringifyFast(this.users[user][prop]) || !(prop in sesh.data.shared[user]))) 
+                                    if((stringifyFast(sesh.data?.shared[user][prop]) !== stringifyFast(this.users[user][prop]) || !(prop in sesh.data.shared[user]))) 
                                         sharedData[user][prop] = this.users[user][prop];
                                 }
-                                else if(this.users[user][prop] && sesh.data?.shared[user][prop] !== this.users[user][prop]) 
+                                else if(sesh.data?.shared[user][prop] !== this.users[user][prop]) 
                                     sharedData[user][prop] = this.users[user][prop];
-                            } else if (sesh.data?.shared[user]?.[prop]) delete sesh.data.shared[user][prop]; //if user deleted the prop, session can delete it
+                            } else if (sesh.data?.shared[user] && prop in sesh.data?.shared[user]) 
+                                delete sesh.data.shared[user][prop]; //if user deleted the prop, session can delete it
                         }
                     }
                 }
@@ -475,34 +633,38 @@ export class SessionsService extends Service {
                 if(Object.keys(sharedData).length > 0) {
                     updateObj.data.shared = sharedData;
                 }
-            } else { //all users receive the same update when no host set
+            } else { //all users receive the same update via shared data when no host set
                 const sharedData = {}; //users receive all other user's props
                 if(sesh.settings?.users) {
                     for(const user in sesh.settings.users) {
-                        if(!this.users[user]) {
+                        if(!this.users[user]) { //if no user found assume they're to be kicked from session
                             delete sesh.settings.users[user]; //dont need to delete admins, mods, etc as they might want to come back <_<
-                            if( sesh.data?.shared[user]) delete sesh.data.shared[user];
-                            if( sesh.data?.private?.[user]) delete sesh.data.shared[user];
-                            if(sesh.settings.host === user) this.swapHost(sesh);
+                            if( sesh.settings.host === user ) 
+                                this.swapHost(sesh, undefined, true);
+                            if( sesh.data?.shared[user] ) 
+                                delete sesh.data.shared[user];
+                            if( sesh.data?.private?.[user] ) 
+                                delete sesh.data.shared[user];
                             updateObj.settings.users = sesh.settings.users;
                             updateObj.settings.host = sesh.settings.host;
                             continue;
                         }
                         sharedData[user] = {};
                         for(const prop in sesh.settings.propnames) {
-                            if(this.users[user][prop]) {
+                            if(prop in this.users[user]) {
                                 if(sesh.data && !(user in sesh.data.shared)) {
                                     if(typeof this.users[user][prop] === 'object') sharedData[user][prop] = this.recursivelyAssign({},this.users[user][prop]);
                                     else sharedData[user][prop] = this.users[user][prop];
-                                } else if(typeof sesh.data?.shared[user][prop] === 'object') {
+                                } else if(typeof sesh.data?.shared[user]?.[prop] === 'object') {
                                     if((stringifyFast(sesh.data.shared[user][prop]) !== stringifyFast(this.users[user][prop]) || !(prop in sesh.data.shared[user]))) { 
                                         //if(stringifyFast(this.users[user][prop]).includes('peer')) console.log(stringifyFast(this.users[user][prop]))
                                         sharedData[user][prop] = this.users[user][prop]; 
                                     }
                                 }
-                                else if(sesh.data?.shared[user][prop] !== this.users[user][prop]) 
+                                else if(sesh.data?.shared[user]?.[prop] !== this.users[user][prop]) 
                                     sharedData[user][prop] = this.users[user][prop];
-                            } else if (sesh.data?.shared[user]?.[prop]) delete sesh.data.shared[user][prop]; //if user deleted the prop, session can delete it 
+                            } else if (sesh.data?.shared[user] && prop in sesh.data?.shared[user]) 
+                                delete sesh.data.shared[user][prop]; //if user deleted the prop, session can delete it 
                         }
                         if(Object.keys(sharedData[user]).length === 0) delete sharedData[user];
                     }
@@ -510,18 +672,18 @@ export class SessionsService extends Service {
                         //console.log(sharedData);
                         updateObj.data.shared = sharedData;
                     } 
-            } 
+                } 
             }
 
             if(updateObj.data.shared || updateObj.data.private) 
                 updates.shared[sesh._id as string] = updateObj;
 
             if(updateObj.data.shared) {
-                this.recursivelyAssign(this.sessions.shared[session].data?.shared,updateObj.data.shared)
+                this.recursivelyAssign(this.sessions.shared[session].data?.shared,updateObj.data.shared);
                //set latest data on the source object as reference
             }
             if(updateObj.data.private) {
-                this.recursivelyAssign(this.sessions.shared[session].data?.private,updateObj.data.private)
+                this.recursivelyAssign(this.sessions.shared[session].data?.private,updateObj.data.private);
                 //set latest data on the source object as reference
             }
            
@@ -547,10 +709,10 @@ export class SessionsService extends Service {
     }) => {
         let users = {};
         if(updates.private) {
-            for(const s in updates.private) {
+            for(const s in updates.private) { //private session ids
                 let session = this.sessions.private[s];
                 if(session?.settings) {
-                    let u = session.settings.listener;
+                    let u = session.settings.listener; //single user listener
                     if(!users[u]) users[u] = {private:{}};
                     else if(!users[u].private) users[u].private = {};
                     users[u].private[s] = updates.private[s];
@@ -558,73 +720,66 @@ export class SessionsService extends Service {
             }
         }
         if(updates.shared) {
-            for(const s in updates.shared) {
+            for(const s in updates.shared) { //shared session ids
                 let session = this.sessions.shared[s];
                 if(session?.settings) {
-                    let copy;
-                    if(session.settings.host) {
-                        copy = Object.assign({},updates.shared[s]);
-                        delete copy.data.private; 
-                    }
-                    for(const u in session.settings.users) {
+                    for(const u in session.settings.users) { //for users in session
                         if(!users[u]) users[u] = {shared:{}};
                         else if(!users[u].shared) users[u].shared = {};
-                        if(session.settings.host) {
-                            if(u !== session.settings.host) {
-                                users[u].shared[s] = copy;
-                            } else users[u].shared[s] = updates.shared[s];
-                        } 
-                        else users[u].shared[s] = updates.shared[s];
+                        users[u].shared[s] = updates.shared[s];
                     }
                 }
             }
         }
  
+        //each user will receive an update for all sessions they are subscribed to
         //console.log(users)
 
         let message = {route:'receiveSessionUpdates', args:null as any}
         for(const u in users) {
             message.args = [u, users[u]];
-            if((this.users[u] as any).send) (this.users[u] as any).send(JSON.stringify(message));
+            if((this.users[u] as any)?.send) (this.users[u] as any).send(JSON.stringify(message));
             this.setState({[u]:Object.create(message)})
         }
 
         return users;
     }
 
-    //receive updates as users
+    //receive updates as a user
     receiveSessionUpdates = (origin:any, update:{private:{[key:string]:any},shared:{[key:string]:any}}|string) => { //following operator format we get the origin passed
         if(update) if(typeof update === 'string') update = JSON.parse(update as string);
         if(typeof update === 'object') {
             let user = this.users[origin];
-            if(!user) return undefined;
-            if(!user.sessions) user.sessions = {};
+            if(user) {
+                if(!user.sessions) user.sessions = {private:{},shared:{}};
+                if(!user.sessionSubs) user.sessionSubs = {};
+            }
 
             if(update.private) {
                 for(const key in update.private) {
-                    if(!user.sessions[key]) continue;
-                    this.recursivelyAssign(user.sessions[key].data,update.private[key].data);
-                    if(user.sessions[key].onmessage)
-                        user.sessions[key].onmessage(user.sessions[key],user._id)
+                    this.recursivelyAssign(this.sessions.private[key].data, update.private[key].data);
+                    if(this.sessions.private[key]?.settings.onmessage) 
+                        this.sessions.private[key].settings.onmessage(this.sessions.private[key], update.private[key]);
+                    if(user?.sessionSubs[user._id]?.[key]?.onmessage)
+                        user.sessionSubs[user._id][key].onmessage(user.sessions[key], update, user);
                 }
             }
             if(update.shared) {
                 for(const key in update.shared) {
-                    if(!user.sessions[key]) continue;
-                    if(update.shared[key].settings.users) user.sessions[key].settings.users = update.shared[key].settings.users;
-                    if(update.shared[key].settings.host) user.sessions[key].settings.host = update.shared[key].settings.host;
-                    if(update.shared[key].data.private) this.recursivelyAssign(user.sessions[key].data.private, update.shared[key].data.private);
-                    if(update.shared[key].data.shared)  this.recursivelyAssign(user.sessions[key].data.shared, update.shared[key].data.shared);
-                    if(user.sessions[key].onmessage)
-                        user.sessions[key].onmessage(user.sessions[key],user._id)
+                    if(update.shared[key].settings.users) this.sessions.shared[key].settings.users = update.shared[key].settings.users;
+                    if(update.shared[key].settings.host) this.sessions.shared[key].settings.host = update.shared[key].settings.host;
+                    if(update.shared[key].data.private) this.recursivelyAssign(this.sessions.shared[key].data.private, update.shared[key].data.private);
+                    if(update.shared[key].data.shared)  this.recursivelyAssign(this.sessions.shared[key].data.shared, update.shared[key].data.shared);
+                    if(this.sessions.shared[key]?.settings.onmessage) 
+                        this.sessions.shared[key].settings.onmessage(this.sessions.shared[key], update.shared[key]);
+                    if(user?.sessionSubs[user._id]?.[key]?.onmessage)
+                        user.sessionSubs[user._id][key].onmessage(user.sessions[key], update, user);
                 }
             }
             return user;
         }
     }
 
-    //you either need to run this loop on a session to 
-    // pass updates up to the server from your user manually
     getUpdatedUserData = (user:SessionUser) => {
         const updateObj = {};
         for(const key in user.sessions) {
@@ -673,7 +828,7 @@ export class SessionsService extends Service {
     }
 
     //e.g. run on frontend
-    userUpdateCheck = (user:SessionUser) => {
+    userUpdateCheck = (user:SessionUser, onupdate?:(user:SessionUser, updateObj:{[key:string]:any})=>void) => {
         //console.log('checking',user, this);
         if(user.sessions) {
             const updateObj = this.getUpdatedUserData(user);
@@ -683,7 +838,8 @@ export class SessionsService extends Service {
             if(Object.keys(updateObj).length > 0) {
                 let message = { route:'setUserProps', args:[user._id, updateObj] };
                 if(user.send) user.send(message);
-                this.setState({[user._id]:message})
+                this.setState({[user._id]:message});
+                if(onupdate) { onupdate(user, updateObj) };
                 return updateObj;
             } 
         }
@@ -887,7 +1043,7 @@ export class SessionsService extends Service {
 
 	//can remove a whole stream or just a key from a stream if supplied
 	removeStream = (streamName,key) => {
-		if(streamName && !key) {
+		if(streamName && this.streamSettings[streamName] && !key) {
             if(this.streamSettings[streamName].onclose) 
                 (this.streamSettings[streamName] as any).onclose(this.streamSettings[streamName]);
             this.unsubscribe(streamName); //remove the subscriptions to this stream

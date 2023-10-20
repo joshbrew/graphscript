@@ -495,7 +495,14 @@ export class WSSbackend extends Service {
         message:string | ArrayBufferLike | Blob | ArrayBufferView | Buffer[] | ServiceMessage, 
         ws:WebSocketServer|WebSocket,
     ) => {
-        if(typeof message === 'object') message = JSON.stringify(message);
+        if(
+            (typeof message === 'object' && 
+            (((message as ServiceMessage)?.route || ((message as ServiceMessage)?.node)) || (
+                typeof (message as Blob).arrayBuffer !== 'function' && 
+                typeof (message as ArrayBufferLike).byteLength !== 'number' &&
+                typeof (message as Buffer[])[0]?.byteLength !== 'number'
+            ))) || typeof message === 'number'
+        ) message = JSON.stringify(message);
 
         if(!ws) {
             

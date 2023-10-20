@@ -19,7 +19,7 @@ Frontend 1   Frontend 2
 
 
 //TODO:
-//Make this simpler
+//Make this simpler or maybe rethink some of the base organization in the Service to accomodate more of this level of functionality.
 
 
 export type User = { //users have macros to call grouped connections generically, based on what's available
@@ -33,17 +33,23 @@ export type User = { //users have macros to call grouped connections generically
     subscribe:(...args:any[])=>Promise<number>|Promise<number>[]|undefined,
     unsubscribe:(...args:any[])=>Promise<boolean>|Promise<boolean>[]|undefined,
 
-    //work with all of the connections associated with a user
-    sendAll:(...args:any[])=>any,
-    requestAll:(...args:any[])=>Promise<any[]>|undefined,
-    postAll:(...args:any[])=>void,
-    runAll:(...args:any[])=>Promise<any[]>|undefined,
-    subscribeAll:(...args:any[])=>Promise<number[]>|undefined,
-    unsubscribeAll:(...args:any[])=>Promise<boolean[]>|undefined,
+    //can work with all of the connections associated with a user if you use the Router's connection management system
+    sendAll?:(...args:any[])=>any,
+    requestAll?:(...args:any[])=>Promise<any[]>|undefined,
+    postAll?:(...args:any[])=>void,
+    runAll?:(...args:any[])=>Promise<any[]>|undefined,
+    subscribeAll?:(...args:any[])=>Promise<number[]>|undefined,
+    unsubscribeAll?:(...args:any[])=>Promise<boolean[]>|undefined,
 
     terminate:(...args:any[]) => boolean,
-    onclose?:(user:User)=>void,
-    [key:string]:any
+    
+    //specific to a service connection if we wrap a sub-service connection instead of going thru Router 
+    onmessage?:(...args:any[])=>void,
+    onerror?:(...args:any[])=>void,
+    //You can set a new onclose function specific to router scope
+    onclose?:((user:User)=>void)|((...args:any[])=>void),
+    
+    [key:string]:any //w/e else, it's just a data structure for general use with some methods
 } 
 
 
@@ -600,7 +606,7 @@ export class Router extends Service {
             });
     }
 
-    addConnection = (options:ConnectionProps|ConnectionInfo|string,source?:string) => {
+    addConnection = (options:ConnectionProps|ConnectionInfo|string,source?:string, autoRemove=true) => {
         let settings:ConnectionInfo = {} as any;
         if(typeof options === 'string') {
             if (this.connections[options]) {
@@ -790,7 +796,12 @@ export class Router extends Service {
                     let oldonclose = c.onclose;
                     c.onclose = (...args:any[]) => { 
                         if(settings.onclose) settings.onclose(settings, ...args); 
-                        if(settings.source && this.users[settings.source] && Object.keys(this.sources[settings.source]).length === 0) {
+                        if(
+                            autoRemove &&
+                            settings.source && 
+                            this.users[settings.source] && 
+                            Object.keys(this.sources[settings.source]).length === 0
+                        ) {
                             this.removeUser(settings.source, false); 
                         }  
                         if(oldonclose) oldonclose(...args); 
@@ -800,7 +811,12 @@ export class Router extends Service {
                 let oldonclose = c.onclose;
                 c.onclose = (...args:any[]) => { 
                     this.removeConnection(settings); 
-                    if(settings.source && this.users[settings.source] && Object.keys(this.sources[settings.source]).length === 0) {
+                    if(
+                        autoRemove &&
+                        settings.source && 
+                        this.users[settings.source] && 
+                        Object.keys(this.sources[settings.source]).length === 0
+                    ) { //automatically clear a user if all of their connections 
                         this.removeUser(settings.source, false); 
                     } 
                     if(oldonclose) oldonclose(...args); 

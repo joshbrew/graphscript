@@ -36,12 +36,17 @@ export const backprop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
  */
 export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
 
-    if(node.__operator && !node.__node.looperSet) {
+    if(
+        node.__operator 
+        //&& !node.__node.looperSet //not using this allows multiple loops to run, just set looping=false and wait for all to finish otherwise
+    ) {
+        let loopId = Math.random();
+        if(!node.__node.loops) node.node.loops = {};
         if(typeof node.__node.delay === 'number') {
             let fn = node.__operator;
             node.__setOperator((...args:any[]) => {
                 return new Promise((res,rej) => {
-                    setTimeout(async ()=>{
+                    node.__node.loops[loopId] = setTimeout(async ()=>{
                         res(await fn(...args));},node.__node.delay);
                 });
             });
@@ -49,7 +54,7 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
             let fn = node.__operator;
             node.__setOperator((...args:any[]) => {
                 return new Promise((res,rej) => {
-                    requestAnimationFrame(async ()=>{res(await fn(...args));});
+                    node.__node.loops[loopId] = requestAnimationFrame(async ()=>{res(await fn(...args));});
                 });
             });
         }
@@ -81,7 +86,7 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
                
         if(node.__node.loop && typeof node.__node.loop === 'number') {
             
-            node.__node.looperSet = true;
+            //node.__node.looperSet = true;
             let fn = node.__operator;
             let time = node.__node.loop;
             node.__setOperator((...args) => {
@@ -89,7 +94,7 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
                 if(node.__node.looping) {
                     let last = performance.now();
                     fn(...args);
-                    setTimeout(
+                    node.__node.loops[loopId] = setTimeout(
                         ()=>{
                             let now = performance.now();
                             let overshoot = (now - last) - node.__node.loop;
@@ -107,6 +112,10 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
             
             let ondelete = (node) => {
                 if(node.__node.looping) node.__node.looping = false;
+                if(node.__node.loops[loopId]) {
+                    clearTimeout(node.__node.loops[loopId]);
+                    cancelAnimationFrame(node.__node.loops[loopId]);
+                }
             }
 
             node.__addOndisconnected(ondelete);
@@ -126,22 +135,25 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
  */
 export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
     if(node.__node.animate === true || node.__animation) {
-            let fn = node.__operator;
+        let fn = node.__operator;
 
-            node.__setOperator((...args) => {
-                if(!('animating' in node.__node)) node.__node.animating = true;
-                if(node.__node.animating) {
-                    if(typeof node.__animation === 'function') node.__animation(...args);
-                    else fn(...args);
-                    requestAnimationFrame(()=>{node.__operator(...args);});
-                }
-            });
-            if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.__animation)) 
-                setTimeout(()=>{requestAnimationFrame(node.__operator)},10);
-        
+        node.__setOperator((...args) => {
+            if(!('animating' in node.__node)) node.__node.animating = true;
+            if(node.__node.animating) {
+                if(typeof node.__animation === 'function') node.__animation(...args);
+                else fn(...args);
+                node.__node.animationFrame = requestAnimationFrame(()=>{node.__operator(...args);});
+            }
+        });
+        if(node.__node.animating || ((!('animating' in node.__node) || node.__node.animating) && node.__animation)) 
+            setTimeout(()=>{
+                node.__node.animationFrame = requestAnimationFrame(node.__operator)
+            },10);
+    
 
         let ondelete = (node) => {
             if(node.__node.animating) node.__node.animating = false;
+            if(node.__node.animationFrame) cancelAnimationFrame(node.__node.animationFrame);
         }
 
         node.__addOndisconnected(ondelete);
@@ -156,7 +168,10 @@ export const animate =  (node:GraphNode,parent:GraphNode|Graph,graph:Graph) => {
  * 
  * nodeA.__listeners['nodeB.x'] = {
  *  callback:(result)=>void, 
- *  branch:{if:Function|any, then:Function|any|GraphNode}
+ *  branch:{
+ *      if:Function|any, //if a function using the result evaluates to true or if the value equals the if value
+ *      then:Function|any|GraphNode //call a function, return a different result, or call a node
+ *  }
  * }
  * 
  */

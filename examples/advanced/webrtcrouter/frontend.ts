@@ -99,8 +99,8 @@ const router = new Router({
                             
                             (router.services.sessions as SessionsService).run('userUpdateLoop',user);
 
-                            user.rooms = {};
-                            user.localrtc = {};
+                            user.rooms = {} as any;
+                            user.localrtc = {} as any;
 
                             console.log(user);
 
@@ -136,7 +136,7 @@ const router = new Router({
                                             },
                                         }).then((room:WebRTCInfo) => {
 
-                                            user.rooms[newId].hostdescription = room.hostdescription;
+                                            user.rooms[newId].hostdescription = room.description;
                                             user.localrtc[newId] = room;
                                             
                                             (document.getElementById('myrooms') as HTMLElement).insertAdjacentHTML('beforeend',`
@@ -208,21 +208,21 @@ const router = new Router({
                                                                                     ownerId:userId,
                                                                                     isLive:false,
                                                                                     hostcandidates:{},
-                                                                                    hostdescription:remoteroom.hostdescription,
+                                                                                    hostdescription:remoteroom.description,
                                                                                     peercandidates:{},
                                                                                     peerdescription:undefined
                                                                                 };
 
                                                                                 (router.services.webrtc as WebRTCfrontend).openRTC({
                                                                                     _id:roomId, 
-                                                                                    hostdescription:remoteroom.hostdescription,
+                                                                                    description:remoteroom.description,
                                                                                     onicecandidate:(ev) => {
                                                                                         if(ev.candidate) user.rooms[roomId].peercandidates[`peercandidate${Math.floor(Math.random()*1000000000000000)}`] = ev.candidate;
                                                                                     },
                                                                                 }).then((localroom) => {
 
                                                                                     user.localrtc[roomId] = localroom;
-                                                                                    user.rooms[roomId].peerdescription = localroom.peerdescription;
+                                                                                    user.rooms[roomId].peerdescription = localroom.description;
 
 
                                                                                     (user.localrtc[roomId].rtc as RTCPeerConnection).addEventListener('datachannel',(ev) => {

@@ -204,7 +204,7 @@ export class SSEfrontend extends Service {
         type:XMLHttpRequestResponseType='', 
         mimeType?:string|undefined
     ) => {
-        if(typeof message === 'object' && (type === 'json' || type === 'text' || !type)) {
+        if(typeof message === 'number' || (typeof message === 'object' && !message.byteLength && (type === 'json' || type === 'text' || !type))) {
             message = JSON.stringify(message);
         }
 

@@ -505,12 +505,12 @@ export class WebRTCfrontend extends Service {
             audio:true,
             video:{
                 optional:[
-                    {minWidth: 320},
-                    {minWidth: 640},
-                    {minWidth: 1024},
-                    {minWidth: 1280},
-                    {minWidth: 1920},
-                    {minWidth: 2560},
+                    {minWidth: 320  },
+                    {minWidth: 640  },
+                    {minWidth: 1024 },
+                    {minWidth: 1280 },
+                    {minWidth: 1920 },
+                    {minWidth: 2560 },
                   ]
             } as MediaTrackConstraints
         },
@@ -521,8 +521,6 @@ export class WebRTCfrontend extends Service {
 
             let RTCRtpSenders:any[] = [];
 
-            let str; 
-    
             let stream = await navigator.mediaDevices.getUserMedia(options)
               
             if(stream) {
@@ -533,7 +531,7 @@ export class WebRTCfrontend extends Service {
                     if(track.kind === 'audio' && info) {info.audioSender = sender; info.audioStream = stream;  }
                     RTCRtpSenders.push(sender);
                 });
-                str = stream;
+                let str = stream;
     
                 if(info) info.senders =
                 info.senders ? 
@@ -663,7 +661,7 @@ export class WebRTCfrontend extends Service {
 
     //send data on a data channel
     transmit = (data:ServiceMessage|any, id?:string, channel?:string|RTCDataChannel ) => {
-        if(typeof data === 'object' || typeof data === 'number') 
+        if((typeof data === 'object' && ((data.route || data.node) || !(data as ArrayBufferLike).byteLength && typeof (data as Blob).arrayBuffer !== 'function') || typeof data === 'number')) 
             data = JSON.stringify(data); //we need strings
         
         if(!channel && id) { //select first channel
@@ -678,13 +676,13 @@ export class WebRTCfrontend extends Service {
             } else { //send on all channels on all rooms
                 for(const id in this.rtc) {
                     if(this.rtc[id].channels[channel] instanceof RTCDataChannel)
-                        (this.rtc[id].channels[channel] as RTCDataChannel).send(data);
+                        (this.rtc[id].channels[channel] as RTCDataChannel).send(data); // This may be a string, a Blob, an ArrayBuffer, a TypedArray or a DataView object.
                 }
             }
         }
 
         if(channel instanceof RTCDataChannel)
-            channel.send(data);
+            channel.send(data); // This may be a string, a Blob, an ArrayBuffer, a TypedArray or a DataView object.
     
         //console.log('sending',channel,data)
 
