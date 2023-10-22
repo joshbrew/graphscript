@@ -1,4 +1,4 @@
-import { PrivateSessionProps, SessionUser, SharedSessionProps } from '../../../../src/services/sessions/sessions.service'
+import { OneWaySessionProps, SessionUser, SharedSessionProps } from '../../../../src/services/sessions/sessions.service'
 import './canvasdraw/CanvasWithControls' //setup the canvas-with-controls component
 import { CanvasWithControls } from './canvasdraw/CanvasWithControls';
 
@@ -8,7 +8,7 @@ import html from './chatdraw'
 export function makeChatDrawBlock(
     parentId:string, 
     user:SessionUser, //the user doing the drawing
-    session:SharedSessionProps|PrivateSessionProps //the session we are syncing the canvas over
+    session:SharedSessionProps|OneWaySessionProps //the session we are syncing the canvas over
 ) {
     const parent = document.getElementById(parentId) as HTMLElement;
     

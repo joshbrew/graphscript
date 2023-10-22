@@ -3,8 +3,22 @@ import { Service, ServiceOptions } from "../Service";
 import { User } from "../router/Router";
 import { loaders } from "../../loaders/index";
 
+/**
+ * Sessions are a way to run a loop that monitors data structures to know procedurally when and what to update
+ * 
+ * OneWaySession: source sends props to listener, define listener, source default is creating user
+ * SharedSession: two modes:
+ *  Hosted: Host receives props from all users based on propnames, users receive hostprops
+ *  Shared: All users receive the same props based on their own updates
+ * 
+ * There's also these older stream API functions that are more pure for monitoring objects/arrays and updating new data e.g. out of a buffer.
+ * Need to esplain/demo all that too.... @@__@@ 
+ */
+
+
 //parse from this object/endpoint and send to that object/endpoint, e.g. single users
-export type PrivateSessionProps = {
+//todo: make this hurt brain less to reconstruct the usage
+export type OneWaySessionProps = {
     _id?:string,
     settings?:{
         listener:string,
@@ -14,9 +28,9 @@ export type PrivateSessionProps = {
         moderators?:{[key:string]:boolean},
         password?:string,
         ownerId?:string,
-        onopen?:(session:PrivateSessionProps)=>void,
-        onmessage?:(session:PrivateSessionProps, updated:any)=>void,
-        onclose?:(session:PrivateSessionProps)=>void,
+        onopen?:(session:OneWaySessionProps)=>void,
+        onmessage?:(session:OneWaySessionProps, updated:any)=>void,
+        onclose?:(session:OneWaySessionProps)=>void,
         [key:string]:any //arbitrary props e.g. settings, passwords
     },
     data?:{
@@ -31,9 +45,9 @@ export type SessionUser = {
     sessions:{[key:string]:any},
     sessionSubs:{[key:string]:{
         onopenSub?:number,
-        onmessage?:(session:SharedSessionProps|PrivateSessionProps, update:any, user:SessionUser)=>void, 
-        onopen?:(session:SharedSessionProps|PrivateSessionProps, user:SessionUser)=>void,
-        onclose?:(session:SharedSessionProps|PrivateSessionProps, user:SessionUser)=>void
+        onmessage?:(session:SharedSessionProps|OneWaySessionProps, update:any, user:SessionUser)=>void, 
+        onopen?:(session:SharedSessionProps|OneWaySessionProps, user:SessionUser)=>void,
+        onclose?:(session:SharedSessionProps|OneWaySessionProps, user:SessionUser)=>void
     }}
     [key:string]:any
 } & Partial<User> //extend base users on the router or just wrapping a connection from another service
@@ -47,7 +61,7 @@ export type SharedSessionProps = {
         users?:{[key:string]:boolean},
         host?:string, //if there is a host, all users only receive from the host's prop updates and vise versa
         hostprops?:{[key:string]:boolean},
-        passOnHostData?:boolean, //new hosts adopt old host data? Default true
+        inheritHostData?:boolean, //new hosts adopt old host data? Default true
         admins?:{[key:string]:boolean},
         moderators?:{[key:string]:boolean},
         spectators?:{[key:string]:boolean},
@@ -65,7 +79,7 @@ export type SharedSessionProps = {
                 [key:string]:any
             }
         },
-        private?:{ //host driven sessions will share only what the host shares to all users, while hosts will receive hidden data
+        oneWay?:{ //host driven sessions will share only what the host shares to all users, while hosts will receive hidden data
             [key:string]:any
         },
         [key:string]:any
@@ -97,12 +111,21 @@ export class SessionsService extends Service {
 
     //complex user sessions with some premade rulesets
     sessions:{
-        private:{[key:string]:PrivateSessionProps}, //sync user props <--> user props
+        oneWay:{[key:string]:OneWaySessionProps}, //sync user props <--> user props
         shared:{[key:string]:SharedSessionProps}//sync user props <--> all other users props
     } = {
-        private:{},
+        oneWay:{},
         shared:{}
     }
+
+    invites:{
+        [key:string]:{ //userId
+            [key:string]:{//session Id
+                session:OneWaySessionProps|SharedSessionProps|string, 
+                endpoint?:string //userid to send joinSession call to
+            } //session options
+        }
+    } = {}
 
 
     constructor(options?:ServiceOptions, users?:{[key:string]:SessionUser}) {
@@ -120,11 +143,11 @@ export class SessionsService extends Service {
             return this.sessions.shared;
         }
         else {
-            if(this.sessions.private[sessionId]) {
-                let s = this.sessions.private[sessionId];
+            if(this.sessions.oneWay[sessionId]) {
+                let s = this.sessions.oneWay[sessionId];
                 if(s.settings)
                     if(s.settings.source === userId || s.settings.listener === userId || s.settings.ownerId === userId || s.settings.admins?.[userId as string] || s.settings.moderators?.[userId as string])
-                        return {private:{[sessionId]:s}};
+                        return {oneWay:{[sessionId]:s}};
             } else if(this.sessions.shared[sessionId]) {
                 return {shared:{[sessionId]:this.sessions.shared[sessionId]}};
             } else {
@@ -138,42 +161,43 @@ export class SessionsService extends Service {
         }
     }
 
-    openPrivateSession = (
-        options:PrivateSessionProps={}, 
-        userId?:string
+    openOneWaySession = (
+        options:OneWaySessionProps={}, 
+        sourceUserId?:string, 
+        listenerUserId?:string
     ) => {
         if(!options._id) {
-            options._id = `private${Math.floor(Math.random()*1000000000000000)}`;       
-            if(this.sessions.private[options._id]) {
+            options._id = `oneWay${Math.floor(Math.random()*1000000000000000)}`;       
+            if(this.sessions.oneWay[options._id]) {
                 delete options._id;
-                this.openPrivateSession(options,userId); //regen id
+                this.openOneWaySession(options,sourceUserId); //regen id
             }
         }   
-        if(options._id && userId && this.users[userId]) {
-            if(userId){
+        if(options._id && sourceUserId && this.users[sourceUserId]) {
+            if(sourceUserId){
                 if(!options.settings) 
                     options.settings = { 
-                        listener:userId, 
-                        source:userId, 
+                        listener:sourceUserId, 
+                        source:sourceUserId, 
                         propnames:{latency:true}, 
-                        admins:{[userId]:true}, 
-                        ownerId:userId 
+                        admins:{[sourceUserId]:true}, 
+                        ownerId:sourceUserId 
                     };
                 if(!options.settings.listener) 
-                    options.settings.listener = userId;
+                    options.settings.listener = listenerUserId ? listenerUserId : sourceUserId;
                 if(!options.settings.source) 
-                    options.settings.source = userId;
-                if(!this.users[userId].sessions) 
-                    this.users[userId].sessions = {};
-                this.users[userId].sessions[options._id] = options;
+                    options.settings.source = sourceUserId;
+                if(!this.users[sourceUserId].sessions) 
+                    this.users[sourceUserId].sessions = {};
+                this.users[sourceUserId].sessions[options._id] = options;
             }
             if(!options.data) options.data = {};
             if(options.onopen) options.onopen(options);
-            if(this.sessions.private[options._id]) {
-                return this.updateSession(options,userId);
+            if(this.sessions.oneWay[options._id]) {
+                return this.updateSession(options,sourceUserId);
             }
             else if(options.settings?.listener && options.settings.source) 
-                this.sessions.private[options._id] = options; //need the bare min in here
+                this.sessions.oneWay[options._id] = options; //need the bare min in here
         }
         return options;
     }
@@ -217,7 +241,7 @@ export class SessionsService extends Service {
                     users:{}
                 };
             if(!options.data) 
-                options.data = { private:{}, shared:{} };
+                options.data = { oneWay:{}, shared:{} };
             if(!options.settings.name) 
                 options.name = options.id;
             if(options.onopen) options.onopen(options);
@@ -230,19 +254,19 @@ export class SessionsService extends Service {
     }
 
     open = (options:any,userId?:string) => {
-        if(options.listener) this.openPrivateSession(options,userId);
+        if(options.listener) this.openOneWaySession(options,userId);
         else this.openSharedSession(options,userId);
     }
 
     //update session properties, also invoke basic permissions checks for who is updating
     updateSession = (
-        options:PrivateSessionProps | SharedSessionProps, 
+        options:OneWaySessionProps | SharedSessionProps, 
         userId?:string
     ) => {
         //add permissions checks based on which user ID is submitting the update
         let session:any;
         if(options._id){ 
-            session = this.sessions.private[options._id];
+            session = this.sessions.oneWay[options._id];
             if(!session) 
                 session = this.sessions.shared[options._id];
             if(session && userId) {
@@ -255,7 +279,7 @@ export class SessionsService extends Service {
                     return this.recursivelyAssign(session, options);
                 }
             } else if(options.settings?.source) {
-                return this.openPrivateSession(options as PrivateSessionProps,userId);
+                return this.openOneWaySession(options as OneWaySessionProps,userId);
             } else return this.openSharedSession(options as SharedSessionProps,userId);
         }
         return false;
@@ -266,13 +290,13 @@ export class SessionsService extends Service {
     joinSession = (   
         sessionId:string, 
         userId:string,
-        options?:SharedSessionProps|PrivateSessionProps,
-        remoteUser:boolean=false
-    ) => {
+        options?:SharedSessionProps|OneWaySessionProps,
+        remoteUser:boolean=true //ignored if no endpoint on user object
+    ):SharedSessionProps|OneWaySessionProps|false => {
         if(!userId && !this.users[userId]) return false;
         if(!this.users[userId].sessions) this.users[userId].sessions = {};
-        let sesh = this.sessions.shared[sessionId] as SharedSessionProps|PrivateSessionProps;
-        if(!sesh) sesh = this.sessions.private[sessionId];
+        let sesh = this.sessions.shared[sessionId] as SharedSessionProps|OneWaySessionProps;
+        if(!sesh) sesh = this.sessions.oneWay[sessionId];
         //console.log(sessionId,userId,sesh,this.sessions);
         if(sesh?.settings) {
             if(sesh.settings?.banned) {
@@ -287,38 +311,119 @@ export class SessionsService extends Service {
             this.users[userId].sessions[sessionId] = sesh;
             if(options) { return this.updateSession(options,userId); };
             //console.log(sesh)
-            if(remoteUser) {
-                if(this.users[userId]?.send) {
-                    this.users[userId].send({route:'joinSession',args:[sessionId,userId,sesh]});
-                }
+            if(remoteUser && this.users[userId]?.send) {
+                this.users[userId].send({route:'joinSession',args:[sessionId,userId,sesh]}); //callbacks on the sesh should disappear with json.stringify() in the send calls when necessary
             }
             return sesh;
         } 
         else if (options?.source || options?.listener) {
-            sesh = this.openPrivateSession(options as PrivateSessionProps,userId);
-            if(remoteUser) {
-                if(this.users[userId]?.send) {
-                    this.users[userId].send({route:'joinSession',args:[sessionId,userId,sesh]});
-                }
+            sesh = this.openOneWaySession(options as OneWaySessionProps,userId);
+            if(remoteUser && this.users[userId]?.send) {
+                this.users[userId].send({route:'joinSession',args:[sessionId,userId,sesh]});
             }
             return sesh;
         }
         else if (options) {
             sesh = this.openSharedSession(options as SharedSessionProps,userId);
-            if(remoteUser) {
-                if(this.users[userId]?.send) {
-                    this.users[userId].send({route:'joinSession',args:[sessionId,userId,sesh]});
-                }
+            if(remoteUser && this.users[userId]?.send) {
+                this.users[userId].send({route:'joinSession',args:[sessionId,userId,sesh]});
             }
             return sesh;
         }
         return false;
     }
 
-    //Remove a user from a session. Private sessions will be closed
+    inviteToSession = (
+        session:OneWaySessionProps|SharedSessionProps|string,  
+        userInvited:string, 
+        inviteEndpoint?:string, //your user/this socket endpoint's ID as configured on router
+        remoteUser:boolean=true
+    ) => {
+        if(remoteUser && this.users[userInvited]?.send) {
+            this.users[userInvited]?.send({route:'receiveSessionInvite', args:[
+                session,
+                userInvited,
+                inviteEndpoint
+            ]});
+        } else {
+            this.receiveSessionInvite(session,userInvited,inviteEndpoint);
+        }
+    }
+
+    //subscribe to this clientside to do stuff when getting notified
+    receiveSessionInvite = (
+        session:OneWaySessionProps|SharedSessionProps|string,  //this session
+        userInvited:string,  //invite this user
+        endpoint?:string //is the session on another endpoint (user or other?)?
+    ) => {
+        if(!this.invites[userInvited]) this.invites[userInvited] = {};
+        let id = typeof session === 'string' ? session : session._id;
+        this.invites[userInvited][id] = {session, endpoint};
+
+        return id;
+    }
+
+    acceptInvite = ( //will wait for endpoint to come back if remote invitation
+        session:OneWaySessionProps|SharedSessionProps|string,  
+        userInvited:string,
+        remoteUser=true
+    ):Promise<SharedSessionProps|OneWaySessionProps|false> => {
+        let id = typeof session === 'string' ? session : session._id;
+        let invite = this.invites[userInvited]?.[id];
+        let endpoint;
+        if(invite) {
+            session = invite.session;
+            endpoint = invite.endpoint;
+            delete this.invites[userInvited]?.[id];
+        }
+        if(session) {
+            return new Promise((res,rej) => {
+                if(remoteUser && endpoint && this.users[endpoint]?.send) {
+                    //wait for the remote joinSession call to come back
+                    let resolved;
+                    let timeout = setTimeout(()=>{ 
+                        if(!resolved) {
+                            this.unsubscribe('joinSession',subbed); rej(new Error('Session join timed out'));
+                        }  
+                    },10000) ;
+                    let subbed = this.subscribe('joinSession', (result:SharedSessionProps|OneWaySessionProps|false)=>{
+                        if(typeof result === 'object' && result?._id === id) {
+                            if(result.setting?.users?.includes(userInvited)) {
+                                //we've joined the session
+                                this.unsubscribe('joinSession', subbed);
+                                resolved = true;
+                                if(timeout) clearTimeout(timeout);
+                                res(result);
+                            }
+                        }
+                    });
+                    this.users[endpoint]?.send({route:'joinSession',args:[id,userInvited,undefined,true]});
+                    //10sec timeout
+                } else res(this.joinSession(id, userInvited, typeof session === 'object' ? session : undefined));
+            });
+        }
+    }
+
+    rejectInvite = (
+        session:OneWaySessionProps|SharedSessionProps|string,  
+        userInvited:string,
+        remoteUser=true
+    ) => {
+        let id = typeof session === 'string' ? session : session._id;
+        if(this.invites[userInvited]?.[id]) {
+            let endpoint = this.invites[userInvited][id].endpoint;
+            delete this.invites[userInvited][id];
+            if(remoteUser && endpoint && this.users[endpoint]?.send) {
+                this.users[endpoint].send({route:'rejectInvite',args:[id,userInvited]}); //listen on host end too to know if invite was rejected
+            }
+            return true;
+        }
+    }
+
+    //Remove a user from a session. OneWay sessions will be closed
     //Run this at the session host location
     leaveSession = (
-        session:PrivateSessionProps|SharedSessionProps|string,  
+        session:OneWaySessionProps|SharedSessionProps|string,  
         userId:string, 
         clear:boolean=true, //clear all data related to this user incl permissions
         remoteUser:boolean=true //send user an all-clear to unsubscribe on their end
@@ -326,17 +431,17 @@ export class SessionsService extends Service {
         let sessionId:string|undefined;
         if(typeof session === 'string') {
             sessionId = session;
-            session = this.sessions.private[sessionId];
+            session = this.sessions.oneWay[sessionId];
             if(!session) session = this.sessions.shared[sessionId];
         } else sessionId = session._id;
         if(session) {
-            if(this.sessions.private[sessionId]) {
+            if(this.sessions.oneWay[sessionId]) {
                 if( userId === session.settings.source || 
                     userId === session.settings.listener || 
                     session.settings.admins?.[userId] || 
                     session.settings.moderators?.[userId]
                 ) {
-                    delete this.sessions.private[sessionId];
+                    delete this.sessions.oneWay[sessionId];
                     delete this.users[userId]?.sessions[sessionId];
                     delete this.users[userId]?.sessionSubs?.[sessionId];
                     if(clear) {
@@ -374,22 +479,37 @@ export class SessionsService extends Service {
     }
 
     //Delete a session. Run this at the session host location
-    deleteSession = (sessionId:string, userId:string, remoteUser=true) => {
-        let session:any = this.sessions.private[sessionId];
-        if(!session) session = this.sessions.shared[sessionId];
+    deleteSession = (session:string|OneWaySessionProps|SharedSessionProps, userId:string, remoteUsers=true) => {
+        
+        if(typeof session === 'string') { 
+            let id = session;
+            session = this.sessions.oneWay[id];
+            if(!session) session = this.sessions.shared[id];
+        }
         if(session) {
             if(session.source === userId || session.listener === userId || session.admins?.[userId] || session.ownerId === userId) {
                 for(const user in session.settings.users) {
-                    if(this.users[user]?.sessions) delete this.users[user].sessions[sessionId];
-                    if(this.users[user]?.sessionSubs) delete this.users[user].sessionSubs[sessionId];
-                    if(remoteUser && this.users[user]?.send) {
-                        this.users[user].send({route:'unsubscribeFromSession',args:[session._id, user]});
+                    if(this.users[user]?.sessions) delete this.users[user].sessions[session._id];
+                    if(this.users[user]?.sessionSubs) delete this.users[user].sessionSubs[session._id];
+                    if(remoteUsers) {
+                        if(session.users) {
+                            for(const key in session.users) {
+                                if(this.users[key]?.send) 
+                                    this.users[key].send({route:'unsubscribeFromSession',args:[session._id, key]});
+                            }
+                        }
+                        else if(session.listener) {
+                            if(this.users[session.listener]?.send) 
+                                    this.users[session.listener].send({route:'unsubscribeFromSession',args:[session._id, session.listener]});
+                        } else if (this.users[userId]?.send) {
+                            this.users[userId].send({route:'unsubscribeFromSession',args:[session._id, userId]});
+                        }
                     } else {
                         this.unsubsribeFromSession(session, user);
                     }
                 }
-                if(this.sessions.private[sessionId]) delete this.sessions.private[sessionId];
-                else if(this.sessions.shared[sessionId]) delete this.sessions.private[sessionId];
+                if(this.sessions.oneWay[session._id]) delete this.sessions.oneWay[session._id];
+                else if(this.sessions.shared[session._id]) delete this.sessions.oneWay[session._id];
                 if(session.onclose) session.onclose(session);
             }
         }
@@ -404,12 +524,13 @@ export class SessionsService extends Service {
     }
 
     swapHost = (
-        session:PrivateSessionProps|SharedSessionProps|string, 
+        session:OneWaySessionProps|SharedSessionProps|string, 
         newHostId?:string,
-        adoptData:boolean=true //copy original session hosts data?
+        adoptData:boolean=true, //copy original session hosts data?
+        remoteUser=true    
     ) => {
         if(typeof session === 'string') {
-            if(this.sessions.private[session]) session = this.sessions.private[session];
+            if(this.sessions.oneWay[session]) session = this.sessions.oneWay[session];
             else if(this.sessions.shared[session]) session = this.sessions.shared[session];
         }
         if(typeof session === 'object' && session.settings) {
@@ -430,10 +551,16 @@ export class SessionsService extends Service {
                 if(match) session.settings.host = match;
             }//sendAll leadership when host swapping
             if(!session.settings.host) session.settings.host = Object.keys(session.settings.users)[0]; //replace host 
-            if(adoptData && oldHost && session.settings.passOnHostData !== false) {
-                if(session.data?.shared[oldHost]) { //private data will stay the same
+            if(adoptData && oldHost && session.settings.inheritHostData !== false) {
+                if(session.data?.shared[oldHost]) { //oneWay data will stay the same
                     if(session.data?.shared[oldHost]) {
-                        session.data.shared[session.settings.host] = Object.assign(session.data.shared[session.settings.host] ? session.data.shared[session.settings.host] : {}, session.data.shared[oldHost]);
+                        session.data.shared[session.settings.host] = Object.assign(
+                            session.data.shared[session.settings.host] ? session.data.shared[session.settings.host] : {}, 
+                            session.data.shared[oldHost]
+                        );
+                        if(remoteUser) {
+
+                        }
                     }
                 }
             }
@@ -444,14 +571,14 @@ export class SessionsService extends Service {
 
     //run these on the clientside user
     subscribeToSession = (
-        session:SharedSessionProps|PrivateSessionProps|string, 
+        session:SharedSessionProps|OneWaySessionProps|string, 
         userId:string, 
-        onmessage?:(session:SharedSessionProps|PrivateSessionProps, update:any, user:SessionUser)=>void, 
-        onopen?:(session:SharedSessionProps|PrivateSessionProps, user:SessionUser)=>void,
-        onclose?:(session:SharedSessionProps|PrivateSessionProps, user:SessionUser)=>void
+        onmessage?:(session:SharedSessionProps|OneWaySessionProps, update:any, user:SessionUser)=>void, 
+        onopen?:(session:SharedSessionProps|OneWaySessionProps, user:SessionUser)=>void,
+        onclose?:(session:SharedSessionProps|OneWaySessionProps, user:SessionUser)=>void
     ) => {
         if(typeof session === 'string') {
-            let s = this.sessions.private[session];
+            let s = this.sessions.oneWay[session];
             if(!s) s = this.sessions.shared[session] as any;
             if(!s) return undefined;
             session = s;
@@ -462,37 +589,35 @@ export class SessionsService extends Service {
         if(!user.sessionSubs) user.sessionSubs = {};
         if(!user.sessionSubs[session._id]) user.sessionSubs[session._id] = {};
 
+        if(onmessage) user.sessionSubs[session._id].onmessage = onmessage;
+        if(onopen) this.sessionSubs[userId][session._id].onopen = onopen;
+        if(onclose) user.sessionSubs[session._id].onclose = onclose;
         if(typeof onopen === 'function') {
             let sub = this.subscribe('joinSession',(res) => {
-                if(res._id === (session as any)._id) onopen(session as any, user);
+                if(res._id === (session as any)._id) 
+                    this.sessionSubs[userId][(session as any)._id].onopen(session as any, user);
                 this.unsubscribe('joinSession', sub as number);
             });
             user.sessionSubs[session._id].onopenSub = sub;
         }
-
-        if(typeof session === 'object') { //we need to fire onmessage events when the session updates (setState for sessionId) and when the user updates
-            if(onmessage) user.sessionSubs[session._id].onmessage = onmessage;
-            //if(onopen) this.sessionSubs[userId][session._id].onopen = onopen;
-            if(onclose) user.sessionSubs[session._id].onclose = onclose;
-
-        }
+           
         return session;
     }
 
     //run these on the clientside user
     unsubsribeFromSession = (
-        session:SharedSessionProps|PrivateSessionProps|string, 
+        session:SharedSessionProps|OneWaySessionProps|string, 
         userId?:string,
         clear=true //clear session data (default true)
     ) => {
         if(typeof session === 'string') {
-            let s = this.sessions.private[session];
+            let s = this.sessions.oneWay[session];
             if(!s) s = this.sessions.shared[session] as any;
             if(!s) return undefined;
             session = s;
         } 
 
-        const clearSessionSubs = (Id:string, s:SharedSessionProps|PrivateSessionProps) => {
+        const clearSessionSubs = (Id:string, s:SharedSessionProps|OneWaySessionProps) => {
             let u = this.users[Id];
             if(!u) return undefined;
             if(u.sessionSubs?.[s._id]) {
@@ -513,7 +638,7 @@ export class SessionsService extends Service {
         }
 
         if(clear) {
-            if(this.sessions.private[session._id]) delete this.sessions.private[session._id];
+            if(this.sessions.oneWay[session._id]) delete this.sessions.oneWay[session._id];
             else if(this.sessions.shared[session._id]) delete this.sessions.shared[session._id];
         }
     }
@@ -521,12 +646,12 @@ export class SessionsService extends Service {
     //iterate all subscriptions, e.g. run on backend
     sessionUpdateCheck = (transmit=true) => {
         let updates:any = {
-            private:{},
+            oneWay:{},
             shared:{}
         };
 
-        for(const session in this.sessions.private) {
-            const sesh = this.sessions.private[session];
+        for(const session in this.sessions.oneWay) {
+            const sesh = this.sessions.oneWay[session];
             const updateObj = {
                 _id:sesh._id,
                 settings:{
@@ -536,13 +661,13 @@ export class SessionsService extends Service {
                 data:{}
             } as any; //pull user's updated props and send to listener
             if(!this.users[sesh.source]) {
-                delete this.sessions.private[session];
+                delete this.sessions.oneWay[session];
                 break;
             } 
             if(sesh.settings && sesh.data) {
                 for(const prop in sesh.settings.propnames) {
                     if(prop in this.users[sesh.source]) {
-                        if(this.sessions.private[session].data) { 
+                        if(this.sessions.oneWay[session].data) { 
                             if(typeof sesh.data[prop] === 'object') {
                                 if(this.users[sesh.source][prop] && (stringifyFast(sesh.data[prop]) !== stringifyFast(this.users[sesh.source][prop]) || !(prop in sesh.data))) 
                                     updateObj.data[prop] = this.users[sesh.source][prop];
@@ -551,13 +676,13 @@ export class SessionsService extends Service {
                                 updateObj.data[prop] = this.users[sesh.source][prop];
                         }
                         else updateObj.data[prop] = this.users[sesh.source][prop];
-                    } else if(this.sessions.private[session]?.data && prop in this.sessions.private[session]?.data) 
-                        delete (this.sessions.private[session].data as any)[prop];
+                    } else if(this.sessions.oneWay[session]?.data && prop in this.sessions.oneWay[session]?.data) 
+                        delete (this.sessions.oneWay[session].data as any)[prop];
                 }
             }
             if(Object.keys(updateObj.data).length > 0) {
-                this.recursivelyAssign(this.sessions.private[session].data, updateObj.data); //set latest data on the source object as reference
-                updates.private[sesh._id as string] = updateObj;
+                this.recursivelyAssign(this.sessions.oneWay[session].data, updateObj.data); //set latest data on the source object as reference
+                updates.oneWay[sesh._id as string] = updateObj;
             }
         }
 
@@ -572,7 +697,7 @@ export class SessionsService extends Service {
             } as any;
             if(sesh.settings?.host) {
                 //host receives object of all other users
-                const privateData = {}; //host receives all users' props
+                const oneWayData = {}; //host receives all users' props
                 const sharedData = {}; //users receive host props       
                 for(const user in sesh.settings.users) {
                     if(!this.users[user]) { //if no user found assume they're to be kicked from session
@@ -581,7 +706,7 @@ export class SessionsService extends Service {
                             this.swapHost(sesh, undefined, true);
                         if( sesh.data?.shared[user] ) 
                             delete sesh.data.shared[user];
-                        if( sesh.data?.private?.[user] ) 
+                        if( sesh.data?.oneWay?.[user] ) 
                             delete sesh.data.shared[user];
                         updateObj.settings.users = sesh.settings.users;
                         updateObj.settings.host = sesh.settings.host;
@@ -591,23 +716,23 @@ export class SessionsService extends Service {
                         updateObj.settings.host = sesh.settings.host;
                         sesh.settings.newUser = false;
                     }
-                    if(user !== sesh.settings.host) { //the host will receive the private data
-                        privateData[user] = {};
+                    if(user !== sesh.settings.host) { //the host will receive the oneWay data
+                        oneWayData[user] = {};
                         for(const prop in sesh.settings.propnames) {
                             if(prop in this.users[user]) {
-                                if(sesh.data?.private && !(user in sesh.data.private)) {
+                                if(sesh.data?.oneWay && !(user in sesh.data.oneWay)) {
                                     if(typeof this.users[user][prop] === 'object') 
-                                        privateData[user][prop] = this.recursivelyAssign({},this.users[user][prop]);
-                                    else privateData[user][prop] = this.users[user][prop];
-                                } else if(typeof privateData[user][prop] === 'object' && sesh.data) {
+                                        oneWayData[user][prop] = this.recursivelyAssign({},this.users[user][prop]);
+                                    else oneWayData[user][prop] = this.users[user][prop];
+                                } else if(typeof oneWayData[user][prop] === 'object' && sesh.data) {
                                     if(prop in this.users[user][prop] && (stringifyFast(sesh.data?.shared[user][prop]) !== stringifyFast(this.users[user][prop]) || !(prop in sesh.data))) 
-                                        privateData[user][prop] =  this.users[user][prop];
+                                        oneWayData[user][prop] =  this.users[user][prop];
                                 }
-                                else if(this.users[user][prop] && sesh.data?.private?.[prop] !== this.users[user][prop]) 
-                                    privateData[user][prop] = this.users[user][prop];
-                            } else if (sesh.data?.private?.[user] && prop in sesh.data?.private?.[user]) delete sesh.data.private[user][prop]; //if user deleted the prop, session can delete it
+                                else if(this.users[user][prop] && sesh.data?.oneWay?.[prop] !== this.users[user][prop]) 
+                                    oneWayData[user][prop] = this.users[user][prop];
+                            } else if (sesh.data?.oneWay?.[user] && prop in sesh.data?.oneWay?.[user]) delete sesh.data.oneWay[user][prop]; //if user deleted the prop, session can delete it
                         }
-                        if(Object.keys(privateData[user]).length === 0) delete privateData[user];
+                        if(Object.keys(oneWayData[user]).length === 0) delete oneWayData[user];
                     } else {                        //the rest of the users will receive the shared data
                         sharedData[user] = {};
                         for(const prop in sesh.settings.hostprops) {
@@ -627,8 +752,8 @@ export class SessionsService extends Service {
                         }
                     }
                 }
-                if(Object.keys(privateData).length > 0) {
-                    updateObj.data.private = privateData;
+                if(Object.keys(oneWayData).length > 0) {
+                    updateObj.data.oneWay = oneWayData;
                 }
                 if(Object.keys(sharedData).length > 0) {
                     updateObj.data.shared = sharedData;
@@ -643,7 +768,7 @@ export class SessionsService extends Service {
                                 this.swapHost(sesh, undefined, true);
                             if( sesh.data?.shared[user] ) 
                                 delete sesh.data.shared[user];
-                            if( sesh.data?.private?.[user] ) 
+                            if( sesh.data?.oneWay?.[user] ) 
                                 delete sesh.data.shared[user];
                             updateObj.settings.users = sesh.settings.users;
                             updateObj.settings.host = sesh.settings.host;
@@ -675,21 +800,21 @@ export class SessionsService extends Service {
                 } 
             }
 
-            if(updateObj.data.shared || updateObj.data.private) 
+            if(updateObj.data.shared || updateObj.data.oneWay) 
                 updates.shared[sesh._id as string] = updateObj;
 
             if(updateObj.data.shared) {
                 this.recursivelyAssign(this.sessions.shared[session].data?.shared,updateObj.data.shared);
                //set latest data on the source object as reference
             }
-            if(updateObj.data.private) {
-                this.recursivelyAssign(this.sessions.shared[session].data?.private,updateObj.data.private);
+            if(updateObj.data.oneWay) {
+                this.recursivelyAssign(this.sessions.shared[session].data?.oneWay,updateObj.data.oneWay);
                 //set latest data on the source object as reference
             }
            
         }
 
-        if(Object.keys(updates.private).length === 0) delete updates.private;
+        if(Object.keys(updates.oneWay).length === 0) delete updates.oneWay;
         if(Object.keys(updates.shared).length === 0) delete updates.shared;
         if(Object.keys(updates).length === 0) return undefined;
 
@@ -702,20 +827,19 @@ export class SessionsService extends Service {
         
     }
 
-    //transmit updates to users and setState locally based on userId
+    //transmit updates to users and setState locally based on userId. Todo: this could be more efficient
     transmitSessionUpdates = (updates:{
-        private:{[key:string]:any},
+        oneWay:{[key:string]:any},
         shared:{[key:string]:any}
     }) => {
         let users = {};
-        if(updates.private) {
-            for(const s in updates.private) { //private session ids
-                let session = this.sessions.private[s];
+        if(updates.oneWay) {
+            for(const s in updates.oneWay) { //oneWay session ids
+                let session = this.sessions.oneWay[s];
                 if(session?.settings) {
                     let u = session.settings.listener; //single user listener
-                    if(!users[u]) users[u] = {private:{}};
-                    else if(!users[u].private) users[u].private = {};
-                    users[u].private[s] = updates.private[s];
+                    if(!users[u]) users[u] = {};
+                    users[u].oneWay[s] = updates.oneWay[s];
                 }
             }
         }
@@ -724,8 +848,7 @@ export class SessionsService extends Service {
                 let session = this.sessions.shared[s];
                 if(session?.settings) {
                     for(const u in session.settings.users) { //for users in session
-                        if(!users[u]) users[u] = {shared:{}};
-                        else if(!users[u].shared) users[u].shared = {};
+                        if(!users[u]) users[u] = {};
                         users[u].shared[s] = updates.shared[s];
                     }
                 }
@@ -746,20 +869,20 @@ export class SessionsService extends Service {
     }
 
     //receive updates as a user
-    receiveSessionUpdates = (origin:any, update:{private:{[key:string]:any},shared:{[key:string]:any}}|string) => { //following operator format we get the origin passed
+    receiveSessionUpdates = (origin:any, update:{oneWay:{[key:string]:any},shared:{[key:string]:any}}|string) => { //following operator format we get the origin passed
         if(update) if(typeof update === 'string') update = JSON.parse(update as string);
         if(typeof update === 'object') {
             let user = this.users[origin];
             if(user) {
-                if(!user.sessions) user.sessions = {private:{},shared:{}};
+                if(!user.sessions) user.sessions = {oneWay:{},shared:{}};
                 if(!user.sessionSubs) user.sessionSubs = {};
             }
 
-            if(update.private) {
-                for(const key in update.private) {
-                    this.recursivelyAssign(this.sessions.private[key].data, update.private[key].data);
-                    if(this.sessions.private[key]?.settings.onmessage) 
-                        this.sessions.private[key].settings.onmessage(this.sessions.private[key], update.private[key]);
+            if(update.oneWay) {
+                for(const key in update.oneWay) {
+                    this.recursivelyAssign(this.sessions.oneWay[key].data, update.oneWay[key].data);
+                    if(this.sessions.oneWay[key]?.settings.onmessage) 
+                        this.sessions.oneWay[key].settings.onmessage(this.sessions.oneWay[key], update.oneWay[key]);
                     if(user?.sessionSubs[user._id]?.[key]?.onmessage)
                         user.sessionSubs[user._id][key].onmessage(user.sessions[key], update, user);
                 }
@@ -768,7 +891,7 @@ export class SessionsService extends Service {
                 for(const key in update.shared) {
                     if(update.shared[key].settings.users) this.sessions.shared[key].settings.users = update.shared[key].settings.users;
                     if(update.shared[key].settings.host) this.sessions.shared[key].settings.host = update.shared[key].settings.host;
-                    if(update.shared[key].data.private) this.recursivelyAssign(this.sessions.shared[key].data.private, update.shared[key].data.private);
+                    if(update.shared[key].data.oneWay) this.recursivelyAssign(this.sessions.shared[key].data.oneWay, update.shared[key].data.oneWay);
                     if(update.shared[key].data.shared)  this.recursivelyAssign(this.sessions.shared[key].data.shared, update.shared[key].data.shared);
                     if(this.sessions.shared[key]?.settings.onmessage) 
                         this.sessions.shared[key].settings.onmessage(this.sessions.shared[key], update.shared[key]);

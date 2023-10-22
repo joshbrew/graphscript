@@ -1,7 +1,7 @@
 import { HTTPfrontend } from '../../../src/services/http/HTTP.browser';
 import { Router } from '../../../src/services/router/Router'
 import { EventSourceProps, SSEfrontend } from '../../../src/services/sse/SSE.browser';
-import { PrivateSessionProps, SessionUser, SessionsService, SharedSessionProps } from '../../../src/services/sessions/sessions.service';
+import { OneWaySessionProps, SessionUser, SessionsService, SharedSessionProps } from '../../../src/services/sessions/sessions.service';
 import { WebRTCfrontend, WebRTCInfo } from '../../../src/services/webrtc/WebRTC.browser';
 import { WebSocketProps, WSSfrontend } from '../../../src/services/wss/WSS.browser';
 import {Graph, HTMLNodeProperties, htmlloader, wchtmlloader} from '../../../index'
@@ -103,6 +103,9 @@ const router = new Router({
                     onopen:(ev,ws,wsinfo)=>{
                         console.log('socket opened!');
 
+                        const sessions = (router.services.sessions as SessionsService);
+   
+   
                         let userId = `user${Math.floor(Math.random()*1000000000000000)}`;
                         router.subscribe('joinSession', (res) => {
                             console.log('joinSession fired', res);
@@ -114,7 +117,7 @@ const router = new Router({
                         ).then((user) => {
                             console.log('new user', user._id);
                             
-                            (router.services.sessions as SessionsService).run(
+                            sessions.run(
                                 'userUpdateLoop', 
                                 user,
                                 () => {
@@ -138,59 +141,92 @@ const router = new Router({
     }
 });
 
+//make room as host
+//make canvas for host
+//join room as user, get canvas copy
+//on draw update, users/host push updates to server 
+
 //chat/game call demos for router, webrtc, and session service
 //demo 1:1    call (private session)
 //demo 1:many call (group session w/ attempt for piping camera/audio data thru a host, maybe we can distribute the load e.g. faster/preferred connections get more load?)
 
 //we need to make a room on the backend that just lists the host and the user count 
 // and then have other connect to that host to connect to the rest of the users (via routers)
-function createPrivateRoom(
+
+//TODO NOW!!!!!:
+//  build in an ask-to-join system to just run a callback on listener/user(s) 
+//  side to then pull options/duplicate data. ezz brezzy yo!!
+function createOutgoingStream(
     router:Router, 
     user:SessionUser, 
     propnames=['draw'],
-    userId:string //specify another user to invite
+    listenerUserId:string //specify another user to invite
 ) {
     const sessions = (router.services.sessions as SessionsService);
-    sessions.openPrivateSession()
+    sessions.openOneWaySession(
+        {
+            propnames,
+            source:user._id //outgoing
+        }, 
+        user._id,
+        listenerUserId
+    );
+
+    //ping listenerUser to joinSession
 }
 
-function createGroupRoom(
+function createRoom(
     router:Router, 
     user:SessionUser, 
-    propnames=['draw']
+    hostprops=['draw'],
+    propnames=['draw'],
+    password?:string
 ) {
-
+    const sessions = (router.services.sessions as SessionsService);
+    sessions.openSharedSession(
+        {
+            host:user._id,
+            hostprops,
+            propnames,
+            password
+        },
+        user._id
+    )
 }
 
 function endSessionAsHost(
     router:Router, 
-    user:SessionUser, 
+    user:SessionUser,
+    session:string|OneWaySessionProps|SharedSessionProps,
     del=true
 ) { //if not deleting host will be swapped
-
+    const sessions = (router.services.sessions as SessionsService); 
+    if(del) sessions.deleteSession(session, user._id, false);
+    else sessions.leaveSession(session,user._id,true,false);
 }
 
 function createRTCHandshake(
     router:Router, 
     user:SessionUser, 
-    session:PrivateSessionProps|SharedSessionProps
+    session:OneWaySessionProps|SharedSessionProps
 ) {
 
 }
 
+//need to establish webrtc calls with everyone in the session (if they don't exist, or maybe better to make separate calls for simplicity?)
 function endRTCCalls(
     router:Router, 
     user:SessionUser, 
-    session:PrivateSessionProps|SharedSessionProps
+    session:OneWaySessionProps|SharedSessionProps
 ) {
 
 }
 
-//set a user for data to be piped thru (need to create an independent media stream channel for this)
+//set a user for data to be piped thru (need to create an independent media stream channels for this to pipe additional streams out)
 function setRTCProvider(
     router:Router, 
     user:SessionUser, 
-    session:PrivateSessionProps|SharedSessionProps, 
+    session:OneWaySessionProps|SharedSessionProps, 
     userId:string
 ) {
     //need to swap provider deets
@@ -199,7 +235,7 @@ function setRTCProvider(
 function enableAudio(
     router:Router, 
     user:SessionUser, 
-    session:PrivateSessionProps|SharedSessionProps
+    session:OneWaySessionProps|SharedSessionProps
 ) {
 
 }
@@ -207,7 +243,7 @@ function enableAudio(
 function enableVideo(
     router:Router, 
     user:SessionUser, 
-    session:PrivateSessionProps|SharedSessionProps
+    session:OneWaySessionProps|SharedSessionProps
 ) {
 
 }
@@ -215,7 +251,7 @@ function enableVideo(
 function disableAudio(
     router:Router, 
     user:SessionUser, 
-    session:PrivateSessionProps|SharedSessionProps
+    session:OneWaySessionProps|SharedSessionProps
 ) {
 
 }
@@ -223,7 +259,7 @@ function disableAudio(
 function disableVideo(
     router:Router, 
     user:SessionUser, 
-    session:PrivateSessionProps|SharedSessionProps
+    session:OneWaySessionProps|SharedSessionProps
 ) {
 
 }
@@ -231,7 +267,7 @@ function disableVideo(
 function sendMessage(
     router:Router, 
     user:SessionUser, 
-    session:PrivateSessionProps|SharedSessionProps
+    session:OneWaySessionProps|SharedSessionProps
 ) {
 
 }
