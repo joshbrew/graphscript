@@ -1,32 +1,5 @@
-function html(strings, ...args) {
-    return function append(elm = document.createElement('div')) {
-      let template = document.createElement('template');
-      strings.map(function(s, i) {
-        template.innerHTML += s;
-        if(args[i] instanceof HTMLElement) 
-          {
-            let dummy = `<span id="dummyNode12345"></span>`;
-            dummy.id = 'dummyNode12345';
-            template.innerHTML += dummy; //args[i])
-          }
-        else template.innerHTML += args[i];
-      });
-      let query = template.content.querySelectorAll('#dummyNode12345');
-      let ctr = 0;
-      args.forEach((arg,i) => {
-        if(arg instanceof HTMLElement) {
-          console.log(arg, query[ctr])
-          template.content.replaceChild(arg, query[ctr]);
-          ctr++;
-        }
-      });
-      elm.appendChild(template.content);
-      return elm;
-      
-    };
-}
-
-  let dummy = html``;
+import { html } from "./html";
+let dummy = html``;
   
 //from 'fragelement' on npm by Joshua Brewster (LGPL v3.0)
 export class DOMElement extends HTMLElement { 

@@ -1,4 +1,4 @@
-import { Router, HTTPbackend, WSSbackend, ServerProps, SSEbackend, SessionsService, SocketServerProps, SSEProps, User } from '../../../../index.node'
+import { Router, HTTPbackend, WSSbackend, ServerProps, SSEbackend, SessionsService, SocketServerProps, SSEProps, User, OneWaySessionProps, SharedSessionProps } from '../../../../index.node'
 
 
 const router = new Router({
@@ -80,13 +80,30 @@ let session = (router.services.sessions as SessionsService).openSharedSession(
             name:'webrtcrooms',
             propnames:{
                 rooms:true //if these props are updated on the user object we'll return them
-            }  
+            },
+            onopen:(session)=>{
+                console.log("Session Started:",session);
+            },
+            onhasupdate:(session, update)=>{
+                console.log("Session Has Update:", update, session);
+            },
+            onclose:(session)=>{
+                console.log("Session closed!", session);
+            }
         }
     },
     'admin'
 );
 
-router.run('sessionLoop');
+//fires when a session in the loop has an update
+function sessionHasUpdate (
+    session:OneWaySessionProps|SharedSessionProps,
+    update:{shared?:any,oneWay?:any}
+){
+    console.log("Session Update:",session,update);
+}
+
+router.run('sessionLoop',sessionHasUpdate);
 
 //add users to a global session
 router.subscribe('addUser', (user:User) => {

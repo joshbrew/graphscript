@@ -25,6 +25,9 @@ export type WebRTCProps = {
     onconnectionstatechange?:(ev:Event)=>void,
     oniceconnectionstatechange?:(ev:Event)=>void,
     onclose?:(rtc:WebRTCInfo)=>void //custom callback
+    caller?:string, //e.g. caller's userId from Router
+    remoteId?:string, //e.g. set this when passing to the opposite user's 'receiveCallInformation' so you know which connection to call in the router for renegotiating
+    [key:string]:any  //set whatever else for reference
 }
 
 export type WebRTCInfo = {

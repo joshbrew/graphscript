@@ -1,5 +1,6 @@
 
 import {GraphNode, GraphNodeProperties,Graph} from '../../core/Graph'
+export { html } from './html'
 
 export type HTMLNodeProperties = GraphNodeProperties & {
     __props?:HTMLElement,

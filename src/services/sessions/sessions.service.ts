@@ -29,7 +29,8 @@ export type OneWaySessionProps = {
         password?:string,
         ownerId?:string,
         onopen?:(session:OneWaySessionProps)=>void,
-        onmessage?:(session:OneWaySessionProps, updated:any)=>void,
+        onhasupdate?:(session:OneWaySessionProps, updated:any)=>void, //host-side
+        onmessage?:(session:OneWaySessionProps, updated:any)=>void, //user-side
         onclose?:(session:OneWaySessionProps)=>void,
         [key:string]:any //arbitrary props e.g. settings, passwords
     },
@@ -45,12 +46,12 @@ export type SessionUser = {
     sessions:{[key:string]:any},
     sessionSubs:{[key:string]:{
         onopenSub?:number,
-        onmessage?:(session:SharedSessionProps|OneWaySessionProps, update:any, user:SessionUser)=>void, 
-        onopen?:(session:SharedSessionProps|OneWaySessionProps, user:SessionUser)=>void,
-        onclose?:(session:SharedSessionProps|OneWaySessionProps, user:SessionUser)=>void
+        onmessage?:(session:SharedSessionProps, update:any, user:SessionUser)=>void, 
+        onopen?:(session:SharedSessionProps, user:SessionUser)=>void,
+        onclose?:(session:SharedSessionProps, user:SessionUser)=>void
     }}
     [key:string]:any
-} & Partial<User> //extend base users on the router or just wrapping a connection from another service
+} & User //extend base users on the router or just wrapping a connection from another service
 
 //sessions for shared user data and game/app logic for synchronous and asynchronous sessions to stream selected properties on user objects as they are updated
 export type SharedSessionProps = {
@@ -68,6 +69,7 @@ export type SharedSessionProps = {
         banned?:{[key:string]:boolean},
         password?:string,
         ownerId?:string,
+        onhasupdate?:(session:SharedSessionProps, updated:any)=>void, //host-side
         onopen?:(session:SharedSessionProps)=>void,
         onmessage?:(session:SharedSessionProps, updated:any)=>void,
         onclose?:(session:SharedSessionProps)=>void,
@@ -136,20 +138,20 @@ export class SessionsService extends Service {
     }
 
     getSessionInfo = (
-        sessionId?:string, //id or name (on shared sessions)
+        sessionIdOrName?:string, //id or name (on shared sessions)
         userId?:string
     ) => {
-        if(!sessionId) {
+        if(!sessionIdOrName) {
             return this.sessions.shared;
         }
         else {
-            if(this.sessions.oneWay[sessionId]) {
-                let s = this.sessions.oneWay[sessionId];
+            if(this.sessions.oneWay[sessionIdOrName]) {
+                let s = this.sessions.oneWay[sessionIdOrName];
                 if(s.settings)
                     if(s.settings.source === userId || s.settings.listener === userId || s.settings.ownerId === userId || s.settings.admins?.[userId as string] || s.settings.moderators?.[userId as string])
-                        return {oneWay:{[sessionId]:s}};
-            } else if(this.sessions.shared[sessionId]) {
-                return {shared:{[sessionId]:this.sessions.shared[sessionId]}};
+                        return {oneWay:{[sessionIdOrName]:s}};
+            } else if(this.sessions.shared[sessionIdOrName]) {
+                return {shared:{[sessionIdOrName]:this.sessions.shared[sessionIdOrName]}};
             } else {
                 let res = {};
                 for(const id in this.sessions.shared) {
@@ -210,7 +212,7 @@ export class SessionsService extends Service {
             options._id = `shared${Math.floor(Math.random()*1000000000000000)}`;
             if(this.sessions.shared[options._id]) {
                 delete options._id;
-                this.openSharedSession(options,userId); //regen id
+                return this.openSharedSession(options,userId); //regen id
             }
         } 
         if(options._id && userId && this.users[userId]){  
@@ -364,7 +366,7 @@ export class SessionsService extends Service {
     }
 
     acceptInvite = ( //will wait for endpoint to come back if remote invitation
-        session:OneWaySessionProps|SharedSessionProps|string,  
+        session:OneWaySessionProps|SharedSessionProps|string,  //session id is minimum
         userInvited:string,
         remoteUser=true
     ):Promise<SharedSessionProps|OneWaySessionProps|false> => {
@@ -376,32 +378,31 @@ export class SessionsService extends Service {
             endpoint = invite.endpoint;
             delete this.invites[userInvited]?.[id];
         }
-        if(session) {
-            return new Promise((res,rej) => {
-                if(remoteUser && endpoint && this.users[endpoint]?.send) {
-                    //wait for the remote joinSession call to come back
-                    let resolved;
-                    let timeout = setTimeout(()=>{ 
-                        if(!resolved) {
-                            this.unsubscribe('joinSession',subbed); rej(new Error('Session join timed out'));
-                        }  
-                    },10000) ;
-                    let subbed = this.subscribe('joinSession', (result:SharedSessionProps|OneWaySessionProps|false)=>{
-                        if(typeof result === 'object' && result?._id === id) {
-                            if(result.setting?.users?.includes(userInvited)) {
-                                //we've joined the session
-                                this.unsubscribe('joinSession', subbed);
-                                resolved = true;
-                                if(timeout) clearTimeout(timeout);
-                                res(result);
-                            }
+        return new Promise((res,rej) => {
+            if(!id) res(false);
+            if(remoteUser && endpoint && this.users[endpoint]?.send) {
+                //wait for the remote joinSession call to come back
+                let resolved;
+                let timeout = setTimeout(()=>{ 
+                    if(!resolved) {
+                        this.unsubscribe('joinSession',subbed); rej(new Error('Session join timed out'));
+                    }  
+                },10000);
+                let subbed = this.subscribe('joinSession', (result:SharedSessionProps|OneWaySessionProps|false)=>{
+                    if(typeof result === 'object' && result?._id === id) {
+                        if(result.setting?.users?.includes(userInvited)) {
+                            //we've joined the session
+                            this.unsubscribe('joinSession', subbed);
+                            resolved = true;
+                            if(timeout) clearTimeout(timeout);
+                            res(result);
                         }
-                    });
-                    this.users[endpoint]?.send({route:'joinSession',args:[id,userInvited,undefined,true]});
-                    //10sec timeout
-                } else res(this.joinSession(id, userInvited, typeof session === 'object' ? session : undefined));
-            });
-        }
+                    }
+                });
+                this.users[endpoint]?.send({route:'joinSession',args:[id,userInvited,undefined,true]});
+                //10sec timeout
+            } else res(this.joinSession(id, userInvited, typeof session === 'object' ? session : undefined));
+        });
     }
 
     rejectInvite = (
@@ -625,7 +626,7 @@ export class SessionsService extends Service {
                     this.unsubscribe('joinSession', u.sessionSubs[s._id].onopenSub as number);
                 }
             }
-            if(u.sessionSubs[s._id].onclose) u.sessionSubs[s._id].onclose(s, u);
+            if(u.sessionSubs[s._id].onclose) u.sessionSubs[s._id].onclose(s as any, u);
             delete u.sessionSubs[s._id];
         }
 
@@ -644,7 +645,12 @@ export class SessionsService extends Service {
     }
 
     //iterate all subscriptions, e.g. run on backend
-    sessionUpdateCheck = (transmit=true) => {
+    sessionUpdateCheck = (
+        sessionHasUpdate?:(
+            session:OneWaySessionProps|SharedSessionProps,
+            update:{shared?:any,oneWay?:any}
+        )=>void,transmit=true
+    ) => {
         let updates:any = {
             oneWay:{},
             shared:{}
@@ -662,7 +668,7 @@ export class SessionsService extends Service {
             } as any; //pull user's updated props and send to listener
             if(!this.users[sesh.source]) {
                 delete this.sessions.oneWay[session];
-                break;
+                continue;
             } 
             if(sesh.settings && sesh.data) {
                 for(const prop in sesh.settings.propnames) {
@@ -683,6 +689,9 @@ export class SessionsService extends Service {
             if(Object.keys(updateObj.data).length > 0) {
                 this.recursivelyAssign(this.sessions.oneWay[session].data, updateObj.data); //set latest data on the source object as reference
                 updates.oneWay[sesh._id as string] = updateObj;
+
+                if(sessionHasUpdate) sessionHasUpdate(sesh,updateObj);
+                if(sesh.settings.onhasupdate) sesh.onhasupdate(sesh,updateObj);
             }
         }
 
@@ -730,9 +739,11 @@ export class SessionsService extends Service {
                                 }
                                 else if(this.users[user][prop] && sesh.data?.oneWay?.[prop] !== this.users[user][prop]) 
                                     oneWayData[user][prop] = this.users[user][prop];
-                            } else if (sesh.data?.oneWay?.[user] && prop in sesh.data?.oneWay?.[user]) delete sesh.data.oneWay[user][prop]; //if user deleted the prop, session can delete it
+                            } else if (sesh.data?.oneWay?.[user] && prop in sesh.data?.oneWay?.[user]) 
+                                delete sesh.data.oneWay[user][prop]; //if user deleted the prop, session can delete it
                         }
-                        if(Object.keys(oneWayData[user]).length === 0) delete oneWayData[user];
+                        if(Object.keys(oneWayData[user]).length === 0) 
+                            delete oneWayData[user];
                     } else {                        //the rest of the users will receive the shared data
                         sharedData[user] = {};
                         for(const prop in sesh.settings.hostprops) {
@@ -744,8 +755,7 @@ export class SessionsService extends Service {
                                 } else if(typeof sharedData[user][prop] === 'object' && sesh.data) {
                                     if((stringifyFast(sesh.data?.shared[user][prop]) !== stringifyFast(this.users[user][prop]) || !(prop in sesh.data.shared[user]))) 
                                         sharedData[user][prop] = this.users[user][prop];
-                                }
-                                else if(sesh.data?.shared[user][prop] !== this.users[user][prop]) 
+                                } else if(sesh.data?.shared[user][prop] !== this.users[user][prop]) 
                                     sharedData[user][prop] = this.users[user][prop];
                             } else if (sesh.data?.shared[user] && prop in sesh.data?.shared[user]) 
                                 delete sesh.data.shared[user][prop]; //if user deleted the prop, session can delete it
@@ -785,8 +795,7 @@ export class SessionsService extends Service {
                                         //if(stringifyFast(this.users[user][prop]).includes('peer')) console.log(stringifyFast(this.users[user][prop]))
                                         sharedData[user][prop] = this.users[user][prop]; 
                                     }
-                                }
-                                else if(sesh.data?.shared[user]?.[prop] !== this.users[user][prop]) 
+                                } else if(sesh.data?.shared[user]?.[prop] !== this.users[user][prop]) 
                                     sharedData[user][prop] = this.users[user][prop];
                             } else if (sesh.data?.shared[user] && prop in sesh.data?.shared[user]) 
                                 delete sesh.data.shared[user][prop]; //if user deleted the prop, session can delete it 
@@ -800,16 +809,18 @@ export class SessionsService extends Service {
                 } 
             }
 
-            if(updateObj.data.shared || updateObj.data.oneWay) 
+            if(updateObj.data.shared || updateObj.data.oneWay)  {
                 updates.shared[sesh._id as string] = updateObj;
-
-            if(updateObj.data.shared) {
-                this.recursivelyAssign(this.sessions.shared[session].data?.shared,updateObj.data.shared);
-               //set latest data on the source object as reference
-            }
-            if(updateObj.data.oneWay) {
-                this.recursivelyAssign(this.sessions.shared[session].data?.oneWay,updateObj.data.oneWay);
-                //set latest data on the source object as reference
+                if(updateObj.data.shared) {
+                    Object.assign(this.sessions.shared[session].data?.shared, updateObj.data.shared);
+                   //set latest data on the source object as reference
+                }
+                if(updateObj.data.oneWay) {
+                    Object.assign(this.sessions.shared[session].data?.oneWay, updateObj.data.oneWay);
+                    //set latest data on the source object as reference
+                }
+                if(sessionHasUpdate) sessionHasUpdate(sesh,updateObj);
+                if(sesh.settings.onhasupdate) sesh.settings.onhasupdate(sesh,updateObj);
             }
            
         }
@@ -983,6 +994,17 @@ export class SessionsService extends Service {
         //console.log(user,props)
         return true;
     }
+
+    userUpdateLoop = { //this node loop will run separately from the one below it
+        __operator:this.userUpdateCheck, 
+        __node:{loop:10}//this will set state each iteration so we can trigger subscriptions on session updates :O
+    }
+
+    sessionLoop = {
+        __operator:this.sessionUpdateCheck, 
+        __node:{loop:10}//this will set state each iteration so we can trigger subscriptions on session updates :O
+    }
+
 
     //more general object streaming
     
@@ -1222,16 +1244,6 @@ export class SessionsService extends Service {
     streamLoop = {
         __operator:this.getAllStreamUpdates,
         __node:{loop:10}
-    }
-
-    userUpdateLoop = { //this node loop will run separately from the one below it
-        __operator:this.userUpdateCheck, 
-        __node:{loop:10}//this will set state each iteration so we can trigger subscriptions on session updates :O
-    }
-
-    sessionLoop = {
-        __operator:this.sessionUpdateCheck, 
-        __node:{loop:10}//this will set state each iteration so we can trigger subscriptions on session updates :O
     }
 
 

@@ -13,9 +13,10 @@ export * from './src/services/remote/remote.routes'
 
 export * from './src/services/ecs/ECS.service'
 
+export {html, xml} from './src/loaders/html/html'
 export * from './src/loaders/html/html.loader'
 
-export { DOMElement, addCustomElement, html } from './src/loaders/html/DOMElement'
+export { DOMElement, addCustomElement } from './src/loaders/html/DOMElement'
 export * from './src/loaders/html/wc.loader' //includes the web component spec, html loader is a little leaner otherwise
 
 export * from './src/services/e2ee/E2EE.service'

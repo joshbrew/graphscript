@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XML Function Test</title>
+</head>
+<body>
+  <script>
+    function xml(strings, ...args) {
+    return function append(elm, namespace = "http://www.w3.org/1999/xhtml") {
+        let parser = new DOMParser();
+        let serializer = new XMLSerializer();
+        let xmlDoc = parser.parseFromString('<root xmlns="' + namespace + '"></root>', 'application/xml');
+        let template = xmlDoc.createElement('template');
+        xmlDoc.documentElement.appendChild(template);
+
+        for (let i = 0; i < strings.length; i++) {
+            let textNode = xmlDoc.createTextNode(strings[i]);
+            template.appendChild(textNode);
+
+            if (i < args.length) {
+                if (args[i] instanceof Node) {
+                    template.appendChild(args[i]);
+                } else if (args[i] !== undefined) {
+                    let textNodeArg = xmlDoc.createTextNode(String(args[i]));
+                    template.appendChild(textNodeArg);
+                }
+            }
+        }
+
+        if (elm) {
+            elm.appendChild(template);
+            return serializer.serializeToString(elm);
+        }
+        return serializer.serializeToString(template);
+    };
+} //just pasted from gpt4. There's also a lit-xml plugin for this
+
+  </script>
+  <script>
+    // Test the xml function
+    window.onload = function () {
+        const testXmlFunction = () => {
+            const namespace = "http://www.example.com/test";
+            const resultContainer = document.createElement('div');
+            
+            const testElement = document.createElementNS(namespace, 'testElement');
+            testElement.textContent = "Test Content";
+            
+            const xmlAppender = xml`Hello, ${'World'}! This is ${testElement}.`;
+            const xmlContent = xmlAppender(resultContainer, namespace);
+            
+            console.log(xmlContent);
+            document.body.appendChild(resultContainer);
+        };
+        
+        testXmlFunction();
+    };
+  </script>
+</body>
+</html>
