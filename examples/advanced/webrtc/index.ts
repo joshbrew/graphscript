@@ -2,7 +2,7 @@ import { HTTPfrontend } from '../../../src/services/http/HTTP.browser';
 import { Router } from '../../../src/services/router/Router'
 import { EventSourceProps, SSEfrontend } from '../../../src/services/sse/SSE.browser';
 import { OneWaySessionProps, SessionUser, SessionsService, SharedSessionProps } from '../../../src/services/sessions/sessions.service';
-import { WebRTCfrontend, WebRTCInfo } from '../../../src/services/webrtc/WebRTC.browser';
+import { WebRTCfrontend, WebRTCInfo, WebRTCProps } from '../../../src/services/webrtc/WebRTC.browser';
 import { WebSocketInfo, WebSocketProps, WSSfrontend } from '../../../src/services/wss/WSS.browser';
 import {Graph, HTMLNodeProperties, html, htmlloader, wchtmlloader} from '../../../index'
 
@@ -321,7 +321,7 @@ async function acceptInvite (
     );
 }
 
-async function joinRoom (
+async function joinRoom(
     router:Router,
     user:SessionUser,
     session:string|OneWaySessionProps|SharedSessionProps,
@@ -352,7 +352,7 @@ function genCallSettings(
     user:SessionUser, 
     receivingUser, 
     rtcId
-    ) {
+) {
     const webrtc = router.services.webrtc as WebRTCfrontend;
     return {
         onicecandidate:async (ev) => {
@@ -398,8 +398,8 @@ function genCallSettings(
                 if(description) webrtc.negotiateCall(rtcId as string, description);
             });
         }
-        //ontrack, onclose, ondatachannel
-    }
+        //ontrack, onclose, ondatachannel, ondata
+    } as Partial<WebRTCProps>
 }
 
 //the host will relay session data to users
@@ -537,15 +537,4 @@ function sendMessage(
     session:OneWaySessionProps|SharedSessionProps
 ) {
 
-}
-
-
-function el(
-    tagName:string,
-    appendTo?:HTMLElement|string
-) {
-    let elm = document.createElement(tagName);
-    if(appendTo) {
-
-    }
 }
