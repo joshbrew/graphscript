@@ -64,7 +64,13 @@ export type Listener = {
     subInput?: boolean;
     onchange: Function;
 };
-export declare class GraphNode {
+export declare class Callable extends Function {
+    __bound: Callable;
+    __call: ((...args: any[]) => any);
+    [key: string]: any;
+    constructor();
+}
+export declare class GraphNode extends Callable {
     __node: {
         tag: string;
         unique: string;

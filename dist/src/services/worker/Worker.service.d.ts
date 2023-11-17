@@ -4,7 +4,6 @@ import { GraphNode, GraphNodeProperties } from "../../core/Graph";
 export type WorkerRoute = {
     worker?: WorkerInfo;
     workerUrl?: string | URL | Blob;
-    workerId?: string;
     transferFunctions?: {
         [key: string]: Function;
     };
@@ -62,7 +61,7 @@ export declare class WorkerService extends Service {
     threadRot: number;
     connections: any;
     constructor(options?: ServiceOptions);
-    loadWorkerRoute: (rt: WorkerRoute & GraphNode, routeKey: string) => WorkerInfo;
+    loadWorkerRoute: (node: WorkerRoute & GraphNode, routeKey: string) => WorkerInfo;
     workerloader: any;
     addDefaultMessageListener: () => void;
     postMessage: (message: any, target: string, transfer?: Transferable[]) => void;

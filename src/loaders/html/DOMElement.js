@@ -4,41 +4,28 @@ let dummy = html``;
 //from 'fragelement' on npm by Joshua Brewster (LGPL v3.0)
 export class DOMElement extends HTMLElement { 
 
-    template = function(self=this, props){ //return a string or html node
-        return `<div> Custom Fragment Props: ${JSON.stringify(props)} </div>`
-    }; //override the default template string by extending the class, or use options.template if calling the base class
-    props = {};
+    // template = function(self=this, props){ //return a string or html node
+    //     return `<div> Custom Fragment Props: ${JSON.stringify(props)} </div>`
+    // }; //override the default template string by extending the class, or use options.template if calling the base class
+    // props = {};
     useShadow = false; //can set to attach a shadow DOM instead (local styles)
-    styles; //can set a style sheet which will toggle the shadow dom by default
+    // styles; //can set a style sheet which will toggle the shadow dom by default
   
     // NOTE: Referencing this inside one of these events will give you the GraphNode
-    oncreate; //(self,props) => {}  fires on element creation (e.g. to set up logic)
-    onresize; //(self,props) => {} fires on window resize
-    ondelete; //(self,props) => {} fires after element is deleted
-    onchanged; //(props) => {} fires when props change
-    renderonchanged=false; //(self,props) => {} fires after rerendering on props change
+    // oncreate; //(self,props) => {}  fires on element creation (e.g. to set up logic)
+    // onresize; //(self,props) => {} fires on window resize
+    // ondelete; //(self,props) => {} fires after element is deleted
+    // onchanged; //(props) => {} fires when props change
+    //renderonchanged=false; //(self,props) => {} fires after rerendering on props change
 
     FRAGMENT; STYLE;
     attachedShadow = false;
 
-    obsAttributes=["props","options","onchanged","onresize","ondelete","oncreate","template"]
- 
-    get observedAttributes() {
-        return this.obsAttributes;
-    }
-
-    get obsAttributes() {
-        return this.obsAttributes;
-    }
-
-    set obsAttributes(att) {
-        if(typeof att === 'string') {
-            this.obsAttributes.push(att);
-        } else if (Array.isArray(att)) this.obsAttributes=att;
-    }
-
     static get tag(){return this.name.toLowerCase()+'-'} //tagName, default 'classname-'. Set as a static variable for the internal addElement to reference
 
+    obsAttributes=["props","options","onchanged","onresize","ondelete","oncreate","template"]
+    props = {};
+ 
     //add self or a specified class to the window which can be used via html like <custom-tag></custom-tag>
     //will default be the classname with a '-' at the end if no tag supplied
     static addElement(tag=this.tag,cls=this,extend=undefined) {
@@ -252,7 +239,7 @@ export class DOMElement extends HTMLElement {
 
         const t = document.createElement('template');
 
-        let usingHTMLFunction = this.template.prototype.constructor.name == dummy.prototype.constructor.name;
+        let usingHTMLFunction = this.template.prototype?.constructor?.name == dummy.prototype.constructor.name;
         if(typeof this.template === 'function') {
             if(usingHTMLFunction) { //html function
                 this.template(t.content);
@@ -370,95 +357,6 @@ export class DOMElement extends HTMLElement {
         }
     }
 
-    get props() {
-        return this.props;
-    } 
-
-    set props(newProps={}) {
-        this.setAttribute('props',newProps);
-    }
-
-    get template() {
-        return this.template;
-    } 
-
-    set template(template) {
-        this.setAttribute('template',template);
-    }
-
-    get render() {
-        return this.render;
-    }
-
-    get delete() {
-        return this.delete;
-    }
-
-    get state() {
-        return this.state;
-    }
-
-    //past tense just so it can't conflict with onchange
-    get onchanged() {
-        return this.onchanged;
-    } 
-
-    set onchanged(onchanged) {
-        this.setAttribute('onchanged',onchanged);
-    }
-
-    get styles() {
-        return this.styles
-    }
-
-    set styles(templateStr) {
-        
-        this.styles = templateStr;
-
-        if(this.querySelector('style')) { //get the top style 
-            // if(!this.useShadow) {
-            //     this.useShadow = true;
-            //     this.render()
-            // } else 
-            this.querySelector('style').innerHTML = templateStr;
-
-        } else {
-            //this.useShadow = true;
-            this.render();
-        }
-    }
-
-    get renderonchanged() {
-        return this.renderonchanged;
-    }
-
-    set renderonchanged(onchanged) {
-        this.setAttribute('renderonchanged',onchanged);
-    }
- 
-    get onresize() {
-        return this.props;
-    } 
-
-    set onresize(onresize) {
-        this.setAttribute('onresize',onresize);
-    }
-
-    get ondelete() {
-        return this.props;
-    } 
-
-    set ondelete(ondelete) {
-        this.setAttribute('ondelete',ondelete);
-    }
-
-    get oncreate() {
-        return this.oncreate;
-    } 
-
-    set oncreate(oncreate) {
-        this.setAttribute('oncreated',oncreate);
-    }
 }
 
 //extend the DOMElement class with an new name, this name determines the element name (always lower case in the html regardless of class name cases)

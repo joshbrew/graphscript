@@ -51,7 +51,7 @@ export const wchtmlloader = (
 
     const registerElement = (node, tagNameOverride?:string) => {
         if (isNativeClass(node)) node = new node();
-        else if (typeof node === 'function') node = node();
+        else if (typeof node === 'function' && !node.__node) node = node();
 
         class CustomElement extends DOMElement {
             props = node.props;
@@ -64,7 +64,7 @@ export const wchtmlloader = (
             renderonchanged = node.__renderonchanged as any;
         }
 
-        if (tagNameOverride.includes('-')) node.tagName = tagNameOverride
+        if (tagNameOverride?.includes('-')) node.tagName = tagNameOverride
         else if(node.__element) node.tagName = node.__element;
         
         if(!node.tagName) node.tagName = `element${Math.floor(Math.random()*1000000000000000)}-`;

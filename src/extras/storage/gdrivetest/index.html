@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+    <html>
+        <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive File Browser</title>
+    <style>
+        #file-browser {
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 100%;
+        max-width: 600px;
+        margin: auto;
+        }
+        #file-list .file-item {
+        padding: 5px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        }
+        #file-list .file-item:hover {
+        background-color: #f0f0f0;
+        }
+        #drop-zone {
+        border: 2px dashed #ccc;
+        text-align: center;
+        padding: 20px;
+        margin-bottom: 10px;
+        }
+        #drop-zone.highlight {
+        background-color: #e0e0e0;
+        }
+    </style>
+    </head>
+    <body>
+
+    <h1>Google Drive File Browser</h1>
+    <div id="auth-button">Sign in with Google</div>
+    <div id="file-browser-container"></div>
+
+    <script src="dist/index.js"></script>
+    </body>
+</html>
+        

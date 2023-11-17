@@ -1,7 +1,7 @@
 /// <reference types="node" />
 /// <reference types="node" />
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
-import { Session, SessionState, Channel } from 'better-sse';
+import { Session, Channel } from 'better-sse';
 import http from 'http';
 import https from 'https';
 import { Readable } from "node:stream";
@@ -19,7 +19,7 @@ export type SSEProps = {
 export type SSEChannelInfo = {
     channel: Channel<Record<string, unknown>>;
     sessions: {
-        [key: string]: Session<SessionState>;
+        [key: string]: Session<any>;
     };
     requests: {
         [key: string]: Function;
@@ -36,7 +36,7 @@ export type SSEChannelInfo = {
 } & SSEProps;
 export type SSEClientInfo = {
     _id: string;
-    session: Session<SessionState>;
+    session: Session<any>;
     served: SSEChannelInfo;
     send: (message: any, eventName?: string) => any;
     request: (message: any, method?: string, eventName?: string) => Promise<any>;

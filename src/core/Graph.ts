@@ -69,8 +69,25 @@ export type Listener = {
     onchange:Function //internal function called by the event handler, wrapped by graphscript
 }
 
+
+//Call node __operators like so: let node = graph.get('abc'); let result = node(input);
+export class Callable extends Function {
+
+    __bound:Callable;
+    __call:((...args:any[])=>any);
+    [key:string]:any;
+
+    constructor() {
+        super('return this.__bound.__call.apply(this.__bound, arguments)')
+        this.__bound = this.bind(this)
+        return this.__bound;
+    }
+
+}
+
+
 //this is a scope
-export class GraphNode {
+export class GraphNode extends Callable {
 
     __node:{
         tag:string,
@@ -98,6 +115,7 @@ export class GraphNode {
     
     //pass GraphNodeProperties, functions, or tags of other nodes
     constructor(properties:any, parent?:{[key:string]:any}, graph?:Graph) {
+        super();
         this.__setProperties(properties,parent,graph);
     }
 
@@ -207,7 +225,8 @@ export class GraphNode {
             let assignProps = () => {
                 properties.__node = Object.assign(this.__node,properties.__node);
                 let keys = Object.getOwnPropertyNames(properties).filter((v)=>{if(!objProps[v]) return true;});
-                for(const key of keys) { if(key in properties) this[key] = properties[key]; }
+                for(const key of keys) { if(key in properties && key !== 'name') this[key] = properties[key]; }
+
             }
 
             let bindCallbacks = () => {
@@ -326,9 +345,8 @@ export class GraphNode {
             let sub;
             
             let k = subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key;
-
-            if(typeof callback === 'function') 
-                sub = subscribeToFunction(k, (callback, target) => (target ? target : callback), callback)
+            if(typeof callback === 'function' && !(callback as GraphNode)?.__node) 
+                sub = subscribeToFunction(k, (callback, target) => (target ? target : callback), callback as (...res:any)=>void)
             else if((callback as GraphNode)?.__node) sub = subscribeToFunction(k, 
                 (callback, target) => (target ? target : (callback as GraphNode).__node.unique),
                 (...inp:any)=>{ if((callback as any).__operator) (callback as any).__operator(...inp); }
@@ -351,7 +369,7 @@ export class GraphNode {
 
             let k = subInput ? this.__node.unique+'input' : this.__node.unique;
 
-            if(typeof callback === 'function') sub = subscribeToFunction(k, (callback, target) => (target ? target : callback), callback)
+            if(typeof callback === 'function' && !(callback as GraphNode)?.__node) sub = subscribeToFunction(k, (callback, target) => (target ? target : callback), callback as (...res:any)=>void)
             else if((callback as GraphNode)?.__node) {
                 sub = subscribeToFunction(k, 
                     (callback, target) => target ? target : (callback as GraphNode).__node.unique,
@@ -402,6 +420,8 @@ export class GraphNode {
                 this.__subscribedToParent = true;
             }
         }
+
+        this.__call = ((...args) => { return this.__operator(...args); });
 
         return this.__operator;
     }
@@ -1262,7 +1282,7 @@ export class Graph {
                 }
             } else {
                 if(typeof onEvent === 'string') onEvent = this.__node.nodes.get(onEvent).__operator; 
-                if(typeof onEvent === 'function') sub = this.__node.state.subscribeEvent(nodeEvent, onEvent);
+                if(typeof onEvent === 'function' && !(onEvent as GraphNode)?.__node) sub = this.__node.state.subscribeEvent(nodeEvent, onEvent as (...res:any)=>void);
             }
         }
         return sub;
@@ -1438,3 +1458,37 @@ export const wrapArgs = (callback,argOrder,graph) => {
 }
 
 let objProps = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
+
+
+
+
+
+  
+//   class AnotherCallable extends Callable {
+//     constructor() {
+//       super()
+//       this.person = 'Dean'
+//     }
+  
+//     suffix(arg) {
+//       return `${this.person} ${arg || ''}`
+//     }
+  
+//     _call(arg) {
+//       return `${this.person} ${arg || ''}`
+//     }
+//   }
+  
+  
+//   var obj1 = new AnotherCallable()
+  
+//   // Method and prop access is maintained.
+//   console.log('Method and prop access is maintained:')
+//   console.log(obj1.person, obj1.suffix('Venture'), obj1('Venture'))
+  
+//   // Inheritance is correctly maintained.
+//   console.log('\nInheritance is maintained:')
+//   console.log(obj1 instanceof Function)  // true
+//   console.log(obj1 instanceof Callable)  // true
+//   console.log(obj1 instanceof AnotherCallable)  // true
+  

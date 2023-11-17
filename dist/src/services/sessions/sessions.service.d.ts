@@ -1,6 +1,17 @@
 import { Service, ServiceOptions } from "../Service";
 import { User } from "../router/Router";
-export type PrivateSessionProps = {
+/**
+ * Sessions are a way to run a loop that monitors data structures to know procedurally when and what to update
+ *
+ * OneWaySession: source sends props to listener, define listener, source default is creating user
+ * SharedSession: two modes:
+ *  Hosted: Host receives props from all users based on propnames, users receive hostprops
+ *  Shared: All users receive the same props based on their own updates
+ *
+ * There's also these older stream API functions that are more pure for monitoring objects/arrays and updating new data e.g. out of a buffer.
+ * Need to esplain/demo all that too.... @@__@@
+ */
+export type OneWaySessionProps = {
     _id?: string;
     settings?: {
         listener: string;
@@ -16,9 +27,10 @@ export type PrivateSessionProps = {
         };
         password?: string;
         ownerId?: string;
-        onopen?: (session: PrivateSessionProps) => void;
-        onmessage?: (session: PrivateSessionProps) => void;
-        onclose?: (session: PrivateSessionProps) => void;
+        onopen?: (session: OneWaySessionProps) => void;
+        onhasupdate?: (session: OneWaySessionProps, updated: any) => void;
+        onmessage?: (session: OneWaySessionProps, updated: any) => void;
+        onclose?: (session: OneWaySessionProps) => void;
         [key: string]: any;
     };
     data?: {
@@ -32,8 +44,16 @@ export type SessionUser = {
     sessions: {
         [key: string]: any;
     };
+    sessionSubs: {
+        [key: string]: {
+            onopenSub?: number;
+            onmessage?: (session: SharedSessionProps, update: any, user: SessionUser) => void;
+            onopen?: (session: SharedSessionProps, user: SessionUser) => void;
+            onclose?: (session: SharedSessionProps, user: SessionUser) => void;
+        };
+    };
     [key: string]: any;
-} & Partial<User>;
+} & User;
 export type SharedSessionProps = {
     _id?: string;
     settings?: {
@@ -48,6 +68,7 @@ export type SharedSessionProps = {
         hostprops?: {
             [key: string]: boolean;
         };
+        inheritHostData?: boolean;
         admins?: {
             [key: string]: boolean;
         };
@@ -62,8 +83,9 @@ export type SharedSessionProps = {
         };
         password?: string;
         ownerId?: string;
+        onhasupdate?: (session: SharedSessionProps, updated: any) => void;
         onopen?: (session: SharedSessionProps) => void;
-        onmessage?: (session: SharedSessionProps) => void;
+        onmessage?: (session: SharedSessionProps, updated: any) => void;
         onclose?: (session: SharedSessionProps) => void;
         [key: string]: any;
     };
@@ -73,7 +95,7 @@ export type SharedSessionProps = {
                 [key: string]: any;
             };
         };
-        private?: {
+        oneWay?: {
             [key: string]: any;
         };
         [key: string]: any;
@@ -102,34 +124,50 @@ export declare class SessionsService extends Service {
         [key: string]: SessionUser;
     };
     sessions: {
-        private: {
-            [key: string]: PrivateSessionProps;
+        oneWay: {
+            [key: string]: OneWaySessionProps;
         };
         shared: {
             [key: string]: SharedSessionProps;
         };
     };
+    invites: {
+        [key: string]: {
+            [key: string]: {
+                session: OneWaySessionProps | SharedSessionProps | string;
+                endpoint?: string;
+            };
+        };
+    };
     constructor(options?: ServiceOptions, users?: {
         [key: string]: SessionUser;
     });
-    getSessionInfo: (sessionId?: string, userId?: string) => {};
-    openPrivateSession: (options?: PrivateSessionProps, userId?: string) => any;
+    getSessionInfo: (sessionIdOrName?: string, userId?: string) => {};
+    openOneWaySession: (options?: OneWaySessionProps, sourceUserId?: string, listenerUserId?: string) => any;
     openSharedSession: (options: SharedSessionProps, userId?: string) => any;
     open: (options: any, userId?: string) => void;
-    updateSession: (options: PrivateSessionProps | SharedSessionProps, userId?: string) => any;
-    joinSession: (sessionId: string, userId: string, options?: SharedSessionProps | PrivateSessionProps) => any;
-    leaveSession: (sessionId: string, userId: string, clear?: boolean) => boolean;
+    updateSession: (options: OneWaySessionProps | SharedSessionProps, userId?: string) => any;
+    joinSession: (sessionId: string, userId: string, options?: SharedSessionProps | OneWaySessionProps, remoteUser?: boolean) => SharedSessionProps | OneWaySessionProps | false;
+    inviteToSession: (session: OneWaySessionProps | SharedSessionProps | string, userInvited: string, inviteEndpoint?: string, remoteUser?: boolean) => void;
+    receiveSessionInvite: (session: OneWaySessionProps | SharedSessionProps | string, userInvited: string, endpoint?: string) => string;
+    acceptInvite: (session: OneWaySessionProps | SharedSessionProps | string, userInvited: string, remoteUser?: boolean) => Promise<SharedSessionProps | OneWaySessionProps | false>;
+    rejectInvite: (session: OneWaySessionProps | SharedSessionProps | string, userInvited: string, remoteUser?: boolean) => boolean;
+    leaveSession: (session: OneWaySessionProps | SharedSessionProps | string, userId: string, clear?: boolean, remoteUser?: boolean) => boolean;
+    deleteSession: (session: string | OneWaySessionProps | SharedSessionProps, userId: string, remoteUsers?: boolean) => boolean;
     getFirstMatch(obj1: {
         [key: string]: any;
     }, obj2: {
         [key: string]: any;
     }): string | false;
-    swapHost: (session: PrivateSessionProps | SharedSessionProps | string, newHostId?: string) => boolean;
-    deleteSession: (sessionId: string, userId: string) => boolean;
-    subscribeToSession: (session: SharedSessionProps | PrivateSessionProps | string, userId: string, onmessage?: (session: SharedSessionProps | PrivateSessionProps, userId: string) => void, onopen?: (session: SharedSessionProps | PrivateSessionProps, userId: string) => void, onclose?: (session: SharedSessionProps | PrivateSessionProps, userId: string) => void) => PrivateSessionProps | SharedSessionProps;
-    sessionUpdateCheck: (transmit?: boolean) => any;
+    swapHost: (session: OneWaySessionProps | SharedSessionProps | string, newHostId?: string, adoptData?: boolean, remoteUser?: boolean) => boolean;
+    subscribeToSession: (session: SharedSessionProps | OneWaySessionProps | string, userId: string, onmessage?: (session: SharedSessionProps | OneWaySessionProps, update: any, user: SessionUser) => void, onopen?: (session: SharedSessionProps | OneWaySessionProps, user: SessionUser) => void, onclose?: (session: SharedSessionProps | OneWaySessionProps, user: SessionUser) => void) => OneWaySessionProps | SharedSessionProps;
+    unsubsribeFromSession: (session: SharedSessionProps | OneWaySessionProps | string, userId?: string, clear?: boolean) => any;
+    sessionUpdateCheck: (sessionHasUpdate?: (session: OneWaySessionProps | SharedSessionProps, update: {
+        shared?: any;
+        oneWay?: any;
+    }) => void, transmit?: boolean) => any;
     transmitSessionUpdates: (updates: {
-        private: {
+        oneWay: {
             [key: string]: any;
         };
         shared: {
@@ -137,7 +175,7 @@ export declare class SessionsService extends Service {
         };
     }) => {};
     receiveSessionUpdates: (origin: any, update: string | {
-        private: {
+        oneWay: {
             [key: string]: any;
         };
         shared: {
@@ -145,10 +183,29 @@ export declare class SessionsService extends Service {
         };
     }) => SessionUser;
     getUpdatedUserData: (user: SessionUser) => {};
-    userUpdateCheck: (user: SessionUser) => {};
+    userUpdateCheck: (user: SessionUser, onupdate?: (user: SessionUser, updateObj: {
+        [key: string]: any;
+    }) => void) => {};
     setUserProps: (user: string | SessionUser, props: string | {
         [key: string]: any;
     }) => boolean;
+    userUpdateLoop: {
+        __operator: (user: SessionUser, onupdate?: (user: SessionUser, updateObj: {
+            [key: string]: any;
+        }) => void) => {};
+        __node: {
+            loop: number;
+        };
+    };
+    sessionLoop: {
+        __operator: (sessionHasUpdate?: (session: OneWaySessionProps | SharedSessionProps, update: {
+            shared?: any;
+            oneWay?: any;
+        }) => void, transmit?: boolean) => any;
+        __node: {
+            loop: number;
+        };
+    };
     STREAMLATEST: number;
     STREAMALLLATEST: number;
     streamSettings: StreamInfo;
@@ -179,18 +236,6 @@ export declare class SessionsService extends Service {
     getAllStreamUpdates: () => {};
     streamLoop: {
         __operator: () => {};
-        __node: {
-            loop: number;
-        };
-    };
-    userUpdateLoop: {
-        __operator: (user: SessionUser) => {};
-        __node: {
-            loop: number;
-        };
-    };
-    sessionLoop: {
-        __operator: (transmit?: boolean) => any;
         __node: {
             loop: number;
         };

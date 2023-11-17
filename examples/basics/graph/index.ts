@@ -90,9 +90,12 @@ let result1 = new Promise((res) => {
 
 graph.run('graphSequence', ...args);
 
+
+
 let result3 = graph.run('nodeSyntax', ...args);
 let result2 = graph.run('nativeJSSyntax', ...args);
-
+let node = graph.get('nodeSyntax');
+let result4 = node(...args); //nodes are now callable.
 //lets remove a node and then try to run it on the graph again
 let removed = graph.remove('nativeJSSyntax');
 let result_undefined = graph.run('nativeJSSyntax', ...args);
@@ -110,6 +113,7 @@ result1.then((result) => {
                 Graph Node Syntax: ${result3}<br/>
                 Native JS Syntax: ${result2}<br/>
                 Graph Sequence Syntax: ${result}<br/>
+                Callable Syntax: ${result4}<br/>
             </div>
         </div>
     `);

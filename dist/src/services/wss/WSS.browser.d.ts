@@ -1,5 +1,20 @@
 import { GraphNode, GraphNodeProperties } from "../../core/Graph";
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
+export type WSSRoute = {
+    socket?: WebSocketInfo;
+    transferFunctions?: {
+        [key: string]: Function;
+    };
+    transferClasses?: {
+        [key: string]: Function;
+    };
+    parentRoute?: string;
+    callback?: string;
+    stopped?: boolean;
+    blocking?: boolean;
+    init?: string;
+    initArgs?: any[];
+} & GraphNodeProperties & WebSocketProps;
 export type WebSocketProps = {
     host: string;
     port: number;
@@ -65,6 +80,10 @@ export declare class WSSfrontend extends Service {
         };
     };
     constructor(options?: ServiceOptions);
+    loadWebSocketRoute: (node: WebSocketProps & GraphNode) => WebSocketInfo;
+    socketloader: {
+        websockets: (node: WebSocketProps & GraphNode, parent: WebSocketProps & GraphNode, graph: WSSfrontend, roots: any) => void;
+    };
     openWS: (options?: WebSocketProps) => WebSocketInfo;
     open: (options?: WebSocketProps) => WebSocketInfo;
     transmit: (data: string | ArrayBufferLike | Blob | ArrayBufferView | ServiceMessage, ws: WebSocket) => boolean;

@@ -1,15 +1,12 @@
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import Worker from 'web-worker' //cross platform for node and browser
 import { Graph, GraphNode, GraphNodeProperties } from "../../core/Graph";
-import { methodstrings } from "../../loaders/methodstrings";
-import { recursivelyStringifyFunctions } from "../utils";
 
 declare var WorkerGlobalScope;
 
 export type WorkerRoute = {
     worker?:WorkerInfo
     workerUrl?: string|URL|Blob,
-    workerId?: string,
     transferFunctions?:{[key:string]:Function},
     transferClasses?:{[key:string]:Function},
     parentRoute?:string, //if a child of a worker node, subscribe to a route on a parent worker?
@@ -80,58 +77,57 @@ export class WorkerService extends Service {
         }
     }
 
-    loadWorkerRoute = (rt:WorkerRoute & GraphNode,routeKey:string) => {
-        if(rt.workerUrl) rt.url = rt.workerUrl;
-        if(rt.workerId) rt.__node.tag = rt.workerId;
-        if(!rt.__node.tag) rt.__node.tag = routeKey;
-        rt._id = rt.__node.tag;
+    loadWorkerRoute = (node:WorkerRoute & GraphNode, routeKey:string) => {
+        if(node.workerUrl) node.url = node.workerUrl;
+        if(node._id) node.__node.tag = node._id;
+        if(!node.__node.tag) node.__node.tag = routeKey;
+        node._id = node.__node.tag;
 
         let worker:WorkerInfo;
-        if(this.workers[rt._id]) worker = this.workers[rt._id];
-        else if (rt.worker) worker = rt.worker;
+        if(this.workers[node._id]) worker = this.workers[node._id];
+        else if (node.worker) worker = node.worker;
         if(!worker) {
-            worker = this.addWorker(rt);
-
+            worker = this.addWorker(node);
         }
 
-        rt.worker = worker;
+        node.worker = worker;
 
-        if(!rt.worker.__ondisconnected) {
+        if(!node.__ondisconnected) {
             let ondelete = (rt) => { //removing the original route will trigger ondelete
                 rt.worker?.terminate();
             }
-            rt.__addOndisconnected(ondelete);
+            node.__addOndisconnected(ondelete);
         }
         //console.log(rt);
 
         //requires remoteGraphRoutes on the worker (enabled on the default worker)
-        if(rt.transferFunctions) {
-            for(const prop in rt.transferFunctions) {
-                this.transferFunction(worker,rt.transferFunctions[prop],prop)
+        if(node.transferFunctions) {
+            for(const prop in node.transferFunctions) {
+                this.transferFunction(worker,node.transferFunctions[prop],prop)
             }
         }
-        if(rt.transferClasses) {
-            for(const prop in rt.transferClasses) {
-                this.transferClass(worker,rt.transferClasses[prop],prop)
+        if(node.transferClasses) {
+            for(const prop in node.transferClasses) {
+                this.transferClass(worker,node.transferClasses[prop],prop)
             }
         }
 
         if(worker) {
-            if(!rt.__operator) {
-                rt.__operator = (...args) => {
+            if(!node.__operator) {
+                node.__operator = (...args) => {
                     //console.log('operator', args)
-                    if(rt.callback) {
-                        if(!this.__node.nodes.get(rt.__node.tag)?.__children) worker.post(rt.callback,args);
-                        else return worker.run(rt.callback,args);
+                    if(node.callback) {
+                        if(!this.__node.nodes.get(node.__node.tag)?.__children) worker.post(node.callback,args);
+                        else return worker.run(node.callback,args);
                     } else {
-                        if(!this.__node.nodes.get(rt.__node.tag)?.__children) worker.send(args);
+                        if(!this.__node.nodes.get(node.__node.tag)?.__children) worker.send(args);
                         else return worker.request(args);
                     }
                 }
             }
 
-            if(rt.init) { //requires remoteGraphRoutes
-                worker.run(rt.init,rt.initArgs,undefined,rt.initTransfer);
+            if(node.init) { //requires remoteGraphRoutes
+                worker.run(node.init,node.initArgs,undefined,node.initTransfer);
             } 
 
             // //need remoteGraphRoutes loaded
@@ -166,7 +162,7 @@ export class WorkerService extends Service {
         'workers':(node: WorkerRoute & GraphNode, parent:WorkerRoute & GraphNode, graph:Graph, roots:any) => {
             let rt = node as WorkerRoute;
             if(!node.parentRoute && (parent?.callback && parent?.worker)) node.parentRoute = parent?.callback;
-            if(rt?.worker || rt?.workerId || (rt as WorkerRoute)?.workerUrl) { //each set of props with a worker will instantiate a new worker, else you can use the same worker elsewhere by passing the corresponding tag
+            if(rt?.worker || (rt?._id && this.workers[rt._id]) || (rt as WorkerRoute)?.workerUrl) { //each set of props with a worker will instantiate a new worker, else you can use the same worker elsewhere by passing the corresponding tag
 
                 let worker = this.loadWorkerRoute(rt as any, rt.__node.tag);
                 

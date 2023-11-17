@@ -41,7 +41,7 @@ export const loop = (node:GraphNode,parent:GraphNode|Graph,graph:Graph)=>{
         //&& !node.__node.looperSet //not using this allows multiple loops to run, just set looping=false and wait for all to finish otherwise
     ) {
         let loopId = Math.random();
-        if(!node.__node.loops) node.node.loops = {};
+        if(!node.__node.loops) node.__node.loops = {};
         if(typeof node.__node.delay === 'number') {
             let fn = node.__operator;
             node.__setOperator((...args:any[]) => {

@@ -215,7 +215,7 @@ function createOutgoingStream( //needs to go to a specified user
                 onopen:(session)=>{
                     console.log("Session started:", session);
                 },
-                onmessage:(session, update)=>{
+                onhasupdate:(session, update)=>{
                     console.log("Session has update:", session, update);
                 },
                 onclose:(session)=>{
@@ -263,7 +263,7 @@ function createRoom(
                 onopen:(session)=>{
                     console.log("Session started:", session);
                 },
-                onmessage:(session, update)=>{
+                onhasupdate:(session, update)=>{
                     console.log("Session has update:", session, update);
                 },
                 onclose:(session)=>{

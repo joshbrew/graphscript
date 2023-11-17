@@ -27,6 +27,9 @@ export type WebRTCProps = {
     onconnectionstatechange?: (ev: Event) => void;
     oniceconnectionstatechange?: (ev: Event) => void;
     onclose?: (rtc: WebRTCInfo) => void;
+    caller?: string;
+    remoteId?: string;
+    [key: string]: any;
 };
 export type WebRTCInfo = {
     _id: string;

@@ -2,6 +2,18 @@
 import { GraphNode, GraphNodeProperties } from "../../core/Graph";
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 
+export type WSSRoute = {
+    socket?:WebSocketInfo
+    transferFunctions?:{[key:string]:Function},
+    transferClasses?:{[key:string]:Function},
+    parentRoute?:string, //if a child of a socket node, subscribe to a route on a parent worker?
+    callback?:string, //Run this route on the socket when the operator is called. If this route is a child of another node, run this node on the child worker when it receives a message. 
+    stopped?:boolean, // Don't run the callback until we call the thread to start? E.g. for recording data periodically.
+    blocking?:boolean, //should the subscribed socket wait for the subscriber to resolve before sending a new result? Prevents backup and makes async processing easier
+    init?:string, //run a callback on the socket on socket init?
+    initArgs?:any[] //arguments to go with the socket init?
+} & GraphNodeProperties & WebSocketProps
+
 export type WebSocketProps = {
     host:string,
     port:number,
@@ -51,15 +63,63 @@ export class WSSfrontend extends Service {
         this.load(this);
     }
 
+    loadWebSocketRoute = (node: WebSocketProps & GraphNode) => {
+        let wsInfo = this.openWS(node);
+    
+        if (!wsInfo.__ondisconnected) {
+            wsInfo.__addOndisconnected(() => {
+                wsInfo.terminate();
+            });
+        }
+    
+        if (!node.__operator) {
+            node.__operator = (...args) => {
+                //console.log('operator', args)
+                if(node.callback) {
+                    if(!this.__node.nodes.get(node.__node.tag)?.__children) wsInfo.post(node.callback,args);
+                    else return wsInfo.run(node.callback,args);
+                } else {
+                    if(!this.__node.nodes.get(node.__node.tag)?.__children) wsInfo.send(args);
+                    else return wsInfo.request(args);
+                }
+            }
+        }
+        
+        if(!node.__ondisconnected) {
+            let ondelete = (rt) => { //removing the original route will trigger ondelete
+                rt?.terminate();
+            }
+            node.__addOndisconnected(ondelete);
+        }
+    
+        // Additional setup or event handlers can be added here
+        // ...
+    
+        return wsInfo;
+    };
+
+    socketloader = {
+        'websockets': (node: WebSocketProps & GraphNode, parent: WebSocketProps & GraphNode, graph: WSSfrontend, roots: any) => {
+            node._id = node.__node.tag;
+            let ws = this.loadWebSocketRoute(node);
+            Object.assign(node,ws); 
+            if (parent && parent.type === 'socket') {
+                let parentWs = this.sockets[parent._id];
+    
+                // Logic to subscribe child node to parent WebSocket
+                if (node.parentRoute) {
+                    parentWs.subscribe(node.parentRoute, node.__operator);
+                }
+            }
+        }
+    }
+
     openWS = (
         options:WebSocketProps = {
             host:'localhost',
             port:7000,
             path:undefined,
-            protocol:'ws',
-            onclose:(ev:any,socket:WebSocket,wsinfo:WebSocketInfo)=>{
-                if(ev.target.url) delete this.sockets[ev.target.url];
-            }
+            protocol:'ws'
         }
     ) => {
 
@@ -223,7 +283,7 @@ export class WSSfrontend extends Service {
             return this.terminate(address);
         }
 
-        let socketsettings = {
+        Object.assign(options, {
             type:'socket',
             socket,
             address,
@@ -233,20 +293,18 @@ export class WSSfrontend extends Service {
             request,
             subscribe,
             unsubscribe,
-            terminate,
-            graph:this,
-            __node:{tag:address},
-            ...options
-        } as any;
-
-        let node = this.add(socketsettings);
-
-        this.sockets[address] = node as GraphNode & WebSocketInfo;
+            terminate
+        });        
+ 
+        if(!(options instanceof GraphNode)) {
+            let node = this.add(options);
+            node.__addOndisconnected(function() { terminate(); });
+            options = node as any;
+        }
+        this.sockets[address] = options as GraphNode & WebSocketInfo;
         //console.log(node,this.get(address),this.sockets[address]);
 
-        node.__addOndisconnected(function() { terminate(); });
-
-        return node as WebSocketInfo;
+        return options as WebSocketInfo;
     }
 
     open = this.openWS;

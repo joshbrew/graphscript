@@ -8,14 +8,16 @@ export type User = {
     run: (...args: any[]) => Promise<any> | Promise<any>[] | undefined;
     subscribe: (...args: any[]) => Promise<number> | Promise<number>[] | undefined;
     unsubscribe: (...args: any[]) => Promise<boolean> | Promise<boolean>[] | undefined;
-    sendAll: (...args: any[]) => any;
-    requestAll: (...args: any[]) => Promise<any[]> | undefined;
-    postAll: (...args: any[]) => void;
-    runAll: (...args: any[]) => Promise<any[]> | undefined;
-    subscribeAll: (...args: any[]) => Promise<number[]> | undefined;
-    unsubscribeAll: (...args: any[]) => Promise<boolean[]> | undefined;
+    sendAll?: (...args: any[]) => any;
+    requestAll?: (...args: any[]) => Promise<any[]> | undefined;
+    postAll?: (...args: any[]) => void;
+    runAll?: (...args: any[]) => Promise<any[]> | undefined;
+    subscribeAll?: (...args: any[]) => Promise<number[]> | undefined;
+    unsubscribeAll?: (...args: any[]) => Promise<boolean[]> | undefined;
     terminate: (...args: any[]) => boolean;
-    onclose?: (user: User) => void;
+    onmessage?: (...args: any[]) => void;
+    onerror?: (...args: any[]) => void;
+    onclose?: ((user: User) => void) | ((...args: any[]) => void);
     [key: string]: any;
 };
 export type ConnectionProps = {
@@ -115,7 +117,7 @@ export declare class Router extends Service {
     getConnections: (sourceId: string, hasMethod?: string, props?: {}) => {};
     runConnection: (userId: string, method: 'run' | 'post' | 'subscribe' | 'unsubscribe' | 'terminate' | 'send' | 'request' | 'runAll' | 'postAll' | 'subscribeAll' | 'unsubscribeAll' | 'sendAll' | 'requestAll', args: any[], connectionId?: string) => Promise<any>;
     subscribeThroughConnection: (route: string, remoteRelay: string | ConnectionInfo, remoteEndpoint: string, callback: string | ((res: any) => void), ...args: any[]) => Promise<unknown>;
-    addConnection: (options: ConnectionProps | ConnectionInfo | string, source?: string) => ConnectionInfo;
+    addConnection: (options: ConnectionProps | ConnectionInfo | string, source?: string, autoRemove?: boolean) => ConnectionInfo;
     removeConnection: (connection: string | ConnectionInfo | {
         [key: string]: any;
         _id: string;
