@@ -19,6 +19,7 @@ export type GraphNodeProperties = {
         [key:string]:any
     },
     __args?:any[], //can structure input arguments, include '__result' when generically calling operators for where to pass the original input in in a set of arguments
+    __callable?:boolean, //we can have the graphnode return itself as a callable function with private properties
     [key:string]:any
 }
 
@@ -85,9 +86,8 @@ export class Callable extends Function {
 
 }
 
-
 //this is a scope
-export class GraphNode extends Callable {
+export class GraphNode {
 
     __node:{
         tag:string,
@@ -114,9 +114,35 @@ export class GraphNode extends Callable {
     [key:string]:any
     
     //pass GraphNodeProperties, functions, or tags of other nodes
-    constructor(properties:any, parent?:{[key:string]:any}, graph?:Graph) {
-        super();
+    constructor(properties:GraphNodeProperties, parent?:{[key:string]:any}, graph?:Graph) {
+        //super();
         this.__setProperties(properties,parent,graph);
+
+        // Check if the properties are a function or denote the GraphNode to be callable (but all properties private!!)
+        if (typeof properties === 'function' || properties.__callable) { //assuming operator is defined
+            const callableInstance = new Callable();
+            callableInstance.__call = (...args) => this.__operator(...args);
+
+            // Create a proxy to delegate function calls to callableInstance and properties to this
+            const proxy = new Proxy(callableInstance, { //experimental
+                get: (target, prop, receiver) => {
+                    if (Reflect.has(this, prop)) {
+                        return Reflect.get(this, prop, receiver);
+                    }
+                    return Reflect.get(target, prop, receiver);
+                },
+                set: (target, prop, value, receiver) => {
+                    if (Reflect.has(this, prop)) {
+                        return Reflect.set(this, prop, value, receiver);
+                    }
+                    return Reflect.set(target, prop, value, receiver);
+                }
+            });
+            Object.setPrototypeOf(proxy,this); //pass instanceof checks
+
+            //@ts-ignore
+            return proxy;
+        }
     }
 
     __setProperties = (properties, parent, graph) => {
@@ -345,7 +371,7 @@ export class GraphNode extends Callable {
             let sub;
             
             let k = subInput ? this.__node.unique+'.'+key+'input' : this.__node.unique+'.'+key;
-            if(typeof callback === 'function' && !(callback as GraphNode)?.__node) 
+            if(typeof callback === 'function' && !(callback as any)?.__node) 
                 sub = subscribeToFunction(k, (callback, target) => (target ? target : callback), callback as (...res:any)=>void)
             else if((callback as GraphNode)?.__node) sub = subscribeToFunction(k, 
                 (callback, target) => (target ? target : (callback as GraphNode).__node.unique),
@@ -369,7 +395,7 @@ export class GraphNode extends Callable {
 
             let k = subInput ? this.__node.unique+'input' : this.__node.unique;
 
-            if(typeof callback === 'function' && !(callback as GraphNode)?.__node) sub = subscribeToFunction(k, (callback, target) => (target ? target : callback), callback as (...res:any)=>void)
+            if(typeof callback === 'function' && !(callback as any)?.__node) sub = subscribeToFunction(k, (callback, target) => (target ? target : callback), callback as (...res:any)=>void)
             else if((callback as GraphNode)?.__node) {
                 sub = subscribeToFunction(k, 
                     (callback, target) => target ? target : (callback as GraphNode).__node.unique,
@@ -420,8 +446,6 @@ export class GraphNode extends Callable {
                 this.__subscribedToParent = true;
             }
         }
-
-        this.__call = ((...args) => { return this.__operator(...args); });
 
         return this.__operator;
     }
@@ -1282,7 +1306,7 @@ export class Graph {
                 }
             } else {
                 if(typeof onEvent === 'string') onEvent = this.__node.nodes.get(onEvent).__operator; 
-                if(typeof onEvent === 'function' && !(onEvent as GraphNode)?.__node) sub = this.__node.state.subscribeEvent(nodeEvent, onEvent as (...res:any)=>void);
+                if(typeof onEvent === 'function' && !(onEvent as any)?.__node) sub = this.__node.state.subscribeEvent(nodeEvent, onEvent as (...res:any)=>void);
             }
         }
         return sub;
@@ -1458,7 +1482,6 @@ export const wrapArgs = (callback,argOrder,graph) => {
 }
 
 let objProps = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
-
 
 
 

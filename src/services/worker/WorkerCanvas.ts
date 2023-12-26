@@ -1,5 +1,5 @@
 //provide routes for applying canvases to workers
-import { GraphNode } from '../../core/Graph';
+
 import { proxyElementWorkerRoutes, initProxyElement } from './ProxyListener';
 
 declare var WorkerGlobalScope;
