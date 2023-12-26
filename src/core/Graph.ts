@@ -741,7 +741,7 @@ export class Graph {
             if(isNativeClass(properties)) { //works on custom classes
                 if(properties.prototype instanceof GraphNode) { properties = properties.prototype.constructor(properties,parent,this); instanced = true; } //reinstantiate a new node with the old node's props
                 else properties = new properties(); //this is a class that returns a node definition 
-            } else properties = { __operator:properties };
+            } else properties = { __operator:properties, __callable:true };
         }
         else if (typeof properties === 'string') {
             properties = this.__node.roots[properties];
@@ -821,7 +821,7 @@ export class Graph {
                 if(isNativeClass(p)) { //works on custom classes
                     p = new p(); //this is a class that returns a node definition
                     if(p instanceof GraphNode) { p = p.prototype.constructor(p,parent,this); instanced = true; } //re-instance a new node    
-                } else p = { __operator:p };
+                } else p = { __operator:p, __callable:true };
             } else if (typeof p === 'string') {
                 if(this.__node.nodes.get(p)) p = this.__node.nodes.get(p);
                 else p = this.__node.roots[p];
