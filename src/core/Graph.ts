@@ -119,7 +119,7 @@ export class GraphNode {
         this.__setProperties(properties,parent,graph);
 
         // Check if the properties are a function or denote the GraphNode to be callable (but all properties private!!)
-        if (typeof properties === 'function' || properties.__callable) { //assuming operator is defined
+        if (typeof properties === 'function' || properties?.__callable) { //assuming operator is defined
             const callableInstance = new Callable();
             callableInstance.__call = (...args) => this.__operator(...args);
 
