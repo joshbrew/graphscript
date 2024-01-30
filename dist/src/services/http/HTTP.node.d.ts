@@ -1,6 +1,7 @@
 /// <reference types="node" />
 /// <reference types="node" />
 /// <reference types="node" />
+/// <reference types="node" />
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import * as http from 'http';
 import * as https from 'https';

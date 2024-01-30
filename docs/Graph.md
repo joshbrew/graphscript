@@ -70,18 +70,19 @@ Graph nodes can have many properties, and even more if you specify loaders on th
 
 ```ts
 type GraphNodeProperties = {
-    __props?:Function|GraphNodeProperties, //a class constructor function (calls 'new x()') or an object we want to proxy all of the methods on this node. E.g. an html element gains 'this' access through operators and listeners on this node.
+    __props?:Function|{[key:string]:any}|GraphNodeProperties|GraphNode, //Proxy objects or from a class constructor function (calls 'new x()') or an object we want to proxy all of the methods on this node. E.g. an html element gains 'this' access through operators and listeners on this node.
     __operator?:((...args:any[])=>any)|string, //The 'main' function of the graph node, children will call this function if triggered by a parent. Functions passed as graphnodeproperties become the operator which can set state.
-    __children?:{[key:string]:GraphNodeProperties}, //child nodes belonging to this node, e.g. for propagating results
-    __listeners?:{[key:string]:true|string|((result)=>void)|{__callback:string|((result)=>void)|true,subInput?:boolean,[key:string]:any}}|{[key:string]:((result)=>void)|true|string}, //subscribe by tag to nodes or their specific properties and method outputs
+    __children?:{[key:string]:any}, //child nodes belonging to this node, e.g. for propagating results
+    __listeners?:{[key:string]:true|string|((result)=>void)|{__callback:string|((result)=>void)|true, subInput?:boolean,[key:string]:any}}|{[key:string]:((result)=>void)|true|string}, //subscribe by tag to nodes or their specific properties and method outputs
     __onconnected?:((node)=>void|((node)=>void)[]), //what happens once the node is created?
     __ondisconnected?:((node)=>void|((node)=>void)[]), //what happens when the node is deleted?
     __node?:{ //node specific properties, can contain a lot more things
         tag?:string,
         state?:EventHandler, //by default has a global shared state
-        inputState?:boolean //we can track inputs on a node, subscribe to state with 'input' on the end of the tag or 'tag.prop' 
         [key:string]:any
     },
+    __args?:any[], //can structure input arguments, include '__result' when generically calling operators for where to pass the original input in in a set of arguments
+    __callable?:boolean, //we can have the graphnode return itself as a callable function with private properties
     [key:string]:any
 }
 ```
@@ -95,6 +96,7 @@ When a node is subscribed to it enhances itself with getters and setters that al
 
 The `__operator` is where default functions for nodes are stored. This lets you pass class methods in for instance as node definitions and then they can gain state and listener access across the program. Arrow functions on classes are nice because they will remain bound to their parent class instance even when applied to nodes. We use this extensively to subscribe across remote endpoints to outputs of specific methods or arbitrary states e.g. a game state. 
 
+The `__callable` property will be applied to nodes when functions are provided as property definitions, this means nodes will appear as if they are functions and all properties will be private (but still there and subscribable on trees!). This can help you make your node trees look more functional and call operators like `node(1)`.
 
 ### Graph Options
 

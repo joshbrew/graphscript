@@ -1,5 +1,6 @@
 /// <reference types="node" />
 /// <reference types="node" />
+/// <reference types="node" />
 import { Service, ServiceMessage, ServiceOptions } from "../Service";
 import { Session, Channel } from 'better-sse';
 import http from 'http';

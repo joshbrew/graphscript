@@ -25,6 +25,7 @@ export type GraphNodeProperties = {
         [key: string]: any;
     };
     __args?: any[];
+    __callable?: boolean;
     [key: string]: any;
 };
 export type Loader = (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, properties: GraphNodeProperties, key: string) => void;
@@ -70,7 +71,7 @@ export declare class Callable extends Function {
     [key: string]: any;
     constructor();
 }
-export declare class GraphNode extends Callable {
+export declare class GraphNode {
     __node: {
         tag: string;
         unique: string;
@@ -86,7 +87,7 @@ export declare class GraphNode extends Callable {
     __props?: any;
     __args: any[];
     [key: string]: any;
-    constructor(properties: any, parent?: {
+    constructor(properties: GraphNodeProperties, parent?: {
         [key: string]: any;
     }, graph?: Graph);
     __setProperties: (properties: any, parent: any, graph: any) => void;

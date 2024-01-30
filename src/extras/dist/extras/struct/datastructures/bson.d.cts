@@ -189,7 +189,7 @@ export class DBRef extends BSONValue {
     oid: any;
     db: any;
     fields: any;
-    set namespace(arg: any);
+    set namespace(value: any);
     get namespace(): any;
     toJSON(): any;
     toExtendedJSON(options: any): {
@@ -360,7 +360,7 @@ export class ObjectId extends BSONValue {
     constructor(inputId: any);
     get _bsontype(): string;
     __id: any;
-    set id(arg: any);
+    set id(value: any);
     get id(): any;
     toHexString(): any;
     toString(encoding: any): any;
@@ -403,7 +403,7 @@ export class UUID extends Binary {
     static createFromHexString(hexString: any): UUID;
     constructor(input: any);
     __id: any;
-    set id(arg: any);
+    set id(value: any);
     get id(): any;
     toHexString(includeDashes?: boolean): any;
     equals(otherId: any): any;
