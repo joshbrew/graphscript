@@ -18,6 +18,7 @@ export type ServerProps = {
     errpage?:string,
     pages?:{
         [key:'all'|string]:string|{  //objects get loaded as nodes which you can modify props on
+            headers?:{[key:string]:any}, //page specific headers to assign on page response
             template?:string,
             onrequest?:GraphNode|string|((self:HTTPbackend, node:GraphNode, request:http.IncomingMessage, response:http.ServerResponse)=>void), //run a function or node? the template, request and response are passed as arguments, you can write custom node logic within this function to customize inputs etc.
             redirect?:string, // can redirect the url to call a different route instead, e.g. '/':{redirect:'home'} sets the route passed to the receiver as 'home'
@@ -347,6 +348,8 @@ export class HTTPbackend extends Service {
         
             let mimeType = 'text/plain';
             
+            let head = {} as any;
+
             if(typeof result === 'string') {
                 let extname = path.extname(result);
 
@@ -355,15 +358,20 @@ export class HTTPbackend extends Service {
 
                     result = fs.readFileSync(path.join(process.cwd(),result));
                     if(mimeType === 'text/html' && (message.served?.pages?._all || message.served?.pages?.[message.route])) {
-                        result = this.injectPageCode(result.toString(),message.route,message.served as any) as any;
+                        let { templateString, headers } = this.injectPageCode(result.toString(),message.route,message.served as any) as any;
+                        result = templateString;
+                        Object.assign(head, headers);
                     }
                 }
                 else if(typeof result === 'string' && result.includes('<') && result.includes('>') && (result.indexOf('<') < result.indexOf('>'))) //probably an html template
                     {
+                        head['Content-Type'] = 'text/html';
                         if(message?.served?.pages?._all || message?.served?.pages?.[message.route]) {
-                            result = this.injectPageCode(result,message.route,message.served) as any;
+                            let { templateString, headers } = this.injectPageCode(result,message.route,message.served) as any;
+                            result = templateString;
+                            Object.assign(head, headers);
                         }
-                        response.writeHead(200,{'Content-Type':'text/html'});
+                        response.writeHead(200,head);
                         response.end(result,'utf-8');
                         return;
                     }
@@ -371,8 +379,8 @@ export class HTTPbackend extends Service {
                 result = JSON.stringify(result);
                 mimeType = 'application/json'
             }
-
-            response.writeHead(200,{'Content-Type':mimeType});
+            head['Content-Type'] = mimeType;
+            response.writeHead(200,head);
             response.end(result,'utf-8');
         } else {
             try {response.destroy();} catch {}
@@ -383,7 +391,7 @@ export class HTTPbackend extends Service {
         templateString:string, 
         url:string,             
         served:ServerInfo 
-    ) => { 
+    ):{templateString:string,headers:{[key:string]:any}} => { 
         if ((served?.pages?.[url] as any)?.inject) { //inject per url
             if(typeof (served as any).pages[url].inject === 'object') 
                 templateString = this.buildPage((served as any).pages[url].inject as any, templateString);
@@ -400,8 +408,16 @@ export class HTTPbackend extends Service {
             else if (typeof (served as any).pages._all.inject === 'string' || typeof (served as any).pages._all.inject === 'number') 
                 templateString += (served as any).pages._all.inject;
         }  
+
+        let headers = {}; 
+        if((served as any).pages._all.headers)
+            Object.assign(headers,(served as any).pages._all.headers);
+
+        if((served as any).pages[url].headers)
+            Object.assign(headers,(served as any).pages[url].headers);
+
         
-        return templateString;
+        return {templateString, headers};
     }
 
     receive = ( //our fancy request response handler
@@ -442,7 +458,8 @@ export class HTTPbackend extends Service {
         if(requestURL == './' || requestURL == served?.startpage) {
             let template = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Brains@Play Server</h1></body></html>`; //start page dummy
             if(served?.pages?._all || served?.pages?.error) {
-                template = this.injectPageCode(template,message.route,served) as any;
+                let {templateString, headers} = this.injectPageCode(template,message.route,served) as any;
+                template = templateString;
             }
             response.writeHead(200, { 'Content-Type': 'text/html' });
             response.end(template,'utf-8'); //write some boilerplate server page, we should make this an interactive debug page
@@ -552,7 +569,8 @@ export class HTTPbackend extends Service {
                         // }
 
                         if(served.pages?._all || served.pages?.error) {
-                            content = this.injectPageCode(content.toString(),message.route,served) as any;
+                            let {templateString, headers} = this.injectPageCode(content.toString(),message.route,served) as any;
+                            content = templateString;
                         }
 
                         response.end(content, 'utf-8'); //set response content
@@ -564,7 +582,8 @@ export class HTTPbackend extends Service {
                     response.writeHead(404, { 'Content-Type': 'text/html' });
                     let content = `<!DOCTYPE html><html><head></head><body style='background-color:#101010 color:white;'><h1>Error: ${error.code}</h1></body></html>`
                     if(served?.pages?._all || served?.pages?.[message.route]) {
-                        content = this.injectPageCode(content.toString(),message.route,served as any) as any;
+                        let {templateString, headers} = this.injectPageCode(content.toString(),message.route,served as any) as any;
+                        content = templateString;
                     }
                     response.end(content,'utf-8');
                     reject(error.code);
@@ -586,11 +605,15 @@ export class HTTPbackend extends Service {
 
             var contentType = this.mimeTypes[extname] || 'application/octet-stream';
 
+            let head = { 'Content-Type': contentType };
+
             if(contentType === 'text/html' && (served?.pages?._all || served?.pages?.[message.route])) {
-                content = this.injectPageCode(content.toString(),message.route,served as any) as any;
+                let {templateString, headers} = this.injectPageCode(content.toString(),message.route, served as any) as any;
+                Object.assign(head, headers);
+                content = templateString;
             }
 
-            response.writeHead(200, { 'Content-Type': contentType }); //set response headers
+            response.writeHead(200, head); //set response headers
             response.end(content, 'utf-8'); //set response content
             resolve(content);
             
