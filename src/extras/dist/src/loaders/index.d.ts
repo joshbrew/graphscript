@@ -36,7 +36,10 @@ export declare const animate: (node: GraphNode, parent: GraphNode | Graph, graph
  *
  * nodeA.__listeners['nodeB.x'] = {
  *  callback:(result)=>void,
- *  branch:{if:Function|any, then:Function|any|GraphNode}
+ *  branch:{
+ *      if:Function|any, //if a function using the result evaluates to true or if the value equals the if value
+ *      then:Function|any|GraphNode //call a function, return a different result, or call a node
+ *  }
  * }
  *
  */

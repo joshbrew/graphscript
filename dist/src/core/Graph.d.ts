@@ -90,6 +90,8 @@ export declare class GraphNode {
     constructor(properties: GraphNodeProperties, parent?: {
         [key: string]: any;
     }, graph?: Graph);
+    get __graph(): any;
+    set __graph(graph: any);
     __setProperties: (properties: any, parent: any, graph: any) => void;
     __subscribe: (callback: string | GraphNode | ((res: any) => void), key?: string, subInput?: boolean, target?: string, tkey?: string, args?: any[], callbackStr?: string) => any;
     __unsubscribe: (sub?: number, key?: string, unsubInput?: boolean) => boolean;

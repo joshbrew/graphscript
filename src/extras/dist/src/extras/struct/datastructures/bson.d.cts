@@ -147,17 +147,17 @@ export class Binary extends BSONValue {
     inspect(): string;
 }
 export namespace Binary {
-    const BSON_BINARY_SUBTYPE_DEFAULT: number;
-    const BUFFER_SIZE: number;
-    const SUBTYPE_DEFAULT: number;
-    const SUBTYPE_FUNCTION: number;
-    const SUBTYPE_BYTE_ARRAY: number;
-    const SUBTYPE_UUID_OLD: number;
-    const SUBTYPE_UUID: number;
-    const SUBTYPE_MD5: number;
-    const SUBTYPE_ENCRYPTED: number;
-    const SUBTYPE_COLUMN: number;
-    const SUBTYPE_USER_DEFINED: number;
+    let BSON_BINARY_SUBTYPE_DEFAULT: number;
+    let BUFFER_SIZE: number;
+    let SUBTYPE_DEFAULT: number;
+    let SUBTYPE_FUNCTION: number;
+    let SUBTYPE_BYTE_ARRAY: number;
+    let SUBTYPE_UUID_OLD: number;
+    let SUBTYPE_UUID: number;
+    let SUBTYPE_MD5: number;
+    let SUBTYPE_ENCRYPTED: number;
+    let SUBTYPE_COLUMN: number;
+    let SUBTYPE_USER_DEFINED: number;
 }
 export class Code extends BSONValue {
     static fromExtendedJSON(doc: any): Code;
@@ -189,7 +189,7 @@ export class DBRef extends BSONValue {
     oid: any;
     db: any;
     fields: any;
-    set namespace(arg: any);
+    set namespace(value: any);
     get namespace(): any;
     toJSON(): any;
     toExtendedJSON(options: any): {
@@ -323,15 +323,15 @@ export class Long extends BSONValue {
     inspect(): string;
 }
 export namespace Long {
-    const TWO_PWR_24: any;
-    const MAX_UNSIGNED_VALUE: Long;
-    const ZERO: any;
-    const UZERO: any;
-    const ONE: any;
-    const UONE: any;
-    const NEG_ONE: any;
-    const MAX_VALUE: Long;
-    const MIN_VALUE: Long;
+    let TWO_PWR_24: any;
+    let MAX_UNSIGNED_VALUE: Long;
+    let ZERO: any;
+    let UZERO: any;
+    let ONE: any;
+    let UONE: any;
+    let NEG_ONE: any;
+    let MAX_VALUE: Long;
+    let MIN_VALUE: Long;
 }
 export class MaxKey extends BSONValue {
     static fromExtendedJSON(): MaxKey;
@@ -360,7 +360,7 @@ export class ObjectId extends BSONValue {
     constructor(inputId: any);
     get _bsontype(): string;
     __id: any;
-    set id(arg: any);
+    set id(value: any);
     get id(): any;
     toHexString(): any;
     toString(encoding: any): any;
@@ -374,7 +374,7 @@ export class ObjectId extends BSONValue {
     [kId]: any;
 }
 export namespace ObjectId {
-    const index: number;
+    let index: number;
 }
 export class Timestamp extends Long {
     static fromInt(value: any): Timestamp;
@@ -403,7 +403,7 @@ export class UUID extends Binary {
     static createFromHexString(hexString: any): UUID;
     constructor(input: any);
     __id: any;
-    set id(arg: any);
+    set id(value: any);
     get id(): any;
     toHexString(includeDashes?: boolean): any;
     equals(otherId: any): any;

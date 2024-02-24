@@ -25,6 +25,7 @@ export type GraphNodeProperties = {
         [key: string]: any;
     };
     __args?: any[];
+    __callable?: boolean;
     [key: string]: any;
 };
 export type Loader = (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, properties: GraphNodeProperties, key: string) => void;
@@ -51,27 +52,25 @@ export type argObject = {
     __output?: string | argObject | ((...args: any[]) => any);
 };
 export type Listener = {
+    __callback?: string;
+    __args?: (argObject | Function | string)[];
+    sub: number;
     node: GraphNode;
     graph: Graph;
     source?: string;
     key?: string;
     target?: string;
     tkey?: string;
-    arguments?: (argObject | Function | string)[];
-    __args?: Function[];
+    arguments?: Function[];
+    subInput?: boolean;
+    onchange: Function;
 };
-/**
- * type Listener = {
- *    source: the source node (if any)
- *    key: the source key listened to (if any)
- *    target: the target node (if any),
- *    tkey: the target method key (if any)
- *    sub: the number for the subscription in state
- *    __callback:Function,
- *    __args:Function[], wrapped argument functions that get iterated over when a trigger is called
- *    arguments:any[] //the original arguments
- * }
- */
+export declare class Callable extends Function {
+    __bound: Callable;
+    __call: ((...args: any[]) => any);
+    [key: string]: any;
+    constructor();
+}
 export declare class GraphNode {
     __node: {
         tag: string;
@@ -88,11 +87,13 @@ export declare class GraphNode {
     __props?: any;
     __args: any[];
     [key: string]: any;
-    constructor(properties: any, parent?: {
+    constructor(properties: GraphNodeProperties, parent?: {
         [key: string]: any;
     }, graph?: Graph);
+    get __graph(): any;
+    set __graph(graph: any);
     __setProperties: (properties: any, parent: any, graph: any) => void;
-    __subscribe: (callback: string | GraphNode | ((res: any) => void), key?: string, subInput?: boolean, target?: string, tkey?: string, args?: any[]) => any;
+    __subscribe: (callback: string | GraphNode | ((res: any) => void), key?: string, subInput?: boolean, target?: string, tkey?: string, args?: any[], callbackStr?: string) => any;
     __unsubscribe: (sub?: number, key?: string, unsubInput?: boolean) => boolean;
     __setOperator: (fn: (...args: any[]) => any) => any;
     __addLocalState: (props?: {
@@ -121,15 +122,15 @@ export declare class Graph {
     init: (options?: GraphOptions) => void;
     load: (roots: {
         [key: string]: any;
-    }) => {
+    }, overwrite?: boolean) => {
         [key: string]: any;
     };
     setLoaders: (loaders: {
         [key: string]: (node: GraphNode, parent: Graph | GraphNode, graph: Graph, roots: any, props: any, key: string) => void;
     }, replace?: boolean) => any;
     runLoaders: (node: any, parent: any, properties: any, key: any) => void;
-    add: (properties: any, parent?: GraphNode | string) => GraphNode;
-    recursiveSet: (t: any, parent: any, listeners: any, origin: any) => any;
+    add: (properties: any, parent?: GraphNode | string, overwrite?: boolean) => GraphNode;
+    recursiveSet: (originCpy: any, parent: any, listeners: any, origin: any, overwrite?: boolean) => any;
     remove: (node: GraphNode | string, clearListeners?: boolean) => string | GraphNode;
     run: (node: string | GraphNode, ...args: any[]) => any;
     /**
@@ -150,10 +151,13 @@ export declare class Graph {
     }) => void;
     clearListeners: (node: GraphNode | string, listener?: string) => void;
     get: (tag: string) => any;
+    getByUnique: (unique: string) => any;
     set: (tag: string, node: GraphNode) => Map<string, any>;
     delete: (tag: string) => boolean;
+    list: () => string[];
+    getListener: (nodeTag: string, key?: string, sub?: number) => Listener;
     getProps: (node: GraphNode | string, getInitial?: boolean) => void;
-    subscribe: (nodeEvent: GraphNode | string, onEvent: string | GraphNode | ((...res: any) => void), args?: any[], key?: string | undefined, subInput?: boolean, target?: string | GraphNode, bound?: string, tkey?: string) => number;
+    subscribe: (nodeEvent: GraphNode | string, onEvent: string | GraphNode | ((...res: any) => void), args?: any[], key?: string | undefined, subInput?: boolean, target?: string | GraphNode, tkey?: string) => number;
     unsubscribe: (node: GraphNode | string, sub?: number, key?: string, subInput?: boolean) => any;
     setState: (update: {
         [key: string]: any;
@@ -162,8 +166,8 @@ export declare class Graph {
 export declare function getAllProperties(obj: any): any[];
 export declare function instanceObject(obj: any): any;
 export declare function isNativeClass(thing: any): boolean;
-export declare function isFunction(x: any): "" | "function" | "class" | "async" | "arrow";
-export declare let getCallbackFromString: (a: any, graph: any) => (...inp: any[]) => void;
+export declare function isFunction(x: any): "function" | "class" | "async" | "arrow" | "";
+export declare let getCallbackFromString: (a: any, graph: any) => (...inp: any[]) => any;
 export declare const wrapArgs: (callback: any, argOrder: any, graph: any) => {
     __callback: any;
     __args: any[];

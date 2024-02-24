@@ -13,9 +13,15 @@ export type ServiceOptions = GraphOptions & {
             [key: string]: any;
         };
     };
+    restrict?: {
+        [key: string]: boolean;
+    };
 };
 export declare class Service extends Graph {
     name: string;
+    restrict?: {
+        [key: string]: boolean;
+    };
     constructor(options?: ServiceOptions);
     addServices: (services: {
         [key: string]: Function | Graph | Service | {

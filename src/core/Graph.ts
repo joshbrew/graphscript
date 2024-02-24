@@ -145,6 +145,15 @@ export class GraphNode {
         }
     }
 
+    //slightly more convenient than doing this.__node.graph
+    get __graph() {
+        return this.__node?.graph;
+    }
+
+    set __graph(graph) {
+        this.__node.graph = graph;
+    }
+
     __setProperties = (properties, parent, graph) => {
 
         let enforceProperties = () => {
@@ -495,7 +504,7 @@ export class GraphNode {
                     configurable: true
                 };
 
-            } else {
+            } else if (k !== '__graph') {
                 let get:()=>any, set:(v)=>void;
                 let obj;
                 if(this.__props?.[k]) {

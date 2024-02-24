@@ -18,6 +18,9 @@ export type ServerProps = {
     errpage?: string;
     pages?: {
         [key: 'all' | string]: string | ({
+            headers?: {
+                [key: string]: any;
+            };
             template?: string;
             onrequest?: GraphNode | string | ((self: HTTPbackend, node: GraphNode, request: http.IncomingMessage, response: http.ServerResponse) => void);
             redirect?: string;
@@ -97,7 +100,12 @@ export declare class HTTPbackend extends Service {
         method?: string;
         served?: ServerInfo;
     }) => void;
-    injectPageCode: (templateString: string, url: string, served: ServerInfo) => string;
+    injectPageCode: (templateString: string, url: string, served: ServerInfo) => {
+        templateString: string;
+        headers: {
+            [key: string]: any;
+        };
+    };
     receive: (message: {
         route: string;
         args: {
