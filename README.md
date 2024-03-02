@@ -2,7 +2,6 @@
 [![Npm package version](https://img.shields.io/npm/v/graphscript)](https://npmjs.com/package/graphscript)
 [![Npm package monthly downloads](https://badgen.net/npm/dm/graphscript)](https://npmjs.ccom/package/graphscript)
 [![License: LGPL v3](https://img.shields.io/badge/license-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/LGPL-3.0)
-[![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
 
 <p align="center">
