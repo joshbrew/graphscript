@@ -630,8 +630,7 @@ export class WorkerService extends Service {
         });
     }
 
-    runRequest = (message:ServiceMessage|any, worker:undefined|string|Worker|MessagePort, callbackId:string|number) => {
-
+    runRequest = (message:ServiceMessage|any, worker:undefined|string|Worker|MessagePort, callbackId:string|number, getTransferable=true) => {
 
         let res = this.receive(message);
 
@@ -641,16 +640,18 @@ export class WorkerService extends Service {
         }
         if(res instanceof Promise) {
             res.then((r) => {
+                let transfer = getTransferable ? this.getTransferable(r) : undefined;
                 if(worker instanceof Worker || worker instanceof MessagePort) 
-                    worker.postMessage({args:r,callbackId})
+                    worker.postMessage({args:r,callbackId},transfer)
                 else if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
-                    globalThis.postMessage({args:r,callbackId});
+                    globalThis.postMessage({args:r,callbackId},transfer);
             });
         } else {
+            let transfer = getTransferable ? this.getTransferable(res) : undefined;
             if(worker instanceof Worker || worker instanceof MessagePort) 
-                worker.postMessage({args:res,callbackId})
+                worker.postMessage({args:res,callbackId}, transfer)
             else if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
-                globalThis.postMessage({args:res,callbackId});
+                globalThis.postMessage({args:res,callbackId}, transfer);
         }
 
         return res;
@@ -662,7 +663,8 @@ export class WorkerService extends Service {
         args?:any[],
         key?:string,
         subInput?:boolean,
-        blocking?:boolean //requires a WorkerInfo object 
+        blocking?:boolean, //requires a WorkerInfo object 
+        getTransferable:boolean=true
     ) => {
         if(this.restrict?.[route]) return undefined;
 
@@ -701,20 +703,23 @@ export class WorkerService extends Service {
         }
         else {
             callback = (res:any) => {
-                
                 //console.log('subscription triggered for', route, 'to', worker instanceof Worker ? worker : 'window', 'result:', res);
                 if(res instanceof Promise) {
                     res.then((r) => {
-                        if((worker as any)?.postMessage) 
-                            (worker as any).postMessage({args:r,callbackId:route})
+                        let transfer = getTransferable ? this.getTransferable(r) : undefined;
+                        //console.log(transfer);
+                        if((worker as Worker)?.postMessage) 
+                            (worker as Worker).postMessage({args:r,callbackId:route}, transfer)
                         else if(globalThis.postMessage)
-                            globalThis.postMessage({args:r,callbackId:route});
+                            globalThis.postMessage({args:r,callbackId:route}, transfer);
                     });
                 } else {
-                    if((worker as any)?.postMessage) 
-                        (worker as any).postMessage({args:res,callbackId:route})
+                    let transfer = getTransferable ? this.getTransferable(res) : undefined;
+                    //console.log(transfer);
+                    if((worker as Worker)?.postMessage) 
+                        (worker as Worker).postMessage({args:res,callbackId:route}, transfer)
                     else if(globalThis.postMessage)
-                        globalThis.postMessage({args:res,callbackId:route});
+                        globalThis.postMessage({args:res,callbackId:route}, transfer);
                 }
             }
         }
@@ -731,7 +736,7 @@ export class WorkerService extends Service {
             else worker = this.workers[worker].worker;
         } //else we are subscribing to window
 
-        return this.subscribe(route,callback, args, key, subInput);
+        return this.subscribe(route, callback, args, key, subInput);
     }
 
     subscribeToWorker = (
@@ -741,7 +746,8 @@ export class WorkerService extends Service {
         args?:any[],
         key?:string,
         subInput?:boolean,
-        blocking?:boolean //blocking subscriptions won't return if the subscribing thread hasn't finished with the result
+        blocking?:boolean, //blocking subscriptions won't return if the subscribing thread hasn't finished with the result
+        getTransferable = true //auto process transfer arrays (default true)
     ) => {
 
         if(typeof workerId === 'string' && this.workers[workerId]) {
@@ -754,7 +760,7 @@ export class WorkerService extends Service {
                     else callback(res.args);
                 }
             });
-            return this.workers[workerId].run('subscribeWorker', [route, workerId, args, key, subInput, blocking]);
+            return this.workers[workerId].run('subscribeWorker', [route, workerId, args, key, subInput, blocking, getTransferable]);
         }
     }
 
@@ -778,14 +784,15 @@ export class WorkerService extends Service {
         args?:any[],
         key?:any,
         subInput?:boolean,
-        blocking?:boolean
+        blocking?:boolean,
+        getTransferable?:boolean
     ) => {
         if(typeof sourceWorker === 'string') sourceWorker = this.workers[sourceWorker];
         if(typeof listenerWorker === 'string') listenerWorker = this.workers[listenerWorker];
         if(!portId) {
             portId = this.establishMessageChannel(sourceWorker.worker,listenerWorker.worker) as string;
         }
-        return listenerWorker.run('subscribeToWorker',[sourceRoute,portId,listenerRoute,args,key,subInput,blocking]) as Promise<number>; //just run .unsubscribe on worker2.
+        return listenerWorker.run('subscribeToWorker',[sourceRoute,portId,listenerRoute,args,key,subInput,blocking,getTransferable]) as Promise<number>; //just run .unsubscribe on worker2.
     }
 
     unpipeWorkers = (

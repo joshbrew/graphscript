@@ -1,5 +1,6 @@
 //provide routes for applying canvases to workers
 
+import worker from './canvas.worker'
 import { proxyElementWorkerRoutes, initProxyElement } from './ProxyListener';
 
 declare var WorkerGlobalScope;
@@ -20,7 +21,7 @@ export type WorkerCanvasTransferProps = { //defined in main thread to send to wo
 export type CanvasProps = { //defined in worker thread
     canvas:any, //offscreen canvas
     context?:string|CanvasRenderingContext2D|WebGL2RenderingContext|WebGLRenderingContext,
-    _id?:string,
+    _id:string,
     width?:number,
     height?:number,
     draw?:string|((self:any,canvas:any,context:any)=>void),
@@ -34,7 +35,7 @@ export type CanvasProps = { //defined in worker thread
 
 export type CanvasControls = {
     _id:string,
-    draw:(props?:any,transfer?:any)=>void,
+    draw:(props?:any,transfer?:any)=>void, //if you set props they will be available on "self" or "this" in the draw functions
     update:(props:{[key:string]:any},transfer?:any)=>void,
     clear:()=>void,
     init:()=>void,
@@ -62,9 +63,14 @@ export type WorkerCanvas = { //this is the object stored on the worker to track 
 }
 
 export function Renderer(
-    options:CanvasProps & {worker?:Worker|string|Blob|MessagePort, route?:string}
+    options:CanvasProps & {
+        worker?:Worker|string|Blob|MessagePort|true, 
+        route?:string
+    }
 ) {
-
+    if(options.worker === true) {
+        options.worker = worker
+    }
     if(options.worker) {
         let worker = options.worker;
         let route = options.route;
@@ -75,7 +81,7 @@ export function Renderer(
         delete options.worker;
         delete options.route;
     
-        return transferCanvas(worker, options as WorkerCanvasTransferProps, route);
+        return transferCanvas(worker as any, options as WorkerCanvasTransferProps, route);
     }
     else {
         initProxyElement(options.canvas,undefined,options._id, options.preventDefault);
@@ -95,7 +101,7 @@ export function transferCanvas(
     if(!options) return undefined;
     if(!options._id) options._id = `canvas${Math.floor(Math.random()*1000000000000000)}`;
 
-    let offscreen = (options.canvas as any).transferControlToOffscreen();
+    let offscreen = options.canvas instanceof OffscreenCanvas ? options.canvas : (options.canvas as any).transferControlToOffscreen();
     if(!options.width) options.width = options.canvas.clientWidth;
     if(!options.height) options.height = options.canvas.clientHeight;
 
@@ -104,8 +110,9 @@ export function transferCanvas(
         canvas:offscreen, 
     }};
 
-    if(this?.__node?.graph) this.__node.graph.run('initProxyElement', options.canvas, worker, options._id, options.preventDefault); //initiate an element proxy
-    else initProxyElement(options.canvas,worker,options._id, options.preventDefault);
+    let proxy;
+    if(this?.__node?.graph) proxy = this.__node.graph.run('initProxyElement', options.canvas, worker, options._id, options.preventDefault); //initiate an element proxy
+    else proxy = initProxyElement(options.canvas,worker,options._id, options.preventDefault);
 
     if(options.draw) {
         if(typeof options.draw === 'function') message.args.draw = options.draw.toString()
@@ -163,6 +170,7 @@ export function transferCanvas(
             worker.postMessage({route:'setDraw',args:[newDrawProps,options._id]},transfer);
         },
         terminate:()=>{
+            if(proxy) proxy.terminate();
             (worker as Worker).terminate();
         }
     }
@@ -189,10 +197,13 @@ export function setDraw(
         if(settings.canvas) {
             canvasopts.canvas = settings.canvas;
 
+            if(canvasopts.proxy) canvasopts.proxy.terminate();
+            let proxy;
             //create an element proxy to add event listener functionality
-            if(this?.__node?.graph) this.__node.graph.run('makeProxy', canvasopts._id, canvasopts.canvas);
-            else proxyElementWorkerRoutes.makeProxy(canvasopts._id, canvasopts.canvas);
+            if(this?.__node?.graph) proxy = this.__node.graph.run('makeProxy', canvasopts._id, canvasopts.canvas);
+            else proxy = proxyElementWorkerRoutes.makeProxy(canvasopts._id, canvasopts.canvas);
 
+            canvasopts.proxy = proxy;
             //now the canvas can handle mouse and resize events, more can be implemented
         }
         if(typeof settings.context === 'string') canvasopts.context = canvasopts.canvas.getContext(settings.context);
@@ -236,6 +247,7 @@ export function setupCanvas(
     typeof options.context === 'string' ? canvasOptions.context = options.canvas.getContext(options.context) : canvasOptions.context = options.context; //get the rendering context based on string passed
     ('animating' in options) ? canvasOptions.animating = options.animating : canvasOptions.animating = true;
 
+    let proxy;
     if(this?.__node?.graph?.CANVASES[canvasOptions._id]) {
         this.__node.graph.run('setDraw',canvasOptions);
     } else if(globalThis.CANVASES?.[canvasOptions._id]) {
@@ -256,8 +268,8 @@ export function setupCanvas(
         else globalThis.CANVASES[canvasOptions._id] = canvasOptions;
 
         //create an element proxy to add event listener functionality
-        if(this?.__node?.graph) this.__node.graph.run('makeProxy', canvasOptions._id, canvasOptions.canvas);
-        else proxyElementWorkerRoutes.makeProxy(canvasOptions._id, canvasOptions.canvas);
+        if(this?.__node?.graph) proxy = this.__node.graph.run('makeProxy', canvasOptions._id, canvasOptions.canvas);
+        else proxy = proxyElementWorkerRoutes.makeProxy(canvasOptions._id, canvasOptions.canvas);
         //now the canvas can handle mouse and resize events, more can be implemented
   
         if(options.width) canvasOptions.canvas.width = options.width;
@@ -284,69 +296,93 @@ export function setupCanvas(
             canvasOptions.clear = canvasOptions.clear.bind(canvasOptions);
         } 
 
-        if(typeof canvasOptions.init === 'function') 
-                (canvasOptions.init as any)(canvasOptions, canvasOptions.canvas,canvasOptions.context);
-
-        canvasOptions.stop = () => {stopAnim(canvasOptions._id);};
-        canvasOptions.start = (draw?:any) => {startAnim(canvasOptions._id,draw);};
-        canvasOptions.set = (settings:any) => {setDraw(settings,canvasOptions._id);}
-
-        if(typeof canvasOptions.draw === 'function' && canvasOptions.animating) {
-            let draw = (s,canvas,context) => {            
-                if(s.animating) {
-                    s.draw(s,canvas,context);
-                    requestAnimationFrame(()=>{ 
-                        draw(s,canvas,context);  
-                    });
-                }
-            }
-            
-            draw(canvasOptions, canvasOptions.canvas,canvasOptions.context);
         
-        }
-    }
+        const finishSetup = () => {
+            canvasOptions.stop = () => {stopAnim(canvasOptions._id);};
+            canvasOptions.start = (draw?:any) => {startAnim(canvasOptions._id,draw);};
+            canvasOptions.set = (settings:any) => {setDraw(settings,canvasOptions._id);}
 
-    if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
-        return canvasOptions._id as string;
-    else {
-        //lets add some utilities to make it easy to update the thread
-        const canvascontrols = {
-            _id:options._id,
-            width:options.width,
-            height:options.height,
-            draw:(props?:any)=>{
-                drawFrame(props,options._id);
-            },
-            update:(props:{[key:string]:any})=>{
-                updateCanvas(props,options._id);
-            },
-            clear:()=>{
-                clearCanvas(options._id);
-            },
-            init:()=>{
-                //console.log('Posting init')
-                initCanvas(options._id);
-            },
-            stop:()=>{
-                stopAnim(options._id);
-            },
-            start:()=>{
-                startAnim(options._id);
-            },
-            set:(newDrawProps:CanvasProps)=>{
-                setDraw(newDrawProps,options._id);
-            },
-            terminate:()=>{
-                if(this.__node?.graph) this.__node.graph.remove(options._id);
-                else {
-                    stopAnim(options._id); 
-                    if(this?.__node?.graph) delete this.__node.graph.CANVASES[canvasOptions._id];
-                    else delete globalThis.CANVASES[canvasOptions._id];
+            if(typeof canvasOptions.draw === 'function' && canvasOptions.animating) {
+                let draw = (s,canvas,context) => {            
+                    if(s.animating) {
+                        let res = s.draw(s,canvas,context);
+                        if(res?.then) {
+                            res.then(() => {
+                                requestAnimationFrame(()=>{ 
+                                    draw(s,canvas,context);  
+                                });
+                            })
+                        }
+                        else requestAnimationFrame(()=>{ 
+                            draw(s,canvas,context);  
+                        });
+                    }
                 }
+                
+                draw(canvasOptions, canvasOptions.canvas,canvasOptions.context);
+            
+            }
+
+            if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
+                return canvasOptions._id as string;
+            else {
+                //lets add some utilities to make it easy to update the thread
+                const canvascontrols = {
+                    _id:options._id,
+                    width:options.width,
+                    height:options.height,
+                    proxy,
+                    draw:(props?:any)=>{
+                        drawFrame(props,options._id);
+                    },
+                    update:(props:{[key:string]:any})=>{
+                        updateCanvas(props,options._id);
+                    },
+                    clear:()=>{
+                        clearCanvas(options._id);
+                    },
+                    init:()=>{
+                        //console.log('Posting init')
+                        initCanvas(options._id);
+                    },
+                    stop:()=>{
+                        stopAnim(options._id);
+                    },
+                    start:()=>{
+                        startAnim(options._id);
+                    },
+                    set:(newDrawProps:CanvasProps)=>{
+                        setDraw(newDrawProps,options._id);
+                    },
+                    terminate:()=>{
+                        if(canvascontrols.proxy) {
+                            canvascontrols.proxy.terminate();
+                        }
+                        if(this.__node?.graph) this.__node.graph.remove(options._id);
+                        else {
+                            stopAnim(options._id); 
+                            if(this?.__node?.graph) delete this.__node.graph.CANVASES[canvasOptions._id];
+                            else delete globalThis.CANVASES[canvasOptions._id];
+                        }
+                    }
+                }
+
+                return canvascontrols as CanvasControls;
             }
         }
 
-        return canvascontrols as CanvasControls;
+        if(typeof canvasOptions.init === 'function') {
+            let res = (canvasOptions.init as any)(canvasOptions, canvasOptions.canvas,canvasOptions.context);
+            if(res?.then) {
+                return new Promise((resolve) => {
+                    res.then(()=>{
+                        resolve(finishSetup())
+                    });
+                }) as Promise<string | CanvasControls>;
+            }
+        } 
+        return finishSetup();
+
     }
 }
 
@@ -400,11 +436,11 @@ export function updateCanvas(input?:any,_id?:string){
     return undefined;
 }
 
-export function setProps(props?:{[key:string]:any},_id?:string,){ //update animation props, e.g. the radius or color of a circle you are drawing with a stored value
+export function setProps(props?:{[key:string]:any},_id?:string){ //update animation props, e.g. the radius or color of a circle you are drawing with a stored value
     
     let canvasopts = getCanvas.call(this, _id);
 
-    if(canvasopts) {
+    if(canvasopts && props) {
         Object.assign(canvasopts,props);
         if(props.width) canvasopts.canvas.width = props.width;
         if(props.height) canvasopts.canvas.height = props.height;
@@ -527,3 +563,6 @@ function parseFunctionFromText(method='') {
     return newFunc;
 
 }
+
+
+

@@ -86,10 +86,10 @@ export declare class WorkerService extends Service {
     terminate: (worker: Worker | MessagePort | string | WorkerInfo) => boolean;
     establishMessageChannel: (worker: Worker | string | MessagePort | WorkerInfo, worker2?: Worker | string | MessagePort | WorkerInfo) => string | false;
     request: (message: ServiceMessage | any, workerId: string, transfer?: any, method?: string) => Promise<unknown>;
-    runRequest: (message: ServiceMessage | any, worker: undefined | string | Worker | MessagePort, callbackId: string | number) => any;
-    subscribeWorker: (route: string, worker: WorkerInfo | Worker | string | MessagePort, args?: any[], key?: string, subInput?: boolean, blocking?: boolean) => number;
-    subscribeToWorker: (route: string, workerId: string, callback?: string | ((res: any) => void), args?: any[], key?: string, subInput?: boolean, blocking?: boolean) => Promise<any>;
+    runRequest: (message: ServiceMessage | any, worker: undefined | string | Worker | MessagePort, callbackId: string | number, getTransferable?: boolean) => any;
+    subscribeWorker: (route: string, worker: WorkerInfo | Worker | string | MessagePort, args?: any[], key?: string, subInput?: boolean, blocking?: boolean, getTransferable?: boolean) => number;
+    subscribeToWorker: (route: string, workerId: string, callback?: string | ((res: any) => void), args?: any[], key?: string, subInput?: boolean, blocking?: boolean, getTransferable?: boolean) => Promise<any>;
     triggerSubscription: (route: string, workerId: string, result: any) => Promise<boolean>;
-    pipeWorkers: (sourceWorker: WorkerInfo | string, listenerWorker: WorkerInfo | string, sourceRoute: string, listenerRoute: string, portId?: string, args?: any[], key?: any, subInput?: boolean, blocking?: boolean) => Promise<number>;
+    pipeWorkers: (sourceWorker: WorkerInfo | string, listenerWorker: WorkerInfo | string, sourceRoute: string, listenerRoute: string, portId?: string, args?: any[], key?: any, subInput?: boolean, blocking?: boolean, getTransferable?: boolean) => Promise<number>;
     unpipeWorkers: (sourceRoute: string, sourceWorker: WorkerInfo | string, sub?: number) => Promise<any>;
 }

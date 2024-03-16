@@ -14,7 +14,7 @@ export type WorkerCanvasTransferProps = {
 export type CanvasProps = {
     canvas: any;
     context?: string | CanvasRenderingContext2D | WebGL2RenderingContext | WebGLRenderingContext;
-    _id?: string;
+    _id: string;
     width?: number;
     height?: number;
     draw?: string | ((self: any, canvas: any, context: any) => void);
@@ -54,12 +54,12 @@ export type WorkerCanvas = {
     [key: string]: any;
 };
 export declare function Renderer(options: CanvasProps & {
-    worker?: Worker | string | Blob | MessagePort;
+    worker?: Worker | string | Blob | MessagePort | true;
     route?: string;
-}): string | CanvasControls;
+}): string | CanvasControls | Promise<string | CanvasControls>;
 export declare function transferCanvas(worker: Worker | MessagePort, options: WorkerCanvasTransferProps, route?: string): WorkerCanvasControls;
 export declare function setDraw(settings: CanvasProps, _id?: string): string;
-export declare function setupCanvas(options: CanvasProps): string | CanvasControls;
+export declare function setupCanvas(options: CanvasProps): string | CanvasControls | Promise<string | CanvasControls>;
 export declare function drawFrame(props?: {
     [key: string]: any;
 }, _id?: string): string;
