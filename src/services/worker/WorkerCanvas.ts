@@ -58,6 +58,10 @@ export type WorkerCanvas = { //this is the object stored on the worker to track 
     update?:((self:WorkerCanvas,canvas:WorkerCanvas['canvas'],context:WorkerCanvas['context'],input:any)=>void),
     init?:((self:WorkerCanvas,canvas:WorkerCanvas['canvas'],context:WorkerCanvas['context'])=>void),
     clear?:((self:WorkerCanvas,canvas:WorkerCanvas['canvas'],context:WorkerCanvas['context'])=>void),
+    stop:()=>void,
+    start:()=>void,
+    set:(newDrawProps:CanvasProps,transfer?:any)=>void,
+    terminate:()=>void,
     animating:boolean, //animation will start automatically, else you can call draw conditionally
     [key:string]:any //any transferrable props you want to use in your animation
 }

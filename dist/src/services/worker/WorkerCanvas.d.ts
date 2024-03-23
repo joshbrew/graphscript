@@ -50,6 +50,10 @@ export type WorkerCanvas = {
     update?: ((self: WorkerCanvas, canvas: WorkerCanvas['canvas'], context: WorkerCanvas['context'], input: any) => void);
     init?: ((self: WorkerCanvas, canvas: WorkerCanvas['canvas'], context: WorkerCanvas['context']) => void);
     clear?: ((self: WorkerCanvas, canvas: WorkerCanvas['canvas'], context: WorkerCanvas['context']) => void);
+    stop: () => void;
+    start: () => void;
+    set: (newDrawProps: CanvasProps, transfer?: any) => void;
+    terminate: () => void;
     animating: boolean;
     [key: string]: any;
 };

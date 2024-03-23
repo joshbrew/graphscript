@@ -642,7 +642,7 @@ export class WorkerService extends Service {
             res.then((r) => {
                 let transfer = getTransferable ? this.getTransferable(r) : undefined;
                 if(worker instanceof Worker || worker instanceof MessagePort) 
-                    worker.postMessage({args:r,callbackId},transfer)
+                    worker.postMessage({args:r,callbackId}, transfer)
                 else if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
                     globalThis.postMessage({args:r,callbackId},transfer);
             });
